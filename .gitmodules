@@ -1,0 +1,3 @@
+[submodule "CMT"]
+	path = CMT
+	url = https://github.com/wxMichael/Collective-Modding-Toolkit
