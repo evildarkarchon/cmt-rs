@@ -30,10 +30,7 @@ fn load_settings_controller() -> SettingsController<FileAssetResolver> {
     })
 }
 
-fn bind_settings_callbacks(
-    app: &MainWindow,
-    controller: SettingsController<FileAssetResolver>,
-) {
+fn bind_settings_callbacks(app: &MainWindow, controller: SettingsController<FileAssetResolver>) {
     let controller = Rc::new(RefCell::new(controller));
 
     app.on_update_source_selected({
