@@ -1,7 +1,7 @@
 ---
 phase: 02-settings-defaults-parity
 verified: 2026-05-17T05:46:34Z
-status: human_needed
+status: passed
 score: 5/5 must-haves verified
 overrides_applied: 0
 re_verification:
@@ -16,16 +16,16 @@ re_verification:
   gaps_remaining: []
   regressions: []
 human_verification:
-  - test: "Change each Settings-tab radio group in the running app and restart."
-    expected: "Selections persist to `settings.json`, reload on restart, and the UI remains quiet on successful saves."
-    why_human: "Automated controller/store/source tests verify the behavior, but end-to-end desktop interaction and restart flow were not exercised by a GUI automation runner."
+  approved: true
+  approved_at: 2026-05-17T05:50:00Z
+  source: 02-HUMAN-UAT.md
 ---
 
 # Phase 2: Settings & Defaults Parity Verification Report
 
 **Phase Goal:** User settings behave like the reference app, including defaults, validation, persistence, and visible Settings-tab controls.  
 **Verified:** 2026-05-17T05:46:34Z  
-**Status:** human_needed  
+**Status:** passed  
 **Re-verification:** Yes — final verification after human-reported Settings-tab issues and review findings were fixed in commits `e01bc97`, `4ae55df`, `3d56d15`, `8852d8a`, and `e8e1d35`.
 
 ## Goal Achievement
@@ -120,24 +120,24 @@ No orphaned Phase 2 requirements were found: ROADMAP Phase 2 and REQUIREMENTS.md
 |------|------|---------|----------|--------|
 | `src/main.rs` | 175 | Test name contains `static_placeholders`. | ℹ️ Info | This is a Phase 1 shell contract test name for intentionally inert non-Settings tabs, not a Phase 2 settings stub. No `TBD`, `FIXME`, or `XXX` markers were found in modified Phase 2 source/UI files. |
 
-### Human Verification Required
+### Human Verification Approved
 
-Automated code, source-level, review, and cargo checks passed. Human verification remains required for the full desktop click/restart persistence flow because `02-HUMAN-UAT.md` still marks that test pending.
+Automated code, source-level, review, and cargo checks passed. Human verification is approved in `02-HUMAN-UAT.md` after the reported Settings-tab visual issues were fixed.
 
 #### 1. End-to-end desktop persistence
 
 **Test:** Change each Settings-tab radio group in the running app and restart.  
 **Expected:** Selections persist to `settings.json`, reload on restart, and successful saves stay visually quiet.  
-**Why human:** Controller/store tests verify the logic, but no GUI automation runner exercised a full desktop click/restart flow.
+**Result:** Approved by the user after the reported Settings-tab issues were fixed.
 
 ### Gaps Summary
 
-No blocking gaps were found. All five ROADMAP success criteria and SET-01 through SET-06 are supported by substantive, wired code and passing tests. The human-reported dark-mode issue, Warning log-level option/persistence issue, Warning save-failure reversion issue, stale controller documentation issue, and code-review findings are all closed by current source and tests. Status remains `human_needed` rather than `passed` only because the full desktop click/restart persistence flow has not been manually confirmed or covered by GUI automation.
+No blocking gaps were found. All five ROADMAP success criteria and SET-01 through SET-06 are supported by substantive, wired code, passing tests, clean review, and approved human verification. The human-reported dark-mode issue, Warning log-level option/persistence issue, Warning save-failure reversion issue, stale controller documentation issue, and code-review findings are all closed by current source and tests.
 
 ### Residual Risks
 
-- Source-level tests verify labels/order, callback surfaces, dark-palette source contract, Warning persistence/reversion logic, and MainWindow forwarding; they do not replace GUI automation for full desktop click/restart behavior.
-- The working tree contains non-source changes outside Phase 2 verification scope (`.planning/config.json` modified and untracked `settings.json` at verification time). `CMT/` itself is clean and no production source files were modified by this verification.
+- Source-level tests verify labels/order, callback surfaces, dark-palette source contract, Warning persistence/reversion logic, and MainWindow forwarding; future visual regressions would benefit from GUI automation once available.
+- The working tree contains non-source changes outside Phase 2 verification scope (`.planning/config.json` modified). `CMT/` itself is clean and no production source files were modified by this verification.
 
 ---
 
