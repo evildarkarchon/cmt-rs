@@ -342,17 +342,17 @@ export component MainWindow inherits Window {
 | A2 | Slint compile errors are a warning sign of runtime/build version mismatch. | Common Pitfalls | Low; other Slint syntax errors could produce similar symptoms, so verify exact error text during execution. |
 | A3 | A Rust test could accidentally assert labels copied from memory rather than reference files. | Common Pitfalls | Low; completion notes and code comments can cite reference source lines. |
 
-## Open Questions
+## Open Questions (RESOLVED)
 
 1. **Should optional baseline dependencies be added all at once or only when referenced by stub code?**
-   - What we know: D-06 allows stack baseline dependencies, and D-08 limits them to foundation crates. [VERIFIED: `.planning/phases/01-slint-shell-port-architecture/01-CONTEXT.md`]
-   - What's unclear: Whether the executor should add unused baseline crates immediately or avoid unused dependency churn until a module uses them. [ASSUMED]
-   - Recommendation: Add required `slint`/`slint-build` now; add `anyhow`/`tracing` only if used by startup; defer `tokio`, `serde`, `toml`, `directories`, and `thiserror` unless the plan explicitly wants a dependency lock-in step. [VERIFIED: `.planning/research/STACK.md`]
+    - What we know: D-06 allows stack baseline dependencies, and D-08 limits them to foundation crates. [VERIFIED: `.planning/phases/01-slint-shell-port-architecture/01-CONTEXT.md`]
+   - Resolution: Add the stack baseline during Phase 1 because CONTEXT decision D-06 explicitly locks that direction. Keep the baseline limited to architecture-foundation crates and continue to defer scanner/archive/Fallout parser crates. [RESOLVED: reflected in `01-01-PLAN.md`]
+   - Planner target: Add `slint`/`slint-build` plus foundation crates only: `anyhow`, `tracing`, `tracing-subscriber`, `tokio`, `serde`, `toml`, `directories`, and `thiserror`. Do not add `walkdir`, `pelite`, `windows-registry`, `byteorder`, `binrw`, `ba2`, `zip`, or `sevenz-rust` in Phase 1. [RESOLVED: D-06, D-08]
 
 2. **How should the automated tab-label test read the labels?**
-   - What we know: D-09 requires an automated Rust test asserting six shell tab labels/order. [VERIFIED: `.planning/phases/01-slint-shell-port-architecture/01-CONTEXT.md`]
-   - What's unclear: Whether Slint generated types should expose tab labels for tests without launching a window. [ASSUMED]
-   - Recommendation: Define the canonical label list in Rust and use it both for tests and, where practical, for documentation/completion notes; keep Slint literals synchronized and cite reference files. [VERIFIED: codebase grep]
+    - What we know: D-09 requires an automated Rust test asserting six shell tab labels/order. [VERIFIED: `.planning/phases/01-slint-shell-port-architecture/01-CONTEXT.md`]
+   - Resolution: Define a canonical Rust label list in the app boundary and test that list directly. Do not require GUI automation or generated Slint type inspection in Phase 1. Keep Slint literals synchronized through executor review and completion notes citing `CMT/src/cm_checker.py` and `CMT/src/enums.py`. [RESOLVED: reflected in `01-03-PLAN.md`]
+   - Planner target: `src/app/mod.rs` should export `SHELL_TAB_LABELS` and `shell_tab_labels()`, and tests should assert the exact array `Overview`, `F4SE`, `Scanner`, `Tools`, `Settings`, `About`. [RESOLVED: D-09]
 
 ## Environment Availability
 
