@@ -4,6 +4,8 @@
 //! dialog, and URL-opening adapters from UI and domain code. Phase 1 keeps the
 //! boundary as a no-op marker and performs no platform access.
 
+pub mod settings_store;
+
 /// No-op platform services marker reserved for future OS-facing adapters.
 ///
 /// Constructing this marker does not read paths, query the registry, inspect the
