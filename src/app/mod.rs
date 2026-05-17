@@ -5,6 +5,8 @@
 //! intentionally remain static in Phase 1 so tests can lock the shell identity
 //! without launching GUI automation or wiring real tab behavior.
 
+pub mod settings_controller;
+
 /// Reference shell tab labels in their display order.
 pub const SHELL_TAB_LABELS: [&str; 6] =
     ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"];
