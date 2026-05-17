@@ -37,7 +37,7 @@ Decimal phases appear between their surrounding integers in numeric order.
   4. Developer can verify that no implementation change modifies files under `CMT/` and that user-facing labels/defaults are checked against `CMT/src/` before completing each slice.
 **Plans:** 3 plans
 Plans:
-- [ ] 01-01-PLAN.md — Establish Slint dependency/build pipeline and launch generated MainWindow.
+- [x] 01-01-PLAN.md — Establish Slint dependency/build pipeline and launch generated MainWindow.
 - [ ] 01-02-PLAN.md — Wire inert reference-order tab components in the Slint shell.
 - [ ] 01-03-PLAN.md — Add no-op Rust module boundaries, tab-order test, and final verification gates.
 **UI hint:** yes

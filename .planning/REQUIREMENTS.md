@@ -9,10 +9,10 @@ Requirements for the initial Rust/Slint port. Each maps to roadmap phases.
 
 ### Project Foundation
 
-- [ ] **FOUND-01**: Developer can build and run a Slint desktop application from the Rust crate.
+- [x] **FOUND-01**: Developer can build and run a Slint desktop application from the Rust crate.
 - [ ] **FOUND-02**: User sees the `Collective Modding Toolkit` application identity and tab order `Overview`, `F4SE`, `Scanner`, `Tools`, `Settings`, `About`.
-- [ ] **FOUND-03**: Developer can add behavior through separated UI, app/controller, domain, platform, and worker modules without putting domain logic in Slint markup.
-- [ ] **FOUND-04**: Developer can run core verification commands for the current slice: `cargo fmt --check`, `cargo check`, `cargo test`, and `cargo clippy --all-targets --all-features`.
+- [x] **FOUND-03**: Developer can add behavior through separated UI, app/controller, domain, platform, and worker modules without putting domain logic in Slint markup.
+- [x] **FOUND-04**: Developer can run core verification commands for the current slice: `cargo fmt --check`, `cargo check`, `cargo test`, and `cargo clippy --all-targets --all-features`.
 - [ ] **FOUND-05**: Developer can verify that implementation changes do not modify files under `CMT/`.
 
 ### Settings
@@ -120,10 +120,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | Phase 1 | Pending |
+| FOUND-01 | Phase 1 | Complete |
 | FOUND-02 | Phase 1 | Pending |
-| FOUND-03 | Phase 1 | Pending |
-| FOUND-04 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Complete |
+| FOUND-04 | Phase 1 | Complete |
 | FOUND-05 | Phase 1 | Pending |
 | SET-01 | Phase 2 | Pending |
 | SET-02 | Phase 2 | Pending |
