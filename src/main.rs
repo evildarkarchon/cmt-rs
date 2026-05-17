@@ -21,7 +21,7 @@ mod tests {
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
     const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
-    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 5] = [
+    const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
         (
             "ui/overview_tab.slint",
             "OverviewTab",
@@ -47,11 +47,24 @@ mod tests {
             include_str!("../ui/tools_tab.slint"),
         ),
         (
+            "ui/settings_tab.slint",
+            "SettingsTab",
+            "Settings",
+            SETTINGS_SLINT,
+        ),
+        (
             "ui/about_tab.slint",
             "AboutTab",
             "About",
             include_str!("../ui/about_tab.slint"),
         ),
+    ];
+    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 5] = [
+        TAB_COMPONENTS[0],
+        TAB_COMPONENTS[1],
+        TAB_COMPONENTS[2],
+        TAB_COMPONENTS[3],
+        TAB_COMPONENTS[5],
     ];
 
     fn slint_string_property_values(source: &str, property: &str) -> Vec<String> {
