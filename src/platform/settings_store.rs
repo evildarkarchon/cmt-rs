@@ -152,9 +152,9 @@ impl<R: AssetResolver> SettingsStore<R> {
 
 #[cfg(test)]
 mod tests {
-    use std::path::PathBuf;
+    use std::{fs, path::{Path, PathBuf}, time::{SystemTime, UNIX_EPOCH}};
 
-    use crate::domain::settings::UpdateSource;
+    use crate::domain::settings::{AppSettings, LogLevel, UpdateSource};
 
     use super::*;
 
@@ -183,5 +183,136 @@ mod tests {
         let store = SettingsStore::with_asset_resolver(PathBuf::from("settings.json"), resolver);
 
         assert_eq!(store.default_update_source(), UpdateSource::Nexus);
+    }
+
+    #[test]
+    fn settings_missing_file_defaults() {
+        let (_root, settings_path) = isolated_settings_path("missing-defaults");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("github")),
+        );
+
+        let loaded = store.load().expect("missing settings should create defaults");
+
+        assert_eq!(loaded.settings.update_source, UpdateSource::Github);
+        assert!(settings_path.is_file());
+        let persisted = fs::read_to_string(settings_path).expect("defaults should be persisted");
+        assert_eq!(persisted_json(&persisted)["update_source"], "github");
+    }
+
+    #[test]
+    fn settings_repair_malformed_json_resets_to_defaults() {
+        let (_root, settings_path) = isolated_settings_path("malformed-reset");
+        fs::write(&settings_path, "{ not json").expect("test fixture should write malformed JSON");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("both")),
+        );
+
+        let loaded = store.load().expect("malformed JSON should reset to defaults");
+
+        assert!(loaded.reset_to_defaults);
+        assert_eq!(loaded.settings.update_source, UpdateSource::Both);
+        let persisted = fs::read_to_string(settings_path).expect("defaults should replace malformed JSON");
+        assert_eq!(persisted_json(&persisted)["update_source"], "both");
+    }
+
+    #[test]
+    fn settings_repair_partial_json_preserves_valid_fields_and_removes_unknown_keys() {
+        let (_root, settings_path) = isolated_settings_path("partial-repair");
+        fs::write(
+            &settings_path,
+            r#"{
+                "log_level": "WARNING",
+                "update_source": "github",
+                "scanner_OverviewIssues": false,
+                "scanner_Errors": true,
+                "unknown_setting": true
+            }"#,
+        )
+        .expect("test fixture should write partial JSON");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+
+        let loaded = store.load().expect("partial JSON should repair and resave");
+
+        assert_eq!(loaded.settings.log_level, LogLevel::Info);
+        assert_eq!(loaded.settings.update_source, UpdateSource::Github);
+        assert!(!loaded.settings.scanner.overview_issues);
+        let persisted = fs::read_to_string(settings_path).expect("repaired settings should be persisted");
+        let persisted_json = persisted_json(&persisted);
+        assert_eq!(persisted_json["log_level"], "INFO");
+        assert_eq!(persisted_json["update_source"], "github");
+        assert!(persisted_json.get("unknown_setting").is_none());
+    }
+
+    #[test]
+    fn settings_persist_reference_keys() {
+        let (_root, settings_path) = isolated_settings_path("persist-reference-keys");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+
+        store.save(&AppSettings::default()).expect("default settings should save");
+
+        let persisted = fs::read_to_string(settings_path).expect("settings should be readable");
+        let object = persisted_json(&persisted);
+        let mut keys: Vec<&str> = object.keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        assert_eq!(
+            keys,
+            vec![
+                "downgrader_delete_deltas",
+                "downgrader_keep_backups",
+                "log_level",
+                "scanner_Errors",
+                "scanner_JunkFiles",
+                "scanner_LoosePrevis",
+                "scanner_OverviewIssues",
+                "scanner_ProblemOverrides",
+                "scanner_RaceSubgraphs",
+                "scanner_WrongFormat",
+                "update_source",
+            ]
+        );
+        assert_eq!(LogLevel::Debug.as_wire_value(), "DEBUG");
+        assert_eq!(LogLevel::Info.as_wire_value(), "INFO");
+        assert_eq!(LogLevel::Error.as_wire_value(), "ERROR");
+    }
+
+    #[test]
+    fn settings_save_failure_is_returned() {
+        let (_root, settings_path) = isolated_settings_path("save-failure");
+        fs::create_dir_all(&settings_path).expect("directory at settings path should block file write");
+        let store = SettingsStore::with_asset_resolver(settings_path, StaticAssetResolver::new(None));
+
+        let error = store
+            .save(&AppSettings::default())
+            .expect_err("save should return an observable filesystem error");
+
+        assert_eq!(error.kind(), io::ErrorKind::IsADirectory);
+    }
+
+    fn isolated_settings_path(case_name: &str) -> (PathBuf, PathBuf) {
+        let unique = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("system time should be after Unix epoch")
+            .as_nanos();
+        let root = std::env::temp_dir().join(format!("cmt-rs-{case_name}-{unique}"));
+        fs::create_dir_all(&root).expect("test temp directory should be created");
+        let settings_path = root.join("settings.json");
+        (root, settings_path)
+    }
+
+    fn persisted_json(source: &str) -> serde_json::Map<String, serde_json::Value> {
+        serde_json::from_str::<serde_json::Value>(source)
+            .expect("persisted settings should be JSON")
+            .as_object()
+            .expect("persisted settings should be a JSON object")
+            .clone()
     }
 }
