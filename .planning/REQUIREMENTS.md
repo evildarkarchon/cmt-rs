@@ -120,65 +120,65 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| FOUND-01 | TBD | Pending |
-| FOUND-02 | TBD | Pending |
-| FOUND-03 | TBD | Pending |
-| FOUND-04 | TBD | Pending |
-| FOUND-05 | TBD | Pending |
-| SET-01 | TBD | Pending |
-| SET-02 | TBD | Pending |
-| SET-03 | TBD | Pending |
-| SET-04 | TBD | Pending |
-| SET-05 | TBD | Pending |
-| SET-06 | TBD | Pending |
-| DISC-01 | TBD | Pending |
-| DISC-02 | TBD | Pending |
-| DISC-03 | TBD | Pending |
-| DISC-04 | TBD | Pending |
-| DISC-05 | TBD | Pending |
-| OVR-01 | TBD | Pending |
-| OVR-02 | TBD | Pending |
-| OVR-03 | TBD | Pending |
-| OVR-04 | TBD | Pending |
-| OVR-05 | TBD | Pending |
-| OVR-06 | TBD | Pending |
-| OVR-07 | TBD | Pending |
-| OVR-08 | TBD | Pending |
-| F4SE-01 | TBD | Pending |
-| F4SE-02 | TBD | Pending |
-| F4SE-03 | TBD | Pending |
-| F4SE-04 | TBD | Pending |
-| F4SE-05 | TBD | Pending |
-| SCAN-01 | TBD | Pending |
-| SCAN-02 | TBD | Pending |
-| SCAN-03 | TBD | Pending |
-| SCAN-04 | TBD | Pending |
-| SCAN-05 | TBD | Pending |
-| SCAN-06 | TBD | Pending |
-| SCAN-07 | TBD | Pending |
-| SCAN-08 | TBD | Pending |
-| SCAN-09 | TBD | Pending |
-| SCAN-10 | TBD | Pending |
-| TOOL-01 | TBD | Pending |
-| TOOL-02 | TBD | Pending |
-| TOOL-03 | TBD | Pending |
-| TOOL-04 | TBD | Pending |
-| TOOL-05 | TBD | Pending |
-| TOOL-06 | TBD | Pending |
-| ABOUT-01 | TBD | Pending |
-| ABOUT-02 | TBD | Pending |
-| ABOUT-03 | TBD | Pending |
-| ABOUT-04 | TBD | Pending |
-| SAFE-01 | TBD | Pending |
-| SAFE-02 | TBD | Pending |
-| SAFE-03 | TBD | Pending |
-| SAFE-04 | TBD | Pending |
-| SAFE-05 | TBD | Pending |
+| FOUND-01 | Phase 1 | Pending |
+| FOUND-02 | Phase 1 | Pending |
+| FOUND-03 | Phase 1 | Pending |
+| FOUND-04 | Phase 1 | Pending |
+| FOUND-05 | Phase 1 | Pending |
+| SET-01 | Phase 2 | Pending |
+| SET-02 | Phase 2 | Pending |
+| SET-03 | Phase 2 | Pending |
+| SET-04 | Phase 2 | Pending |
+| SET-05 | Phase 2 | Pending |
+| SET-06 | Phase 2 | Pending |
+| DISC-01 | Phase 3 | Pending |
+| DISC-02 | Phase 3 | Pending |
+| DISC-03 | Phase 3 | Pending |
+| DISC-04 | Phase 3 | Pending |
+| DISC-05 | Phase 4 | Pending |
+| OVR-01 | Phase 4 | Pending |
+| OVR-02 | Phase 4 | Pending |
+| OVR-03 | Phase 9 | Pending |
+| OVR-04 | Phase 4 | Pending |
+| OVR-05 | Phase 10 | Pending |
+| OVR-06 | Phase 4 | Pending |
+| OVR-07 | Phase 4 | Pending |
+| OVR-08 | Phase 4 | Pending |
+| F4SE-01 | Phase 6 | Pending |
+| F4SE-02 | Phase 6 | Pending |
+| F4SE-03 | Phase 6 | Pending |
+| F4SE-04 | Phase 6 | Pending |
+| F4SE-05 | Phase 6 | Pending |
+| SCAN-01 | Phase 7 | Pending |
+| SCAN-02 | Phase 7 | Pending |
+| SCAN-03 | Phase 7 | Pending |
+| SCAN-04 | Phase 7 | Pending |
+| SCAN-05 | Phase 7 | Pending |
+| SCAN-06 | Phase 7 | Pending |
+| SCAN-07 | Phase 7 | Pending |
+| SCAN-08 | Phase 7 | Pending |
+| SCAN-09 | Phase 8 | Pending |
+| SCAN-10 | Phase 7 | Pending |
+| TOOL-01 | Phase 5 | Pending |
+| TOOL-02 | Phase 5 | Pending |
+| TOOL-03 | Phase 5 | Pending |
+| TOOL-04 | Phase 9 | Pending |
+| TOOL-05 | Phase 10 | Pending |
+| TOOL-06 | Phase 9 | Pending |
+| ABOUT-01 | Phase 5 | Pending |
+| ABOUT-02 | Phase 5 | Pending |
+| ABOUT-03 | Phase 5 | Pending |
+| ABOUT-04 | Phase 5 | Pending |
+| SAFE-01 | Phase 3 | Pending |
+| SAFE-02 | Phase 3 | Pending |
+| SAFE-03 | Phase 3 | Pending |
+| SAFE-04 | Phase 10 | Pending |
+| SAFE-05 | Phase 1 | Pending |
 
 **Coverage:**
 - v1 requirements: 54 total
-- Mapped to phases: 0
-- Unmapped: 54
+- Mapped to phases: 54
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-05-17*
