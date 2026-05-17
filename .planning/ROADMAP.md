@@ -44,7 +44,7 @@ Plans:
 
 ### Phase 2: Settings & Defaults Parity
 **Goal:** User settings behave like the reference app, including defaults, validation, persistence, and visible Settings-tab controls.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 1
 **Requirements:** SET-01, SET-02, SET-03, SET-04, SET-05, SET-06
 **Success Criteria** (what must be TRUE):
