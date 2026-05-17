@@ -12,7 +12,7 @@ This roadmap ports the reference `CMT/` application into a faithful Rust/Slint d
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Slint Shell & Port Architecture** - Developer can run the CMT Slint shell with reference identity, tab order, and safe module boundaries.
+- [x] **Phase 1: Slint Shell & Port Architecture** - Developer can run the CMT Slint shell with reference identity, tab order, and safe module boundaries.
 - [ ] **Phase 2: Settings & Defaults Parity** - User settings load, validate, persist, and appear with reference-compatible labels/defaults.
 - [ ] **Phase 3: Platform Discovery & Background Adapters** - Shared filesystem, process, discovery, and worker seams support later tabs without blocking the UI.
 - [ ] **Phase 4: Overview Diagnostics & Updates** - User can see Overview summary panels, typed diagnostics, and update-banner behavior.
@@ -39,7 +39,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 Plans:
 - [x] 01-01-PLAN.md — Establish Slint dependency/build pipeline and launch generated MainWindow.
 - [x] 01-02-PLAN.md — Wire inert reference-order tab components in the Slint shell.
-- [ ] 01-03-PLAN.md — Add no-op Rust module boundaries, tab-order test, and final verification gates.
+- [x] 01-03-PLAN.md — Add no-op Rust module boundaries, tab-order test, and final verification gates.
 **UI hint:** yes
 
 ### Phase 2: Settings & Defaults Parity
@@ -168,7 +168,7 @@ Phases execute sequentially in numeric order: 1 → 2 → 3 → 4 → 5 → 6 �
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Slint Shell & Port Architecture | 0/TBD | Not started | - |
+| 1. Slint Shell & Port Architecture | 3/3 | Complete | 2026-05-17 |
 | 2. Settings & Defaults Parity | 0/TBD | Not started | - |
 | 3. Platform Discovery & Background Adapters | 0/TBD | Not started | - |
 | 4. Overview Diagnostics & Updates | 0/TBD | Not started | - |
