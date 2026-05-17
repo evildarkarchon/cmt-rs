@@ -70,9 +70,9 @@ mod tests {
         let mut search_from = 0;
 
         for value in expected {
-            let relative_index = source[search_from..]
-                .find(value)
-                .unwrap_or_else(|| panic!("expected source to contain {value:?} after byte {search_from}"));
+            let relative_index = source[search_from..].find(value).unwrap_or_else(|| {
+                panic!("expected source to contain {value:?} after byte {search_from}")
+            });
             search_from += relative_index + value.len();
         }
     }
