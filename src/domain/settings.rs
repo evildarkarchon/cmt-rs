@@ -1,5 +1,7 @@
 //! Typed settings model for reference-compatible CMT settings data.
 
+use serde_json::{Value, json};
+
 /// Top-level application settings persisted in the reference `settings.json`.
 ///
 /// This aggregate keeps domain settings typed while later platform code owns
@@ -16,6 +18,40 @@ pub struct AppSettings {
     pub downgrader: DowngraderSettings,
 }
 
+impl Default for AppSettings {
+    fn default() -> Self {
+        Self {
+            log_level: LogLevel::Info,
+            update_source: UpdateSource::Nexus,
+            scanner: ScannerSettings::default(),
+            downgrader: DowngraderSettings::default(),
+        }
+    }
+}
+
+impl AppSettings {
+    /// Converts settings into the reference-compatible JSON object shape.
+    ///
+    /// Keys intentionally preserve the mixed-case scanner names used by
+    /// `CMT/src/app_settings.py` so later file IO can resave repaired settings
+    /// without introducing Rust-style snake_case key drift.
+    pub fn to_json_value(&self) -> Value {
+        json!({
+            "log_level": self.log_level.as_wire_value(),
+            "update_source": self.update_source.as_wire_value(),
+            "scanner_OverviewIssues": self.scanner.overview_issues,
+            "scanner_Errors": self.scanner.errors,
+            "scanner_WrongFormat": self.scanner.wrong_format,
+            "scanner_LoosePrevis": self.scanner.loose_previs,
+            "scanner_JunkFiles": self.scanner.junk_files,
+            "scanner_ProblemOverrides": self.scanner.problem_overrides,
+            "scanner_RaceSubgraphs": self.scanner.race_subgraphs,
+            "downgrader_keep_backups": self.downgrader.keep_backups,
+            "downgrader_delete_deltas": self.downgrader.delete_deltas,
+        })
+    }
+}
+
 /// Reference log level values exposed by the Settings tab.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LogLevel {
@@ -25,6 +61,17 @@ pub enum LogLevel {
     Info,
     /// Error-only log output.
     Error,
+}
+
+impl LogLevel {
+    /// Returns the exact string persisted for this log level in `settings.json`.
+    pub const fn as_wire_value(self) -> &'static str {
+        match self {
+            Self::Debug => "DEBUG",
+            Self::Info => "INFO",
+            Self::Error => "ERROR",
+        }
+    }
 }
 
 /// Update channel persisted for later update-check behavior.
@@ -38,6 +85,18 @@ pub enum UpdateSource {
     Nexus,
     /// Do not check for updates.
     None,
+}
+
+impl UpdateSource {
+    /// Returns the exact string persisted for this update source in `settings.json`.
+    pub const fn as_wire_value(self) -> &'static str {
+        match self {
+            Self::Both => "both",
+            Self::Github => "github",
+            Self::Nexus => "nexus",
+            Self::None => "none",
+        }
+    }
 }
 
 /// Scanner category toggles persisted by the Settings model.
@@ -59,6 +118,20 @@ pub struct ScannerSettings {
     pub race_subgraphs: bool,
 }
 
+impl Default for ScannerSettings {
+    fn default() -> Self {
+        Self {
+            overview_issues: true,
+            errors: true,
+            wrong_format: true,
+            loose_previs: true,
+            junk_files: true,
+            problem_overrides: true,
+            race_subgraphs: true,
+        }
+    }
+}
+
 /// Downgrader workflow preferences persisted by the Settings model.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DowngraderSettings {
@@ -66,6 +139,15 @@ pub struct DowngraderSettings {
     pub keep_backups: bool,
     /// Deletes delta files after later downgrader operations use them.
     pub delete_deltas: bool,
+}
+
+impl Default for DowngraderSettings {
+    fn default() -> Self {
+        Self {
+            keep_backups: true,
+            delete_deltas: true,
+        }
+    }
 }
 
 #[cfg(test)]
