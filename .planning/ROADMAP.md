@@ -58,7 +58,7 @@ Plans:
 
 ### Phase 3: Platform Discovery & Background Adapters
 **Goal:** Later user workflows can rely on typed game/mod-manager discovery, filesystem/process seams, and Slint-safe background event handoff.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 2
 **Requirements:** DISC-01, DISC-02, DISC-03, DISC-04, SAFE-01, SAFE-02, SAFE-03
 **Success Criteria** (what must be TRUE):
@@ -72,7 +72,7 @@ Plans:
 
 ### Phase 4: Overview Diagnostics & Updates
 **Goal:** User can use the Overview tab to understand game/mod-manager state, binary/archive/module diagnostics, and update availability.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 3
 **Requirements:** DISC-05, OVR-01, OVR-02, OVR-04, OVR-06, OVR-07, OVR-08
 **Success Criteria** (what must be TRUE):
@@ -85,7 +85,7 @@ Plans:
 
 ### Phase 5: Tools Shell, Links & About
 **Goal:** User can access non-mutating Tools and About workflows with reference labels, attribution, copy/open actions, and failure feedback.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 4
 **Requirements:** TOOL-01, TOOL-02, TOOL-03, ABOUT-01, ABOUT-02, ABOUT-03, ABOUT-04
 **Success Criteria** (what must be TRUE):
@@ -99,7 +99,7 @@ Plans:
 
 ### Phase 6: F4SE Diagnostics
 **Goal:** User can inspect F4SE plugin DLL compatibility and missing-folder guidance in a responsive F4SE tab.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 5
 **Requirements:** F4SE-01, F4SE-02, F4SE-03, F4SE-04, F4SE-05
 **Success Criteria** (what must be TRUE):
@@ -113,7 +113,7 @@ Plans:
 
 ### Phase 7: Scanner Read-Only Results
 **Goal:** User can run the Scanner in read-only mode, see progress and grouped results, inspect details, and use safe copy/open actions.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 6
 **Requirements:** SCAN-01, SCAN-02, SCAN-03, SCAN-04, SCAN-05, SCAN-06, SCAN-07, SCAN-08, SCAN-10
 **Success Criteria** (what must be TRUE):
@@ -127,7 +127,7 @@ Plans:
 
 ### Phase 8: Scanner Auto-Fix Actions
 **Goal:** User can identify and run supported Scanner auto-fix actions with reference-compatible availability and feedback.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 7
 **Requirements:** SCAN-09
 **Success Criteria** (what must be TRUE):
@@ -139,7 +139,7 @@ Plans:
 
 ### Phase 9: Downgrade Manager Workflow
 **Goal:** User can open and run the Downgrade Manager from Overview/Tools with backup and delta cleanup settings respected.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 8
 **Requirements:** OVR-03, TOOL-04, TOOL-06
 **Success Criteria** (what must be TRUE):
@@ -151,7 +151,7 @@ Plans:
 
 ### Phase 10: Archive Patcher Workflow
 **Goal:** User can open and run Archive Patcher operations through validated, fail-closed plans that protect user files.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Phase 9
 **Requirements:** OVR-05, TOOL-05, SAFE-04
 **Success Criteria** (what must be TRUE):
