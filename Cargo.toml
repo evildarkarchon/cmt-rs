@@ -2,5 +2,18 @@
 name = "cmt-rs"
 version = "0.1.0"
 edition = "2024"
+build = "build.rs"
 
 [dependencies]
+anyhow = "1.0.102"
+directories = "6.0.0"
+serde = { version = "1.0.228", features = ["derive"] }
+slint = "1.16.1"
+thiserror = "2.0.18"
+tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "sync"] }
+toml = "1.1.2"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+
+[build-dependencies]
+slint-build = "1.16.1"
