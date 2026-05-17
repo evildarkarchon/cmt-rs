@@ -6,7 +6,8 @@
 //! without launching GUI automation or wiring real tab behavior.
 
 /// Reference shell tab labels in their display order.
-pub const SHELL_TAB_LABELS: [&str; 6] = ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"];
+pub const SHELL_TAB_LABELS: [&str; 6] =
+    ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"];
 
 /// Returns the canonical shell tab labels in reference display order.
 ///
