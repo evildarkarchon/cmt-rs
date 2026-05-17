@@ -1,0 +1,44 @@
+{
+  "model_profile": "inherit",
+  "commit_docs": true,
+  "parallelization": false,
+  "search_gitignored": false,
+  "brave_search": false,
+  "firecrawl": false,
+  "exa_search": "81a7c4de-78ba-4aef-a32c-6ae9ea97a7c7",
+  "git": {
+    "branching_strategy": "milestone",
+    "phase_branch_template": "gsd/phase-{phase}-{slug}",
+    "milestone_branch_template": "gsd/{milestone}-{slug}",
+    "quick_branch_template": null
+  },
+  "workflow": {
+    "research": true,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": true,
+    "auto_advance": true,
+    "node_repair": true,
+    "node_repair_budget": 2,
+    "ui_phase": true,
+    "ui_safety_gate": true,
+    "text_mode": false,
+    "research_before_questions": true,
+    "discuss_mode": "discuss",
+    "skip_discuss": false,
+    "code_review": true,
+    "code_review_depth": "standard"
+  },
+  "hooks": {
+    "context_warnings": true
+  },
+  "project_code": null,
+  "phase_naming": "sequential",
+  "agent_skills": {},
+  "features": {
+    "global_learnings": true
+  },
+  "resolve_model_ids": "omit",
+  "mode": "yolo",
+  "granularity": "fine"
+}
