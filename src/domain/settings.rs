@@ -210,4 +210,62 @@ mod tests {
         assert!(scanner.problem_overrides);
         assert!(scanner.race_subgraphs);
     }
+
+    #[test]
+    fn settings_repair() {
+        assert!(AppSettings::from_json_str("{ not json").is_err());
+        assert!(AppSettings::from_json_str("[]").is_err());
+
+        let repaired = AppSettings::from_json_str(
+            r#"{
+                "log_level": "DEBUG",
+                "update_source": "bogus",
+                "scanner_OverviewIssues": false,
+                "scanner_Errors": "yes",
+                "scanner_WrongFormat": false,
+                "scanner_LoosePrevis": false,
+                "scanner_JunkFiles": false,
+                "scanner_ProblemOverrides": false,
+                "scanner_RaceSubgraphs": false,
+                "downgrader_keep_backups": false,
+                "unknown_setting": true
+            }"#,
+        )
+        .expect("syntactically valid JSON object should repair per key");
+
+        assert_eq!(repaired.settings.log_level, LogLevel::Debug);
+        assert_eq!(repaired.settings.update_source, UpdateSource::Nexus);
+        assert!(!repaired.settings.scanner.overview_issues);
+        assert!(repaired.settings.scanner.errors);
+        assert!(!repaired.settings.scanner.wrong_format);
+        assert!(!repaired.settings.scanner.loose_previs);
+        assert!(!repaired.settings.scanner.junk_files);
+        assert!(!repaired.settings.scanner.problem_overrides);
+        assert!(!repaired.settings.scanner.race_subgraphs);
+        assert!(!repaired.settings.downgrader.keep_backups);
+        assert!(repaired.settings.downgrader.delete_deltas);
+
+        assert!(repaired.diagnostics.iter().any(|diagnostic| {
+            matches!(diagnostic, RepairDiagnostic::InvalidValue { key } if key == "update_source")
+        }));
+        assert!(repaired.diagnostics.iter().any(|diagnostic| {
+            matches!(diagnostic, RepairDiagnostic::InvalidType { key } if key == "scanner_Errors")
+        }));
+        assert!(repaired.diagnostics.iter().any(|diagnostic| {
+            matches!(diagnostic, RepairDiagnostic::MissingKey { key } if key == "downgrader_delete_deltas")
+        }));
+        assert!(repaired.diagnostics.iter().any(|diagnostic| {
+            matches!(diagnostic, RepairDiagnostic::UnknownKey { key } if key == "unknown_setting")
+        }));
+
+        let repaired_json = repaired.settings.to_json_value();
+        let repaired_object = repaired_json
+            .as_object()
+            .expect("repaired settings should serialize as object");
+        assert!(!repaired_object.contains_key("unknown_setting"));
+
+        let unsupported_warning = AppSettings::from_json_str(r#"{"log_level":"WARNING"}"#)
+            .expect("unsupported log_level should repair to default");
+        assert_eq!(unsupported_warning.settings.log_level, LogLevel::Info);
+    }
 }
