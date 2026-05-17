@@ -275,6 +275,25 @@ mod tests {
     }
 
     #[test]
+    fn file_asset_resolver_reads_valid_download_source_file_values() {
+        for (wire_value, expected_source) in [
+            ("github", UpdateSource::Github),
+            ("nexus", UpdateSource::Nexus),
+        ] {
+            let (root, settings_path) = isolated_settings_path(wire_value);
+            let asset_path = root.join("download-source.txt");
+            fs::write(&asset_path, format!("\n{wire_value}\n"))
+                .expect("test fixture should write download-source.txt");
+            let store = SettingsStore::with_asset_resolver(
+                settings_path,
+                FileAssetResolver::new(asset_path),
+            );
+
+            assert_eq!(store.default_update_source(), expected_source);
+        }
+    }
+
+    #[test]
     fn settings_missing_file_defaults() {
         let (_root, settings_path) = isolated_settings_path("missing-defaults");
         let store = SettingsStore::with_asset_resolver(
