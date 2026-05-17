@@ -6,6 +6,7 @@
 
 use std::{
     fs,
+    io::Read,
     path::{Path, PathBuf},
 };
 
@@ -115,6 +116,17 @@ pub trait Filesystem {
     /// Reads a whole file as bytes.
     fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>>;
 
+    /// Reads at most `max_len` bytes from the start of a file.
+    ///
+    /// Real adapters should override this to avoid full-file reads for parser
+    /// probes. The default keeps existing fakes small while preserving the same
+    /// error behavior as [`Filesystem::read_bytes`].
+    fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+        let mut bytes = self.read_bytes(path)?;
+        bytes.truncate(max_len);
+        Ok(bytes)
+    }
+
     /// Reads a whole UTF-8 text file.
     fn read_to_string(&self, path: &Path) -> PlatformResult<String>;
 
@@ -160,6 +172,28 @@ impl Filesystem for RealFilesystem {
                 &error,
             )
         })
+    }
+
+    fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+        let mut file = fs::File::open(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::ReadFile,
+                path.display().to_string(),
+                &error,
+            )
+        })?;
+        let mut bytes = Vec::with_capacity(max_len);
+        file.by_ref()
+            .take(max_len as u64)
+            .read_to_end(&mut bytes)
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    &error,
+                )
+            })?;
+        Ok(bytes)
     }
 
     fn read_to_string(&self, path: &Path) -> PlatformResult<String> {
