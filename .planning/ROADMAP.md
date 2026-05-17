@@ -27,7 +27,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 ### Phase 1: Slint Shell & Port Architecture
 **Goal:** Developer can build and run the Rust/Slint CMT shell while preserving the reference app identity and creating safe porting boundaries.
-**Mode:** mvp
+**Mode:** standard
 **Depends on:** Nothing (first phase)
 **Requirements:** FOUND-01, FOUND-02, FOUND-03, FOUND-04, FOUND-05, SAFE-05
 **Success Criteria** (what must be TRUE):
