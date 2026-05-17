@@ -112,7 +112,7 @@ impl<R: AssetResolver> SettingsController<R> {
                 );
                 // Preserve the pre-save snapshot: callers reset the Slint property to this value.
                 match visible_value(&candidate) {
-                    "debug" | "info" | "error" => previous_log_level,
+                    "debug" | "info" | "warning" | "error" => previous_log_level,
                     _ => previous_update_source,
                 }
             }
@@ -253,6 +253,24 @@ mod tests {
 
         assert_eq!(reverted_value, "github");
         assert_eq!(controller.visible_update_source(), "github");
+    }
+
+    #[test]
+    fn settings_controller_reverts_warning_log_level_on_save_failure() {
+        let (_root, settings_path) = isolated_settings_path("warning-save-failure-revert");
+        let setup_store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(setup_store).expect("controller should load");
+        assert_eq!(controller.select_log_level("warning"), "warning");
+        fs::remove_file(&settings_path).expect("settings file should be removable");
+        fs::create_dir_all(&settings_path).expect("directory should block future saves");
+
+        let reverted_value = controller.select_log_level("debug");
+
+        assert_eq!(reverted_value, "warning");
+        assert_eq!(controller.visible_log_level(), "warning");
     }
 
     #[test]
