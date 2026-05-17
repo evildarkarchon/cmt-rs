@@ -1,0 +1,239 @@
+{
+  "compiledAt": "2026-05-17T10:36:04.127Z",
+  "milestoneId": "M001",
+  "pipeline": {
+    "clarifyRoundLimit": 3,
+    "researchSynthesized": true,
+    "draftContextIncluded": false,
+    "finalizedContextIncluded": true,
+    "sourcePhase": "summarizing"
+  },
+  "nodes": [
+    {
+      "id": "execute-task:M001:S01:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S01.T01",
+        "title": "Plan 01",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S01:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S01:T01"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S01.T02",
+        "title": "Plan 02",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S01:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S01:T02"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S01.T03",
+        "title": "Plan 03",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S01",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S01:T03"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S01",
+        "title": "Slint Shell Port Architecture",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S02:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/settings.rs",
+        "src/domain/mod.rs",
+        "Cargo.toml"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S02.T01",
+        "title": "Added the typed settings domain contract with reference-compatible defaults, JSON wire handling, repair diagnostics, and parity tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S02:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S02:T01"
+      ],
+      "writes": [
+        "src/platform/settings_store.rs",
+        "src/platform/mod.rs",
+        "src/domain/settings.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S02.T02",
+        "title": "Added the filesystem-backed settings store with reference-compatible first-run defaults, repair/resave behavior, injectable paths/assets, and IO parity tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S02:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S02:T02"
+      ],
+      "writes": [
+        "ui/settings_tab.slint",
+        "src/main.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S02.T03",
+        "title": "Added exact source-level Settings-tab label/order coverage while preserving the intentional schema-derived Warning log-level option.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S02:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S02:T03"
+      ],
+      "writes": [
+        "src/main.rs",
+        "src/app/settings_controller.rs",
+        "src/platform/settings_store.rs",
+        "ui/settings_tab.slint",
+        "CMT/src/app_settings.py",
+        "CMT/src/tabs/_settings.py"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S02.T04",
+        "title": "Verified Settings UI persistence wiring with startup load, immediate save, and save-failure rollback already in place.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S02",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S02:T04"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S02",
+        "title": "S02",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S03:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/discovery.rs",
+        "src/domain/mod_manager.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S03.T01",
+        "title": "Added pure Rust discovery and mod-manager domain contracts with reference-compatible messages and unit coverage.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S03:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S03:T01"
+      ],
+      "writes": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "src/platform/mod.rs",
+        "src/platform/filesystem.rs",
+        "src/platform/registry.rs",
+        "src/platform/process.rs",
+        "src/platform/desktop.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S03.T02",
+        "title": "Added injectable platform adapters for filesystem, registry, process/system/version metadata, and desktop/tool actions with typed failures and fake-backed tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S03:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S03:T02"
+      ],
+      "writes": [
+        "src/services/mod.rs",
+        "src/services/discovery.rs",
+        "src/main.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S03.T03",
+        "title": "Added a fake-backed discovery orchestration service for Fallout 4, MO2, Vortex, and system metadata.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S03:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S03:T03"
+      ],
+      "writes": [
+        "src/workers/events.rs",
+        "src/workers/handoff.rs",
+        "src/workers/mod.rs",
+        ".gsd/DECISIONS.md"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S03.T04",
+        "title": "Added typed worker events, handoff sinks, and a Tokio blocking facade for cancellable off-UI work.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S03",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S03:T04"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S03",
+        "title": "S03",
+        "status": "pending"
+      }
+    }
+  ]
+}

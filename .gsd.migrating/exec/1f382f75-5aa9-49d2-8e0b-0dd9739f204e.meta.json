@@ -1,0 +1,18 @@
+{
+  "id": "1f382f75-5aa9-49d2-8e0b-0dd9739f204e",
+  "runtime": "bash",
+  "purpose": "final cargo check for T03 discovery service",
+  "script_chars": 11,
+  "started_at": "2026-05-17T10:00:16.127Z",
+  "finished_at": "2026-05-17T10:00:26.303Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 10176,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1f382f75-5aa9-49d2-8e0b-0dd9739f204e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1f382f75-5aa9-49d2-8e0b-0dd9739f204e.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "cadb3c85-c4db-49f4-bdd1-18ce81823dc2",
+  "runtime": "python",
+  "purpose": "List available subagent definitions before slice closeout review",
+  "script_chars": 266,
+  "started_at": "2026-05-17T08:32:22.974Z",
+  "finished_at": "2026-05-17T08:32:25.266Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 2292,
+  "stdout_bytes": 311,
+  "stderr_bytes": 850,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\cadb3c85-c4db-49f4-bdd1-18ce81823dc2.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\cadb3c85-c4db-49f4-bdd1-18ce81823dc2.stderr"
+}

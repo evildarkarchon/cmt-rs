@@ -1,0 +1,18 @@
+{
+  "id": "aa3f18fd-82b9-4b7d-b60b-e1b085495e65",
+  "runtime": "bash",
+  "purpose": "cargo test platform adapter tests",
+  "script_chars": 10,
+  "started_at": "2026-05-17T09:16:41.251Z",
+  "finished_at": "2026-05-17T09:17:07.505Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 26254,
+  "stdout_bytes": 5489,
+  "stderr_bytes": 283,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\aa3f18fd-82b9-4b7d-b60b-e1b085495e65.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\aa3f18fd-82b9-4b7d-b60b-e1b085495e65.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "f6b8f3dd-468a-4039-8cc7-dbb43510a523",
+  "runtime": "bash",
+  "purpose": "final cargo clippy for platform adapters",
+  "script_chars": 41,
+  "started_at": "2026-05-17T09:28:14.227Z",
+  "finished_at": "2026-05-17T09:28:31.808Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 17581,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f6b8f3dd-468a-4039-8cc7-dbb43510a523.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f6b8f3dd-468a-4039-8cc7-dbb43510a523.stderr"
+}

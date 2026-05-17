@@ -1,0 +1,18 @@
+{
+  "id": "555297f8-b31a-4cce-85e0-a8b7779c6337",
+  "runtime": "bash",
+  "purpose": "final post-ShellExecute cargo clippy",
+  "script_chars": 41,
+  "started_at": "2026-05-17T09:31:03.774Z",
+  "finished_at": "2026-05-17T09:31:21.047Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 17273,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\555297f8-b31a-4cce-85e0-a8b7779c6337.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\555297f8-b31a-4cce-85e0-a8b7779c6337.stderr"
+}

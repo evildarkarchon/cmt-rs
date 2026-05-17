@@ -1,0 +1,18 @@
+{
+  "id": "7744261c-6de5-41a2-b791-c45850ffc6a4",
+  "runtime": "bash",
+  "purpose": "final cargo test for platform adapters",
+  "script_chars": 10,
+  "started_at": "2026-05-17T09:27:45.195Z",
+  "finished_at": "2026-05-17T09:28:09.958Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 24763,
+  "stdout_bytes": 5489,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7744261c-6de5-41a2-b791-c45850ffc6a4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7744261c-6de5-41a2-b791-c45850ffc6a4.stderr"
+}

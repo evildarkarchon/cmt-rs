@@ -1,0 +1,13 @@
+{
+  "downgrader_delete_deltas": true,
+  "downgrader_keep_backups": true,
+  "log_level": "INFO",
+  "scanner_Errors": true,
+  "scanner_JunkFiles": true,
+  "scanner_LoosePrevis": true,
+  "scanner_OverviewIssues": true,
+  "scanner_ProblemOverrides": true,
+  "scanner_RaceSubgraphs": true,
+  "scanner_WrongFormat": true,
+  "update_source": "nexus"
+}

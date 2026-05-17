@@ -1,0 +1,18 @@
+{
+  "id": "b3eac7ee-36c2-447b-a312-50b38e1d7e13",
+  "runtime": "bash",
+  "purpose": "verify cargo check worker events",
+  "script_chars": 11,
+  "started_at": "2026-05-17T10:17:02.186Z",
+  "finished_at": "2026-05-17T10:17:13.941Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 11755,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b3eac7ee-36c2-447b-a312-50b38e1d7e13.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b3eac7ee-36c2-447b-a312-50b38e1d7e13.stderr"
+}

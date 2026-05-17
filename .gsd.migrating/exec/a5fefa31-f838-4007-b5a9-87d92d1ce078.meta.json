@@ -1,0 +1,18 @@
+{
+  "id": "a5fefa31-f838-4007-b5a9-87d92d1ce078",
+  "runtime": "bash",
+  "purpose": "cargo check with short diagnostics to bypass rustc snippet ICE",
+  "script_chars": 54,
+  "started_at": "2026-05-17T09:57:57.249Z",
+  "finished_at": "2026-05-17T09:58:20.974Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 23725,
+  "stdout_bytes": 0,
+  "stderr_bytes": 305,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a5fefa31-f838-4007-b5a9-87d92d1ce078.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a5fefa31-f838-4007-b5a9-87d92d1ce078.stderr"
+}

@@ -4,6 +4,9 @@
 //! typed settings, scan results, game metadata, archive information, and other
 //! pure domain state here without putting that logic in Slint markup.
 
+pub mod discovery;
+pub mod mod_manager;
+pub mod overview;
 pub mod settings;
 
 /// No-op domain state marker reserved for future typed application data.
@@ -17,15 +20,22 @@ pub struct DomainState;
 mod tests {
     #[test]
     fn settings_domain_types_are_publicly_importable() {
-        fn assert_imports(
-            _settings: crate::domain::settings::AppSettings,
-            _log_level: crate::domain::settings::LogLevel,
-            _update_source: crate::domain::settings::UpdateSource,
-            _scanner: crate::domain::settings::ScannerSettings,
-            _downgrader: crate::domain::settings::DowngraderSettings,
-        ) {
-        }
+        fn assert_type<T>() {}
 
-        let _ = assert_imports;
+        assert_type::<crate::domain::settings::AppSettings>();
+        assert_type::<crate::domain::settings::LogLevel>();
+        assert_type::<crate::domain::settings::UpdateSource>();
+        assert_type::<crate::domain::settings::ScannerSettings>();
+        assert_type::<crate::domain::settings::DowngraderSettings>();
+        assert_type::<crate::domain::discovery::Fallout4Installation>();
+        assert_type::<crate::domain::discovery::DiscoveryError>();
+        assert_type::<crate::domain::discovery::SemanticVersion>();
+        assert_type::<crate::domain::mod_manager::DetectedModManager>();
+        assert_type::<crate::domain::mod_manager::ModOrganizerContext>();
+        assert_type::<crate::domain::mod_manager::VortexContext>();
+        assert_type::<crate::domain::mod_manager::Mo2ParseError>();
+        assert_type::<crate::domain::overview::OverviewSnapshot>();
+        assert_type::<crate::domain::overview::OverviewProblem>();
+        assert_type::<crate::domain::overview::UpdateBannerState>();
     }
 }

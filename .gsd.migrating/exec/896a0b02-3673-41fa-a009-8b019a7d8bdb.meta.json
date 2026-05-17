@@ -1,0 +1,18 @@
+{
+  "id": "896a0b02-3673-41fa-a009-8b019a7d8bdb",
+  "runtime": "bash",
+  "purpose": "typecheck Windows-gated platform adapters",
+  "script_chars": 42,
+  "started_at": "2026-05-17T09:23:09.135Z",
+  "finished_at": "2026-05-17T09:24:22.482Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 73347,
+  "stdout_bytes": 0,
+  "stderr_bytes": 12731,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\896a0b02-3673-41fa-a009-8b019a7d8bdb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\896a0b02-3673-41fa-a009-8b019a7d8bdb.stderr"
+}

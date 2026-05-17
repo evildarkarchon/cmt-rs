@@ -1,0 +1,18 @@
+{
+  "id": "5e5bf660-e57e-48b6-8abb-401185a391a9",
+  "runtime": "bash",
+  "purpose": "format after unused import cleanup",
+  "script_chars": 9,
+  "started_at": "2026-05-17T09:57:36.165Z",
+  "finished_at": "2026-05-17T09:57:36.458Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 293,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5e5bf660-e57e-48b6-8abb-401185a391a9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5e5bf660-e57e-48b6-8abb-401185a391a9.stderr"
+}

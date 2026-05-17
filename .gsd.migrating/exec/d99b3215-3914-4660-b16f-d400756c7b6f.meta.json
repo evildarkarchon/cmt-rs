@@ -1,0 +1,18 @@
+{
+  "id": "d99b3215-3914-4660-b16f-d400756c7b6f",
+  "runtime": "bash",
+  "purpose": "S03 closeout Rust verification gates",
+  "script_chars": 631,
+  "started_at": "2026-05-17T10:29:51.048Z",
+  "finished_at": "2026-05-17T10:29:51.257Z",
+  "exit_code": 127,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 209,
+  "stdout_bytes": 10,
+  "stderr_bytes": 41,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d99b3215-3914-4660-b16f-d400756c7b6f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d99b3215-3914-4660-b16f-d400756c7b6f.stderr"
+}

@@ -1,0 +1,105 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: using `map_err` over `inspect_err`
+   --> src/services/discovery.rs:356:62
+    |
+356 | ...().map_err(|e...
+    |       ^^^^^^^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_inspect
+    = note: `#[warn(clippy::manual_inspect)]` on by default
+help: try
+    |
+356 ~         let system_metadata = self.process.system_metadata().inspect_err(|error| {
+357 |             tracing::warn!(
+...
+362 |                 "System metadata discovery failed"
+363 ~             );
+    |
+
+warning: large size difference between variants
+    --> src/services/discovery.rs:1126:1
+     |
+1126 | / enum CandidateEvaluation {
+1127 | | ...coveryAttempt),
+     | | ...-------------- the largest variant contains at least 384 bytes
+1128 | |     Rejected(DiscoveryAttempt),
+1129 | | ...tempt, String),
+     | | ...-------------- the second-largest variant contains at least 136 bytes
+1130 | | }
+     | |_^ the entire enum is at least 384 bytes
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#large_enum_variant
+     = note: `#[warn(clippy::large_enum_variant)]` on by default
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+     |
+1127 -     Accepted(Fallout4Installation, DiscoveryAttempt),
+1127 +     Accepted(Box<Fallout4Installation>, DiscoveryAttempt),
+     |
+
+warning: large size difference between variants
+    --> src/services/discovery.rs:1133:1
+     |
+1133 | /  enum RegistryCandidateOutcome {
+1134 | | ...scoveryAttempt),
+     | | ...--------------- the largest variant contains at least 384 bytes
+1135 | |/     Rejected {
+1136 | ||         attempt: DiscoveryAttempt,
+1137 | ||         error: DiscoveryError,
+1138 | ||     },
+     | ||_____- the second-largest variant contains at least 168 bytes
+1139 | |      NoCandidate(DiscoveryAttempt),
+1140 | |      AdapterError(DiscoveryAttempt),
+1141 | |  }
+     | |__^ the entire enum is at least 384 bytes
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#large_enum_variant
+help: consider boxing the large fields or introducing indirection in some other way to reduce the total size of the enum
+     |
+1134 -     Accepted(Fallout4Installation, DiscoveryAttempt),
+1134 +     Accepted(Box<Fallout4Installation>, DiscoveryAttempt),
+     |
+
+warning: unnecessary use of `to_vec`
+    --> src/services/discovery.rs:1366:60
+     |
+1366 | ...), b"exe".to_vec())
+     |       ^^^^^^^^^^^^^^^ help: use: `b"exe"`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_to_owned
+     = note: `#[warn(clippy::unnecessary_to_owned)]` on by default
+
+warning: unnecessary use of `to_vec`
+    --> src/services/discovery.rs:1726:59
+     |
+1726 | ...", b"exe".to_vec());
+     |       ^^^^^^^^^^^^^^^ help: use: `b"exe"`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_to_owned
+
+warning: unnecessary use of `to_vec`
+    --> src/services/discovery.rs:1811:48
+     |
+1811 | ...", b"tool".to_vec())
+     |       ^^^^^^^^^^^^^^^^ help: use: `b"tool"`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_to_owned
+
+warning: unnecessary use of `to_vec`
+    --> src/services/discovery.rs:1812:47
+     |
+1812 | ...", b"tool".to_vec())
+     |       ^^^^^^^^^^^^^^^^ help: use: `b"tool"`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_to_owned
+
+warning: unnecessary use of `to_vec`
+    --> src/services/discovery.rs:1902:47
+     |
+1902 | ...", b"portable".to_vec())
+     |       ^^^^^^^^^^^^^^^^^^^^ help: use: `b"portable"`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#unnecessary_to_owned
+
+warning: `cmt-rs` (bin "cmt-rs") generated 3 warnings (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs -- ` to apply 1 suggestion)
+warning: `cmt-rs` (bin "cmt-rs" test) generated 8 warnings (3 duplicates) (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs --tests -- ` to apply 5 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.46s

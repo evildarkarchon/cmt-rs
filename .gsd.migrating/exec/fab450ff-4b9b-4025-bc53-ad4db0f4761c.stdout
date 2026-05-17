@@ -1,0 +1,77 @@
+### R014 — App can read the file and directory sources needed for archive, module, F4SE plugin, scanner, and settings workflows through injectable filesystem adapters.
+- Status: active
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: DISC-03
+---
+### R030 — User can open the Scanner tab and see `Scan Game`, `Scan Settings`, `Collapse All`, and `Expand All` actions matching the reference labels.
+- Status: active
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SCAN-01
+---
+### R031 — User can enable or disable scanner categories matching the reference defaults and settings keys.
+- Status: active
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SCAN-02
+---
+### R043 — Downgrade Manager honors backup and delta cleanup settings before performing file-changing operations.
+- Status: active
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: TOOL-04
+---
+### R002 — User sees the `Collective Modding Toolkit` application identity and tab order `Overview`, `F4SE`, `Scanner`, `Tools`, `Settings`, `About`.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: FOUND-02
+---
+### R006 — User settings load with reference-compatible defaults when no settings file exists.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-01
+---
+### R007 — User settings persist `log_level`, `update_source`, scanner toggles, `downgrader_keep_backups`, and `downgrader_delete_deltas`.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-02
+---
+### R008 — User can choose update channel options matching the reference labels: `All: GitHub & Nexus Mods`, `Early: GitHub`, `Stable: Nexus Mods`, and `Never: Don't Check`.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-03
+---
+### R009 — User can choose log level options matching the reference labels: `Debug`, `Info`, and `Error`.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-04
+---
+### R010 — Scanner-related settings default to enabled for Overview Issues, Errors, Wrong Format, Loose Previs, Junk Files, Problem Overrides, and Race Subgraphs.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-05
+---
+### R011 — Invalid or incomplete settings files fail safely by preserving valid values and falling back to documented defaults for invalid values.
+- Status: validated
+- Class: core-capability
+- Source: inferred
+- Primary Slice: none yet
+Legacy ID: SET-06
+---

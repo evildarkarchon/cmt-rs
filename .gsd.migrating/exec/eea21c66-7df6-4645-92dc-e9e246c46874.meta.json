@@ -1,0 +1,18 @@
+{
+  "id": "eea21c66-7df6-4645-92dc-e9e246c46874",
+  "runtime": "bash",
+  "purpose": "run tests after discovery test correction",
+  "script_chars": 10,
+  "started_at": "2026-05-17T09:59:35.761Z",
+  "finished_at": "2026-05-17T10:00:01.076Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 25315,
+  "stdout_bytes": 7159,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\eea21c66-7df6-4645-92dc-e9e246c46874.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\eea21c66-7df6-4645-92dc-e9e246c46874.stderr"
+}

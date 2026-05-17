@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "unitType": "reassess-roadmap",
+  "unitId": "M001/S02",
+  "startedAt": 1779011036754,
+  "updatedAt": 1779011095102,
+  "phase": "finalized",
+  "wrapupWarningSent": false,
+  "continueHereFired": false,
+  "timeoutAt": null,
+  "lastProgressAt": 1779011095101,
+  "progressCount": 0,
+  "lastProgressKind": "finalize-success",
+  "recoveryAttempts": 0
+}

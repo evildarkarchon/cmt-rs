@@ -1,0 +1,35 @@
+lines 2146
+pub struct DiscoveryService 11694
+pub struct DiscoveryReport 3034
+enum ModManagerDiscoveryError 5364
+#[cfg(test)] 47973
+test_count 16
+fn manager_game_path(&self) -> Option<PathBuf> {
+fn mo2_file_exists(
+fn read_mo2_current_instance(
+fn parse_mo2_ini(
+fn add_mo2_custom_executable(&self, configuration: &mut Mo2Configuration, value: &str) {
+fn evaluate_registry_candidate(
+fn evaluate_game_candidate(
+fn normalize_game_candidate(&self, candidate: &Path) -> Result<PathBuf, PlatformError> {
+fn installation_for_game_path(&self, game_path: PathBuf) -> Fallout4Installation {
+fn fake_system_metadata() -> SystemMetadata {
+fn mo2_current_instance_request() -> RegistryValueRequest {
+fn mo2_processes(executable_path: &str) -> Vec<ProcessInfo> {
+fn vortex_processes(executable_path: &str) -> Vec<ProcessInfo> {
+fn valid_mo2_ini(game_path: &str) -> String {
+fn manager_game_path_is_checked_before_cwd_and_registry() {
+fn cwd_is_checked_before_bethesda_and_gog_registry_paths() {
+fn direct_fallout4_exe_candidate_normalizes_to_parent_game_directory() {
+fn valid_game_directory_can_return_partial_missing_derived_paths() {
+fn valid_game_directory_can_return_data_without_f4se_plugins() {
+fn mo2_discovery_parses_paths_flags_skip_rules_and_custom_tools() {
+fn mo2_instance_discovery_checks_adjacent_files_before_hkcu_current_instance() {
+fn mo2_portable_marker_without_ini_returns_manager_specific_error_and_does_not_fall_through() {
+fn mo2_non_fallout_game_name_returns_typed_manager_error() {
+fn mo2_missing_selected_profile_returns_typed_manager_error() {
+fn vortex_detection_is_identity_only_and_uses_parsed_version() {
+fn vortex_detection_uses_zero_version_fallback_when_metadata_is_absent() {
+fn registry_read_errors_are_recoverable_diagnostics_and_gog_can_still_be_checked() {
+fn invalid_bethesda_registry_path_returns_reference_registry_error_without_gog_fallthrough() {
+fn report_includes_fake_backed_system_metadata() {

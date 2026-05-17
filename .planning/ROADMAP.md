@@ -72,7 +72,12 @@ Plans:
   3. App can launch URLs, open paths, and run external tools through injectable process adapters with visible failure reporting.
   4. Long-running scans, filesystem traversal, parsing, downloads, patching, and process monitoring run off the Slint UI thread.
   5. Background work returns typed progress, completion, cancellation, and error events through Slint-safe event-loop handoff.
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 03-01-PLAN.md — Define typed Fallout 4 installation and mod-manager domain contracts.
+- [ ] 03-02-PLAN.md — Add fakeable filesystem, registry, process, and desktop platform adapters.
+- [ ] 03-03-PLAN.md — Orchestrate reference-compatible discovery over adapters with fake-backed tests.
+- [ ] 03-04-PLAN.md — Define worker event contracts, cancellation states, and Slint-safe handoff seams.
 **UI hint:** yes
 
 ### Phase 4: Overview Diagnostics & Updates

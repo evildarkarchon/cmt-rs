@@ -1,0 +1,18 @@
+{
+  "id": "be50a7c8-c6fb-4f21-84bd-7a78489332e4",
+  "runtime": "bash",
+  "purpose": "verify cargo fmt check after worker events",
+  "script_chars": 17,
+  "started_at": "2026-05-17T10:16:59.586Z",
+  "finished_at": "2026-05-17T10:16:59.909Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 323,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\be50a7c8-c6fb-4f21-84bd-7a78489332e4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\be50a7c8-c6fb-4f21-84bd-7a78489332e4.stderr"
+}

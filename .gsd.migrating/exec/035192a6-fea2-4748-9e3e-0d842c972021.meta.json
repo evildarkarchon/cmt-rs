@@ -1,0 +1,18 @@
+{
+  "id": "035192a6-fea2-4748-9e3e-0d842c972021",
+  "runtime": "bash",
+  "purpose": "verify settings tab source contract cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-17T08:26:38.535Z",
+  "finished_at": "2026-05-17T08:27:03.827Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 25292,
+  "stdout_bytes": 2740,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\035192a6-fea2-4748-9e3e-0d842c972021.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\035192a6-fea2-4748-9e3e-0d842c972021.stderr"
+}

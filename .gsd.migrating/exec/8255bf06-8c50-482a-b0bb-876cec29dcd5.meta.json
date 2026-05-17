@@ -1,0 +1,18 @@
+{
+  "id": "8255bf06-8c50-482a-b0bb-876cec29dcd5",
+  "runtime": "bash",
+  "purpose": "check focused Windows metadata crate options",
+  "script_chars": 63,
+  "started_at": "2026-05-17T09:12:49.782Z",
+  "finished_at": "2026-05-17T09:12:55.753Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 5971,
+  "stdout_bytes": 259,
+  "stderr_bytes": 122,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8255bf06-8c50-482a-b0bb-876cec29dcd5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8255bf06-8c50-482a-b0bb-876cec29dcd5.stderr"
+}

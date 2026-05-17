@@ -1,0 +1,18 @@
+{
+  "id": "80b26d16-5a95-41cc-8c5a-8ea6337b77bb",
+  "runtime": "bash",
+  "purpose": "S03 closeout verification: Windows target platform adapter typecheck",
+  "script_chars": 42,
+  "started_at": "2026-05-17T10:20:53.381Z",
+  "finished_at": "2026-05-17T10:21:03.932Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 10551,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\80b26d16-5a95-41cc-8c5a-8ea6337b77bb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\80b26d16-5a95-41cc-8c5a-8ea6337b77bb.stderr"
+}

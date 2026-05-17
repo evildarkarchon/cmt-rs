@@ -1,0 +1,18 @@
+{
+  "id": "91a10293-4ad9-4683-84f9-1de39de3f19f",
+  "runtime": "bash",
+  "purpose": "verification cargo test for T04 settings wiring",
+  "script_chars": 10,
+  "started_at": "2026-05-17T08:30:58.545Z",
+  "finished_at": "2026-05-17T08:31:06.248Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 7703,
+  "stdout_bytes": 2740,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\91a10293-4ad9-4683-84f9-1de39de3f19f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\91a10293-4ad9-4683-84f9-1de39de3f19f.stderr"
+}

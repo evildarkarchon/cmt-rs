@@ -1,6 +1,7 @@
 pub mod app;
 pub mod domain;
 pub mod platform;
+pub mod services;
 pub mod workers;
 
 use std::{cell::RefCell, rc::Rc};
@@ -66,6 +67,7 @@ mod tests {
         app::{SHELL_TAB_LABELS, ShellController, shell_tab_labels},
         domain::DomainState,
         platform::PlatformServices,
+        services::ServiceLayer,
         workers::WorkerRuntime,
     };
 
@@ -222,6 +224,31 @@ mod tests {
     }
 
     #[test]
+    fn settings_tab_labels_are_exact_and_in_display_order() {
+        let group_titles = slint_string_property_values(SETTINGS_SLINT, "title");
+        assert_eq!(
+            group_titles.iter().map(String::as_str).collect::<Vec<_>>(),
+            vec!["Update Channel", "Log Level"]
+        );
+
+        let option_labels = slint_string_property_values(SETTINGS_SLINT, "text");
+        assert_eq!(
+            option_labels.iter().map(String::as_str).collect::<Vec<_>>(),
+            vec![
+                "All: GitHub & Nexus Mods",
+                "Early: GitHub",
+                "Stable: Nexus Mods",
+                "Never: Don't Check",
+                "Debug",
+                "Info",
+                "Warning",
+                "Error",
+            ]
+        );
+        assert_eq!(SETTINGS_SLINT.matches("SettingsRadioOption {").count(), 8);
+    }
+
+    #[test]
     fn settings_tab_update_channel_labels() {
         assert_source_contains_in_order(
             SETTINGS_SLINT,
@@ -301,6 +328,7 @@ mod tests {
         let _controller = ShellController;
         let _domain = DomainState;
         let _platform = PlatformServices;
+        let _services = ServiceLayer;
         let _workers = WorkerRuntime;
     }
 }

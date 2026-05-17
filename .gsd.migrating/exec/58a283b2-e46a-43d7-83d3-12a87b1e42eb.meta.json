@@ -1,0 +1,18 @@
+{
+  "id": "58a283b2-e46a-43d7-83d3-12a87b1e42eb",
+  "runtime": "bash",
+  "purpose": "cargo test after clippy warning fixes",
+  "script_chars": 10,
+  "started_at": "2026-05-17T08:58:46.959Z",
+  "finished_at": "2026-05-17T08:59:12.158Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 25199,
+  "stdout_bytes": 4203,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\58a283b2-e46a-43d7-83d3-12a87b1e42eb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\58a283b2-e46a-43d7-83d3-12a87b1e42eb.stderr"
+}

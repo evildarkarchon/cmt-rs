@@ -1,0 +1,18 @@
+{
+  "id": "0301c7a0-4930-4806-bb82-8882d9f156d0",
+  "runtime": "bash",
+  "purpose": "verify settings tab source contract formatting",
+  "script_chars": 126,
+  "started_at": "2026-05-17T08:26:20.171Z",
+  "finished_at": "2026-05-17T08:26:20.424Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 253,
+  "stdout_bytes": 14,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0301c7a0-4930-4806-bb82-8882d9f156d0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0301c7a0-4930-4806-bb82-8882d9f156d0.stderr"
+}

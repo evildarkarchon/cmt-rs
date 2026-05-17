@@ -1,0 +1,10 @@
+CMT/src/app_settings.py
+CMT/src/scan_settings.py
+CMT/src/settings.json
+CMT/src/tabs/__init__.py
+CMT/src/tabs/_about.py
+CMT/src/tabs/_f4se.py
+CMT/src/tabs/_overview.py
+CMT/src/tabs/_scanner.py
+CMT/src/tabs/_settings.py
+CMT/src/tabs/_tools.py

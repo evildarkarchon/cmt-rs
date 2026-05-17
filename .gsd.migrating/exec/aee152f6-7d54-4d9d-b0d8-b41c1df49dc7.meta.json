@@ -1,0 +1,18 @@
+{
+  "id": "aee152f6-7d54-4d9d-b0d8-b41c1df49dc7",
+  "runtime": "bash",
+  "purpose": "inspect S02 GSD files without shell variables",
+  "script_chars": 191,
+  "started_at": "2026-05-17T08:40:04.852Z",
+  "finished_at": "2026-05-17T08:40:04.995Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 143,
+  "stdout_bytes": 1308,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\aee152f6-7d54-4d9d-b0d8-b41c1df49dc7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\aee152f6-7d54-4d9d-b0d8-b41c1df49dc7.stderr"
+}

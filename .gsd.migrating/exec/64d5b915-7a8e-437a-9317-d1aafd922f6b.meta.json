@@ -1,0 +1,18 @@
+{
+  "id": "64d5b915-7a8e-437a-9317-d1aafd922f6b",
+  "runtime": "bash",
+  "purpose": "verify settings tab source contract cargo check",
+  "script_chars": 11,
+  "started_at": "2026-05-17T08:26:24.374Z",
+  "finished_at": "2026-05-17T08:26:35.091Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 10717,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\64d5b915-7a8e-437a-9317-d1aafd922f6b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\64d5b915-7a8e-437a-9317-d1aafd922f6b.stderr"
+}

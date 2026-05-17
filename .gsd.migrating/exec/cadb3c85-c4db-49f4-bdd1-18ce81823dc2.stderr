@@ -1,0 +1,13 @@
+[WARNING] Failed to read unmanaged installs: expected str, bytes or os.PathLike object, not NoneType
+Python install manager was successfully updated to 26.2.
+
+Indexes can now be signed to provide tamper detection. When an index signature
+is found to be invalid, the operation will be aborted without modifying your system.
+See https://docs.python.org/using/windows#index-signatures for more information.
+
+********************************************************************************
+The signature for https://www.python.org/ftp/python/index-windows.json was successfully verified.
+Installing Python 3.14.5.
+To see all available commands, run 'py help'
+********************************************************************************
+[WARNING] Failed to read unmanaged installs: expected str, bytes or os.PathLike object, not NoneType

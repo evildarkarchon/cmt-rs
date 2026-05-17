@@ -1,0 +1,18 @@
+{
+  "id": "23153747-5c52-45e0-a65b-3ee455a315cf",
+  "runtime": "bash",
+  "purpose": "fetch target-specific Windows adapter crates for API inspection and lockfile",
+  "script_chars": 11,
+  "started_at": "2026-05-17T09:18:36.725Z",
+  "finished_at": "2026-05-17T09:18:41.461Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 4736,
+  "stdout_bytes": 0,
+  "stderr_bytes": 5891,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\23153747-5c52-45e0-a65b-3ee455a315cf.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\23153747-5c52-45e0-a65b-3ee455a315cf.stderr"
+}

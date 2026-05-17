@@ -1,0 +1,18 @@
+{
+  "id": "7606ff1c-a96e-4ead-bc2c-c6acde3feb9b",
+  "runtime": "python",
+  "purpose": "S03 closeout Rust verification gates",
+  "script_chars": 958,
+  "started_at": "2026-05-17T10:30:25.137Z",
+  "finished_at": "2026-05-17T10:31:26.547Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 61410,
+  "stdout_bytes": 11412,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7606ff1c-a96e-4ead-bc2c-c6acde3feb9b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7606ff1c-a96e-4ead-bc2c-c6acde3feb9b.stderr"
+}

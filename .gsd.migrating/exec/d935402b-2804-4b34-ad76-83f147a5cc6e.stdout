@@ -1,0 +1,2 @@
+sysinfo = "0.39.2"    # Library to get system information such as processes, CPUs, disks, components and networks
+... and 234 crates more (use --limit N to see more)

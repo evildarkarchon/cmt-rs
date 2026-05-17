@@ -1,0 +1,18 @@
+{
+  "id": "7e14690f-791d-4340-aff2-7f7c2a346e1c",
+  "runtime": "bash",
+  "purpose": "inspect S02 summary artifacts after repairing T01/T02 task completion",
+  "script_chars": 87,
+  "started_at": "2026-05-17T08:42:30.495Z",
+  "finished_at": "2026-05-17T08:42:30.604Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 109,
+  "stdout_bytes": 419,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7e14690f-791d-4340-aff2-7f7c2a346e1c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7e14690f-791d-4340-aff2-7f7c2a346e1c.stderr"
+}

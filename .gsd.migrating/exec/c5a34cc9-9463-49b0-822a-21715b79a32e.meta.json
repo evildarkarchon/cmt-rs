@@ -1,0 +1,18 @@
+{
+  "id": "c5a34cc9-9463-49b0-822a-21715b79a32e",
+  "runtime": "bash",
+  "purpose": "format new platform adapter code",
+  "script_chars": 9,
+  "started_at": "2026-05-17T09:16:21.224Z",
+  "finished_at": "2026-05-17T09:16:21.535Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 311,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c5a34cc9-9463-49b0-822a-21715b79a32e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c5a34cc9-9463-49b0-822a-21715b79a32e.stderr"
+}

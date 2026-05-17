@@ -1,0 +1,18 @@
+{
+  "id": "3ccffdfa-c4c6-475f-99c9-2c0c312cf461",
+  "runtime": "bash",
+  "purpose": "S02 verification: cargo check",
+  "script_chars": 11,
+  "started_at": "2026-05-17T08:07:33.817Z",
+  "finished_at": "2026-05-17T08:08:42.186Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 68369,
+  "stdout_bytes": 0,
+  "stderr_bytes": 24899,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3ccffdfa-c4c6-475f-99c9-2c0c312cf461.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3ccffdfa-c4c6-475f-99c9-2c0c312cf461.stderr"
+}

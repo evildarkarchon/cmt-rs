@@ -1,0 +1,18 @@
+{
+  "id": "83c86c50-d7c9-4738-9a54-0786aeab89f8",
+  "runtime": "bash",
+  "purpose": "verification cargo clippy for T04 settings wiring",
+  "script_chars": 41,
+  "started_at": "2026-05-17T08:30:28.323Z",
+  "finished_at": "2026-05-17T08:30:39.055Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 10732,
+  "stdout_bytes": 0,
+  "stderr_bytes": 272,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\83c86c50-d7c9-4738-9a54-0786aeab89f8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\83c86c50-d7c9-4738-9a54-0786aeab89f8.stderr"
+}

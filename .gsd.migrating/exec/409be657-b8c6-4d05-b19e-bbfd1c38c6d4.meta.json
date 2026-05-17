@@ -1,0 +1,18 @@
+{
+  "id": "409be657-b8c6-4d05-b19e-bbfd1c38c6d4",
+  "runtime": "bash",
+  "purpose": "verify formatting after adding discovery service",
+  "script_chars": 17,
+  "started_at": "2026-05-17T09:56:56.561Z",
+  "finished_at": "2026-05-17T09:56:56.900Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 339,
+  "stdout_bytes": 24536,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\409be657-b8c6-4d05-b19e-bbfd1c38c6d4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\409be657-b8c6-4d05-b19e-bbfd1c38c6d4.stderr"
+}

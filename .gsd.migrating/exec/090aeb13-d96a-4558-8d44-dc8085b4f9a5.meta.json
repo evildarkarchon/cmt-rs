@@ -1,0 +1,18 @@
+{
+  "id": "090aeb13-d96a-4558-8d44-dc8085b4f9a5",
+  "runtime": "bash",
+  "purpose": "locate fetched windows-registry crate source",
+  "script_chars": 186,
+  "started_at": "2026-05-17T09:19:02.965Z",
+  "finished_at": "2026-05-17T09:19:32.910Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 29945,
+  "stdout_bytes": 183,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\090aeb13-d96a-4558-8d44-dc8085b4f9a5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\090aeb13-d96a-4558-8d44-dc8085b4f9a5.stderr"
+}

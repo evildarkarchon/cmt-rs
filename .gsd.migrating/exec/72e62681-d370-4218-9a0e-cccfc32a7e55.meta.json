@@ -1,0 +1,18 @@
+{
+  "id": "72e62681-d370-4218-9a0e-cccfc32a7e55",
+  "runtime": "bash",
+  "purpose": "format check after adding platform adapters",
+  "script_chars": 17,
+  "started_at": "2026-05-17T09:16:17.511Z",
+  "finished_at": "2026-05-17T09:16:17.791Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 280,
+  "stdout_bytes": 6144,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\72e62681-d370-4218-9a0e-cccfc32a7e55.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\72e62681-d370-4218-9a0e-cccfc32a7e55.stderr"
+}

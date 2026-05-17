@@ -1,0 +1,495 @@
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:15:
+     domain::{
+         discovery::{DiscoveryError, FALLOUT4_EXECUTABLE, Fallout4Installation, SemanticVersion},
+         mod_manager::{
+[31m-            DetectedModManager, ModManagerKind, ModOrganizerContext, ModOrganizerDirectories,
+(B[m[31m-            ModOrganizerSkipRules, ModOrganizerTool, Mo2Configuration, Mo2ParseError,
+(B[m[31m-            Mo2ParseErrorKind, VortexContext,
+(B[m[32m+            DetectedModManager, Mo2Configuration, Mo2ParseError, Mo2ParseErrorKind, ModManagerKind,
+(B[m[32m+            ModOrganizerContext, ModOrganizerDirectories, ModOrganizerSkipRules, ModOrganizerTool,
+(B[m[32m+            VortexContext,
+(B[m         },
+     },
+     platform::{
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:31:
+ const PROCESS_ANCESTOR_LIMIT: usize = 8;
+ const MO2_REGISTRY_SUBKEY: &str = r"Software\Mod Organizer Team\Mod Organizer";
+ const MO2_CURRENT_INSTANCE_VALUE: &str = "CurrentInstance";
+[31m-const BETHESDA_FALLOUT4_REGISTRY_SUBKEY: &str =
+(B[m[31m-    r"SOFTWARE\WOW6432Node\Bethesda Softworks\Fallout4";
+(B[m[32m+const BETHESDA_FALLOUT4_REGISTRY_SUBKEY: &str = r"SOFTWARE\WOW6432Node\Bethesda Softworks\Fallout4";
+(B[m const BETHESDA_FALLOUT4_REGISTRY_VALUE: &str = "Installed Path";
+ const GOG_FALLOUT4_REGISTRY_SUBKEY: &str = r"SOFTWARE\WOW6432Node\GOG.com\Games\1998527297";
+ const GOG_FALLOUT4_REGISTRY_VALUE: &str = "path";
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:247:
+         }
+     }
+ 
+[31m-    fn adapter_error(source: DiscoverySource, candidate: Option<PathBuf>, error: PlatformError) -> Self {
+(B[m[32m+    fn adapter_error(
+(B[m[32m+        source: DiscoverySource,
+(B[m[32m+        candidate: Option<PathBuf>,
+(B[m[32m+        error: PlatformError,
+(B[m[32m+    ) -> Self {
+(B[m         Self {
+             source,
+             candidate,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:422:
+         match manager.kind {
+             ModManagerKind::ModOrganizer => self
+                 .discover_mod_organizer(manager, request, steps)
+[31m-                .map(|configuration| Some(DiscoveredModManager::ModOrganizer(Box::new(configuration))))
+(B[m[32m+                .map(|configuration| {
+(B[m[32m+                    Some(DiscoveredModManager::ModOrganizer(Box::new(configuration)))
+(B[m[32m+                })
+(B[m                 .map_err(ModManagerDiscoveryError::ModOrganizer),
+             ModManagerKind::Vortex => {
+                 steps.push(ModManagerDiscoveryStep::new(
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:430:
+                     manager.executable_path.display().to_string(),
+                     ModManagerDiscoveryStepOutcome::Found,
+                 ));
+[31m-                Ok(Some(DiscoveredModManager::Vortex(VortexContext { manager })))
+(B[m[32m+                Ok(Some(DiscoveredModManager::Vortex(VortexContext {
+(B[m[32m+                    manager,
+(B[m[32m+                })))
+(B[m             }
+         }
+     }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:500:
+                     depth,
+                     "Detected supported mod manager in process ancestry"
+                 );
+[31m-                return Ok(Some(DetectedModManager::new(kind, executable_path, version)));
+(B[m[32m+                return Ok(Some(DetectedModManager::new(
+(B[m[32m+                    kind,
+(B[m[32m+                    executable_path,
+(B[m[32m+                    version,
+(B[m[32m+                )));
+(B[m             }
+             maybe_pid = process.parent_pid;
+         }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:542:
+             .map(Path::to_path_buf)
+             .unwrap_or_default();
+         let portable_ini_path = manager_directory.join("ModOrganizer.ini");
+[31m-        let portable_ini_exists = self.mo2_file_exists(&portable_ini_path, steps, ModManagerDiscoveryStage::PortableIni)?;
+(B[m[32m+        let portable_ini_exists = self.mo2_file_exists(
+(B[m[32m+            &portable_ini_path,
+(B[m[32m+            steps,
+(B[m[32m+            ModManagerDiscoveryStage::PortableIni,
+(B[m[32m+        )?;
+(B[m         let portable_txt_path = manager_directory.join("portable.txt");
+         let portable_txt_exists = self.mo2_file_exists(
+             &portable_txt_path,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:554:
+             if !portable_ini_exists {
+                 return Err(Mo2ParseError::portable_marker_without_ini());
+             }
+[31m-            return self.parse_mo2_ini(
+(B[m[31m-                manager,
+(B[m[31m-                &portable_ini_path,
+(B[m[31m-                Some(portable_txt_path),
+(B[m[31m-                true,
+(B[m[31m-            );
+(B[m[32m+            return self.parse_mo2_ini(manager, &portable_ini_path, Some(portable_txt_path), true);
+(B[m         }
+ 
+         if let Some(current_instance) = self.read_mo2_current_instance(steps) {
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:574:
+                     ModManagerDiscoveryStage::LocalAppDataInstanceIni,
+                 )?;
+                 if instance_ini_exists {
+[31m-                    let configuration = self.parse_mo2_ini(
+(B[m[31m-                        manager.clone(),
+(B[m[31m-                        &instance_ini_path,
+(B[m[31m-                        None,
+(B[m[31m-                        false,
+(B[m[31m-                    )?;
+(B[m[32m+                    let configuration =
+(B[m[32m+                        self.parse_mo2_ini(manager.clone(), &instance_ini_path, None, false)?;
+(B[m                     if configuration.context.game_path.is_some() {
+                         return Ok(configuration);
+                     }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:859:
+         &self,
+         manager_game_path: Option<PathBuf>,
+         request: &DiscoveryRequest,
+[31m-    ) -> (Result<Fallout4Installation, DiscoveryError>, Vec<DiscoveryAttempt>) {
+(B[m[32m+    ) -> (
+(B[m[32m+        Result<Fallout4Installation, DiscoveryError>,
+(B[m[32m+        Vec<DiscoveryAttempt>,
+(B[m[32m+    ) {
+(B[m         let mut attempts = Vec::new();
+         let mut diagnostics = Vec::new();
+ 
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:943:
+         }
+ 
+         let diagnostic = (!diagnostics.is_empty()).then(|| diagnostics.join("; "));
+[31m-        (Err(DiscoveryError::fallout4_not_found(diagnostic)), attempts)
+(B[m[32m+        (
+(B[m[32m+            Err(DiscoveryError::fallout4_not_found(diagnostic)),
+(B[m[32m+            attempts,
+(B[m[32m+        )
+(B[m     }
+ 
+     fn evaluate_registry_candidate(
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:955:
+         match self.registry.read_string_value(&request) {
+             Ok(Some(value)) if !value.is_empty() => {
+                 let candidate = PathBuf::from(value);
+[31m-                Some(match self.evaluate_game_candidate(source, candidate.clone()) {
+(B[m[31m-                    CandidateEvaluation::Accepted(installation, attempt) => {
+(B[m[31m-                        RegistryCandidateOutcome::Accepted(installation, attempt)
+(B[m[31m-                    }
+(B[m[31m-                    CandidateEvaluation::Rejected(attempt) => RegistryCandidateOutcome::Rejected {
+(B[m[31m-                        attempt,
+(B[m[31m-                        error: DiscoveryError::invalid_registry_path(candidate),
+(B[m[31m-                    },
+(B[m[31m-                    CandidateEvaluation::AdapterError(attempt, diagnostic) => {
+(B[m[31m-                        diagnostics.push(diagnostic);
+(B[m[31m-                        RegistryCandidateOutcome::Rejected {
+(B[m[31m-                            attempt,
+(B[m[31m-                            error: DiscoveryError::invalid_registry_path(candidate),
+(B[m[32m+                Some(
+(B[m[32m+                    match self.evaluate_game_candidate(source, candidate.clone()) {
+(B[m[32m+                        CandidateEvaluation::Accepted(installation, attempt) => {
+(B[m[32m+                            RegistryCandidateOutcome::Accepted(installation, attempt)
+(B[m                         }
+[31m-                    }
+(B[m[31m-                })
+(B[m[32m+                        CandidateEvaluation::Rejected(attempt) => {
+(B[m[32m+                            RegistryCandidateOutcome::Rejected {
+(B[m[32m+                                attempt,
+(B[m[32m+                                error: DiscoveryError::invalid_registry_path(candidate),
+(B[m[32m+                            }
+(B[m[32m+                        }
+(B[m[32m+                        CandidateEvaluation::AdapterError(attempt, diagnostic) => {
+(B[m[32m+                            diagnostics.push(diagnostic);
+(B[m[32m+                            RegistryCandidateOutcome::Rejected {
+(B[m[32m+                                attempt,
+(B[m[32m+                                error: DiscoveryError::invalid_registry_path(candidate),
+(B[m[32m+                            }
+(B[m[32m+                        }
+(B[m[32m+                    },
+(B[m[32m+                )
+(B[m             }
+             Ok(_) => Some(RegistryCandidateOutcome::NoCandidate(
+                 DiscoveryAttempt::no_candidate(source),
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1349:
+                 .with_file(path.join(FALLOUT4_EXECUTABLE), b"exe".to_vec())
+         }
+ 
+[31m-        fn node(&self, path: &Path, operation: PlatformOperation) -> Result<&FakeNode, PlatformError> {
+(B[m[32m+        fn node(
+(B[m[32m+            &self,
+(B[m[32m+            path: &Path,
+(B[m[32m+            operation: PlatformOperation,
+(B[m[32m+        ) -> Result<&FakeNode, PlatformError> {
+(B[m             self.nodes.get(path).ok_or_else(|| {
+                 PlatformError::new(
+                     operation,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1397:
+             })
+         }
+ 
+[31m-        fn read_dir(&self, path: &Path) -> Result<Vec<crate::platform::filesystem::DirectoryEntry>, PlatformError> {
+(B[m[32m+        fn read_dir(
+(B[m[32m+            &self,
+(B[m[32m+            path: &Path,
+(B[m[32m+        ) -> Result<Vec<crate::platform::filesystem::DirectoryEntry>, PlatformError> {
+(B[m             self.node(path, PlatformOperation::ReadDirectory)?;
+             Ok(Vec::new())
+         }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1404:
+ 
+[31m-        fn walk_dir(&self, path: &Path) -> Result<Vec<crate::platform::filesystem::DirectoryEntry>, PlatformError> {
+(B[m[32m+        fn walk_dir(
+(B[m[32m+            &self,
+(B[m[32m+            path: &Path,
+(B[m[32m+        ) -> Result<Vec<crate::platform::filesystem::DirectoryEntry>, PlatformError> {
+(B[m             self.node(path, PlatformOperation::WalkDirectory)?;
+             Ok(Vec::new())
+         }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1574:
+             .with_game_dir("C:/Games/Managed")
+             .with_game_dir("C:/Games/Cwd")
+             .with_game_dir("C:/Games/Registry");
+[31m-        let registry = FakeRegistry::default().with_value(bethesda_request(), Some("C:/Games/Registry"));
+(B[m[32m+        let registry =
+(B[m[32m+            FakeRegistry::default().with_value(bethesda_request(), Some("C:/Games/Registry"));
+(B[m         let process = FakeProcessInspector::default()
+             .with_processes(mo2_processes("C:/MO2/ModOrganizer.exe"))
+[31m-            .with_version("C:/MO2/ModOrganizer.exe", Some(SemanticVersion::new(2, 5, 2)));
+(B[m[32m+            .with_version(
+(B[m[32m+                "C:/MO2/ModOrganizer.exe",
+(B[m[32m+                Some(SemanticVersion::new(2, 5, 2)),
+(B[m[32m+            );
+(B[m 
+         let report = service_report(
+             &filesystem,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1589:
+         let installation = report.game.expect("manager game path should win");
+         assert_eq!(installation.game_path, PathBuf::from("C:/Games/Managed"));
+         assert_eq!(report.attempts.len(), 1);
+[31m-        assert_eq!(report.attempts[0].source, DiscoverySource::RunningManagerGamePath);
+(B[m[31m-        assert_eq!(report.attempts[0].outcome, DiscoveryAttemptOutcome::Accepted);
+(B[m[31m-        assert!(registry.reads.borrow().is_empty(), "registry should not be queried after manager hit");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            report.attempts[0].source,
+(B[m[32m+            DiscoverySource::RunningManagerGamePath
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            report.attempts[0].outcome,
+(B[m[32m+            DiscoveryAttemptOutcome::Accepted
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            registry.reads.borrow().is_empty(),
+(B[m[32m+            "registry should not be queried after manager hit"
+(B[m[32m+        );
+(B[m         let manager = report
+             .mod_manager
+             .expect("manager discovery should succeed")
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1623:
+             PathBuf::from("C:/Games/Cwd")
+         );
+         assert_eq!(
+[31m-            report.attempts.iter().map(|attempt| attempt.source).collect::<Vec<_>>(),
+(B[m[32m+            report
+(B[m[32m+                .attempts
+(B[m[32m+                .iter()
+(B[m[32m+                .map(|attempt| attempt.source)
+(B[m[32m+                .collect::<Vec<_>>(),
+(B[m             vec![
+                 DiscoverySource::RunningManagerGamePath,
+                 DiscoverySource::CurrentWorkingDirectory,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1630:
+             ]
+         );
+[31m-        assert!(registry.reads.borrow().is_empty(), "registry must not run after cwd hit");
+(B[m[32m+        assert!(
+(B[m[32m+            registry.reads.borrow().is_empty(),
+(B[m[32m+            "registry must not run after cwd hit"
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1646:
+         );
+ 
+         let error = report.game.expect_err("no candidates should be found");
+[31m-        assert_eq!(error.kind, crate::domain::discovery::DiscoveryErrorKind::Fallout4NotFound);
+(B[m[31m-        assert_eq!(error.user_message(), "A Fallout 4 installation could not be found.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            error.kind,
+(B[m[32m+            crate::domain::discovery::DiscoveryErrorKind::Fallout4NotFound
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            error.user_message(),
+(B[m[32m+            "A Fallout 4 installation could not be found."
+(B[m[32m+        );
+(B[m         assert!(error.is_recoverable());
+         assert!(!error.requires_manual_file_picker());
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1654:
+[31m-            report.attempts.iter().map(|attempt| attempt.source).collect::<Vec<_>>(),
+(B[m[32m+            report
+(B[m[32m+                .attempts
+(B[m[32m+                .iter()
+(B[m[32m+                .map(|attempt| attempt.source)
+(B[m[32m+                .collect::<Vec<_>>(),
+(B[m             vec![
+                 DiscoverySource::RunningManagerGamePath,
+                 DiscoverySource::CurrentWorkingDirectory,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1677:
+             DiscoveryRequest::new("C:/Missing"),
+         );
+ 
+[31m-        let installation = report.game.expect("registry exe should normalize to parent");
+(B[m[32m+        let installation = report
+(B[m[32m+            .game
+(B[m[32m+            .expect("registry exe should normalize to parent");
+(B[m         assert_eq!(installation.game_path, PathBuf::from("C:/Games/Fallout 4"));
+         assert_eq!(
+             report.attempts.last().expect("registry attempt").source,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1698:
+             DiscoveryRequest::new("C:/Games/Fallout 4"),
+         );
+ 
+[31m-        let installation = report.game.expect("game executable is enough for install state");
+(B[m[32m+        let installation = report
+(B[m[32m+            .game
+(B[m[32m+            .expect("game executable is enough for install state");
+(B[m         assert_eq!(installation.game_path, PathBuf::from("C:/Games/Fallout 4"));
+         assert_eq!(installation.data_path, None);
+         assert_eq!(installation.f4se_plugins_path, None);
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1766:
+             panic!("expected MO2 configuration");
+         };
+         let context = &configuration.context;
+[31m-        assert_eq!(context.game_path.as_deref(), Some(Path::new("C:/Games/Fallout 4")));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            context.game_path.as_deref(),
+(B[m[32m+            Some(Path::new("C:/Games/Fallout 4"))
+(B[m[32m+        );
+(B[m         assert_eq!(context.selected_profile, "Survival");
+         assert_eq!(context.mod_directory(), Path::new("C:/MO2Base/staging"));
+         assert_eq!(context.overwrite_directory(), Path::new("C:/Overwrites"));
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1773:
+[31m-        assert_eq!(context.profiles_directory(), Path::new("C:/MO2Base/profiles"));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            context.profiles_directory(),
+(B[m[32m+            Path::new("C:/MO2Base/profiles")
+(B[m[32m+        );
+(B[m         assert!(context.profile_local_inis);
+         assert!(!context.profile_local_saves);
+         assert_eq!(context.skip_rules.file_suffixes, vec![".mohidden", ".bak"]);
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1778:
+             context.skip_rules.directories,
+             BTreeSet::from(["cache".to_owned(), "temp".to_owned()])
+         );
+[31m-        assert!(configuration.executables[&ModOrganizerTool::XEdit].contains(&PathBuf::from("C:/Tools/FO4Edit.exe")));
+(B[m[31m-        assert!(configuration.executables[&ModOrganizerTool::BSArch].contains(&PathBuf::from("C:/Tools/BSArch.exe")));
+(B[m[32m+        assert!(
+(B[m[32m+            configuration.executables[&ModOrganizerTool::XEdit]
+(B[m[32m+                .contains(&PathBuf::from("C:/Tools/FO4Edit.exe"))
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            configuration.executables[&ModOrganizerTool::BSArch]
+(B[m[32m+                .contains(&PathBuf::from("C:/Tools/BSArch.exe"))
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1790:
+                 valid_mo2_ini("C:/Games/Fallout 4"),
+             )
+             .with_game_dir("C:/Games/Fallout 4");
+[31m-        let registry = FakeRegistry::default()
+(B[m[31m-            .with_value(mo2_current_instance_request(), Some("Fallout4"));
+(B[m[32m+        let registry =
+(B[m[32m+            FakeRegistry::default().with_value(mo2_current_instance_request(), Some("Fallout4"));
+(B[m         let process = FakeProcessInspector::default()
+             .with_processes(mo2_processes("C:/MO2/ModOrganizer.exe"));
+ 
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1849:
+             })
+         ));
+         assert!(report.game.is_err());
+[31m-        assert_eq!(report.attempts.len(), 1, "cwd fallback must not run after blocking MO2 error");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            report.attempts.len(),
+(B[m[32m+            1,
+(B[m[32m+            "cwd fallback must not run after blocking MO2 error"
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1871:
+             DiscoveryRequest::new("C:/Missing").with_current_process_id(100),
+         );
+ 
+[31m-        let manager_error = report.mod_manager.expect_err("unsupported game should fail");
+(B[m[32m+        let manager_error = report
+(B[m[32m+            .mod_manager
+(B[m[32m+            .expect_err("unsupported game should fail");
+(B[m         assert!(matches!(
+             manager_error,
+             ModManagerDiscoveryError::ModOrganizer(Mo2ParseError {
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1912:
+                 ..
+             })
+         ));
+[31m-        assert_eq!(manager_error.user_message(), "Profile is not set in ModOrganizer.ini.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            manager_error.user_message(),
+(B[m[32m+            "Profile is not set in ModOrganizer.ini."
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1930:
+             DiscoveryRequest::new("C:/Games/Cwd").with_current_process_id(100),
+         );
+ 
+[31m-        let Some(DiscoveredModManager::Vortex(context)) =
+(B[m[31m-            report.mod_manager.expect("Vortex should not require config")
+(B[m[32m+        let Some(DiscoveredModManager::Vortex(context)) = report
+(B[m[32m+            .mod_manager
+(B[m[32m+            .expect("Vortex should not require config")
+(B[m         else {
+             panic!("expected Vortex context");
+         };
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1938:
+         assert_eq!(context.manager.display_name(), "Vortex");
+[31m-        assert_eq!(context.manager.executable_path, PathBuf::from("C:/Vortex/Vortex.exe"));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            context.manager.executable_path,
+(B[m[32m+            PathBuf::from("C:/Vortex/Vortex.exe")
+(B[m[32m+        );
+(B[m         assert_eq!(context.manager.version, SemanticVersion::new(1, 12, 3));
+         assert!(!context.parses_staging_or_config());
+     }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1977:
+             DiscoveryRequest::new("C:/Missing"),
+         );
+ 
+[31m-        let error = report.game.expect_err("registry failure alone should be not-found");
+(B[m[31m-        assert_eq!(error.user_message(), "A Fallout 4 installation could not be found.");
+(B[m[32m+        let error = report
+(B[m[32m+            .game
+(B[m[32m+            .expect_err("registry failure alone should be not-found");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            error.user_message(),
+(B[m[32m+            "A Fallout 4 installation could not be found."
+(B[m[32m+        );
+(B[m         assert!(
+             error
+                 .diagnostic
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:1987:
+                 .contains("bethesda-registry registry lookup failed")
+         );
+         assert_eq!(
+[31m-            report.attempts.iter().map(|attempt| attempt.source).collect::<Vec<_>>(),
+(B[m[32m+            report
+(B[m[32m+                .attempts
+(B[m[32m+                .iter()
+(B[m[32m+                .map(|attempt| attempt.source)
+(B[m[32m+                .collect::<Vec<_>>(),
+(B[m             vec![
+                 DiscoverySource::RunningManagerGamePath,
+                 DiscoverySource::CurrentWorkingDirectory,
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:2012:
+             DiscoveryRequest::new("C:/Missing"),
+         );
+ 
+[31m-        let error = report.game.expect_err("invalid Bethesda value should stop registry chain");
+(B[m[32m+        let error = report
+(B[m[32m+            .game
+(B[m[32m+            .expect_err("invalid Bethesda value should stop registry chain");
+(B[m         assert!(matches!(
+             error.kind,
+             crate::domain::discovery::DiscoveryErrorKind::InvalidRegistryPath { .. }
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:2019:
+         ));
+[31m-        assert!(error.user_message().contains("The path set in your registry is:\nC:/Broken/Fallout 4"));
+(B[m[32m+        assert!(
+(B[m[32m+            error
+(B[m[32m+                .user_message()
+(B[m[32m+                .contains("The path set in your registry is:\nC:/Broken/Fallout 4")
+(B[m[32m+        );
+(B[m         assert_eq!(registry.reads.borrow().as_slice(), &[bethesda_request()]);
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/discovery.rs:2034:
+             DiscoveryRequest::new("C:/Games/Cwd"),
+         );
+ 
+[31m-        let metadata = report.system_metadata.expect("fake metadata should be included");
+(B[m[32m+        let metadata = report
+(B[m[32m+            .system_metadata
+(B[m[32m+            .expect("fake metadata should be included");
+(B[m         assert_eq!(metadata.os_name, "Windows 11 Pro");
+         assert_eq!(metadata.os_version.as_deref(), Some("24H2"));
+         assert_eq!(metadata.cpu_brand.as_deref(), Some("Fake Ryzen"));

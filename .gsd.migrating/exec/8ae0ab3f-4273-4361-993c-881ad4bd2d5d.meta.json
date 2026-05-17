@@ -1,0 +1,18 @@
+{
+  "id": "8ae0ab3f-4273-4361-993c-881ad4bd2d5d",
+  "runtime": "bash",
+  "purpose": "inspect windows-registry API source after fetch",
+  "script_chars": 269,
+  "started_at": "2026-05-17T09:18:52.400Z",
+  "finished_at": "2026-05-17T09:18:52.522Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 122,
+  "stdout_bytes": 20,
+  "stderr_bytes": 99,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8ae0ab3f-4273-4361-993c-881ad4bd2d5d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8ae0ab3f-4273-4361-993c-881ad4bd2d5d.stderr"
+}

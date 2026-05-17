@@ -1,0 +1,18 @@
+{
+  "id": "fd0a18fd-81e5-410c-97b8-9f8eebe7f34a",
+  "runtime": "bash",
+  "purpose": "cargo check discovery service",
+  "script_chars": 11,
+  "started_at": "2026-05-17T09:57:06.857Z",
+  "finished_at": "2026-05-17T09:57:16.607Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9750,
+  "stdout_bytes": 0,
+  "stderr_bytes": 11391,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fd0a18fd-81e5-410c-97b8-9f8eebe7f34a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fd0a18fd-81e5-410c-97b8-9f8eebe7f34a.stderr"
+}

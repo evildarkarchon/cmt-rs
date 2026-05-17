@@ -1,0 +1,6 @@
+   Compiling same-file v1.0.6
+   Compiling sysinfo v0.39.2
+   Compiling walkdir v2.5.0
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 26.80s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-76e0b74b0844212e)

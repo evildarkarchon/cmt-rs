@@ -1,0 +1,18 @@
+{
+  "id": "3d3dada8-ab49-4a08-97c8-3988fa4dc56e",
+  "runtime": "bash",
+  "purpose": "S03 closeout verification: cargo check",
+  "script_chars": 11,
+  "started_at": "2026-05-17T10:20:18.760Z",
+  "finished_at": "2026-05-17T10:20:26.669Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 7909,
+  "stdout_bytes": 0,
+  "stderr_bytes": 72,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3d3dada8-ab49-4a08-97c8-3988fa4dc56e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3d3dada8-ab49-4a08-97c8-3988fa4dc56e.stderr"
+}

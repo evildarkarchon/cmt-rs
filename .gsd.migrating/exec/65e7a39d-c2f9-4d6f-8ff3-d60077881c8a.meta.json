@@ -1,0 +1,18 @@
+{
+  "id": "65e7a39d-c2f9-4d6f-8ff3-d60077881c8a",
+  "runtime": "bash",
+  "purpose": "cargo check platform adapters",
+  "script_chars": 11,
+  "started_at": "2026-05-17T09:16:23.842Z",
+  "finished_at": "2026-05-17T09:16:36.129Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12287,
+  "stdout_bytes": 0,
+  "stderr_bytes": 661,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\65e7a39d-c2f9-4d6f-8ff3-d60077881c8a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\65e7a39d-c2f9-4d6f-8ff3-d60077881c8a.stderr"
+}

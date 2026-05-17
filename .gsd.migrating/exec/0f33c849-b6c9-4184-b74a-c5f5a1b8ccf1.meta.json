@@ -1,0 +1,18 @@
+{
+  "id": "0f33c849-b6c9-4184-b74a-c5f5a1b8ccf1",
+  "runtime": "bash",
+  "purpose": "inspect local windows-registry crate API examples",
+  "script_chars": 325,
+  "started_at": "2026-05-17T09:18:22.390Z",
+  "finished_at": "2026-05-17T09:18:22.620Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 230,
+  "stdout_bytes": 15,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0f33c849-b6c9-4184-b74a-c5f5a1b8ccf1.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0f33c849-b6c9-4184-b74a-c5f5a1b8ccf1.stderr"
+}
