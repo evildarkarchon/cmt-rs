@@ -1,20 +1,148 @@
-export component SettingsTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { GroupBox } from "std-widgets.slint";
 
-        Text {
-            text: "Settings";
-            font-size: 18px;
-            font-weight: 600;
-            horizontal-alignment: center;
+component SettingsRadioOption inherits Rectangle {
+    in property <string> text;
+    in property <bool> checked;
+    callback selected();
+
+    height: 24px;
+    min-width: 180px;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Rectangle {
+            width: 14px;
+            height: 14px;
+            border-radius: 7px;
+            border-width: 1px;
+            border-color: root.checked ? #0067c0 : #707070;
+            vertical-alignment: center;
+
+            Rectangle {
+                width: 8px;
+                height: 8px;
+                x: 3px;
+                y: 3px;
+                border-radius: 4px;
+                background: root.checked ? #0067c0 : transparent;
+            }
         }
 
         Text {
-            text: "Settings behavior is reserved for a later port phase.";
+            text: root.text;
             font-size: 14px;
-            horizontal-alignment: center;
+            vertical-alignment: center;
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            root.selected();
+        }
+    }
+}
+
+export component SettingsTab inherits Rectangle {
+    in-out property <string> update-source: "nexus";
+    in-out property <string> log-level: "info";
+    callback update-source-selected(string);
+    callback log-level-selected(string);
+
+    background: #f3f3f3;
+
+    VerticalLayout {
+        padding: 24px;
+        spacing: 16px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 16px;
+            alignment: start;
+
+            GroupBox {
+                title: "Update Channel";
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    SettingsRadioOption {
+                        text: "All: GitHub & Nexus Mods";
+                        checked: root.update-source == "both";
+                        selected => {
+                            root.update-source = "both";
+                            root.update-source-selected("both");
+                        }
+                    }
+
+                    SettingsRadioOption {
+                        text: "Early: GitHub";
+                        checked: root.update-source == "github";
+                        selected => {
+                            root.update-source = "github";
+                            root.update-source-selected("github");
+                        }
+                    }
+
+                    SettingsRadioOption {
+                        text: "Stable: Nexus Mods";
+                        checked: root.update-source == "nexus";
+                        selected => {
+                            root.update-source = "nexus";
+                            root.update-source-selected("nexus");
+                        }
+                    }
+
+                    SettingsRadioOption {
+                        text: "Never: Don't Check";
+                        checked: root.update-source == "none";
+                        selected => {
+                            root.update-source = "none";
+                            root.update-source-selected("none");
+                        }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Log Level";
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    SettingsRadioOption {
+                        text: "Debug";
+                        checked: root.log-level == "debug";
+                        selected => {
+                            root.log-level = "debug";
+                            root.log-level-selected("debug");
+                        }
+                    }
+
+                    SettingsRadioOption {
+                        text: "Info";
+                        checked: root.log-level == "info";
+                        selected => {
+                            root.log-level = "info";
+                            root.log-level-selected("info");
+                        }
+                    }
+
+                    SettingsRadioOption {
+                        text: "Error";
+                        checked: root.log-level == "error";
+                        selected => {
+                            root.log-level = "error";
+                            root.log-level-selected("error");
+                        }
+                    }
+                }
+            }
         }
     }
 }
