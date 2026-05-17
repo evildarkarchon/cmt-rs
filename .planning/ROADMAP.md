@@ -35,7 +35,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Developer can add behavior through separated UI, controller/app, domain, platform, and worker modules without placing domain logic in Slint markup.
   3. Developer can run the core verification commands for the slice: `cargo fmt --check`, `cargo check`, `cargo test`, and `cargo clippy --all-targets --all-features`.
   4. Developer can verify that no implementation change modifies files under `CMT/` and that user-facing labels/defaults are checked against `CMT/src/` before completing each slice.
-**Plans:** TBD
+**Plans:** 3 plans
+Plans:
+- [ ] 01-01-PLAN.md — Establish Slint dependency/build pipeline and launch generated MainWindow.
+- [ ] 01-02-PLAN.md — Wire inert reference-order tab components in the Slint shell.
+- [ ] 01-03-PLAN.md — Add no-op Rust module boundaries, tab-order test, and final verification gates.
 **UI hint:** yes
 
 ### Phase 2: Settings & Defaults Parity
