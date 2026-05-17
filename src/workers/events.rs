@@ -13,9 +13,14 @@ use std::{
     },
 };
 
-use crate::platform::{
-    PlatformError, PlatformErrorKind, PlatformOperation,
-    desktop::{DesktopActionOutcome, DesktopActionResult},
+use crate::{
+    domain::overview::{
+        OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
+    },
+    platform::{
+        PlatformError, PlatformErrorKind, PlatformOperation,
+        desktop::{DesktopActionOutcome, DesktopActionResult},
+    },
 };
 
 /// Stable identity for one background task.
@@ -55,6 +60,8 @@ impl fmt::Display for WorkerTaskId {
 /// High-level category for a background task.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum WorkerTaskKind {
+    /// Complete Overview refresh, update-check, or Overview-specific orchestration work.
+    Overview,
     /// Fallout 4 installation, manager, registry, process, or system discovery.
     Discovery,
     /// Scanner traversal, parsing, or classification work.
@@ -77,6 +84,7 @@ impl WorkerTaskKind {
     /// Returns a stable label suitable for structured logs and tests.
     pub const fn label(self) -> &'static str {
         match self {
+            Self::Overview => "overview",
             Self::Discovery => "discovery",
             Self::Scan => "scan",
             Self::Patch => "patch",
@@ -376,6 +384,8 @@ pub enum WorkerPayload {
     Patch(WorkerMessage),
     /// Download-specific status or result text.
     Download(WorkerMessage),
+    /// Overview-specific snapshot, update, or desktop-action result.
+    Overview(OverviewWorkerPayload),
     /// External process, tool, or desktop-action result.
     ExternalAction(ExternalActionPayload),
     /// Cancellation details.
@@ -384,6 +394,58 @@ pub enum WorkerPayload {
     Error(WorkerFailure),
     /// Generic status or result text.
     Generic(WorkerMessage),
+}
+
+/// Overview-specific worker payloads that must cross the UI handoff boundary intact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum OverviewWorkerPayload {
+    /// A full Overview refresh produced a render-ready snapshot.
+    RefreshCompleted {
+        /// Refresh request id used to reject stale worker results.
+        refresh_id: u64,
+        /// Owned snapshot produced off the UI thread.
+        snapshot: Box<OverviewSnapshot>,
+    },
+    /// The update-check worker produced a final banner state.
+    UpdateCheckCompleted {
+        /// Refresh request id the update check was tied to.
+        refresh_id: u64,
+        /// Banner state safe for the Overview UI.
+        update_banner: UpdateBannerState,
+    },
+    /// A URL/path action completed and may have produced a safe visible error.
+    DesktopActionCompleted {
+        /// Deferred action that was attempted.
+        action: OverviewDeferredActionKind,
+        /// Safe action error when the desktop adapter rejected the request.
+        error: Option<OverviewActionError>,
+    },
+}
+
+impl OverviewWorkerPayload {
+    /// Creates a successful refresh payload.
+    pub fn refresh_completed(refresh_id: u64, snapshot: OverviewSnapshot) -> Self {
+        Self::RefreshCompleted {
+            refresh_id,
+            snapshot: Box::new(snapshot),
+        }
+    }
+
+    /// Creates an update-check completion payload.
+    pub fn update_check_completed(refresh_id: u64, update_banner: UpdateBannerState) -> Self {
+        Self::UpdateCheckCompleted {
+            refresh_id,
+            update_banner,
+        }
+    }
+
+    /// Creates a desktop-action completion payload.
+    pub fn desktop_action_completed(
+        action: OverviewDeferredActionKind,
+        error: Option<OverviewActionError>,
+    ) -> Self {
+        Self::DesktopActionCompleted { action, error }
+    }
 }
 
 /// High-level external operation source.
@@ -551,6 +613,7 @@ mod tests {
     #[test]
     fn task_kinds_cover_required_background_categories() {
         let kinds = [
+            WorkerTaskKind::Overview,
             WorkerTaskKind::Discovery,
             WorkerTaskKind::Scan,
             WorkerTaskKind::Patch,
@@ -563,6 +626,7 @@ mod tests {
         assert_eq!(
             kinds.map(WorkerTaskKind::label),
             [
+                "overview",
                 "discovery",
                 "scan",
                 "patch",
@@ -587,6 +651,41 @@ mod tests {
         assert_eq!(event.status, WorkerTaskStatus::Completed);
         assert!(event.status.is_terminal());
         assert!(matches!(event.payload, WorkerPayload::Discovery(_)));
+    }
+
+    #[test]
+    fn overview_payload_carries_owned_snapshot_and_update_state() {
+        let task = WorkerTask::new("overview-refresh-1", WorkerTaskKind::Overview);
+        let snapshot = OverviewSnapshot::loading("Refreshing Overview...");
+        let refresh = WorkerEvent::completed(
+            task.clone(),
+            WorkerPayload::Overview(OverviewWorkerPayload::refresh_completed(
+                1,
+                snapshot.clone(),
+            )),
+        );
+        let update = WorkerEvent::completed(
+            task,
+            WorkerPayload::Overview(OverviewWorkerPayload::update_check_completed(
+                1,
+                UpdateBannerState::Disabled,
+            )),
+        );
+
+        assert!(matches!(
+            refresh.payload,
+            WorkerPayload::Overview(OverviewWorkerPayload::RefreshCompleted {
+                refresh_id: 1,
+                snapshot: ref actual,
+            }) if actual.as_ref() == &snapshot
+        ));
+        assert!(matches!(
+            update.payload,
+            WorkerPayload::Overview(OverviewWorkerPayload::UpdateCheckCompleted {
+                refresh_id: 1,
+                update_banner: UpdateBannerState::Disabled,
+            })
+        ));
     }
 
     #[test]

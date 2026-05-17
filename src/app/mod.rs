@@ -5,6 +5,7 @@
 //! intentionally remain static in Phase 1 so tests can lock the shell identity
 //! without launching GUI automation or wiring real tab behavior.
 
+pub mod overview_controller;
 pub mod settings_controller;
 
 /// Reference shell tab labels in their display order.

@@ -9,8 +9,26 @@ import { AboutTab } from "about_tab.slint";
 export component MainWindow inherits Window {
     in-out property <string> update-source: "nexus";
     in-out property <string> log-level: "info";
+    in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
+    in-out property <bool> overview-refresh-busy: false;
+    in-out property <string> overview-top-status: "Mod Manager: Unknown\nGame Path: Unknown\nVersion: Unknown\nPC Specs: Unknown";
+    in-out property <string> overview-binary-status: "No binary facts collected yet.";
+    in-out property <string> overview-archive-status: "No archive facts collected yet.";
+    in-out property <string> overview-module-status: "No module facts collected yet.";
+    in-out property <string> overview-problems-summary: "Problems: 0";
+    in-out property <string> overview-update-heading: "";
+    in-out property <string> overview-nexus-update-label: "Nexus Mods";
+    in-out property <bool> overview-nexus-update-enabled: false;
+    in-out property <string> overview-github-update-label: "GitHub";
+    in-out property <bool> overview-github-update-enabled: false;
+    in-out property <bool> overview-game-path-enabled: false;
+    in-out property <string> overview-last-action-error: "";
     callback update-source-selected(string);
     callback log-level-selected(string);
+    callback overview-refresh-requested();
+    callback overview-open-game-path-requested();
+    callback overview-open-nexus-update-requested();
+    callback overview-open-github-update-requested();
 
     title: "Collective Modding Toolkit";
     width: 900px;
@@ -20,7 +38,34 @@ export component MainWindow inherits Window {
     TabWidget {
         Tab {
             title: "Overview";
-            OverviewTab {}
+            OverviewTab {
+                overview-refresh-message <=> root.overview-refresh-message;
+                overview-refresh-busy <=> root.overview-refresh-busy;
+                overview-top-status <=> root.overview-top-status;
+                overview-binary-status <=> root.overview-binary-status;
+                overview-archive-status <=> root.overview-archive-status;
+                overview-module-status <=> root.overview-module-status;
+                overview-problems-summary <=> root.overview-problems-summary;
+                overview-update-heading <=> root.overview-update-heading;
+                overview-nexus-update-label <=> root.overview-nexus-update-label;
+                overview-nexus-update-enabled <=> root.overview-nexus-update-enabled;
+                overview-github-update-label <=> root.overview-github-update-label;
+                overview-github-update-enabled <=> root.overview-github-update-enabled;
+                overview-game-path-enabled <=> root.overview-game-path-enabled;
+                overview-last-action-error <=> root.overview-last-action-error;
+                refresh-requested => {
+                    root.overview-refresh-requested();
+                }
+                open-game-path-requested => {
+                    root.overview-open-game-path-requested();
+                }
+                open-nexus-update-requested => {
+                    root.overview-open-nexus-update-requested();
+                }
+                open-github-update-requested => {
+                    root.overview-open-github-update-requested();
+                }
+            }
         }
 
         Tab {

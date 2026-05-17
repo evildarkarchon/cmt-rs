@@ -1,20 +1,175 @@
-export component OverviewTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { Button, GroupBox } from "std-widgets.slint";
 
-        Text {
-            text: "Overview";
-            font-size: 18px;
-            font-weight: 600;
-            horizontal-alignment: center;
+component OverviewStatusBlock inherits Rectangle {
+    in property <string> title;
+    in property <string> body;
+
+    min-height: 116px;
+
+    GroupBox {
+        title: root.title;
+
+        VerticalLayout {
+            padding: 8px;
+            spacing: 4px;
+            alignment: start;
+
+            Text {
+                text: root.body;
+                font-size: 13px;
+                color: #f3f3f3;
+            }
+        }
+    }
+}
+
+export component OverviewTab inherits Rectangle {
+    in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
+    in-out property <bool> overview-refresh-busy: false;
+    in-out property <string> overview-top-status: "Mod Manager: Unknown\nGame Path: Unknown\nVersion: Unknown\nPC Specs: Unknown";
+    in-out property <string> overview-binary-status: "No binary facts collected yet.";
+    in-out property <string> overview-archive-status: "No archive facts collected yet.";
+    in-out property <string> overview-module-status: "No module facts collected yet.";
+    in-out property <string> overview-problems-summary: "Problems: 0";
+    in-out property <string> overview-update-heading: "";
+    in-out property <string> overview-nexus-update-label: "Nexus Mods";
+    in-out property <bool> overview-nexus-update-enabled: false;
+    in-out property <string> overview-github-update-label: "GitHub";
+    in-out property <bool> overview-github-update-enabled: false;
+    in-out property <bool> overview-game-path-enabled: false;
+    in-out property <string> overview-last-action-error: "";
+
+    callback refresh-requested();
+    callback open-game-path-requested();
+    callback open-nexus-update-requested();
+    callback open-github-update-requested();
+
+    background: #202020;
+
+    VerticalLayout {
+        padding: 20px;
+        spacing: 12px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 12px;
+            alignment: start;
+
+            Text {
+                text: "Overview";
+                font-size: 18px;
+                font-weight: 600;
+                color: #f3f3f3;
+                vertical-alignment: center;
+            }
+
+            Text {
+                text: root.overview-refresh-message;
+                font-size: 13px;
+                color: root.overview-refresh-busy ? #4da3ff : #c8c8c8;
+                vertical-alignment: center;
+            }
+
+            Button {
+                text: "Refresh";
+                enabled: !root.overview-refresh-busy;
+                clicked => {
+                    root.refresh-requested();
+                }
+            }
+
+            Button {
+                text: "Open Game Path";
+                enabled: root.overview-game-path-enabled;
+                clicked => {
+                    root.open-game-path-requested();
+                }
+            }
         }
 
-        Text {
-            text: "Overview behavior is reserved for a later port phase.";
-            font-size: 14px;
-            horizontal-alignment: center;
+        Rectangle {
+            visible: root.overview-last-action-error != "";
+            height: root.overview-last-action-error != "" ? 28px : 0px;
+            background: #4a2424;
+            border-color: #d36b6b;
+            border-width: 1px;
+            border-radius: 4px;
+
+            Text {
+                text: root.overview-last-action-error;
+                color: #ffd6d6;
+                font-size: 13px;
+                x: 8px;
+                y: 5px;
+            }
+        }
+
+        Rectangle {
+            visible: root.overview-update-heading != "";
+            height: root.overview-update-heading != "" ? 42px : 0px;
+            background: #26364a;
+            border-color: #4da3ff;
+            border-width: 1px;
+            border-radius: 4px;
+
+            HorizontalLayout {
+                padding: 6px;
+                spacing: 8px;
+                alignment: start;
+
+                Text {
+                    text: root.overview-update-heading;
+                    color: #f3f3f3;
+                    font-size: 13px;
+                    vertical-alignment: center;
+                }
+
+                Button {
+                    text: root.overview-nexus-update-label;
+                    enabled: root.overview-nexus-update-enabled;
+                    clicked => {
+                        root.open-nexus-update-requested();
+                    }
+                }
+
+                Button {
+                    text: root.overview-github-update-label;
+                    enabled: root.overview-github-update-enabled;
+                    clicked => {
+                        root.open-github-update-requested();
+                    }
+                }
+            }
+        }
+
+        OverviewStatusBlock {
+            title: "Status";
+            body: root.overview-top-status;
+        }
+
+        HorizontalLayout {
+            spacing: 12px;
+            alignment: start;
+
+            OverviewStatusBlock {
+                title: "Binaries (EXE/DLL/BIN)";
+                body: root.overview-binary-status;
+            }
+
+            OverviewStatusBlock {
+                title: "Archives (BA2)";
+                body: root.overview-archive-status;
+            }
+
+            OverviewStatusBlock {
+                title: "Modules (ESM/ESL/ESP)";
+                body: root.overview-module-status;
+            }
+        }
+
+        OverviewStatusBlock {
+            title: "Problems";
+            body: root.overview-problems-summary;
         }
     }
 }

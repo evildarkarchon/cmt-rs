@@ -41,9 +41,19 @@ impl<R: AssetResolver> SettingsController<R> {
         }
     }
 
+    /// Returns a read-only snapshot of the last successfully persisted settings.
+    pub fn current_settings(&self) -> &AppSettings {
+        &self.last_persisted
+    }
+
+    /// Returns the typed update-source value from the current settings snapshot.
+    pub const fn current_update_source(&self) -> UpdateSource {
+        self.last_persisted.update_source
+    }
+
     /// Returns the update-source value Slint should display for the current snapshot.
     pub fn visible_update_source(&self) -> &'static str {
-        self.last_persisted.update_source.as_wire_value()
+        self.current_update_source().as_wire_value()
     }
 
     /// Returns the lowercase log-level value Slint should display for the current snapshot.
