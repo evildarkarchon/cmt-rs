@@ -134,6 +134,15 @@ export component SettingsTab inherits Rectangle {
                     }
 
                     SettingsRadioOption {
+                        text: "Warning";
+                        checked: root.log-level == "warning";
+                        selected => {
+                            root.log-level = "warning";
+                            root.log-level-selected("warning");
+                        }
+                    }
+
+                    SettingsRadioOption {
                         text: "Error";
                         checked: root.log-level == "error";
                         selected => {

@@ -73,8 +73,8 @@ impl<R: AssetResolver> SettingsController<R> {
 
     /// Persists a Log Level radio selection and returns the lowercase UI value to show.
     ///
-    /// Slint emits lowercase values (`debug`, `info`, `error`), while the domain
-    /// model persists uppercase wire values. Unsupported callback strings are
+    /// Slint emits lowercase values, while the domain model persists uppercase
+    /// wire values. Unsupported callback strings are
     /// repaired to `INFO` before saving so tampered UI input cannot persist an
     /// unrepresented radio state.
     pub fn select_log_level(&mut self, selected: &str) -> &'static str {
@@ -134,6 +134,7 @@ fn ui_value_to_log_level(value: &str) -> Option<LogLevel> {
     match value {
         "debug" => Some(LogLevel::Debug),
         "info" => Some(LogLevel::Info),
+        "warning" => Some(LogLevel::Warning),
         "error" => Some(LogLevel::Error),
         _ => None,
     }
@@ -193,6 +194,23 @@ mod tests {
         let persisted = fs::read_to_string(settings_path).expect("settings should persist");
         let persisted_json = persisted_json(&persisted);
         assert_eq!(persisted_json["log_level"], "DEBUG");
+    }
+
+    #[test]
+    fn settings_controller_saves_warning_log_level_as_uppercase_wire_value() {
+        let (_root, settings_path) = isolated_settings_path("warning-log-level-save");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(store).expect("controller should load");
+
+        let visible_value = controller.select_log_level("warning");
+
+        assert_eq!(visible_value, "warning");
+        let persisted = fs::read_to_string(settings_path).expect("settings should persist");
+        let persisted_json = persisted_json(&persisted);
+        assert_eq!(persisted_json["log_level"], "WARNING");
     }
 
     #[test]
