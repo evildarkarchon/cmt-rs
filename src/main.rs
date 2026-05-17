@@ -20,7 +20,8 @@ mod tests {
     };
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
-    const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
+    const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
+    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 5] = [
         (
             "ui/overview_tab.slint",
             "OverviewTab",
@@ -46,12 +47,6 @@ mod tests {
             include_str!("../ui/tools_tab.slint"),
         ),
         (
-            "ui/settings_tab.slint",
-            "SettingsTab",
-            "Settings",
-            include_str!("../ui/settings_tab.slint"),
-        ),
-        (
             "ui/about_tab.slint",
             "AboutTab",
             "About",
@@ -69,6 +64,17 @@ mod tests {
             .filter_map(|value| value.strip_suffix('"'))
             .map(String::from)
             .collect()
+    }
+
+    fn assert_source_contains_in_order(source: &str, expected: &[&str]) {
+        let mut search_from = 0;
+
+        for value in expected {
+            let relative_index = source[search_from..]
+                .find(value)
+                .unwrap_or_else(|| panic!("expected source to contain {value:?} after byte {search_from}"));
+            search_from += relative_index + value.len();
+        }
     }
 
     #[test]
@@ -122,7 +128,7 @@ mod tests {
             "spawn",
         ];
 
-        for (file, component, label, source) in TAB_COMPONENTS {
+        for (file, component, label, source) in INERT_TAB_COMPONENTS {
             assert_eq!(
                 source.matches("export component ").count(),
                 1,
@@ -150,6 +156,53 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn settings_tab_update_channel_labels() {
+        assert_source_contains_in_order(
+            SETTINGS_SLINT,
+            &[
+                "title: \"Update Channel\"",
+                "text: \"All: GitHub & Nexus Mods\"",
+                "root.update-source = \"both\"",
+                "root.update-source-selected(\"both\")",
+                "text: \"Early: GitHub\"",
+                "root.update-source = \"github\"",
+                "root.update-source-selected(\"github\")",
+                "text: \"Stable: Nexus Mods\"",
+                "root.update-source = \"nexus\"",
+                "root.update-source-selected(\"nexus\")",
+                "text: \"Never: Don't Check\"",
+                "root.update-source = \"none\"",
+                "root.update-source-selected(\"none\")",
+            ],
+        );
+
+        assert!(SETTINGS_SLINT.contains("in-out property <string> update-source"));
+        assert!(SETTINGS_SLINT.contains("callback update-source-selected(string)"));
+    }
+
+    #[test]
+    fn settings_tab_log_level_labels() {
+        assert_source_contains_in_order(
+            SETTINGS_SLINT,
+            &[
+                "title: \"Log Level\"",
+                "text: \"Debug\"",
+                "root.log-level = \"debug\"",
+                "root.log-level-selected(\"debug\")",
+                "text: \"Info\"",
+                "root.log-level = \"info\"",
+                "root.log-level-selected(\"info\")",
+                "text: \"Error\"",
+                "root.log-level = \"error\"",
+                "root.log-level-selected(\"error\")",
+            ],
+        );
+
+        assert!(SETTINGS_SLINT.contains("in-out property <string> log-level"));
+        assert!(SETTINGS_SLINT.contains("callback log-level-selected(string)"));
     }
 
     #[test]
