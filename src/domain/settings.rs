@@ -63,7 +63,8 @@ impl AppSettings {
     /// D-11. Valid objects preserve each valid known key independently and report
     /// diagnostics for keys that need default repair or removal.
     pub fn from_json_str(source: &str) -> Result<SettingsRepairResult, SettingsParseError> {
-        let value: Value = serde_json::from_str(source).map_err(SettingsParseError::MalformedJson)?;
+        let value: Value =
+            serde_json::from_str(source).map_err(SettingsParseError::MalformedJson)?;
         let object = value.as_object().ok_or(SettingsParseError::NonObjectRoot)?;
         Ok(Self::apply_json_object(object))
     }
@@ -88,16 +89,16 @@ impl AppSettings {
             match key.as_str() {
                 LOG_LEVEL_KEY => match value.as_str().and_then(LogLevel::from_wire_value) {
                     Some(log_level) => settings.log_level = log_level,
-                    None if value.is_string() => diagnostics.push(RepairDiagnostic::InvalidValue {
-                        key: key.clone(),
-                    }),
+                    None if value.is_string() => {
+                        diagnostics.push(RepairDiagnostic::InvalidValue { key: key.clone() })
+                    }
                     None => diagnostics.push(RepairDiagnostic::InvalidType { key: key.clone() }),
                 },
                 UPDATE_SOURCE_KEY => match value.as_str().and_then(UpdateSource::from_wire_value) {
                     Some(update_source) => settings.update_source = update_source,
-                    None if value.is_string() => diagnostics.push(RepairDiagnostic::InvalidValue {
-                        key: key.clone(),
-                    }),
+                    None if value.is_string() => {
+                        diagnostics.push(RepairDiagnostic::InvalidValue { key: key.clone() })
+                    }
                     None => diagnostics.push(RepairDiagnostic::InvalidType { key: key.clone() }),
                 },
                 SCANNER_OVERVIEW_ISSUES_KEY => apply_bool(
@@ -106,12 +107,9 @@ impl AppSettings {
                     &mut settings.scanner.overview_issues,
                     &mut diagnostics,
                 ),
-                SCANNER_ERRORS_KEY => apply_bool(
-                    value,
-                    key,
-                    &mut settings.scanner.errors,
-                    &mut diagnostics,
-                ),
+                SCANNER_ERRORS_KEY => {
+                    apply_bool(value, key, &mut settings.scanner.errors, &mut diagnostics)
+                }
                 SCANNER_WRONG_FORMAT_KEY => apply_bool(
                     value,
                     key,
@@ -382,7 +380,9 @@ mod tests {
     #[test]
     fn settings_persist_reference_keys() {
         let json = AppSettings::default().to_json_value();
-        let object = json.as_object().expect("settings should serialize as object");
+        let object = json
+            .as_object()
+            .expect("settings should serialize as object");
 
         let mut keys: Vec<&str> = object.keys().map(String::as_str).collect();
         keys.sort_unstable();
