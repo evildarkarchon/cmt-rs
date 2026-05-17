@@ -1,6 +1,9 @@
 //! Filesystem-backed settings store for reference-compatible CMT settings IO.
 
-use std::{fs, io, path::{Path, PathBuf}};
+use std::{
+    fs, io,
+    path::{Path, PathBuf},
+};
 
 use crate::domain::settings::{AppSettings, RepairDiagnostic, SettingsParseError, UpdateSource};
 
@@ -29,7 +32,9 @@ pub struct FileAssetResolver {
 impl FileAssetResolver {
     /// Creates a resolver for an explicit `download-source.txt` path.
     pub fn new(download_source_path: PathBuf) -> Self {
-        Self { download_source_path }
+        Self {
+            download_source_path,
+        }
     }
 
     /// Creates the production resolver for `assets/download-source.txt`.
@@ -168,8 +173,10 @@ impl<R: AssetResolver> SettingsStore<R> {
     /// invalid values, remove unknown keys on resave, and return diagnostics for
     /// later logging without surfacing UI errors.
     pub fn load(&self) -> io::Result<LoadedSettings> {
-        let mut defaults = AppSettings::default();
-        defaults.update_source = self.default_update_source();
+        let defaults = AppSettings {
+            update_source: self.default_update_source(),
+            ..Default::default()
+        };
 
         let source = match fs::read_to_string(&self.paths.settings_path) {
             Ok(source) => source,
@@ -220,8 +227,8 @@ impl<R: AssetResolver> SettingsStore<R> {
     /// never persisted and later UI/controller code can revert state if this file
     /// write fails.
     pub fn save(&self, settings: &AppSettings) -> io::Result<()> {
-        let mut json = serde_json::to_string_pretty(&settings.to_json_value())
-            .map_err(io::Error::other)?;
+        let mut json =
+            serde_json::to_string_pretty(&settings.to_json_value()).map_err(io::Error::other)?;
         json.push('\n');
         fs::write(&self.paths.settings_path, json)
     }
@@ -229,7 +236,11 @@ impl<R: AssetResolver> SettingsStore<R> {
 
 #[cfg(test)]
 mod tests {
-    use std::{fs, path::PathBuf, time::{SystemTime, UNIX_EPOCH}};
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
 
     use crate::domain::settings::{AppSettings, LogLevel, UpdateSource};
 
@@ -247,7 +258,8 @@ mod tests {
         let temp_root = std::env::temp_dir().join("cmt-rs-settings-store-red");
         let settings_path = temp_root.join("isolated-settings.json");
         let asset_path = temp_root.join("download-source.txt");
-        let paths = SettingsPaths::injected(settings_path.clone(), FileAssetResolver::new(asset_path));
+        let paths =
+            SettingsPaths::injected(settings_path.clone(), FileAssetResolver::new(asset_path));
         let store = SettingsStore::new(paths);
 
         assert_eq!(store.settings_path(), settings_path.as_path());
@@ -270,7 +282,9 @@ mod tests {
             StaticAssetResolver::new(Some("github")),
         );
 
-        let loaded = store.load().expect("missing settings should create defaults");
+        let loaded = store
+            .load()
+            .expect("missing settings should create defaults");
 
         assert_eq!(loaded.settings.update_source, UpdateSource::Github);
         assert!(settings_path.is_file());
@@ -287,11 +301,14 @@ mod tests {
             StaticAssetResolver::new(Some("both")),
         );
 
-        let loaded = store.load().expect("malformed JSON should reset to defaults");
+        let loaded = store
+            .load()
+            .expect("malformed JSON should reset to defaults");
 
         assert!(loaded.reset_to_defaults);
         assert_eq!(loaded.settings.update_source, UpdateSource::Both);
-        let persisted = fs::read_to_string(settings_path).expect("defaults should replace malformed JSON");
+        let persisted =
+            fs::read_to_string(settings_path).expect("defaults should replace malformed JSON");
         assert_eq!(persisted_json(&persisted)["update_source"], "both");
     }
 
@@ -319,7 +336,8 @@ mod tests {
         assert_eq!(loaded.settings.log_level, LogLevel::Info);
         assert_eq!(loaded.settings.update_source, UpdateSource::Github);
         assert!(!loaded.settings.scanner.overview_issues);
-        let persisted = fs::read_to_string(settings_path).expect("repaired settings should be persisted");
+        let persisted =
+            fs::read_to_string(settings_path).expect("repaired settings should be persisted");
         let persisted_json = persisted_json(&persisted);
         assert_eq!(persisted_json["log_level"], "INFO");
         assert_eq!(persisted_json["update_source"], "github");
@@ -334,7 +352,9 @@ mod tests {
             StaticAssetResolver::new(Some("nexus")),
         );
 
-        store.save(&AppSettings::default()).expect("default settings should save");
+        store
+            .save(&AppSettings::default())
+            .expect("default settings should save");
 
         let persisted = fs::read_to_string(settings_path).expect("settings should be readable");
         let object = persisted_json(&persisted);
@@ -364,8 +384,10 @@ mod tests {
     #[test]
     fn settings_save_failure_is_returned() {
         let (_root, settings_path) = isolated_settings_path("save-failure");
-        fs::create_dir_all(&settings_path).expect("directory at settings path should block file write");
-        let store = SettingsStore::with_asset_resolver(settings_path, StaticAssetResolver::new(None));
+        fs::create_dir_all(&settings_path)
+            .expect("directory at settings path should block file write");
+        let store =
+            SettingsStore::with_asset_resolver(settings_path, StaticAssetResolver::new(None));
 
         let error = store
             .save(&AppSettings::default())
