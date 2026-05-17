@@ -7,6 +7,11 @@ import { SettingsTab } from "settings_tab.slint";
 import { AboutTab } from "about_tab.slint";
 
 export component MainWindow inherits Window {
+    in-out property <string> update-source: "nexus";
+    in-out property <string> log-level: "info";
+    callback update-source-selected(string);
+    callback log-level-selected(string);
+
     title: "Collective Modding Toolkit";
     width: 900px;
     height: 640px;
@@ -35,7 +40,16 @@ export component MainWindow inherits Window {
 
         Tab {
             title: "Settings";
-            SettingsTab {}
+            SettingsTab {
+                update-source <=> root.update-source;
+                log-level <=> root.log-level;
+                update-source-selected(value) => {
+                    root.update-source-selected(value);
+                }
+                log-level-selected(value) => {
+                    root.log-level-selected(value);
+                }
+            }
         }
 
         Tab {

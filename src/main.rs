@@ -3,11 +3,64 @@ pub mod domain;
 pub mod platform;
 pub mod workers;
 
+use std::{cell::RefCell, rc::Rc};
+
+use app::settings_controller::SettingsController;
+use domain::settings::AppSettings;
+use platform::settings_store::{FileAssetResolver, SettingsStore};
+use slint::ComponentHandle;
+
 slint::include_modules!();
 
-fn main() -> Result<(), slint::PlatformError> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = MainWindow::new()?;
-    app.run()
+    let controller = load_settings_controller();
+
+    app.set_update_source(controller.visible_update_source().into());
+    app.set_log_level(controller.visible_log_level().into());
+    bind_settings_callbacks(&app, controller);
+
+    Ok(app.run()?)
+}
+
+fn load_settings_controller() -> SettingsController<FileAssetResolver> {
+    SettingsController::load(SettingsStore::production()).unwrap_or_else(|error| {
+        tracing::error!(%error, "Settings : Failed to load settings; using in-memory defaults");
+        SettingsController::from_settings(SettingsStore::production(), AppSettings::default())
+    })
+}
+
+fn bind_settings_callbacks(
+    app: &MainWindow,
+    controller: SettingsController<FileAssetResolver>,
+) {
+    let controller = Rc::new(RefCell::new(controller));
+
+    app.on_update_source_selected({
+        let app = app.as_weak();
+        let controller = Rc::clone(&controller);
+
+        move |selected| {
+            let visible_value = controller
+                .borrow_mut()
+                .select_update_source(selected.as_str());
+            if let Some(app) = app.upgrade() {
+                app.set_update_source(visible_value.into());
+            }
+        }
+    });
+
+    app.on_log_level_selected({
+        let app = app.as_weak();
+        let controller = Rc::clone(&controller);
+
+        move |selected| {
+            let visible_value = controller.borrow_mut().select_log_level(selected.as_str());
+            if let Some(app) = app.upgrade() {
+                app.set_log_level(visible_value.into());
+            }
+        }
+    });
 }
 
 #[cfg(test)]
@@ -216,6 +269,24 @@ mod tests {
 
         assert!(SETTINGS_SLINT.contains("in-out property <string> log-level"));
         assert!(SETTINGS_SLINT.contains("callback log-level-selected(string)"));
+    }
+
+    #[test]
+    fn main_window_forwards_settings_tab_api() {
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "in-out property <string> update-source",
+                "in-out property <string> log-level",
+                "callback update-source-selected(string)",
+                "callback log-level-selected(string)",
+                "SettingsTab {",
+                "update-source <=> root.update-source",
+                "log-level <=> root.log-level",
+                "root.update-source-selected(value)",
+                "root.log-level-selected(value)",
+            ],
+        );
     }
 
     #[test]

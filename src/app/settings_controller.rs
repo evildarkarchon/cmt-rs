@@ -26,10 +26,19 @@ impl<R: AssetResolver> SettingsController<R> {
     pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
         let loaded = store.load()?;
 
-        Ok(Self {
+        Ok(Self::from_settings(store, loaded.settings))
+    }
+
+    /// Creates a controller around a known settings snapshot without loading from disk.
+    ///
+    /// This is used as a startup fallback when the production store cannot load or
+    /// create `settings.json`; subsequent selections still attempt to save through
+    /// the same store and revert to this snapshot if persistence continues to fail.
+    pub fn from_settings(store: SettingsStore<R>, settings: AppSettings) -> Self {
+        Self {
             store,
-            last_persisted: loaded.settings,
-        })
+            last_persisted: settings,
+        }
     }
 
     /// Returns the update-source value Slint should display for the current snapshot.
