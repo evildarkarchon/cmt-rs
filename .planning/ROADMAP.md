@@ -38,7 +38,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 3 plans
 Plans:
 - [x] 01-01-PLAN.md — Establish Slint dependency/build pipeline and launch generated MainWindow.
-- [ ] 01-02-PLAN.md — Wire inert reference-order tab components in the Slint shell.
+- [x] 01-02-PLAN.md — Wire inert reference-order tab components in the Slint shell.
 - [ ] 01-03-PLAN.md — Add no-op Rust module boundaries, tab-order test, and final verification gates.
 **UI hint:** yes
 
