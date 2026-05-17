@@ -53,7 +53,12 @@ Plans:
   3. User can choose log levels labeled `Debug`, `Info`, and `Error`, and settings persist `log_level`, `update_source`, scanner toggles, `downgrader_keep_backups`, and `downgrader_delete_deltas`.
   4. Scanner-related settings default to enabled for Overview Issues, Errors, Wrong Format, Loose Previs, Junk Files, Problem Overrides, and Race Subgraphs.
   5. Invalid or incomplete settings preserve valid values and safely fall back to documented defaults for invalid values.
-**Plans:** TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 02-01-PLAN.md — Create typed settings defaults, JSON key contract, and repair tests.
+- [ ] 02-02-PLAN.md — Implement injectable settings file IO, asset fallback, and safe persistence.
+- [ ] 02-03-PLAN.md — Render Settings-tab reference labels and source-level UI contract tests.
+- [ ] 02-04-PLAN.md — Wire Settings callbacks to immediate persistence with save-failure reversion.
 **UI hint:** yes
 
 ### Phase 3: Platform Discovery & Background Adapters
