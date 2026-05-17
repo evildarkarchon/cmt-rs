@@ -5,6 +5,7 @@
 //! user prompts out of the domain-facing behavior so workflows remain testable.
 
 pub mod discovery;
+pub mod overview;
 
 /// No-op service-layer marker reserved for future orchestration state.
 ///
