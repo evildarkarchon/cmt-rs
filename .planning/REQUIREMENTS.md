@@ -17,12 +17,12 @@ Requirements for the initial Rust/Slint port. Each maps to roadmap phases.
 
 ### Settings
 
-- [ ] **SET-01**: User settings load with reference-compatible defaults when no settings file exists.
-- [ ] **SET-02**: User settings persist `log_level`, `update_source`, scanner toggles, `downgrader_keep_backups`, and `downgrader_delete_deltas`.
+- [x] **SET-01**: User settings load with reference-compatible defaults when no settings file exists.
+- [x] **SET-02**: User settings persist `log_level`, `update_source`, scanner toggles, `downgrader_keep_backups`, and `downgrader_delete_deltas`.
 - [ ] **SET-03**: User can choose update channel options matching the reference labels: `All: GitHub & Nexus Mods`, `Early: GitHub`, `Stable: Nexus Mods`, and `Never: Don't Check`.
 - [ ] **SET-04**: User can choose log level options matching the reference labels: `Debug`, `Info`, and `Error`.
-- [ ] **SET-05**: Scanner-related settings default to enabled for Overview Issues, Errors, Wrong Format, Loose Previs, Junk Files, Problem Overrides, and Race Subgraphs.
-- [ ] **SET-06**: Invalid or incomplete settings files fail safely by preserving valid values and falling back to documented defaults for invalid values.
+- [x] **SET-05**: Scanner-related settings default to enabled for Overview Issues, Errors, Wrong Format, Loose Previs, Junk Files, Problem Overrides, and Race Subgraphs.
+- [x] **SET-06**: Invalid or incomplete settings files fail safely by preserving valid values and falling back to documented defaults for invalid values.
 
 ### Platform And Discovery
 
@@ -125,12 +125,12 @@ Which phases cover which requirements. Updated during roadmap creation.
 | FOUND-03 | Phase 1 | Complete |
 | FOUND-04 | Phase 1 | Complete |
 | FOUND-05 | Phase 1 | Complete |
-| SET-01 | Phase 2 | Pending |
-| SET-02 | Phase 2 | Pending |
+| SET-01 | Phase 2 | Complete |
+| SET-02 | Phase 2 | Complete |
 | SET-03 | Phase 2 | Pending |
 | SET-04 | Phase 2 | Pending |
-| SET-05 | Phase 2 | Pending |
-| SET-06 | Phase 2 | Pending |
+| SET-05 | Phase 2 | Complete |
+| SET-06 | Phase 2 | Complete |
 | DISC-01 | Phase 3 | Pending |
 | DISC-02 | Phase 3 | Pending |
 | DISC-03 | Phase 3 | Pending |
