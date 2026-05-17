@@ -1,0 +1,18 @@
+{
+  "id": "6dd8de0b-6ff6-41e1-b019-1fe74ec6cec7",
+  "runtime": "bash",
+  "purpose": "run focused overview diagnostics tests",
+  "script_chars": 31,
+  "started_at": "2026-05-17T11:41:32.580Z",
+  "finished_at": "2026-05-17T11:41:45.497Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12917,
+  "stdout_bytes": 0,
+  "stderr_bytes": 2737,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6dd8de0b-6ff6-41e1-b019-1fe74ec6cec7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6dd8de0b-6ff6-41e1-b019-1fe74ec6cec7.stderr"
+}

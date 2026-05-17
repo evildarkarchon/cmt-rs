@@ -21,7 +21,7 @@
 - [x] **S03: S03** `risk:medium` `depends:[]`
   > After this: Domain and platform tests prove Fallout 4 discovery contracts, fakeable filesystem/registry/process/desktop seams, and worker event handoff without launching the GUI.
 
-- [ ] **S04: Overview Diagnostics & Updates** `risk:medium` `depends:[S03]`
+- [ ] **S04: S04** `risk:medium` `depends:[]`
   > After this: User can see Overview game, binary, archive, module, and update status panels populated from typed discovery and diagnostics.
 
 - [ ] **S05: Tools Shell, Links & About** `risk:medium` `depends:[S04]`

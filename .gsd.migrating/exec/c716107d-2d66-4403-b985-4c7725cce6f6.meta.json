@@ -1,0 +1,18 @@
+{
+  "id": "c716107d-2d66-4403-b985-4c7725cce6f6",
+  "runtime": "bash",
+  "purpose": "format overview diagnostics tests after split",
+  "script_chars": 9,
+  "started_at": "2026-05-17T11:44:20.990Z",
+  "finished_at": "2026-05-17T11:44:21.376Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 386,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c716107d-2d66-4403-b985-4c7725cce6f6.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c716107d-2d66-4403-b985-4c7725cce6f6.stderr"
+}

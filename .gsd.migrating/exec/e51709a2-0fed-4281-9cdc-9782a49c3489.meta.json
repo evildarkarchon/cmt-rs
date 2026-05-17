@@ -1,0 +1,18 @@
+{
+  "id": "e51709a2-0fed-4281-9cdc-9782a49c3489",
+  "runtime": "bash",
+  "purpose": "verify compile after overview diagnostics",
+  "script_chars": 11,
+  "started_at": "2026-05-17T11:46:01.882Z",
+  "finished_at": "2026-05-17T11:46:13.283Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 11401,
+  "stdout_bytes": 0,
+  "stderr_bytes": 744,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e51709a2-0fed-4281-9cdc-9782a49c3489.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e51709a2-0fed-4281-9cdc-9782a49c3489.stderr"
+}

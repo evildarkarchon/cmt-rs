@@ -1,0 +1,18 @@
+{
+  "id": "9019057b-3713-442c-9ea2-f552402b8651",
+  "runtime": "python",
+  "purpose": "verify concrete S04 paths with python",
+  "script_chars": 700,
+  "started_at": "2026-05-17T11:09:12.042Z",
+  "finished_at": "2026-05-17T11:09:12.149Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 107,
+  "stdout_bytes": 629,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9019057b-3713-442c-9ea2-f552402b8651.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9019057b-3713-442c-9ea2-f552402b8651.stderr"
+}

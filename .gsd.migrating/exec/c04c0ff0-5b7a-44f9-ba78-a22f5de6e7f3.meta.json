@@ -1,0 +1,18 @@
+{
+  "id": "c04c0ff0-5b7a-44f9-ba78-a22f5de6e7f3",
+  "runtime": "bash",
+  "purpose": "cargo clippy --all-targets --all-features after clippy fix",
+  "script_chars": 57,
+  "started_at": "2026-05-17T11:28:26.038Z",
+  "finished_at": "2026-05-17T11:28:38.438Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12400,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c04c0ff0-5b7a-44f9-ba78-a22f5de6e7f3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c04c0ff0-5b7a-44f9-ba78-a22f5de6e7f3.stderr"
+}

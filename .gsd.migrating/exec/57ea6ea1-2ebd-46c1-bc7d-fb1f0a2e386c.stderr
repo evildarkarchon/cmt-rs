@@ -1,0 +1,78 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+
+thread 'rustc' (67531) panicked at /rustc-dev/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/slice/index.rs:1031:55:
+slice index starts at 35 but ends at 33
+stack backtrace:
+   0:     0x7b75dd39314b - <<std[e28293b1aa0f68bd]::sys::backtrace::BacktraceLock>::print::DisplayBacktrace as core[c1f1a4ba060b9bfa]::fmt::Display>::fmt
+   1:     0x7b75dda1f408 - core[c1f1a4ba060b9bfa]::fmt::write
+   2:     0x7b75def683b6 - <std[e28293b1aa0f68bd]::sys::stdio::unix::Stderr as std[e28293b1aa0f68bd]::io::Write>::write_fmt
+   3:     0x7b75dd369238 - std[e28293b1aa0f68bd]::panicking::default_hook::{closure#0}
+   4:     0x7b75dd3865b3 - std[e28293b1aa0f68bd]::panicking::default_hook
+   5:     0x7b75dc35cc30 - std[e28293b1aa0f68bd]::panicking::update_hook::<alloc[fdfd2bd8633a6659]::boxed::Box<rustc_driver_impl[e4ca9dd5dd6cf2a8]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x7b75dd386892 - std[e28293b1aa0f68bd]::panicking::panic_with_hook
+   7:     0x7b75dd3692f8 - std[e28293b1aa0f68bd]::panicking::panic_handler::{closure#0}
+   8:     0x7b75dd360029 - std[e28293b1aa0f68bd]::sys::backtrace::__rust_end_short_backtrace::<std[e28293b1aa0f68bd]::panicking::panic_handler::{closure#0}, !>
+   9:     0x7b75dd36ad5d - __rustc[b7974e8690430dd9]::rust_begin_unwind
+  10:     0x7b75da0de82c - core[c1f1a4ba060b9bfa]::panicking::panic_fmt
+  11:     0x7b75db10875d - core[c1f1a4ba060b9bfa]::slice::index::slice_index_fail
+  12:     0x7b75dbc7fae5 - <annotate_snippets[7d52211d2f32161f]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x7b75ded337b7 - annotate_snippets[7d52211d2f32161f]::renderer::render::render
+  14:     0x7b75def81e06 - <rustc_errors[795cd5cf46ddce51]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x7b75def79420 - <rustc_errors[795cd5cf46ddce51]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[795cd5cf46ddce51]::emitter::Emitter>::emit_diagnostic
+  16:     0x7b75def7c976 - <rustc_errors[795cd5cf46ddce51]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x7b75def7c0ef - <rustc_errors[795cd5cf46ddce51]::json::JsonEmitter as rustc_errors[795cd5cf46ddce51]::emitter::Emitter>::emit_diagnostic
+  18:     0x7b75def71661 - <rustc_errors[795cd5cf46ddce51]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x7b75def6f440 - rustc_interface[c8170c4b7b680ee8]::callbacks::track_diagnostic::<core[c1f1a4ba060b9bfa]::option::Option<rustc_span[e3c9a1967c4921fd]::ErrorGuaranteed>>
+  20:     0x7b75def6e4ee - <rustc_errors[795cd5cf46ddce51]::DiagCtxtInner>::emit_diagnostic
+  21:     0x7b75def6e39d - <rustc_errors[795cd5cf46ddce51]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x7b75def6e25b - <() as rustc_errors[795cd5cf46ddce51]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x7b75dea7f229 - rustc_middle[9956b31dc9b62104]::lint::lint_level::lint_level_impl
+  24:     0x7b75ddb6f495 - rustc_ast[462537f8c1e2763b]::visit::walk_item_inner::<rustc_ast[462537f8c1e2763b]::ast::ItemKind, rustc_lint[754bcbf59f34f28d]::early::EarlyContextAndPass<rustc_lint[754bcbf59f34f28d]::BuiltinCombinedEarlyLintPass>>
+  25:     0x7b75ddb6ec1c - rustc_ast[462537f8c1e2763b]::visit::walk_item_inner::<rustc_ast[462537f8c1e2763b]::ast::ItemKind, rustc_lint[754bcbf59f34f28d]::early::EarlyContextAndPass<rustc_lint[754bcbf59f34f28d]::BuiltinCombinedEarlyLintPass>>
+  26:     0x7b75ddb6ec1c - rustc_ast[462537f8c1e2763b]::visit::walk_item_inner::<rustc_ast[462537f8c1e2763b]::ast::ItemKind, rustc_lint[754bcbf59f34f28d]::early::EarlyContextAndPass<rustc_lint[754bcbf59f34f28d]::BuiltinCombinedEarlyLintPass>>
+  27:     0x7b75ddb6ec1c - rustc_ast[462537f8c1e2763b]::visit::walk_item_inner::<rustc_ast[462537f8c1e2763b]::ast::ItemKind, rustc_lint[754bcbf59f34f28d]::early::EarlyContextAndPass<rustc_lint[754bcbf59f34f28d]::BuiltinCombinedEarlyLintPass>>
+  28:     0x7b75ddb6e1d1 - <rustc_lint[754bcbf59f34f28d]::early::EarlyContextAndPass<rustc_lint[754bcbf59f34f28d]::BuiltinCombinedEarlyLintPass> as rustc_ast[462537f8c1e2763b]::visit::Visitor>::visit_item
+  29:     0x7b75de26b2a2 - rustc_interface[c8170c4b7b680ee8]::passes::early_lint_checks
+  30:     0x7b75defec392 - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::SingleCache<rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 0usize]>>, true>
+  31:     0x7b75defebee4 - rustc_query_impl[b21371cac9e22a84]::query_impl::early_lint_checks::execute_query_incr::__rust_end_short_backtrace
+  32:     0x7b75de12b74b - rustc_ast_lowering[9c68caf19a3ce1e4]::lower_to_hir
+  33:     0x7b75dec43068 - rustc_query_impl[b21371cac9e22a84]::query_impl::hir_crate::invoke_provider_fn::__rust_begin_short_backtrace
+  34:     0x7b75dec47169 - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::SingleCache<rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 8usize]>>, true>
+  35:     0x7b75df024ccc - rustc_query_impl[b21371cac9e22a84]::query_impl::hir_crate::execute_query_incr::__rust_end_short_backtrace
+  36:     0x7b75ddb3abf5 - rustc_query_impl[b21371cac9e22a84]::query_impl::opt_hir_owner_nodes::invoke_provider_fn::__rust_begin_short_backtrace
+  37:     0x7b75ddb3c2dd - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_data_structures[2c167692117eb14d]::vec_cache::VecCache<rustc_span[e3c9a1967c4921fd]::def_id::LocalDefId, rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 8usize]>, rustc_middle[9956b31dc9b62104]::dep_graph::graph::DepNodeIndex>, true>
+  38:     0x7b75ddba8e7c - rustc_query_impl[b21371cac9e22a84]::query_impl::opt_hir_owner_nodes::execute_query_incr::__rust_end_short_backtrace
+  39:     0x7b75de2b2ae2 - <rustc_middle[9956b31dc9b62104]::ty::context::TyCtxt>::hir_owner_node
+  40:     0x7b75dec483d1 - rustc_middle[9956b31dc9b62104]::hir::map::hir_crate_items
+  41:     0x7b75dec43d5d - rustc_query_impl[b21371cac9e22a84]::query_impl::hir_crate_items::invoke_provider_fn::__rust_begin_short_backtrace
+  42:     0x7b75dec47169 - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::SingleCache<rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 8usize]>>, true>
+  43:     0x7b75defbfa2e - rustc_query_impl[b21371cac9e22a84]::query_impl::hir_crate_items::execute_query_incr::__rust_end_short_backtrace
+  44:     0x7b75ddb36718 - rustc_interface[c8170c4b7b680ee8]::passes::analysis
+  45:     0x7b75defec447 - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::SingleCache<rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 0usize]>>, true>
+  46:     0x7b75defebdb4 - rustc_query_impl[b21371cac9e22a84]::query_impl::analysis::execute_query_incr::__rust_end_short_backtrace
+  47:     0x7b75dec5632d - rustc_interface[c8170c4b7b680ee8]::interface::run_compiler::<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}
+  48:     0x7b75dec2663e - std[e28293b1aa0f68bd]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_with_globals<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_pool_with_globals<rustc_interface[c8170c4b7b680ee8]::interface::run_compiler<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  49:     0x7b75dec26ca0 - <std[e28293b1aa0f68bd]::thread::lifecycle::spawn_unchecked<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_with_globals<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_pool_with_globals<rustc_interface[c8170c4b7b680ee8]::interface::run_compiler<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[c1f1a4ba060b9bfa]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  50:     0x7b75dec27b2c - <std[e28293b1aa0f68bd]::sys::thread::unix::Thread>::new::thread_start
+  51:     0x7b75d849caa4 - <unknown>
+  52:     0x7b75d8529c6c - <unknown>
+  53:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. This is a bug
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.95.0 (59807616e 2026-04-14) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [early_lint_checks] perform lints prior to AST lowering
+#1 [hir_crate] getting the crate HIR
+... and 3 other queries... use `env RUST_BACKTRACE=1` to see the full query stack
+error: could not compile `cmt-rs` (bin "cmt-rs" test)
+
+Caused by:
+  process didn't exit successfully: `/home/evild/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name cmt_rs --edition=2024 src/main.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=03e9d6f5ccf5a33c -C extra-filename=-d2c18cc8f41c6d82 --out-dir /mnt/j/cmt-rs/target/debug/deps -C incremental=/mnt/j/cmt-rs/target/debug/incremental -L dependency=/mnt/j/cmt-rs/target/debug/deps --extern anyhow=/mnt/j/cmt-rs/target/debug/deps/libanyhow-81e0f801a5d79612.rlib --extern crc32fast=/mnt/j/cmt-rs/target/debug/deps/libcrc32fast-b2a67b3a037cfcf4.rlib --extern directories=/mnt/j/cmt-rs/target/debug/deps/libdirectories-cf96c899867e8500.rlib --extern serde=/mnt/j/cmt-rs/target/debug/deps/libserde-421b923b7a2c2cd3.rlib --extern serde_json=/mnt/j/cmt-rs/target/debug/deps/libserde_json-ca5091d7e4a55b60.rlib --extern slint=/mnt/j/cmt-rs/target/debug/deps/libslint-4aa62da16b79de5d.rlib --extern sysinfo=/mnt/j/cmt-rs/target/debug/deps/libsysinfo-b1c19522d352b99f.rlib --extern thiserror=/mnt/j/cmt-rs/target/debug/deps/libthiserror-3a33a036cbd573ae.rlib --extern tokio=/mnt/j/cmt-rs/target/debug/deps/libtokio-a69ccf949aa36dde.rlib --extern toml=/mnt/j/cmt-rs/target/debug/deps/libtoml-0ceeebc90087f684.rlib --extern tracing=/mnt/j/cmt-rs/target/debug/deps/libtracing-c60ef387cd6a2adb.rlib --extern tracing_subscriber=/mnt/j/cmt-rs/target/debug/deps/libtracing_subscriber-122a5b5b07b5e2a7.rlib --extern walkdir=/mnt/j/cmt-rs/target/debug/deps/libwalkdir-f83c702250a7b97f.rlib -L native=/usr/lib/x86_64-linux-gnu` (exit status: 101)

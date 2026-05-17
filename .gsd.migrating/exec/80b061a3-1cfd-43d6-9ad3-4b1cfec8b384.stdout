@@ -1,0 +1,19 @@
+
+running 14 tests
+test services::overview::overview_diagnostics::overview_diagnostics_imports_reference_mod_manager_kind_for_public_surface ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_discovery_manager_and_system_errors_degrade_to_safe_snapshot ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_successful_old_gen_snapshot_has_reference_counts_and_no_problems ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_old_gen_rejects_next_gen_archive_versions ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_next_gen_allows_missing_steam_loader_and_missing_f4se_path ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_vortex_identity_only_is_detected_with_partial_support_warning ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_anniversary_snapshot_projects_version_and_available_update ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_missing_data_is_partial_not_fatal_even_without_f4se_path ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_missing_enablement_files_and_address_library_are_reported ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_unreadable_invalid_and_wrong_version_records_create_problems ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_boundary_counts_do_not_create_limit_problems ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_mo2_windows_11_24h2_warning_matches_reference_threshold ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_update_banner_states_follow_settings_and_worker_result ... ok
+test services::overview::overview_diagnostics::overview_diagnostics_exceeded_limits_create_reference_problem_feed_entries ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 94 filtered out; finished in 0.01s
+

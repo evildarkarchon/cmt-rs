@@ -1,0 +1,18 @@
+{
+  "id": "00386ef9-a516-469a-ae54-616876f3def6",
+  "runtime": "bash",
+  "purpose": "S04 summarize Rust domain service worker symbols",
+  "script_chars": 830,
+  "started_at": "2026-05-17T10:57:02.381Z",
+  "finished_at": "2026-05-17T10:57:02.508Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 127,
+  "stdout_bytes": 22745,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\00386ef9-a516-469a-ae54-616876f3def6.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\00386ef9-a516-469a-ae54-616876f3def6.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "3a727f40-afae-4a46-bd88-e834522c5f2c",
+  "runtime": "bash",
+  "purpose": "clippy after overview diagnostics",
+  "script_chars": 41,
+  "started_at": "2026-05-17T11:48:52.906Z",
+  "finished_at": "2026-05-17T11:49:04.941Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12035,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3a727f40-afae-4a46-bd88-e834522c5f2c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3a727f40-afae-4a46-bd88-e834522c5f2c.stderr"
+}

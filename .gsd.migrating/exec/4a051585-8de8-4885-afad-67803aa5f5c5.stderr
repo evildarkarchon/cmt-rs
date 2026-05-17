@@ -1,0 +1,23 @@
+    Checking cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: this `impl` can be derived
+    --> src/domain/overview.rs:1419:1
+     |
+1419 | / impl...
+1420 | |     ...
+1421 | |     ...
+1422 | |     ...
+...    |
+1432 | | }
+     | |_^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#derivable_impls
+     = note: `#[warn(clippy::derivable_impls)]` on by default
+help: replace the manual implementation with a derive attribute
+     |
+1296 + #[derive(Default)]
+1297 | pub struct OverviewSnapshot {
+     |
+
+warning: `cmt-rs` (bin "cmt-rs") generated 1 warning (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs -- ` to apply 1 suggestion)
+warning: `cmt-rs` (bin "cmt-rs" test) generated 1 warning (1 duplicate)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 12.09s

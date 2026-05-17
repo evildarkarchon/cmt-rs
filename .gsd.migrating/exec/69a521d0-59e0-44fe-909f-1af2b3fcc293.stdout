@@ -1,0 +1,160 @@
+[src/app]
+  src\app\mod.rs
+  src\app\settings_controller.rs
+[src/domain]
+  src\domain\discovery.rs
+  src\domain\mod.rs
+  src\domain\mod_manager.rs
+  src\domain\settings.rs
+[src/platform]
+  src\platform\desktop.rs
+  src\platform\filesystem.rs
+  src\platform\mod.rs
+  src\platform\process.rs
+  src\platform\registry.rs
+  src\platform\settings_store.rs
+[src/services]
+  src\services\discovery.rs
+  src\services\mod.rs
+[src/workers]
+  src\workers\events.rs
+  src\workers\handoff.rs
+  src\workers\mod.rs
+[ui]
+  ui\about_tab.slint
+  ui\f4se_tab.slint
+  ui\main.slint
+  ui\overview_tab.slint
+  ui\scanner_tab.slint
+  ui\settings_tab.slint
+  ui\tools_tab.slint
+
+Key public definitions:
+-- src/domain/discovery.rs
+    pub enum Fallout4InstallType {
+    impl Fallout4InstallType {
+    impl fmt::Display for Fallout4InstallType {
+    pub struct Fallout4Installation {
+    impl Fallout4Installation {
+    pub enum ArchiveFormat {
+    impl ArchiveFormat {
+    pub enum ArchiveVersion {
+    impl ArchiveVersion {
+    pub struct ArchiveRecord {
+    impl ArchiveRecord {
+    pub enum ModuleHeaderVersion {
+    impl ModuleHeaderVersion {
+    pub enum ModuleKind {
+    pub struct ModuleRecord {
+    impl ModuleRecord {
+    pub struct IniDocument {
+    impl IniDocument {
+    pub struct Fallout4IniFiles {
+    pub struct DiscoveryError {
+    impl DiscoveryError {
+    impl fmt::Display for DiscoveryError {
+    impl std::error::Error for DiscoveryError {}
+    pub enum DiscoveryErrorKind {
+-- src/domain/settings.rs
+    pub struct AppSettings {
+    impl Default for AppSettings {
+    impl AppSettings {
+    pub fn from_json_str(source: &str) -> Result<SettingsRepairResult, SettingsParseError> {
+    pub fn apply_json_object(object: &Map<String, Value>) -> SettingsRepairResult {
+    pub struct SettingsRepairResult {
+    pub enum SettingsParseError {
+    pub enum UpdateSource {
+    impl UpdateSource {
+    pub struct ScannerSettings {
+    impl Default for ScannerSettings {
+    pub struct DowngraderSettings {
+    impl Default for DowngraderSettings {
+-- src/services/discovery.rs
+    pub struct DiscoveryRequest {
+    impl DiscoveryRequest {
+    pub struct DiscoveryReport {
+    pub enum ModManagerDiscoveryError {
+    impl ModManagerDiscoveryError {
+    impl fmt::Display for ModManagerDiscoveryError {
+    impl std::error::Error for ModManagerDiscoveryError {}
+    pub enum DiscoverySource {
+    impl DiscoverySource {
+    pub enum DiscoveryAttemptOutcome {
+    pub struct DiscoveryAttempt {
+    impl DiscoveryAttempt {
+    pub enum ModManagerDiscoveryStage {
+    pub enum ModManagerDiscoveryStepOutcome {
+    pub struct ModManagerDiscoveryStep {
+    impl ModManagerDiscoveryStep {
+    pub struct DiscoveryService<'a, F, R, P>
+    pub fn discover(&self, request: &DiscoveryRequest) -> DiscoveryReport {
+    impl Default for FakeProcessInspector {
+    impl FakeProcessInspector {
+    impl ProcessInspector for FakeProcessInspector {
+-- src/platform/desktop.rs
+    pub struct DesktopActionResult {
+    impl DesktopActionResult {
+    pub enum DesktopActionOutcome {
+    pub trait DesktopActions {
+    pub struct RealDesktopActions;
+    impl RealDesktopActions {
+    impl DesktopActions for RealDesktopActions {
+    impl FakeDesktopActions {
+    impl DesktopActions for FakeDesktopActions {
+-- src/workers/events.rs
+    pub struct WorkerTaskId(String);
+    impl WorkerTaskId {
+    impl From<&str> for WorkerTaskId {
+    impl From<String> for WorkerTaskId {
+    impl fmt::Display for WorkerTaskId {
+    pub enum WorkerTaskKind {
+    impl WorkerTaskKind {
+    impl fmt::Display for WorkerTaskKind {
+    pub struct WorkerTask {
+    impl WorkerTask {
+    pub fn new(id: impl Into<WorkerTaskId>, kind: WorkerTaskKind) -> Self {
+    pub enum WorkerTaskStatus {
+    impl WorkerTaskStatus {
+    impl fmt::Display for WorkerTaskStatus {
+    pub struct WorkerEvent {
+    impl WorkerEvent {
+    pub fn new(task: WorkerTask, status: WorkerTaskStatus, payload: WorkerPayload) -> Self {
+    pub fn running(task: WorkerTask) -> Self {
+    pub fn progress(task: WorkerTask, progress: WorkerProgress) -> Self {
+    pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+    pub fn failed(task: WorkerTask, failure: WorkerFailure) -> Self {
+    pub fn cancellation_requested(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+    pub fn cancellation_acknowledged(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+    pub fn cancelled(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+    pub struct WorkerProgress {
+    impl WorkerProgress {
+    pub struct WorkerMessage {
+    impl WorkerMessage {
+    pub struct WorkerFailure {
+    impl WorkerFailure {
+    pub struct WorkerCancellation {
+    impl WorkerCancellation {
+    pub enum WorkerPayload {
+    impl From<DesktopActionResult> for ExternalActionPayload {
+-- src/workers/mod.rs
+    pub enum WorkerTaskOutcome {
+    pub struct WorkerRuntime;
+    impl WorkerRuntime {
+    pub enum WorkerSpawnError {
+    impl fmt::Display for WorkerSpawnError {
+    impl std::error::Error for WorkerSpawnError {}
+    pub struct WorkerTaskContext<S>
+    pub fn task(&self) -> &WorkerTask {
+    pub fn emit_progress(&self, progress: WorkerProgress) -> WorkerHandoffResult {
+    pub struct WorkerTaskHandle<S>
+    pub fn task(&self) -> &WorkerTask {
+    pub fn request_cancellation(&self, cancellation: WorkerCancellation) -> WorkerHandoffResult {
+-- src/app/settings_controller.rs
+    pub struct SettingsController<R> {
+    pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
+    pub fn from_settings(store: SettingsStore<R>, settings: AppSettings) -> Self {
+    pub fn visible_update_source(&self) -> &'static str {
+    pub fn visible_log_level(&self) -> &'static str {
+    pub fn select_update_source(&mut self, selected: &str) -> &'static str {
+    pub fn select_log_level(&mut self, selected: &str) -> &'static str {
+    impl AppSettings {

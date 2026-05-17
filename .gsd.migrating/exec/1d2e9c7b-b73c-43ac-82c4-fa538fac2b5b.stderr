@@ -1,0 +1,62 @@
+   Compiling serde_core v1.0.228
+   Compiling khronos_api v3.1.0
+   Compiling gl_generator v0.14.0
+   Compiling serde v1.0.228
+   Compiling serde_json v1.0.149
+   Compiling glutin_glx_sys v0.6.1
+   Compiling glutin_egl_sys v0.7.1
+   Compiling i-slint-backend-selector v1.16.1
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+   Compiling quick-xml v0.39.4
+   Compiling zvariant_utils v3.3.1
+   Compiling enumflags2 v0.7.12
+   Compiling i-slint-core-macros v1.16.1
+   Compiling zvariant_derive v5.11.0
+   Compiling wayland-scanner v0.31.10
+   Compiling i-slint-core v1.16.1
+   Compiling glutin v0.32.3
+   Compiling zvariant v5.11.0
+   Compiling wayland-client v0.31.14
+   Compiling zbus_names v4.3.2
+   Compiling wayland-protocols v0.32.12
+   Compiling wayland-cursor v0.31.14
+   Compiling calloop-wayland-source v0.3.0
+   Compiling calloop-wayland-source v0.4.1
+   Compiling softbuffer v0.4.8
+   Compiling zbus_xml v5.1.1
+   Compiling zbus_macros v5.15.0
+   Compiling zbus-lockstep v0.5.2
+   Compiling zbus-lockstep-macros v0.5.2
+   Compiling i-slint-renderer-software v1.16.1
+   Compiling i-slint-renderer-femtovg v1.16.1
+   Compiling wayland-protocols-wlr v0.3.12
+   Compiling wayland-protocols-experimental v20250721.0.1
+   Compiling wayland-protocols-misc v0.3.12
+   Compiling wayland-protocols-plasma v0.3.12
+   Compiling zbus v5.15.0
+   Compiling smithay-client-toolkit v0.19.2
+   Compiling smithay-client-toolkit v0.20.0
+   Compiling sctk-adwaita v0.10.1
+   Compiling smithay-clipboard v0.7.3
+   Compiling copypasta v0.10.2
+   Compiling winit v0.30.13
+   Compiling atspi-common v0.13.0
+   Compiling glutin-winit v0.5.0
+   Compiling atspi-proxies v0.13.0
+   Compiling accesskit_atspi_common v0.15.0
+   Compiling atspi v0.29.0
+   Compiling accesskit_unix v0.18.0
+   Compiling accesskit_winit v0.30.0
+   Compiling i-slint-backend-winit v1.16.1
+   Compiling slint v1.16.1
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 52.23s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-81e5427b761a701f)
+diagnostics: [OverviewCollectionErrorDetail { phase: Binaries, kind: Missing, path: Some("C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2"), safe_message: "Fallout4 - Startup.ba2 was not found for downgrade detection." }, OverviewCollectionErrorDetail { phase: AddressLibrary, kind: Missing, path: Some("C:/Games/Fallout 4/Data/F4SE/Plugins/version-1-10-163-0.bin"), safe_message: "Address Library bin was not found for the detected game version." }]
+fallout4 fact: OverviewBinaryFact { file_name: "Fallout4.exe", path: Some("C:/Games/Fallout 4/Fallout4.exe"), install_type: OldGen, version: Some("1.10.163.0"), hash: None }
+
+thread 'services::overview_collector::overview_collector_tests::overview_collector_classifies_binary_versions_crc_fallback_unknown_and_missing_base_files' (82746) panicked at src/services/overview_collector.rs:1835:9:
+assertion `left == right` failed
+  left: OldGen
+ right: DownGrade
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+error: test failed, to rerun pass `--bin cmt-rs`

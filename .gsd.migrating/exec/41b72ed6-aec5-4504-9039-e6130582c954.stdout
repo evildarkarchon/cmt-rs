@@ -1,0 +1,109 @@
+## CMT/src/tabs/_overview.py lines=983 bytes=31065
+51: class OverviewTab(CMCTabFrame):
+52: def __init__(self, cmc: CMCheckerInterface, notebook: ttk.Notebook) -> None:
+55: def _load(self) -> bool:
+62: def refresh(self) -> None:
+74: def _build_gui(self) -> None:
+211: def build_gui_binaries(self) -> None:
+311: def on_enter(event: Event[ttk.Label], ver: str = version) -> None:
+314: def on_leave(event: Event[ttk.Label], it: str = install_type or "Not Found") -> None:
+329: def build_gui_archives(self) -> None:
+413: def build_gui_modules(self) -> None:
+535: def add_count_label(
+605: def get_file_info(self, file_name: str, file_path: Path) -> FileInfo:
+639: def get_info_binaries(self) -> None:
+710: def get_info_archives(self) -> None:
+855: def get_info_modules(self, *, refresh: bool = False) -> None:
+
+## CMT/src/cm_checker.py lines=219 bytes=6986
+50: class CMChecker(CMCheckerInterface):
+51: def __init__(self, root: Tk, settings: AppSettings) -> None:
+67: def get_image(self, relative_path: str) -> PhotoImage:
+73: def on_close(self) -> None:
+79: def setup_window(self) -> None:
+109: def check_for_updates(self) -> None:
+185: def on_minimize(self, _event: Event[Misc]) -> None:
+195: def on_restore(self, _event: Event[Misc]) -> None:
+205: def on_tab_changed(self, event: Event[ttk.Notebook]) -> None:
+216: def refresh_tab(self, tab: Tab) -> None:
+
+## CMT/src/globals.py lines=351 bytes=12577
+38: NEXUS_LINK = "https://www.nexusmods.com/fallout4/mods/87907"
+40: GITHUB_LINK = "https://github.com/wxMichael/Collective-Modding-Toolkit"
+82: BASE_FILES: dict[str, dict[str, InstallType]] = {
+
+## CMT/src/enums.py lines=122 bytes=3151
+23: class Tool(tuple[str, ...], Enum):
+28: class CSIDL(IntEnum):
+35: class InstallType(StrEnum):
+46: class Magic(bytes, Enum):
+55: class Tab(StrEnum):
+64: class LogType(StrEnum):
+70: class ArchiveVersion(IntEnum):
+76: class ModuleFlag(IntFlag):
+80: class ProblemType(StrEnum):
+94: class SolutionType(StrEnum):
+110: class Language(StrEnum):
+
+## CMT/src/helpers.py lines=315 bytes=8828
+67: class PCInfo:
+68: def __init__(self) -> None:
+76: def _get_os() -> str:
+83: def _get_ram() -> int:
+90: def _get_cpu() -> str:
+108: def _get_gpu() -> tuple[str, int]:
+128: class CMCheckerInterface(ABC):
+129: def __init__(self) -> None:
+141: def refresh_tab(self, tab: Tab) -> None: ...
+144: def get_image(self, relative_path: str) -> PhotoImage: ...
+147: class CMCTabFrame(ttk.Frame, ABC):
+148: def __init__(self, cmc: CMCheckerInterface, notebook: ttk.Notebook, tab_title: str) -> None:
+159: def _load(self) -> bool:  # noqa: PLR6301
+163: def switch_from(self) -> None:  # noqa: PLR6301
+166: def _switch_to(self) -> None:  # noqa: PLR6301
+170: def _build_gui(self) -> None: ...
+172: def refresh(self) -> None:
+176: def load(self) -> None:
+216: def is_loaded(self) -> bool:
+220: class FileInfo(TypedDict):
+228: class DLLInfo(TypedDict):
+236: class ProblemInfo:
+237: def __init__(
+260: class SimpleProblemInfo:
+261: def __init__(
+284: class StdErr:
+285: def __init__(self, root: Tk) -> None:
+291: def create_window(self) -> None:
+299: def write(self, string: str) -> int:
+303: def flush(self) -> None:
+311: def on_close(self) -> None:
+
+## CMT/src/utils.py lines=422 bytes=12133
+61: class F4SEPluginVersionData(ctypes.Structure):
+76: def rglob(path: Path, ext: str) -> Generator[Path]:
+88: def is_file(path: Path) -> bool:
+110: def is_dir(path: Path) -> bool:
+121: def exists(path: Path) -> bool:
+147: def read_text_encoded(file_path: Path) -> tuple[str, str]:
+153: def load_font(font_path: str) -> None:
+161: def get_environment_path(location: CSIDL) -> Path:
+171: def is_fo4_dir(path: Path) -> bool:
+175: def find_mod_manager() -> ModManagerInfo | None:
+197: def get_asset_path(relative_path: str) -> Path:
+203: def block_text_input(event: Event[Text]) -> str | None:
+210: def get_file_version(path: Path) -> tuple[int, int, int, int] | None:
+225: def get_crc32(file_path: Path, chunk_size: int = 65536, max_chunks: int | None = None, *, skip_ba2_header: bool = False) -> str:
+240: def parse_dll(file_path: Path) -> DLLInfo:
+265: def ver_to_str(version: str | tuple[int, int, int, int]) -> str:
+272: def get_registry_value(key: int, subkey: str, value_name: str) -> str | None:
+286: def copy_text(widget: ttk.Widget, text: str) -> None:
+291: def copy_text_button(button: ttk.Button, text: str) -> None:
+299: def add_separator(master: Misc, orient: Literal["horizontal", "vertical"], column: int, row: int, span: int) -> None:
+307: def set_titlebar_style(window: Misc) -> None:
+314: def set_theme(win: Tk) -> None:
+346: def check_for_update_nexus() -> str | None:
+381: def check_for_update_github() -> str | None:
+410: def read_uint(source: io.BufferedIOBase) -> int: ...
+412: def read_uint(source: io.BufferedIOBase, count: int) -> tuple[int, ...]: ...
+413: def read_uint(source: io.BufferedIOBase, count: int = 1) -> int | tuple[int, ...]:
+

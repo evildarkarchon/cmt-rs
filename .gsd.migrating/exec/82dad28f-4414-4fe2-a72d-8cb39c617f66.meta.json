@@ -1,0 +1,18 @@
+{
+  "id": "82dad28f-4414-4fe2-a72d-8cb39c617f66",
+  "runtime": "bash",
+  "purpose": "format overview diagnostics service after fix",
+  "script_chars": 9,
+  "started_at": "2026-05-17T11:42:52.437Z",
+  "finished_at": "2026-05-17T11:42:52.811Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 374,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\82dad28f-4414-4fe2-a72d-8cb39c617f66.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\82dad28f-4414-4fe2-a72d-8cb39c617f66.stderr"
+}

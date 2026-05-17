@@ -1,0 +1,18 @@
+{
+  "id": "bbdf8e82-ca00-4c51-a2cf-6dee1561c136",
+  "runtime": "bash",
+  "purpose": "cargo test overview_collector with warnings suppressed after behavior fixes",
+  "script_chars": 53,
+  "started_at": "2026-05-17T12:09:48.061Z",
+  "finished_at": "2026-05-17T12:11:06.269Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 78208,
+  "stdout_bytes": 1901,
+  "stderr_bytes": 7976,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bbdf8e82-ca00-4c51-a2cf-6dee1561c136.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bbdf8e82-ca00-4c51-a2cf-6dee1561c136.stderr"
+}

@@ -1,0 +1,494 @@
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:19:
+         Fallout4Installation, ModuleHeaderVersion, ModuleKind, ModuleRecord,
+     },
+     platform::{
+[32m+        PlatformError, PlatformErrorKind,
+(B[m         filesystem::{DirectoryEntry, FileType, Filesystem},
+         process::{ProcessInspector, VersionMetadata},
+[31m-        PlatformError, PlatformErrorKind,
+(B[m     },
+     services::overview::{
+         OverviewAddressLibraryFact, OverviewBinaryFact, OverviewEnablementFacts,
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:89:
+         relative_path: "steam_api64.dll",
+         classifications: &[
+             BaseFileClassification::version("2.89.45.4", Fallout4InstallType::OldGen),
+[31m-            BaseFileClassification::version(
+(B[m[31m-                "7.40.51.27",
+(B[m[31m-                Fallout4InstallType::NextGenAnniversary,
+(B[m[31m-            ),
+(B[m[32m+            BaseFileClassification::version("7.40.51.27", Fallout4InstallType::NextGenAnniversary),
+(B[m             BaseFileClassification::hash("BD3AA35F", Fallout4InstallType::OldGen),
+         ],
+     },
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:528:
+ 
+         let version = self.read_version_string(path, diagnostics);
+         if let Some(version) = version.as_deref() {
+[31m-            if let Some(install_type) = lookup_install_type(
+(B[m[31m-                definition,
+(B[m[31m-                BinaryClassificationSource::Version,
+(B[m[31m-                version,
+(B[m[31m-            ) {
+(B[m[32m+            if let Some(install_type) =
+(B[m[32m+                lookup_install_type(definition, BinaryClassificationSource::Version, version)
+(B[m[32m+            {
+(B[m                 return OverviewBinaryFact::new(definition.relative_path, install_type)
+                     .with_path(path.to_path_buf())
+                     .with_version_metadata(Some(version.to_owned()), None::<String>);
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:552:
+         };
+         let install_type = hash
+             .as_deref()
+[31m-            .and_then(|hash| lookup_install_type(definition, BinaryClassificationSource::Hash, hash))
+(B[m[32m+            .and_then(|hash| {
+(B[m[32m+                lookup_install_type(definition, BinaryClassificationSource::Hash, hash)
+(B[m[32m+            })
+(B[m             .unwrap_or(Fallout4InstallType::Unknown);
+ 
+         OverviewBinaryFact::new(definition.relative_path, install_type)
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:705:
+         }
+ 
+         let ccc_path = installation.game_path.join("Fallout4.ccc");
+[31m-        self.collect_fallout4_ccc(
+(B[m[31m-            &ccc_path,
+(B[m[31m-            data_index,
+(B[m[31m-            &mut collection,
+(B[m[31m-            diagnostics,
+(B[m[31m-        );
+(B[m[32m+        self.collect_fallout4_ccc(&ccc_path, data_index, &mut collection, diagnostics);
+(B[m 
+         self.collect_plugins_txt(environment, data_index, &mut collection, diagnostics);
+         self.collect_ini_enabled_archives(
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:866:
+         };
+ 
+         match self.filesystem.metadata(&plugins_path) {
+[31m-            Ok(metadata) if metadata.is_file() => match self.filesystem.read_to_string(&plugins_path) {
+(B[m[31m-                Ok(text) => {
+(B[m[31m-                    collection.facts.plugins_txt = OverviewFilePresence::present(&plugins_path);
+(B[m[31m-                    if let Some(index) = data_index {
+(B[m[31m-                        for line in text.lines().map(clean_enablement_line) {
+(B[m[31m-                            if let Some(plugin) = line.strip_prefix('*') {
+(B[m[31m-                                if let Some(path) = index.resolve_relative(plugin.trim()) {
+(B[m[31m-                                    if is_module_path(&path) {
+(B[m[31m-                                        collection.enabled_modules.insert(path_key(&path));
+(B[m[32m+            Ok(metadata) if metadata.is_file() => {
+(B[m[32m+                match self.filesystem.read_to_string(&plugins_path) {
+(B[m[32m+                    Ok(text) => {
+(B[m[32m+                        collection.facts.plugins_txt = OverviewFilePresence::present(&plugins_path);
+(B[m[32m+                        if let Some(index) = data_index {
+(B[m[32m+                            for line in text.lines().map(clean_enablement_line) {
+(B[m[32m+                                if let Some(plugin) = line.strip_prefix('*') {
+(B[m[32m+                                    if let Some(path) = index.resolve_relative(plugin.trim()) {
+(B[m[32m+                                        if is_module_path(&path) {
+(B[m[32m+                                            collection.enabled_modules.insert(path_key(&path));
+(B[m[32m+                                        }
+(B[m                                     }
+                                 }
+                             }
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:881:
+                         }
+                     }
+[32m+                    Err(error) => {
+(B[m[32m+                        diagnostics.record_platform_error(
+(B[m[32m+                            OverviewCollectionPhase::Enablement,
+(B[m[32m+                            Some(plugins_path.clone()),
+(B[m[32m+                            &error,
+(B[m[32m+                        );
+(B[m[32m+                        collection.facts.plugins_txt =
+(B[m[32m+                            OverviewFilePresence::unreadable(&plugins_path);
+(B[m[32m+                        enable_all_modules_on_plugins_fallback(data_index, collection);
+(B[m[32m+                    }
+(B[m                 }
+[31m-                Err(error) => {
+(B[m[31m-                    diagnostics.record_platform_error(
+(B[m[31m-                        OverviewCollectionPhase::Enablement,
+(B[m[31m-                        Some(plugins_path.clone()),
+(B[m[31m-                        &error,
+(B[m[31m-                    );
+(B[m[31m-                    collection.facts.plugins_txt = OverviewFilePresence::unreadable(&plugins_path);
+(B[m[31m-                    enable_all_modules_on_plugins_fallback(data_index, collection);
+(B[m[31m-                }
+(B[m[31m-            },
+(B[m[32m+            }
+(B[m             Ok(_) => {
+                 diagnostics.record_error(
+                     OverviewCollectionPhase::Enablement,
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1024:
+             .files
+             .iter()
+             .filter(|path| is_archive_path(path))
+[31m-            .map(|path| self.collect_archive(path, enabled_archives.contains(&path_key(path)), diagnostics))
+(B[m[32m+            .map(|path| {
+(B[m[32m+                self.collect_archive(
+(B[m[32m+                    path,
+(B[m[32m+                    enabled_archives.contains(&path_key(path)),
+(B[m[32m+                    diagnostics,
+(B[m[32m+                )
+(B[m[32m+            })
+(B[m             .collect()
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1118:
+             .files
+             .iter()
+             .filter(|path| is_module_path(path))
+[31m-            .map(|path| self.collect_module(path, enabled_modules.contains(&path_key(path)), diagnostics))
+(B[m[32m+            .map(|path| {
+(B[m[32m+                self.collect_module(path, enabled_modules.contains(&path_key(path)), diagnostics)
+(B[m[32m+            })
+(B[m             .collect()
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1248:
+     fn resolve_sibling(&self, path: &Path, sibling_file_name: &str) -> Option<PathBuf> {
+         let parent = path.parent()?;
+         let relative_parent = parent.strip_prefix(&self.root).ok();
+[31m-        let relative = match relative_parent {
+(B[m[31m-            Some(parent) if !parent.as_os_str().is_empty() => normalize_relative_text(&format!(
+(B[m[31m-                "{}/{}",
+(B[m[31m-                path_to_slash_string(parent),
+(B[m[31m-                sibling_file_name
+(B[m[31m-            )),
+(B[m[31m-            _ => normalize_relative_text(sibling_file_name),
+(B[m[31m-        };
+(B[m[32m+        let relative =
+(B[m[32m+            match relative_parent {
+(B[m[32m+                Some(parent) if !parent.as_os_str().is_empty() => normalize_relative_text(
+(B[m[32m+                    &format!("{}/{}", path_to_slash_string(parent), sibling_file_name),
+(B[m[32m+                ),
+(B[m[32m+                _ => normalize_relative_text(sibling_file_name),
+(B[m[32m+            };
+(B[m         self.by_key.get(&relative).cloned()
+     }
+ }
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1488:
+     use crate::{
+         domain::discovery::SemanticVersion,
+         platform::{
+[32m+            PlatformOperation, PlatformResult,
+(B[m             filesystem::{FileMetadata, FileType},
+             process::{ProcessInfo, SystemMetadata},
+[31m-            PlatformOperation, PlatformResult,
+(B[m         },
+     };
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1602:
+                     PlatformErrorKind::InvalidInput,
+                     "File read target is invalid.",
+                 )),
+[31m-                FakeNode::UnreadableFile => Err(Self::permission_denied(
+(B[m[31m-                    path,
+(B[m[31m-                    PlatformOperation::ReadFile,
+(B[m[31m-                )),
+(B[m[32m+                FakeNode::UnreadableFile => {
+(B[m[32m+                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+(B[m[32m+                }
+(B[m             }
+         }
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1621:
+                     PlatformErrorKind::InvalidInput,
+                     "File read target is invalid.",
+                 )),
+[31m-                FakeNode::UnreadableFile => Err(Self::permission_denied(
+(B[m[31m-                    path,
+(B[m[31m-                    PlatformOperation::ReadFile,
+(B[m[31m-                )),
+(B[m[32m+                FakeNode::UnreadableFile => {
+(B[m[32m+                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+(B[m[32m+                }
+(B[m             }
+         }
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1643:
+                     PlatformErrorKind::InvalidInput,
+                     "File read target is invalid.",
+                 )),
+[31m-                FakeNode::UnreadableFile => Err(Self::permission_denied(
+(B[m[31m-                    path,
+(B[m[31m-                    PlatformOperation::ReadFile,
+(B[m[31m-                )),
+(B[m[32m+                FakeNode::UnreadableFile => {
+(B[m[32m+                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+(B[m[32m+                }
+(B[m             }
+         }
+ 
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1758:
+         installation: &Fallout4Installation,
+         environment: &OverviewCollectionEnvironment,
+     ) -> OverviewCollectedFacts {
+[31m-        OverviewCollector::new(fs, process).collect(OverviewCollectionRequest::new(
+(B[m[31m-            installation,
+(B[m[31m-            environment,
+(B[m[31m-        ))
+(B[m[32m+        OverviewCollector::new(fs, process)
+(B[m[32m+            .collect(OverviewCollectionRequest::new(installation, environment))
+(B[m     }
+ 
+     fn base_fs() -> FakeFilesystem {
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1770:
+             .with_dir("C:/Games/Fallout 4/Data")
+             .with_dir("C:/Users/Example/AppData/Local/Fallout4")
+             .with_file("C:/Games/Fallout 4/Fallout4.exe", b"fallout4".to_vec())
+[31m-            .with_file("C:/Games/Fallout 4/Fallout4Launcher.exe", b"unknown".to_vec())
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Fallout4Launcher.exe",
+(B[m[32m+                b"unknown".to_vec(),
+(B[m[32m+            )
+(B[m             .with_file("C:/Games/Fallout 4/steam_api64.dll", b"steam".to_vec())
+             .with_file("C:/Games/Fallout 4/f4se_loader.exe", b"f4se".to_vec())
+[31m-            .with_file("C:/Games/Fallout 4/f4se_steam_loader.dll", b"loader".to_vec())
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/f4se_steam_loader.dll",
+(B[m[32m+                b"loader".to_vec(),
+(B[m[32m+            )
+(B[m             .with_file("C:/Games/Fallout 4/CreationKit.exe", b"ck".to_vec())
+[31m-            .with_file("C:/Games/Fallout 4/Tools/Archive2/Archive2.exe", b"archive2".to_vec())
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Tools/Archive2/Archive2.exe",
+(B[m[32m+                b"archive2".to_vec(),
+(B[m[32m+            )
+(B[m             .with_text("C:/Games/Fallout 4/Fallout4.ccc", "")
+             .with_text("C:/Users/Example/AppData/Local/Fallout4/plugins.txt", "")
+     }
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1807:
+ 
+     #[test]
+     fn overview_collector_classifies_binary_versions_crc_fallback_unknown_and_missing_base_files() {
+[31m-        assert_eq!(
+(B[m[31m-            crc32_upper(&[0x40, 0x5a, 0x64, 0x4c]),
+(B[m[31m-            NG_STARTUP_BA2_CRC
+(B[m[31m-        );
+(B[m[32m+        assert_eq!(crc32_upper(&[0x40, 0x5a, 0x64, 0x4c]), NG_STARTUP_BA2_CRC);
+(B[m 
+         let fs = base_fs()
+             .with_file("C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2", {
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1873:
+         assert_eq!(facts.modules, Vec::new());
+         assert!(matches!(
+             facts.enablement.address_library,
+[31m-            OverviewAddressLibraryFact { required: false, .. }
+(B[m[32m+            OverviewAddressLibraryFact {
+(B[m[32m+                required: false,
+(B[m[32m+                ..
+(B[m[32m+            }
+(B[m         ));
+         assert!(facts.diagnostics.errors.iter().any(|error| {
+             error.phase == OverviewCollectionPhase::DataTraversal
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1926:
+         let versions = facts
+             .archives
+             .iter()
+[31m-            .map(|record| (record.path.file_name().unwrap().to_string_lossy().to_string(), record.version))
+(B[m[32m+            .map(|record| {
+(B[m[32m+                (
+(B[m[32m+                    record
+(B[m[32m+                        .path
+(B[m[32m+                        .file_name()
+(B[m[32m+                        .unwrap()
+(B[m[32m+                        .to_string_lossy()
+(B[m[32m+                        .to_string(),
+(B[m[32m+                    record.version,
+(B[m[32m+                )
+(B[m[32m+            })
+(B[m             .collect::<BTreeMap<_, _>>();
+         assert_eq!(versions["Old.ba2"], ArchiveVersion::OldGen);
+         assert_eq!(versions["Seven.ba2"], ArchiveVersion::NextGen7);
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1933:
+         assert_eq!(versions["Eight.ba2"], ArchiveVersion::NextGen8);
+         assert_eq!(versions["Unknown.ba2"], ArchiveVersion::Unknown(42));
+[31m-        assert!(facts
+(B[m[31m-            .archives
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|record| record.path.ends_with("Locked.ba2") && !record.readable && record.enabled));
+(B[m[31m-        assert!(fs
+(B[m[31m-            .prefix_reads
+(B[m[31m-            .borrow()
+(B[m[31m-            .iter()
+(B[m[31m-            .filter(|(_, len)| *len == BA2_HEADER_LEN)
+(B[m[31m-            .count()
+(B[m[31m-            >= 7);
+(B[m[31m-        assert!(!fs
+(B[m[31m-            .full_reads
+(B[m[31m-            .borrow()
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|path| path.extension().is_some_and(|extension| extension == "ba2")));
+(B[m[32m+        assert!(
+(B[m[32m+            facts
+(B[m[32m+                .archives
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|record| record.path.ends_with("Locked.ba2")
+(B[m[32m+                    && !record.readable
+(B[m[32m+                    && record.enabled)
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            fs.prefix_reads
+(B[m[32m+                .borrow()
+(B[m[32m+                .iter()
+(B[m[32m+                .filter(|(_, len)| *len == BA2_HEADER_LEN)
+(B[m[32m+                .count()
+(B[m[32m+                >= 7
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            !fs.full_reads
+(B[m[32m+                .borrow()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|path| path.extension().is_some_and(|extension| extension == "ba2"))
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1954:
+[31m-    fn overview_collector_reads_bounded_module_headers_and_classifies_light_full_hedr_and_unreadable() {
+(B[m[32m+    fn overview_collector_reads_bounded_module_headers_and_classifies_light_full_hedr_and_unreadable()
+(B[m[32m+     {
+(B[m         let fs = base_fs()
+             .with_text(
+                 "C:/Users/Example/AppData/Local/Fallout4/plugins.txt",
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1979:
+         let modules = facts
+             .modules
+             .iter()
+[31m-            .map(|record| (record.path.file_name().unwrap().to_string_lossy().to_string(), record))
+(B[m[32m+            .map(|record| {
+(B[m[32m+                (
+(B[m[32m+                    record
+(B[m[32m+                        .path
+(B[m[32m+                        .file_name()
+(B[m[32m+                        .unwrap()
+(B[m[32m+                        .to_string_lossy()
+(B[m[32m+                        .to_string(),
+(B[m[32m+                    record,
+(B[m[32m+                )
+(B[m[32m+            })
+(B[m             .collect::<BTreeMap<_, _>>();
+         assert_eq!(modules["Full.esp"].kind, ModuleKind::Full);
+         assert_eq!(modules["LightFlag.esp"].kind, ModuleKind::Light);
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1986:
+         assert_eq!(modules["LightExt.esl"].kind, ModuleKind::Light);
+[31m-        assert_eq!(modules["Full.esp"].header_version, ModuleHeaderVersion::Version100);
+(B[m[31m-        assert_eq!(modules["OldHedr.esm"].header_version, ModuleHeaderVersion::Version095);
+(B[m         assert_eq!(
+[32m+            modules["Full.esp"].header_version,
+(B[m[32m+            ModuleHeaderVersion::Version100
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            modules["OldHedr.esm"].header_version,
+(B[m[32m+            ModuleHeaderVersion::Version095
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             modules["UnknownHedr.esp"].header_version,
+             ModuleHeaderVersion::Unknown("0.94".to_owned())
+         );
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:1993:
+         assert!(!modules["Locked.esp"].readable);
+         assert!(!modules["BadHedr.esp"].readable);
+[31m-        assert!(fs
+(B[m[31m-            .prefix_reads
+(B[m[31m-            .borrow()
+(B[m[31m-            .iter()
+(B[m[31m-            .filter(|(_, len)| *len == MODULE_HEADER_LEN)
+(B[m[31m-            .count()
+(B[m[31m-            >= 7);
+(B[m[32m+        assert!(
+(B[m[32m+            fs.prefix_reads
+(B[m[32m+                .borrow()
+(B[m[32m+                .iter()
+(B[m[32m+                .filter(|(_, len)| *len == MODULE_HEADER_LEN)
+(B[m[32m+                .count()
+(B[m[32m+                >= 7
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:2030:
+             .insert("bnvflexenable".to_owned(), "1".to_owned());
+ 
+         let fs = base_fs()
+[31m-            .with_file("C:/Games/Fallout 4/Data/Fallout4.esm", module(0, MODULE_VERSION_100))
+(B[m[31m-            .with_file("C:/Games/Fallout 4/Data/PluginA.esp", module(0, MODULE_VERSION_100))
+(B[m[31m-            .with_file("C:/Games/Fallout 4/Data/PluginB.esl", module(0, MODULE_VERSION_100))
+(B[m[31m-            .with_file("C:/Games/Fallout 4/Data/PluginB - voices_fr.ba2", ba2(8, b"DX10"))
+(B[m[31m-            .with_file("C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2", ba2(8, b"GNRL"))
+(B[m[31m-            .with_file("C:/Games/Fallout 4/Data/Fallout4 - Nvflex.ba2", ba2(1, b"GNRL"));
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/Fallout4.esm",
+(B[m[32m+                module(0, MODULE_VERSION_100),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/PluginA.esp",
+(B[m[32m+                module(0, MODULE_VERSION_100),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/PluginB.esl",
+(B[m[32m+                module(0, MODULE_VERSION_100),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/PluginB - voices_fr.ba2",
+(B[m[32m+                ba2(8, b"DX10"),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2",
+(B[m[32m+                ba2(8, b"GNRL"),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/Fallout4 - Nvflex.ba2",
+(B[m[32m+                ba2(1, b"GNRL"),
+(B[m[32m+            );
+(B[m         let process = FakeProcessInspector::default()
+             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+         let missing_plugins_env = OverviewCollectionEnvironment::new()
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:2052:
+             OverviewFilePresence::Missing(_)
+         ));
+         assert!(facts.modules.iter().all(|record| record.enabled));
+[31m-        assert!(facts
+(B[m[31m-            .archives
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|record| record.path.ends_with("PluginB - voices_fr.ba2") && record.enabled));
+(B[m[31m-        assert!(facts
+(B[m[31m-            .archives
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|record| record.path.ends_with("Fallout4 - Nvflex.ba2") && record.enabled));
+(B[m[32m+        assert!(
+(B[m[32m+            facts
+(B[m[32m+                .archives
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|record| record.path.ends_with("PluginB - voices_fr.ba2") && record.enabled)
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            facts
+(B[m[32m+                .archives
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|record| record.path.ends_with("Fallout4 - Nvflex.ba2") && record.enabled)
+(B[m[32m+        );
+(B[m         assert!(facts.diagnostics.errors.iter().any(|error| {
+[31m-            error.path.as_ref().is_some_and(|path| path.ends_with("MissingFromIni.ba2"))
+(B[m[32m+            error
+(B[m[32m+                .path
+(B[m[32m+                .as_ref()
+(B[m[32m+                .is_some_and(|path| path.ends_with("MissingFromIni.ba2"))
+(B[m                 && error.kind == OverviewCollectionDiagnosticKind::Missing
+         }));
+     }
+Diff in /mnt/j/cmt-rs/src/services/overview_collector.rs:2073:
+             .with_dir("C:/Games/Fallout 4/Data")
+             .with_dir("C:/Users/Example/AppData/Local/Fallout4")
+             .with_file("C:/Games/Fallout 4/Fallout4.exe", b"fallout4".to_vec())
+[31m-            .with_file("C:/Games/Fallout 4/Data/AnyPlugin.esp", module(0, MODULE_VERSION_100))
+(B[m[31m-            .with_file("C:/Users/Example/AppData/Local/Fallout4/plugins.txt", vec![0xff, 0xfe, 0xfd]);
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Games/Fallout 4/Data/AnyPlugin.esp",
+(B[m[32m+                module(0, MODULE_VERSION_100),
+(B[m[32m+            )
+(B[m[32m+            .with_file(
+(B[m[32m+                "C:/Users/Example/AppData/Local/Fallout4/plugins.txt",
+(B[m[32m+                vec![0xff, 0xfe, 0xfd],
+(B[m[32m+            );
+(B[m         let process = FakeProcessInspector::default()
+             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+ 

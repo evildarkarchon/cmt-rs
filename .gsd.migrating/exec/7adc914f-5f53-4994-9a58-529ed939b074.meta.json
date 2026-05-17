@@ -1,0 +1,18 @@
+{
+  "id": "7adc914f-5f53-4994-9a58-529ed939b074",
+  "runtime": "bash",
+  "purpose": "rerun focused overview diagnostics tests after split",
+  "script_chars": 31,
+  "started_at": "2026-05-17T11:44:28.526Z",
+  "finished_at": "2026-05-17T11:44:55.161Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 26635,
+  "stdout_bytes": 2574,
+  "stderr_bytes": 245,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7adc914f-5f53-4994-9a58-529ed939b074.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7adc914f-5f53-4994-9a58-529ed939b074.stderr"
+}

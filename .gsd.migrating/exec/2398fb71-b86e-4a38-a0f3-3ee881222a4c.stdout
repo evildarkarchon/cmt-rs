@@ -1,0 +1,173 @@
+-- src/domain/mod_manager.rs
+pub struct VortexContext {
+    /// Detected Vortex executable identity.
+    pub manager: DetectedModManager,
+}
+pub struct ModOrganizerDirectories {
+    /// MO2 base directory used to expand `%BASE_DIR%` settings.
+    pub base_directory: PathBuf,
+    /// MO2 cache/webcache directory.
+    pub cache_directory: PathBuf,
+    /// MO2 downloads directory.
+    pub download_directory: PathBuf,
+    /// MO2 mods/staging directory.
+    pub mod_directory: PathBuf,
+    /// MO2 overwrite directory.
+    pub overwrite_directory: PathBuf,
+    /// MO2 profiles directory.
+    pub profiles_directory: PathBuf,
+}
+pub struct ModOrganizerSkipRules {
+    /// Lowercase file suffixes to skip, defaulting to `.mohidden`.
+    pub file_suffixes: Vec<String>,
+    /// Lowercase directory names to skip.
+    pub directories: BTreeSet<String>,
+}
+pub struct ModOrganizerContext {
+    /// Detected Mod Organizer executable identity.
+    pub manager: DetectedModManager,
+    /// Optional `ModOrganizer.ini` path used to create this context.
+    pub ini_path: Option<PathBuf>,
+    /// Optional `portable.txt` marker path when portable mode is detected.
+    pub portable_txt_path: Option<PathBuf>,
+    /// Whether MO2 portable mode was detected.
+    pub portable: bool,
+    /// Optional `gamePath` value from `[General]`.
+    pub game_path: Option<PathBuf>,
+    /// `selected_profile` value from `[General]`.
+    pub selected_profile: String,
+    /// Directory values parsed from `[Settings]`.
+    pub directories: ModOrganizerDirectories,
+    /// `profile_local_inis` value from `[Settings]`.
+    pub profile_local_inis: bool,
+    /// `profile_local_saves` value from `[Settings]`.
+    pub profile_local_saves: bool,
+    /// MO2 skip rules from `[Settings]`.
+    pub skip_rules: ModOrganizerSkipRules,
+}
+
+-- src/services/discovery.rs
+pub struct DiscoveryRequest {
+    /// Current process id, used to walk ancestors exactly like the reference app.
+    pub current_process_id: Option<u32>,
+    /// Current working directory candidate checked after a manager game path.
+    pub current_working_directory: PathBuf,
+    /// `LOCALAPPDATA` equivalent used for MO2 instance INI lookup.
+    pub local_appdata: Option<PathBuf>,
+}
+pub struct DiscoveryReport {
+    /// Fallout 4 installation state, or a recoverable reference-compatible error.
+    pub game: Result<Fallout4Installation, DiscoveryError>,
+    /// Detected/parsed mod-manager state, or a manager-specific typed error.
+    pub mod_manager: Result<Option<DiscoveredModManager>, ModManagerDiscoveryError>,
+    /// Fakeable PC specs/system metadata for the Overview tab.
+    pub system_metadata: Result<SystemMetadata, PlatformError>,
+    /// Ordered Fallout 4 path attempts in the locked reference order.
+    pub attempts: Vec<DiscoveryAttempt>,
+    /// Ordered manager-discovery steps, useful for debugging MO2 portable/instance selection.
+    pub manager_steps: Vec<ModManagerDiscoveryStep>,
+}
+pub enum DiscoveredModManager {
+    /// Parsed Mod Organizer 2 configuration and executable identity.
+    ModOrganizer(Box<Mo2Configuration>),
+    /// Identity-only Vortex context. No staging/config parsing is performed.
+    Vortex(VortexContext),
+}
+
+-- src/platform/process.rs
+pub struct SystemMetadata {
+    /// Operating-system family or caption.
+    pub os_name: String,
+    /// Operating-system version/build when available.
+    pub os_version: Option<String>,
+    /// CPU architecture reported by Rust for the running binary.
+    pub architecture: String,
+    /// CPU model/brand when available.
+    pub cpu_brand: Option<String>,
+    /// Physical memory in bytes when available.
+    pub physical_memory_bytes: Option<u64>,
+    /// Logical CPU count when available.
+    pub logical_cpu_count: Option<usize>,
+}
+
+-- src/platform/desktop.rs
+pub struct DesktopActionResult {
+    /// Kind of action that was attempted.
+    pub operation: PlatformOperation,
+    /// User-selected or adapter-supplied action target.
+    pub target: String,
+    /// Success or typed failure state.
+    pub outcome: DesktopActionOutcome,
+    safe_message: String,
+}
+
+-- src/workers/events.rs
+pub enum WorkerTaskKind {
+    /// Fallout 4 installation, manager, registry, process, or system discovery.
+    Discovery,
+    /// Scanner traversal, parsing, or classification work.
+    Scan,
+    /// Archive or file patching work.
+    Patch,
+    /// Network download or update retrieval work.
+    Download,
+    /// External process execution or monitoring work.
+    ExternalProcess,
+    /// Desktop handoff such as opening a URL or path.
+    DesktopAction,
+    /// Generic typed work whose concrete category is not important to the UI.
+    Generic,
+    /// Unknown work kind retained for forward-compatible handoff.
+    Unknown,
+}
+pub enum WorkerPayload {
+    /// No additional payload is needed for this lifecycle event.
+    None,
+    /// Progress text and optional counts.
+    Progress(WorkerProgress),
+    /// Discovery-specific status or result text.
+    Discovery(WorkerMessage),
+    /// Scanner-specific status or result text.
+    Scan(WorkerMessage),
+    /// Patcher-specific status or result text.
+    Patch(WorkerMessage),
+    /// Download-specific status or result text.
+    Download(WorkerMessage),
+    /// External process, tool, or desktop-action result.
+    ExternalAction(ExternalActionPayload),
+    /// Cancellation details.
+    Cancellation(WorkerCancellation),
+    /// User-safe failure plus optional diagnostics.
+    Error(WorkerFailure),
+    /// Generic status or result text.
+    Generic(WorkerMessage),
+}
+
+-- src/app/settings_controller.rs
+pub struct SettingsController<R> {
+    store: SettingsStore<R>,
+    last_persisted: AppSettings,
+}
+
+-- src/domain/settings.rs
+pub struct AppSettings {
+    /// Minimum log severity persisted with the `log_level` JSON key.
+    pub log_level: LogLevel,
+    /// Update channel persisted with the `update_source` JSON key.
+    pub update_source: UpdateSource,
+    /// Scanner toggles persisted as reference-compatible `scanner_*` keys.
+    pub scanner: ScannerSettings,
+    /// Downgrader toggles persisted as reference-compatible `downgrader_*` keys.
+    pub downgrader: DowngraderSettings,
+}
+pub enum UpdateSource {
+    /// Check both GitHub and Nexus Mods.
+    Both,
+    /// Check GitHub only.
+    Github,
+    /// Check Nexus Mods only.
+    Nexus,
+    /// Do not check for updates.
+    None,
+}
+

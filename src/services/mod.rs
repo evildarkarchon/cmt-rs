@@ -7,6 +7,7 @@
 pub mod discovery;
 pub mod overview;
 pub mod overview_collector;
+pub mod update;
 
 /// No-op service-layer marker reserved for future orchestration state.
 ///

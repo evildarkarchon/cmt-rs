@@ -1,0 +1,73 @@
+47: class GameInfo:
+48: def __init__(self, install_type_sv: StringVar, game_path_sv: StringVar) -> None:
+49: self._install_type_sv = install_type_sv
+50: self._game_path_sv = game_path_sv
+52: self.install_type = InstallType.Unknown
+53: self._game_path: Path
+54: self._data_path: Path | None = None
+56: self.archives_gnrl: set[Path] = set()
+57: self.archives_dx10: set[Path] = set()
+58: self.archives_og: set[Path] = set()
+59: self.archives_ng: set[Path] = set()
+60: self.archives_enabled: set[Path] = set()
+61: self.archives_unreadable: set[Path] = set()
+62: self.modules_unreadable: set[Path] = set()
+63: self.modules_hedr_95: set[Path] = set()
+64: self.modules_hedr_unknown: dict[Path, float] = {}
+65: self.modules_enabled: list[Path] = []
+66: self.file_info: dict[str, FileInfo] = {}
+67: self.address_library: Path | None = None
+73: self.ba2_count_gnrl = 0
+74: self.ba2_count_dx10 = 0
+75: self.module_count_full = 0
+76: self.module_count_light = 0
+77: self.module_count_v1 = 0
+108: self.ba2_suffixes: tuple[str, ...] = ("main", "textures", "voices_en")
+110: self.ba2_suffixes = ("main", "textures", "voices_en", f"voices_{self.language}")
+112: def reset_binaries(self) -> None:
+114: self.install_type = InstallType.Unknown
+115: self.file_info.clear()
+116: self.address_library = None
+119: def reset_modules(self) -> None:
+121: self.module_count_full = 0
+122: self.module_count_light = 0
+123: self.module_count_v1 = 0
+124: self.modules_hedr_95.clear()
+125: self.modules_hedr_unknown.clear()
+126: self.modules_enabled.clear()
+127: self.modules_unreadable.clear()
+129: def reset_archives(self) -> None:
+131: self.ba2_count_gnrl = 0
+132: self.ba2_count_dx10 = 0
+133: self.archives_gnrl.clear()
+134: self.archives_dx10.clear()
+135: self.archives_og.clear()
+136: self.archives_ng.clear()
+137: self.archives_enabled.clear()
+138: self.archives_unreadable.clear()
+142: return self._game_path
+146: self._game_path = value
+147: self._game_path_sv.set(str(value))
+151: self._data_path = data_path
+155: self._data_path = None
+160: return self._data_path
+168: return self._install_type
+172: self._install_type = value
+173: self._install_type_sv.set(str(value))
+203: if not self.manager.game_path:
+213: if self.manager.game_path:
+214: self.game_path = self.manager.game_path
+218: self.game_path = Path.cwd()
+275: self.game_path = game_path_as_path
+277: def is_foog(self) -> bool:
+278: return self._install_type in {InstallType.OG, InstallType.DG}
+280: def is_fong(self) -> bool:
+281: return self._install_type == InstallType.NG
+283: def is_foogng(self) -> bool:
+284: return self._install_type in {InstallType.OG, InstallType.DG, InstallType.NG}
+286: def is_foae(self) -> bool:
+287: return self._install_type == InstallType.AE
+289: def is_fongae(self) -> bool:
+290: return self._install_type in {InstallType.NG, InstallType.AE}
+292: def is_fodg(self) -> bool:
+293: return self._install_type == InstallType.DG

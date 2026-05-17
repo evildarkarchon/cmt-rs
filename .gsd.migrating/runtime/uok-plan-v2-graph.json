@@ -1,12 +1,12 @@
 {
-  "compiledAt": "2026-05-17T10:36:04.127Z",
+  "compiledAt": "2026-05-17T12:19:45.653Z",
   "milestoneId": "M001",
   "pipeline": {
     "clarifyRoundLimit": 3,
     "researchSynthesized": true,
     "draftContextIncluded": false,
     "finalizedContextIncluded": true,
-    "sourcePhase": "summarizing"
+    "sourcePhase": "executing"
   },
   "nodes": [
     {
@@ -232,6 +232,113 @@
         "unitType": "complete-slice",
         "unitId": "M001.S03",
         "title": "S03",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/overview.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T01",
+        "title": "Added pure Overview snapshot/domain contracts with locked labels, count rows, update banner states, deferred actions, and scanner-ready problem records.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S04:T01"
+      ],
+      "writes": [
+        "src/services/overview.rs",
+        "src/services/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T02",
+        "title": "Added a pure Overview diagnostics builder that projects injected discovery, binary, archive, module, enablement, update, and action facts into full snapshots and problem feeds.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S04:T02"
+      ],
+      "writes": [
+        "src/services/overview_collector.rs",
+        "src/services/mod.rs",
+        "src/platform/filesystem.rs",
+        "Cargo.toml",
+        "Cargo.lock"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T03",
+        "title": "Added an adapter-backed Overview filesystem collector that classifies base binaries, BA2 archives, modules, enablement files, and Address Library state into typed diagnostics facts.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S04:T03"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T04",
+        "title": "Add update and link services",
+        "status": "pending"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T05",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S04:T04"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T05",
+        "title": "Wire Overview controller and workers",
+        "status": "pending"
+      }
+    },
+    {
+      "id": "execute-task:M001:S04:T06",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S04:T05"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S04.T06",
+        "title": "Replace Overview Slint placeholder",
+        "status": "pending"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S04",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S04:T06"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S04",
+        "title": "S04",
         "status": "pending"
       }
     }

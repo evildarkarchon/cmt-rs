@@ -1,0 +1,18 @@
+{
+  "id": "0c6d9e29-2ef1-46eb-a4ff-fbf78cc0f991",
+  "runtime": "bash",
+  "purpose": "inspect overview collector test line numbers",
+  "script_chars": 199,
+  "started_at": "2026-05-17T12:11:43.972Z",
+  "finished_at": "2026-05-17T12:11:44.126Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 154,
+  "stdout_bytes": 1021,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0c6d9e29-2ef1-46eb-a4ff-fbf78cc0f991.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0c6d9e29-2ef1-46eb-a4ff-fbf78cc0f991.stderr"
+}

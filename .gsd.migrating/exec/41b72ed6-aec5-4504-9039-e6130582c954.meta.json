@@ -1,0 +1,18 @@
+{
+  "id": "41b72ed6-aec5-4504-9039-e6130582c954",
+  "runtime": "bash",
+  "purpose": "S04 reference file size and symbol inventory",
+  "script_chars": 609,
+  "started_at": "2026-05-17T10:57:32.014Z",
+  "finished_at": "2026-05-17T10:57:32.136Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 122,
+  "stdout_bytes": 4864,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\41b72ed6-aec5-4504-9039-e6130582c954.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\41b72ed6-aec5-4504-9039-e6130582c954.stderr"
+}

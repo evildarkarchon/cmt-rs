@@ -1,0 +1,18 @@
+{
+  "id": "2398fb71-b86e-4a38-a0f3-3ee881222a4c",
+  "runtime": "python",
+  "purpose": "extract struct fields for S04 planning",
+  "script_chars": 1251,
+  "started_at": "2026-05-17T11:10:10.761Z",
+  "finished_at": "2026-05-17T11:10:11.419Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 658,
+  "stdout_bytes": 6546,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\2398fb71-b86e-4a38-a0f3-3ee881222a4c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\2398fb71-b86e-4a38-a0f3-3ee881222a4c.stderr"
+}

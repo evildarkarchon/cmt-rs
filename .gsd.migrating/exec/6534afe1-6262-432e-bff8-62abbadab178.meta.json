@@ -1,0 +1,18 @@
+{
+  "id": "6534afe1-6262-432e-bff8-62abbadab178",
+  "runtime": "bash",
+  "purpose": "S04 reference GameInfo overview fields",
+  "script_chars": 464,
+  "started_at": "2026-05-17T10:58:08.219Z",
+  "finished_at": "2026-05-17T10:58:08.360Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 141,
+  "stdout_bytes": 2895,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6534afe1-6262-432e-bff8-62abbadab178.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6534afe1-6262-432e-bff8-62abbadab178.stderr"
+}

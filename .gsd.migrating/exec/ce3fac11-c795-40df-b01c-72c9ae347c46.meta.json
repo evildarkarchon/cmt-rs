@@ -1,0 +1,18 @@
+{
+  "id": "ce3fac11-c795-40df-b01c-72c9ae347c46",
+  "runtime": "bash",
+  "purpose": "verify formatting after moving imports",
+  "script_chars": 17,
+  "started_at": "2026-05-17T11:47:36.126Z",
+  "finished_at": "2026-05-17T11:47:36.485Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 359,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\ce3fac11-c795-40df-b01c-72c9ae347c46.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\ce3fac11-c795-40df-b01c-72c9ae347c46.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "99053974-fe12-4a59-ab23-d53396aa0289",
+  "runtime": "bash",
+  "purpose": "cargo test overview_collector final standard",
+  "script_chars": 29,
+  "started_at": "2026-05-17T12:16:25.839Z",
+  "finished_at": "2026-05-17T12:16:55.525Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 29686,
+  "stdout_bytes": 1193,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\99053974-fe12-4a59-ab23-d53396aa0289.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\99053974-fe12-4a59-ab23-d53396aa0289.stderr"
+}

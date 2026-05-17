@@ -1,0 +1,358 @@
+UI labels/buttons in _overview.py:
+- Mod Manager:
+- Game Path:
+- Version:
+- PC Specs:
+- Binaries (EXE/DLL/BIN)
+- Address Library:
+- Downgrade Manager...
+- Archives (BA2)
+- General:
+- Texture:
+- Total:
+- Unreadable:
+- v1 (OG):
+- v7/8 (NG):
+- Archive Patcher...
+- Modules (ESM/ESL/ESP)
+- Full:
+- Light:
+- HEDR v1.00:
+- HEDR v0.95:
+- HEDR v????:
+
+Problem creation contexts:
+-- lines 256-272
+256: color = COLOR_BAD
+257: self.cmc.overview_problems.append(
+258: ProblemInfo(
+259: ProblemType.WrongVersion,
+260: file_path,
+261: file_path.relative_to(file_path.parent, walk_up=True),
+262: None,
+263: "The version of this binary does not match your installed game version.",
+264: None,
+265: ),
+266: )
+268: case InstallType.NotFound:
+269: if file_name in {"CreationKit.exe", "Archive2.exe"} or (
+270: self.cmc.game.is_fongae() and file_name == "f4se_steam_loader.dll"
+271: ):
+272: color = COLOR_NEUTRAL_1
+-- lines 274-290
+274: color = COLOR_BAD
+275: self.cmc.overview_problems.append(
+276: ProblemInfo(
+277: ProblemType.FileNotFound,
+278: file_path,
+279: file_path.relative_to(file_path.parent, walk_up=True),
+280: None,
+281: "This file is missing from your game installation.",
+282: None,
+283: ),
+284: )
+286: case _:
+287: color = COLOR_BAD
+288: self.cmc.overview_problems.append(
+289: ProblemInfo(
+290: ProblemType.WrongVersion,
+-- lines 287-303
+287: color = COLOR_BAD
+288: self.cmc.overview_problems.append(
+289: ProblemInfo(
+290: ProblemType.WrongVersion,
+291: file_path,
+292: file_path.relative_to(file_path.parent, walk_up=True),
+293: None,
+294: "The version of this binary does not match your installed game version.",
+295: None,
+296: ),
+297: )
+299: install_type = self.cmc.game.file_info[file_name]["InstallType"]
+300: version_label = ttk.Label(
+301: self.frame_info_binaries,
+302: text=install_type or "Not Found",
+303: font=FONT,
+-- lines 587-603
+588: self.cmc.overview_problems.append(
+589: SimpleProblemInfo(
+590: f"{num} {file_format} {file_type}s",
+591: "Limit Exceeded",
+592: f"You have {num} {file_format} {file_type}s enabled. The limit is {limit}.",
+593: solution,
+594: extra_data=extra_data,
+595: ),
+596: )
+598: ttk.Label(frame, text=str(num).rjust(4), font=FONT, foreground=color).grid(
+599: column=column,
+600: row=row,
+601: sticky=E,
+602: padx=(5, 0),
+603: )
+-- lines 643-659
+643: if not self.cmc.game.manager:
+644: self.cmc.overview_problems.append(
+645: SimpleProblemInfo(
+646: Path(sys.argv[0]).name,
+647: "No Mod Manager",
+648: "No Mod Manager Detected",
+649: TOOLTIP_NO_MOD_MANAGER,
+650: ),
+651: )
+653: for file_name in BASE_FILES:
+655: file_path = self.cmc.game.game_path / file_name
+656: file_info = self.get_file_info(file_name, file_path)
+657: self.cmc.game.file_info[file_path.name] = file_info
+659: if file_name == "Fallout4.exe":
+-- lines 662-678
+662: if self.cmc.game.install_type == InstallType.Unknown:
+663: self.cmc.overview_problems.append(
+664: SimpleProblemInfo(
+665: "Fallout4.exe",
+666: "Unknown Game Version",
+667: f"{file_info['VersionString'] or file_info['Hash']} is an unknown version.\nPossible causes:\n1. The game is an old version and should be updated.\n2. The exe file may be corrupted.\n3. The game is a new version and the 
+668: "Either update the game/verify files in Steam, or report this issue.",
+669: ),
+670: )
+672: if self.cmc.game.data_path and file_info["VersionString"]:
+673: address_library_name = f"version-{file_info['VersionString'].replace('.', '-')}.bin"
+674: relative_path = Path("F4SE/Plugins", address_library_name)
+675: address_library_path = self.cmc.game.data_path / relative_path
+676: if is_file(address_library_path):
+677: self.cmc.game.address_library = address_library_path
+678: else:
+-- lines 678-694
+678: else:
+679: self.cmc.overview_problems.append(
+680: ProblemInfo(
+681: ProblemType.FileNotFound,
+682: address_library_path,
+683: relative_path,
+684: None,
+685: "Address Library is a requirement for many F4SE mods and playing downgraded,\nand likely needs to be installed.",
+686: SolutionType.DownloadMod,
+687: extra_data=["https://www.nexusmods.com/fallout4/mods/47327"],
+688: ),
+689: )
+691: if self.cmc.game.data_path is not None and self.cmc.game.is_foog():
+692: startup_name = Path("Fallout4 - Startup.ba2")
+693: startup_ba2 = self.cmc.game.data_path / startup_name
+694: if is_file(startup_ba2):
+-- lines 698-714
+698: else:
+699: self.cmc.overview_problems.append(
+700: ProblemInfo(
+701: ProblemType.FileNotFound,
+702: startup_ba2,
+703: startup_name,
+704: None,
+705: "This is a base game file, and is used by CM Toolkit to differentiate between\nOld-Gen and Down-Grade.",
+706: SolutionType.VerifyFiles,
+707: ),
+708: )
+710: def get_info_archives(self) -> None:
+711: logger.debug("Gathering Info: Archives")
+712: self.cmc.game.reset_archives()
+714: if self.cmc.game.data_path is None:
+-- lines 749-765
+749: else:
+750: self.cmc.overview_problems.append(
+751: SimpleProblemInfo(
+752: "Fallout4 - Nvflex.ba2",
+753: ProblemType.FileNotFound,
+754: "Nvidia Flex is enabled in your game INIs (bNVFlexEnable=1) but the Nvflex BA2 is missing.\nThe exe is hardcoded to load this BA2.",
+755: SolutionType.VerifyFiles,
+756: ),
+757: )
+759: if self.cmc.game.install_type == InstallType.AE:
+760: ae_ba2_path = self.cmc.game.data_path / "Fallout4 - TexturesPatch.ba2"
+761: if is_file(ae_ba2_path):
+762: self.cmc.game.archives_enabled.add(ae_ba2_path)
+763: else:
+764: self.cmc.overview_problems.append(
+765: SimpleProblemInfo(
+-- lines 763-779
+763: else:
+764: self.cmc.overview_problems.append(
+765: SimpleProblemInfo(
+766: "Fallout4 - TexturesPatch.ba2",
+767: ProblemType.FileNotFound,
+768: "Your game is Anniversary Edition but the TexturesPatch BA2 is missing.\nThe exe is hardcoded to load this BA2.",
+769: SolutionType.VerifyFiles,
+770: ),
+771: )
+773: for ba2_file in self.cmc.game.archives_enabled:
+774: logger.debug("Archives: Checking %s", ba2_file.name)
+776: try:
+777: with ba2_file.open("rb") as f:
+778: head = f.read(12)
+779: except (PermissionError, FileNotFoundError):
+-- lines 780-796
+780: self.cmc.game.archives_unreadable.add(ba2_file)
+781: self.cmc.overview_problems.append(
+782: ProblemInfo(
+783: ProblemType.InvalidArchive,
+784: ba2_file,
+785: Path(ba2_file.name),
+786: "OVERVIEW",
+787: "Failed to read archive due to permissions or the file is missing.",
+788: None,
+789: ),
+790: )
+791: continue
+793: if len(head) != 12 or head[:4] != Magic.BTDX:
+794: self.cmc.game.archives_unreadable.add(ba2_file)
+795: self.cmc.overview_problems.append(
+796: ProblemInfo(
+-- lines 794-810
+794: self.cmc.game.archives_unreadable.add(ba2_file)
+795: self.cmc.overview_problems.append(
+796: ProblemInfo(
+797: ProblemType.InvalidArchive,
+798: ba2_file,
+799: Path(ba2_file.name),
+800: "OVERVIEW",
+801: "Archive is either corrupt or not in Bethesda Archive 2 format.",
+802: None,
+803: ),
+804: )
+805: continue
+807: match head[4]:
+808: case ArchiveVersion.OG:
+809: is_ng = False
+-- lines 816-832
+816: # TODO: Report known wrong versions
+817: self.cmc.overview_problems.append(
+818: ProblemInfo(
+819: ProblemType.InvalidArchive,
+820: ba2_file,
+821: Path(ba2_file.name),
+822: "OVERVIEW",
+823: f"Archive version ({head[4]}) is not valid for Fallout 4.",
+824: None,
+825: ),
+826: )
+827: continue
+829: match head[8:]:
+830: case Magic.GNRL:
+831: self.cmc.game.ba2_count_gnrl += 1
+-- lines 837-853
+837: self.cmc.game.archives_unreadable.add(ba2_file)
+838: self.cmc.overview_problems.append(
+839: ProblemInfo(
+840: ProblemType.InvalidArchive,
+841: ba2_file,
+842: Path(ba2_file.name),
+843: "OVERVIEW",
+844: f"Archive format ({head[8:].decode('utf-8')}) is not valid for Fallout 4.",
+845: None,
+846: ),
+847: )
+848: continue
+850: if is_ng:
+851: self.cmc.game.archives_ng.add(ba2_file)
+852: else:
+853: self.cmc.game.archives_og.add(ba2_file)
+-- lines 860-876
+860: if data_path is None:
+861: self.cmc.overview_problems.append(
+862: SimpleProblemInfo(
+863: "Data",
+864: ProblemType.FileNotFound,
+865: "The Data folder was not found in your game install path.",
+866: SolutionType.VerifyFiles,
+867: ),
+868: )
+869: return
+871: self.cmc.game.modules_enabled = [master_path for master in GAME_MASTERS if exists(master_path := data_path / master)]
+873: ccc_path = self.cmc.game.game_path / "Fallout4.ccc"
+874: if is_file(ccc_path):
+875: self.cmc.game.modules_enabled.extend([
+876: cc_path for cc in ccc_path.read_text("utf-8").splitlines() if is_file(cc_path := data_path / cc)
+-- lines 878-894
+878: else:
+879: self.cmc.overview_problems.append(
+880: SimpleProblemInfo(
+881: "Fallout4.ccc",
+882: ProblemType.FileNotFound,
+883: "The CC list file was not found in your game install path.\nThis is used to detect which CC modules/archives may be enabled.",
+884: SolutionType.VerifyFiles,
+885: ),
+886: )
+887: if not refresh:
+888: messagebox.showwarning(
+889: "Warning",
+890: f"{ccc_path.name} not found.\nCC files may not be detected. Verifying Steam files or reinstalling should fix this.",
+891: )
+893: plugins_path = get_environment_path(CSIDL.AppDataLocal) / "Fallout4\\plugins.txt"
+894: try:
+-- lines 896-912
+896: except (PermissionError, FileNotFoundError):
+897: self.cmc.overview_problems.append(
+898: SimpleProblemInfo(
+899: plugins_path.name,
+900: ProblemType.FileNotFound,
+901: "plugins.txt was not found.\nThis is used to detect which modules/archives are enabled.",
+902: "N/A" if self.cmc.game.manager else "Launch this app with your mod manager.",
+903: ),
+904: )
+905: if not refresh:
+906: messagebox.showwarning(
+907: "Warning",
+908: "plugins.txt not found.\nEnable state of plugins can't be detected.\nCounts will reflect all modules/archives in Data, which is likely higher than your actual counts.",
+909: )
+910: current_plugins = self.cmc.game.modules_enabled.copy()
+911: self.cmc.game.modules_enabled.extend([
+912: p for p in data_path.iterdir() if p.suffix.lower() in {".esp", ".esl", ".esm"} and p not in current_plugins
+-- lines 926-942
+926: self.cmc.game.modules_unreadable.add(module_path)
+927: self.cmc.overview_problems.append(
+928: ProblemInfo(
+929: ProblemType.InvalidModule,
+930: module_path,
+931: Path(module_path.name),
+932: "OVERVIEW",
+933: "Failed to read module due to permissions or the file is missing.",
+934: None,
+935: ),
+936: )
+937: continue
+939: if len(head) != 34 or head[:4] != Magic.TES4:
+940: self.cmc.game.modules_unreadable.add(module_path)
+941: self.cmc.overview_problems.append(
+942: ProblemInfo(
+-- lines 940-956
+940: self.cmc.game.modules_unreadable.add(module_path)
+941: self.cmc.overview_problems.append(
+942: ProblemInfo(
+943: ProblemType.InvalidModule,
+944: module_path,
+945: Path(module_path.name),
+946: "OVERVIEW",
+947: "Module is either corrupt or not in TES4 format.",
+948: None,
+949: ),
+950: )
+951: continue
+953: if head[24:28] != Magic.HEDR:
+954: self.cmc.game.modules_unreadable.add(module_path)
+955: continue
+-- lines 966-982
+966: self.cmc.game.modules_hedr_unknown[module_path] = hedr
+967: self.cmc.overview_problems.append(
+968: ProblemInfo(
+969: ProblemType.InvalidModule,
+970: module_path,
+971: Path(module_path.name),
+972: "OVERVIEW",
+973: f"Module version ({hedr}) is not valid for Fallout 4.{valid_games_str}",
+974: "It may be possible to open/resave this file with Creation Kit to update its format for Fallout 4.\nYou should compare the original and resaved files with xEdit to verify no undesired changes were made.",
+975: ),
+976: )
+978: flags = struct.unpack("<I", head[8:12])[0]
+979: if flags & ModuleFlag.Light or module_path.suffix.lower() == ".esl":
+980: self.cmc.game.module_count_light += 1
+981: else:
+982: self.cmc.game.module_count_full += 1
+
+Limits: archives GNRL 256 DX10 255, modules full 254 light 4096, warn at 95%

@@ -1,0 +1,18 @@
+{
+  "id": "4ad3f5e7-03d4-462f-904d-11499d3eaef5",
+  "runtime": "bash",
+  "purpose": "S04 DiscoveryService existing tests list",
+  "script_chars": 407,
+  "started_at": "2026-05-17T11:02:55.191Z",
+  "finished_at": "2026-05-17T11:02:55.336Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 145,
+  "stdout_bytes": 1332,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4ad3f5e7-03d4-462f-904d-11499d3eaef5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4ad3f5e7-03d4-462f-904d-11499d3eaef5.stderr"
+}

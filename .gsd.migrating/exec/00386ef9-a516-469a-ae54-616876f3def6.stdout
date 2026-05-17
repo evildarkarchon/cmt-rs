@@ -1,0 +1,367 @@
+## src/domain/discovery.rs
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct SemanticVersion {
+impl SemanticVersion {
+impl fmt::Display for SemanticVersion {
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum Fallout4InstallType {
+impl Fallout4InstallType {
+impl fmt::Display for Fallout4InstallType {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Fallout4Installation {
+impl Fallout4Installation {
+pub fn new(game_path: impl Into<PathBuf>) -> Self {
+pub fn with_optional_paths(
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ArchiveFormat {
+impl ArchiveFormat {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ArchiveVersion {
+impl ArchiveVersion {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ArchiveRecord {
+impl ArchiveRecord {
+pub fn new(
+pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub enum ModuleHeaderVersion {
+impl ModuleHeaderVersion {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ModuleKind {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModuleRecord {
+impl ModuleRecord {
+pub fn new(
+pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct IniDocument {
+impl IniDocument {
+pub fn new(source_path: Option<impl Into<PathBuf>>) -> Self {
+pub fn get(&self, section: &str, key: &str) -> Option<&str> {
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct Fallout4IniFiles {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscoveryError {
+impl DiscoveryError {
+pub fn fallout4_not_found(diagnostic: impl Into<Option<String>>) -> Self {
+pub fn invalid_registry_path(path: impl Into<PathBuf>) -> Self {
+pub fn environment_folder_missing(path: impl Into<PathBuf>) -> Self {
+pub fn data_folder_not_found() -> Self {
+pub fn f4se_plugins_folder_not_found(mod_manager_detected: bool) -> Self {
+pub fn user_message(&self) -> String {
+impl fmt::Display for DiscoveryError {
+impl std::error::Error for DiscoveryError {}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DiscoveryErrorKind {
+functions/tests: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn display_path(path: &Path) -> String {, fn fallout4_installation_does_not_require_data_or_f4se_paths() {, fn fallout4_installation_can_carry_optional_derived_paths() {, fn archive_module_and_ini_records_are_pure_domain_state() {, fn install_type_and_semantic_version_reference_display_values_are_stable() {, fn discovery_not_found_error_is_recoverable_and_does_not_require_file_picker() {, fn discovery_messages_keep_reference_path_exceptions() {, fn tab_loading_error_messages_match_reference_text() {
+
+## src/domain/mod_manager.rs
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum ModManagerKind {
+impl ModManagerKind {
+impl fmt::Display for ModManagerKind {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DetectedModManager {
+impl DetectedModManager {
+pub fn new(
+pub fn mod_organizer(executable_path: impl Into<PathBuf>, version: SemanticVersion) -> Self {
+pub fn vortex(executable_path: impl Into<PathBuf>, version: Option<SemanticVersion>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VortexContext {
+impl VortexContext {
+pub fn new(executable_path: impl Into<PathBuf>, version: Option<SemanticVersion>) -> Self {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ModOrganizerTool {
+impl ModOrganizerTool {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModOrganizerDirectories {
+impl ModOrganizerDirectories {
+pub fn new(
+pub fn reference_defaults(base_directory: impl Into<PathBuf>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModOrganizerSkipRules {
+impl Default for ModOrganizerSkipRules {
+impl ModOrganizerSkipRules {
+pub fn new(
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ModOrganizerContext {
+impl ModOrganizerContext {
+pub fn new(
+pub fn with_game_path(mut self, game_path: impl Into<PathBuf>) -> Self {
+pub fn with_source_paths(
+pub fn with_skip_rules(mut self, skip_rules: ModOrganizerSkipRules) -> Self {
+pub fn mod_directory(&self) -> &Path {
+pub fn overwrite_directory(&self) -> &Path {
+pub fn profiles_directory(&self) -> &Path {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Mo2Configuration {
+impl Mo2Configuration {
+pub fn new(context: ModOrganizerContext) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ModManagerContext {
+impl ModManagerContext {
+pub fn display_name(&self) -> &'static str {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Mo2ParseError {
+impl Mo2ParseError {
+pub fn portable_marker_without_ini() -> Self {
+pub fn missing_mod_organizer_ini() -> Self {
+pub fn unsupported_game_name(
+pub fn missing_selected_profile() -> Self {
+pub fn missing_stage_settings(
+pub fn missing_modlist(path: impl Into<PathBuf>) -> Self {
+pub fn user_message(&self) -> String {
+pub fn diagnostic_message(&self) -> String {
+impl fmt::Display for Mo2ParseError {
+impl std::error::Error for Mo2ParseError {}
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Mo2ParseErrorKind {
+functions/tests: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn default() -> Self {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn display_optional_path(path: Option<&Path>) -> String {, fn mo2_manager() -> DetectedModManager {, fn manager_kind_display_names_and_executables_match_reference() {, fn mo2_context_carries_required_reference_fields() {, fn mo2_reference_defaults_match_python_defaults_without_filesystem_access() {, fn vortex_detection_scope_is_identity_only_with_zero_version_fallback() {, fn mo2_parse_errors_are_typed_and_reference_compatible() {, fn mo2_path_including_messages_match_reference_exceptions() {, fn mo2_stage_setting_paths_stay_in_diagnostics_not_user_message() {, fn mo2_configuration_result_can_hold_context_and_executables() {
+
+## src/services/discovery.rs
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscoveryRequest {
+impl DiscoveryRequest {
+pub fn new(current_working_directory: impl Into<PathBuf>) -> Self {
+pub fn with_local_appdata(mut self, local_appdata: impl Into<PathBuf>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscoveryReport {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DiscoveredModManager {
+impl DiscoveredModManager {
+pub fn display_name(&self) -> &'static str {
+pub fn executable_path(&self) -> &Path {
+pub fn version(&self) -> SemanticVersion {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ModManagerDiscoveryError {
+impl ModManagerDiscoveryError {
+pub fn user_message(&self) -> String {
+impl fmt::Display for ModManagerDiscoveryError {
+impl std::error::Error for ModManagerDiscoveryError {}
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DiscoverySource {
+impl DiscoverySource {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum DiscoveryAttemptOutcome {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DiscoveryAttempt {
+impl DiscoveryAttempt {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ModManagerDiscoveryStage {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ModManagerDiscoveryStepOutcome {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ModManagerDiscoveryStep {
+impl ModManagerDiscoveryStep {
+pub struct DiscoveryService<'a, F, R, P>
+pub fn discover(&self, request: &DiscoveryRequest) -> DiscoveryReport {
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default)]
+impl FakeFilesystem {
+impl Filesystem for FakeFilesystem {
+#[derive(Debug, Default)]
+impl FakeRegistry {
+impl RegistryReader for FakeRegistry {
+#[derive(Debug, Clone)]
+impl Default for FakeProcessInspector {
+impl FakeProcessInspector {
+impl ProcessInspector for FakeProcessInspector {
+functions/tests: fn manager_game_path(&self) -> Option<PathBuf> {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn no_candidate(source: DiscoverySource) -> Self {, fn invalid(source: DiscoverySource, candidate: PathBuf, reason: impl Into<String, fn adapter_error(, fn accepted(source: DiscoverySource, candidate: PathBuf) -> Self {, fn new(, fn discover_mod_manager(, fn detect_running_manager(, fn manager_version_or_zero(&self, executable_path: &Path) -> SemanticVersion {, fn discover_mod_organizer(, fn mo2_file_exists(, fn read_mo2_current_instance(, fn parse_mo2_ini(, fn add_mo2_custom_executable(&self, configuration: &mut Mo2Configuration, value:, fn lenient_is_file(&self, path: &Path) -> bool {, fn discover_game(, fn evaluate_registry_candidate(, fn evaluate_game_candidate(, fn normalize_game_candidate(&self, candidate: &Path) -> Result<PathBuf, Platform, fn is_fo4_dir(&self, path: &Path) -> Result<bool, PlatformError> {, fn installation_for_game_path(&self, game_path: PathBuf) -> Fallout4Installation, fn optional_directory(&self, path: &Path) -> Option<PathBuf> {, fn parse_mo2_ini_values(text: &str) -> RawMo2IniValues {, fn is_supported_mo2_setting(setting: &str) -> bool {
+
+## src/platform/desktop.rs
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DesktopActionResult {
+impl DesktopActionResult {
+pub fn success(operation: PlatformOperation, target: impl Into<String>) -> Self {
+pub fn failure(error: PlatformError) -> Self {
+pub fn safe_message(&self) -> &str {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DesktopActionOutcome {
+pub trait DesktopActions {
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RealDesktopActions;
+impl RealDesktopActions {
+impl DesktopActions for RealDesktopActions {
+#[derive(Debug, Default)]
+impl FakeDesktopActions {
+impl DesktopActions for FakeDesktopActions {
+functions/tests: fn open_url(&self, url: &str) -> DesktopActionResult;, fn open_path(&self, path: &Path) -> DesktopActionResult;, fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult, fn open_url(&self, url: &str) -> DesktopActionResult {, fn open_path(&self, path: &Path) -> DesktopActionResult {, fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult, fn open_real_url(url: &str) -> DesktopActionResult {, fn open_real_path(path: &Path) -> DesktopActionResult {, fn launch_real_tool(executable: &Path, _args: &[String]) -> DesktopActionResult , fn open_real_url(url: &str) -> DesktopActionResult {, fn open_real_path(path: &Path) -> DesktopActionResult {, fn hand_to_windows_shell(operation: PlatformOperation, target: &str) -> DesktopA, fn launch_real_tool(executable: &Path, args: &[String]) -> DesktopActionResult {, fn fail(, fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResu, fn open_url(&self, url: &str) -> DesktopActionResult {, fn open_path(&self, path: &Path) -> DesktopActionResult {, fn launch_tool(&self, executable: &Path, _args: &[String]) -> DesktopActionResul, fn fake_desktop_actions_return_typed_success_values() {, fn fake_desktop_actions_return_typed_failures_without_launching() {, fn real_desktop_actions_are_explicitly_unsupported_off_windows() {
+
+## src/platform/process.rs
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ProcessInfo {
+impl ProcessInfo {
+pub fn new(
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct VersionMetadata {
+impl VersionMetadata {
+pub fn new(semantic: SemanticVersion, raw: Option<impl Into<String>>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SystemMetadata {
+impl SystemMetadata {
+pub fn new(
+pub trait ProcessInspector {
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RealProcessInspector;
+impl RealProcessInspector {
+impl ProcessInspector for RealProcessInspector {
+#[derive(Debug, Clone)]
+impl Default for FakeProcessInspector {
+impl ProcessInspector for FakeProcessInspector {
+functions/tests: fn list_processes(&self) -> PlatformResult<Vec<ProcessInfo>>;, fn file_version(&self, path: &Path) -> PlatformResult<Option<VersionMetadata>>;, fn system_metadata(&self) -> PlatformResult<SystemMetadata>;, fn list_processes(&self) -> PlatformResult<Vec<ProcessInfo>> {, fn file_version(&self, path: &Path) -> PlatformResult<Option<VersionMetadata>> {, fn system_metadata(&self) -> PlatformResult<SystemMetadata> {, fn list_real_processes() -> PlatformResult<Vec<ProcessInfo>> {, fn read_real_file_version(path: &Path) -> PlatformResult<Option<VersionMetadata>, fn read_real_system_metadata() -> PlatformResult<SystemMetadata> {, fn list_real_processes() -> PlatformResult<Vec<ProcessInfo>> {, fn read_real_system_metadata() -> PlatformResult<SystemMetadata> {, fn read_real_file_version(path: &Path) -> PlatformResult<Option<VersionMetadata>, fn default() -> Self {, fn list_processes(&self) -> PlatformResult<Vec<ProcessInfo>> {, fn file_version(&self, _path: &Path) -> PlatformResult<Option<VersionMetadata>> , fn system_metadata(&self) -> PlatformResult<SystemMetadata> {, fn fake_process_inspector_supports_manager_detection_inputs() {, fn fake_process_inspector_returns_typed_system_failures() {, fn real_process_operations_are_explicitly_unsupported_off_windows() {
+
+## src/platform/filesystem.rs
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum FileType {
+impl FileType {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct FileMetadata {
+impl FileMetadata {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct DirectoryEntry {
+impl DirectoryEntry {
+pub fn new(path: impl Into<PathBuf>, file_type: FileType) -> Self {
+pub trait Filesystem {
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RealFilesystem;
+impl RealFilesystem {
+impl Filesystem for RealFilesystem {
+#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Default)]
+impl FakeFilesystem {
+impl Filesystem for FakeFilesystem {
+functions/tests: fn from_std(file_type: fs::FileType) -> Self {, fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata>;, fn exists(&self, path: &Path) -> PlatformResult<bool> {, fn is_file(&self, path: &Path) -> PlatformResult<bool> {, fn is_dir(&self, path: &Path) -> PlatformResult<bool> {, fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>>;, fn read_to_string(&self, path: &Path) -> PlatformResult<String>;, fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;, fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;, fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {, fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {, fn read_to_string(&self, path: &Path) -> PlatformResult<String> {, fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {, fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {, fn walkdir_error(root: &Path, error: walkdir::Error) -> PlatformError {, fn with_file(mut self, path: &str, bytes: impl Into<Vec<u8>>) -> Self {, fn with_dir(mut self, path: &str) -> Self {, fn with_denied(mut self, path: &str) -> Self {, fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&Fak, fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {, fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {, fn read_to_string(&self, path: &Path) -> PlatformResult<String> {, fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {, fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {, fn collect_files(fs: &dyn Filesystem, root: &Path) -> PlatformResult<BTreeSet<Pa
+
+## src/workers/events.rs
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub struct WorkerTaskId(String);
+impl WorkerTaskId {
+pub fn new(id: impl Into<String>) -> Self {
+pub fn as_str(&self) -> &str {
+impl From<&str> for WorkerTaskId {
+impl From<String> for WorkerTaskId {
+impl fmt::Display for WorkerTaskId {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum WorkerTaskKind {
+impl WorkerTaskKind {
+impl fmt::Display for WorkerTaskKind {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WorkerTask {
+impl WorkerTask {
+pub fn new(id: impl Into<WorkerTaskId>, kind: WorkerTaskKind) -> Self {
+pub fn with_label(mut self, label: impl Into<String>) -> Self {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum WorkerTaskStatus {
+impl WorkerTaskStatus {
+impl fmt::Display for WorkerTaskStatus {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorkerEvent {
+impl WorkerEvent {
+pub fn new(task: WorkerTask, status: WorkerTaskStatus, payload: WorkerPayload) -> Self {
+pub fn running(task: WorkerTask) -> Self {
+pub fn progress(task: WorkerTask, progress: WorkerProgress) -> Self {
+pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+pub fn failed(task: WorkerTask, failure: WorkerFailure) -> Self {
+pub fn cancellation_requested(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+pub fn cancellation_acknowledged(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+pub fn cancelled(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+pub struct WorkerProgress {
+impl WorkerProgress {
+pub fn new() -> Self {
+pub fn with_message(mut self, message: impl Into<String>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WorkerMessage {
+impl WorkerMessage {
+pub fn new(safe_message: impl Into<String>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WorkerFailure {
+impl WorkerFailure {
+pub fn new(safe_message: impl Into<String>) -> Self {
+pub fn with_diagnostic(mut self, diagnostic: impl Into<String>) -> Self {
+pub fn safe_message(&self) -> &str {
+pub fn diagnostic(&self) -> Option<&str> {
+#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+pub struct WorkerCancellation {
+impl WorkerCancellation {
+pub fn new(message: Option<String>) -> Self {
+pub fn empty() -> Self {
+pub fn with_message(message: impl Into<String>) -> Self {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WorkerPayload {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ExternalActionKind {
+impl ExternalActionKind {
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ExternalActionOutcome {
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct ExternalActionPayload {
+impl ExternalActionPayload {
+pub fn succeeded(
+pub fn failed(
+pub fn from_platform_error(action_kind: ExternalActionKind, error: PlatformError) -> Self {
+impl From<DesktopActionResult> for ExternalActionPayload {
+#[derive(Debug, Clone, Default)]
+pub struct CancellationToken {
+impl CancellationToken {
+pub fn new() -> Self {
+pub fn request_cancellation(&self) {
+pub fn is_cancellation_requested(&self) -> bool {
+functions/tests: fn from(value: &str) -> Self {, fn from(value: String) -> Self {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn from(result: DesktopActionResult) -> Self {, fn task_kinds_cover_required_background_categories() {, fn event_envelope_carries_task_status_and_typed_payload() {, fn progress_supports_optional_text_and_counts_without_percentage_requirements() , fn cancellation_request_acknowledgement_and_final_cancelled_are_distinct_events(, fn desktop_action_results_flow_through_external_action_payloads() {
+
+## src/workers/handoff.rs
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum WorkerHandoffErrorKind {
+impl WorkerHandoffErrorKind {
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WorkerHandoffError {
+impl WorkerHandoffError {
+pub fn new(kind: WorkerHandoffErrorKind, safe_message: impl Into<String>) -> Self {
+pub fn with_diagnostic(mut self, diagnostic: impl Into<String>) -> Self {
+impl fmt::Display for WorkerHandoffError {
+impl std::error::Error for WorkerHandoffError {}
+pub trait WorkerEventSink: Clone + Send + Sync + 'static {
+#[derive(Debug, Clone, Default)]
+pub struct RecordingEventSink {
+impl RecordingEventSink {
+pub fn new() -> Self {
+pub fn events(&self) -> WorkerHandoffResult<Vec<WorkerEvent>> {
+pub fn len(&self) -> WorkerHandoffResult<usize> {
+pub fn is_empty(&self) -> WorkerHandoffResult<bool> {
+impl WorkerEventSink for RecordingEventSink {
+#[derive(Clone)]
+pub struct SlintEventLoopSink {
+impl SlintEventLoopSink {
+pub fn new(handler: impl Fn(WorkerEvent) + Send + Sync + 'static) -> Self {
+impl fmt::Debug for SlintEventLoopSink {
+impl WorkerEventSink for SlintEventLoopSink {
+functions/tests: fn recording_poisoned(diagnostic: impl Into<String>) -> Self {, fn slint_event_loop(diagnostic: impl Into<String>) -> Self {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult;, fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {, fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {, fn assert_sink<T: WorkerEventSink>() {}, fn recording_sink_stores_owned_events() {, fn slint_event_loop_sink_is_constructible_without_a_window() {
+
+## src/workers/mod.rs
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WorkerTaskOutcome {
+#[derive(Debug, Default, Clone, Copy)]
+pub struct WorkerRuntime;
+impl WorkerRuntime {
+pub fn spawn_blocking_task<S, F>(
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum WorkerSpawnError {
+impl fmt::Display for WorkerSpawnError {
+impl std::error::Error for WorkerSpawnError {}
+#[derive(Clone)]
+pub struct WorkerTaskContext<S>
+pub fn task(&self) -> &WorkerTask {
+pub fn cancellation_token(&self) -> CancellationToken {
+pub fn is_cancellation_requested(&self) -> bool {
+pub fn emit_payload(
+pub fn emit_progress(&self, progress: WorkerProgress) -> WorkerHandoffResult {
+pub fn acknowledge_cancellation(
+pub struct WorkerTaskHandle<S>
+pub fn task(&self) -> &WorkerTask {
+pub fn request_cancellation(&self, cancellation: WorkerCancellation) -> WorkerHandoffResult {
+pub fn cancellation_token(&self) -> CancellationToken {
+functions/tests: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {, fn new(task: WorkerTask, sink: S, cancellation: CancellationToken) -> Self {, fn emit_or_log<S>(sink: &S, event: WorkerEvent), fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> Option<String>, async fn blocking_facade_runs_work_off_calling_thread_and_records_events() {, async fn cancellation_request_acknowledgement_and_final_cancelled_flow_through_f, async fn worker_failures_emit_safe_failure_events() {, fn spawning_without_tokio_runtime_returns_typed_error() {
+

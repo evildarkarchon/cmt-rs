@@ -524,14 +524,13 @@ impl<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> OverviewCollector
         }
 
         let version = self.read_version_string(path, diagnostics);
-        if let Some(version) = version.as_deref() {
-            if let Some(install_type) =
+        if let Some(version) = version.as_deref()
+            && let Some(install_type) =
                 lookup_install_type(definition, BinaryClassificationSource::Version, version)
-            {
-                return OverviewBinaryFact::new(definition.relative_path, install_type)
-                    .with_path(path.to_path_buf())
-                    .with_version_metadata(Some(version.to_owned()), None::<String>);
-            }
+        {
+            return OverviewBinaryFact::new(definition.relative_path, install_type)
+                .with_path(path.to_path_buf())
+                .with_version_metadata(Some(version.to_owned()), None::<String>);
         }
 
         let hash = match self.filesystem.read_bytes(path) {
@@ -793,10 +792,10 @@ impl<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> OverviewCollector
                             if line.is_empty() {
                                 continue;
                             }
-                            if let Some(path) = index.resolve_relative(line) {
-                                if is_module_path(&path) {
-                                    collection.enabled_modules.insert(path_key(&path));
-                                }
+                            if let Some(path) = index.resolve_relative(line)
+                                && is_module_path(&path)
+                            {
+                                collection.enabled_modules.insert(path_key(&path));
                             }
                         }
                     }
@@ -864,12 +863,11 @@ impl<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> OverviewCollector
                         collection.facts.plugins_txt = OverviewFilePresence::present(&plugins_path);
                         if let Some(index) = data_index {
                             for line in text.lines().map(clean_enablement_line) {
-                                if let Some(plugin) = line.strip_prefix('*') {
-                                    if let Some(path) = index.resolve_relative(plugin.trim()) {
-                                        if is_module_path(&path) {
-                                            collection.enabled_modules.insert(path_key(&path));
-                                        }
-                                    }
+                                if let Some(plugin) = line.strip_prefix('*')
+                                    && let Some(path) = index.resolve_relative(plugin.trim())
+                                    && is_module_path(&path)
+                                {
+                                    collection.enabled_modules.insert(path_key(&path));
                                 }
                             }
                         }

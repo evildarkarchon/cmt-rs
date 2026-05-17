@@ -1,0 +1,18 @@
+{
+  "id": "6801c9b8-c216-4a60-b88d-7e9e5ec81334",
+  "runtime": "bash",
+  "purpose": "S04 locate discovery service implementation hot spots",
+  "script_chars": 581,
+  "started_at": "2026-05-17T10:57:20.211Z",
+  "finished_at": "2026-05-17T10:57:20.328Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 117,
+  "stdout_bytes": 26479,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6801c9b8-c216-4a60-b88d-7e9e5ec81334.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6801c9b8-c216-4a60-b88d-7e9e5ec81334.stderr"
+}

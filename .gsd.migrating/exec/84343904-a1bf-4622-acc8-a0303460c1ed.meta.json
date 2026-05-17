@@ -1,0 +1,18 @@
+{
+  "id": "84343904-a1bf-4622-acc8-a0303460c1ed",
+  "runtime": "python",
+  "purpose": "inspect reference hash/file info usage for planning",
+  "script_chars": 405,
+  "started_at": "2026-05-17T11:11:28.653Z",
+  "finished_at": "2026-05-17T11:11:28.750Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 97,
+  "stdout_bytes": 2657,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\84343904-a1bf-4622-acc8-a0303460c1ed.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\84343904-a1bf-4622-acc8-a0303460c1ed.stderr"
+}
