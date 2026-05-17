@@ -56,7 +56,7 @@ Plans:
 **Plans:** 4 plans
 Plans:
 - [x] 02-01-PLAN.md — Create typed settings defaults, JSON key contract, and repair tests.
-- [ ] 02-02-PLAN.md — Implement injectable settings file IO, asset fallback, and safe persistence.
+- [x] 02-02-PLAN.md — Implement injectable settings file IO, asset fallback, and safe persistence.
 - [ ] 02-03-PLAN.md — Render Settings-tab reference labels and source-level UI contract tests.
 - [ ] 02-04-PLAN.md — Wire Settings callbacks to immediate persistence with save-failure reversion.
 **UI hint:** yes
