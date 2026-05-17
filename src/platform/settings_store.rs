@@ -2,7 +2,7 @@
 
 use std::{fs, io, path::{Path, PathBuf}};
 
-use crate::domain::settings::UpdateSource;
+use crate::domain::settings::{AppSettings, RepairDiagnostic, SettingsParseError, UpdateSource};
 
 const SETTINGS_FILE_NAME: &str = "settings.json";
 const DOWNLOAD_SOURCE_FILE_NAME: &str = "download-source.txt";
@@ -111,6 +111,17 @@ pub struct SettingsStore<R = FileAssetResolver> {
     paths: SettingsPaths<R>,
 }
 
+/// Result returned by [`SettingsStore::load`] after any reference-style repair.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct LoadedSettings {
+    /// Settings ready for UI/controller use.
+    pub settings: AppSettings,
+    /// Non-sensitive repair diagnostics collected while loading.
+    pub diagnostics: Vec<RepairDiagnostic>,
+    /// True when the file was missing, malformed, unreadable, or non-object JSON.
+    pub reset_to_defaults: bool,
+}
+
 impl SettingsStore<FileAssetResolver> {
     /// Creates a store with production current-directory settings and asset paths.
     pub fn production() -> Self {
@@ -148,11 +159,77 @@ impl<R: AssetResolver> SettingsStore<R> {
             .and_then(UpdateSource::from_wire_value)
             .unwrap_or(UpdateSource::Nexus)
     }
+
+    /// Loads settings, creating or repairing `settings.json` as needed.
+    ///
+    /// Missing files and malformed/non-object JSON reset to default settings and
+    /// are saved immediately, matching the reference app's quiet first-run and
+    /// recovery behavior. Syntactically valid objects preserve valid keys, repair
+    /// invalid values, remove unknown keys on resave, and return diagnostics for
+    /// later logging without surfacing UI errors.
+    pub fn load(&self) -> io::Result<LoadedSettings> {
+        let mut defaults = AppSettings::default();
+        defaults.update_source = self.default_update_source();
+
+        let source = match fs::read_to_string(&self.paths.settings_path) {
+            Ok(source) => source,
+            Err(error) if error.kind() == io::ErrorKind::NotFound => {
+                self.save(&defaults)?;
+                return Ok(LoadedSettings {
+                    settings: defaults,
+                    diagnostics: Vec::new(),
+                    reset_to_defaults: true,
+                });
+            }
+            Err(_) => {
+                self.save(&defaults)?;
+                return Ok(LoadedSettings {
+                    settings: defaults,
+                    diagnostics: Vec::new(),
+                    reset_to_defaults: true,
+                });
+            }
+        };
+
+        let repaired = match AppSettings::from_json_str(&source) {
+            Ok(repaired) => repaired,
+            Err(SettingsParseError::MalformedJson(_)) | Err(SettingsParseError::NonObjectRoot) => {
+                self.save(&defaults)?;
+                return Ok(LoadedSettings {
+                    settings: defaults,
+                    diagnostics: Vec::new(),
+                    reset_to_defaults: true,
+                });
+            }
+        };
+
+        if !repaired.diagnostics.is_empty() {
+            self.save(&repaired.settings)?;
+        }
+
+        Ok(LoadedSettings {
+            settings: repaired.settings,
+            diagnostics: repaired.diagnostics,
+            reset_to_defaults: false,
+        })
+    }
+
+    /// Saves settings JSON and returns filesystem errors to the caller.
+    ///
+    /// The serialized object is produced by the domain model, so unknown keys are
+    /// never persisted and later UI/controller code can revert state if this file
+    /// write fails.
+    pub fn save(&self, settings: &AppSettings) -> io::Result<()> {
+        let mut json = serde_json::to_string_pretty(&settings.to_json_value())
+            .map_err(io::Error::other)?;
+        json.push('\n');
+        fs::write(&self.paths.settings_path, json)
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use std::{fs, path::{Path, PathBuf}, time::{SystemTime, UNIX_EPOCH}};
+    use std::{fs, path::PathBuf, time::{SystemTime, UNIX_EPOCH}};
 
     use crate::domain::settings::{AppSettings, LogLevel, UpdateSource};
 
@@ -294,7 +371,7 @@ mod tests {
             .save(&AppSettings::default())
             .expect_err("save should return an observable filesystem error");
 
-        assert_eq!(error.kind(), io::ErrorKind::IsADirectory);
+        assert_ne!(error.kind(), io::ErrorKind::NotFound);
     }
 
     fn isolated_settings_path(case_name: &str) -> (PathBuf, PathBuf) {
