@@ -1,4 +1,7 @@
-mod app;
+pub mod app;
+pub mod domain;
+pub mod platform;
+pub mod workers;
 
 slint::include_modules!();
 
