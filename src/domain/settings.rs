@@ -1,6 +1,32 @@
 //! Typed settings model for reference-compatible CMT settings data.
 
-use serde_json::{Value, json};
+use serde_json::{Map, Value, json};
+
+const LOG_LEVEL_KEY: &str = "log_level";
+const UPDATE_SOURCE_KEY: &str = "update_source";
+const SCANNER_OVERVIEW_ISSUES_KEY: &str = "scanner_OverviewIssues";
+const SCANNER_ERRORS_KEY: &str = "scanner_Errors";
+const SCANNER_WRONG_FORMAT_KEY: &str = "scanner_WrongFormat";
+const SCANNER_LOOSE_PREVIS_KEY: &str = "scanner_LoosePrevis";
+const SCANNER_JUNK_FILES_KEY: &str = "scanner_JunkFiles";
+const SCANNER_PROBLEM_OVERRIDES_KEY: &str = "scanner_ProblemOverrides";
+const SCANNER_RACE_SUBGRAPHS_KEY: &str = "scanner_RaceSubgraphs";
+const DOWNGRADER_KEEP_BACKUPS_KEY: &str = "downgrader_keep_backups";
+const DOWNGRADER_DELETE_DELTAS_KEY: &str = "downgrader_delete_deltas";
+
+const KNOWN_KEYS: [&str; 11] = [
+    LOG_LEVEL_KEY,
+    UPDATE_SOURCE_KEY,
+    SCANNER_OVERVIEW_ISSUES_KEY,
+    SCANNER_ERRORS_KEY,
+    SCANNER_WRONG_FORMAT_KEY,
+    SCANNER_LOOSE_PREVIS_KEY,
+    SCANNER_JUNK_FILES_KEY,
+    SCANNER_PROBLEM_OVERRIDES_KEY,
+    SCANNER_RACE_SUBGRAPHS_KEY,
+    DOWNGRADER_KEEP_BACKUPS_KEY,
+    DOWNGRADER_DELETE_DELTAS_KEY,
+];
 
 /// Top-level application settings persisted in the reference `settings.json`.
 ///
@@ -30,6 +56,114 @@ impl Default for AppSettings {
 }
 
 impl AppSettings {
+    /// Parses and repairs a syntactically valid JSON settings object.
+    ///
+    /// Malformed JSON and non-object roots are rejected so the platform store can
+    /// perform the reference-compatible defaults-only reset required by D-09 and
+    /// D-11. Valid objects preserve each valid known key independently and report
+    /// diagnostics for keys that need default repair or removal.
+    pub fn from_json_str(source: &str) -> Result<SettingsRepairResult, SettingsParseError> {
+        let value: Value = serde_json::from_str(source).map_err(SettingsParseError::MalformedJson)?;
+        let object = value.as_object().ok_or(SettingsParseError::NonObjectRoot)?;
+        Ok(Self::apply_json_object(object))
+    }
+
+    /// Applies reference-compatible per-key repair semantics to a JSON object.
+    ///
+    /// Unknown keys are ignored in memory and therefore omitted when the returned
+    /// settings are serialized with [`AppSettings::to_json_value`].
+    pub fn apply_json_object(object: &Map<String, Value>) -> SettingsRepairResult {
+        let mut settings = Self::default();
+        let mut diagnostics = Vec::new();
+
+        for key in KNOWN_KEYS {
+            if !object.contains_key(key) {
+                diagnostics.push(RepairDiagnostic::MissingKey {
+                    key: key.to_owned(),
+                });
+            }
+        }
+
+        for (key, value) in object {
+            match key.as_str() {
+                LOG_LEVEL_KEY => match value.as_str().and_then(LogLevel::from_wire_value) {
+                    Some(log_level) => settings.log_level = log_level,
+                    None if value.is_string() => diagnostics.push(RepairDiagnostic::InvalidValue {
+                        key: key.clone(),
+                    }),
+                    None => diagnostics.push(RepairDiagnostic::InvalidType { key: key.clone() }),
+                },
+                UPDATE_SOURCE_KEY => match value.as_str().and_then(UpdateSource::from_wire_value) {
+                    Some(update_source) => settings.update_source = update_source,
+                    None if value.is_string() => diagnostics.push(RepairDiagnostic::InvalidValue {
+                        key: key.clone(),
+                    }),
+                    None => diagnostics.push(RepairDiagnostic::InvalidType { key: key.clone() }),
+                },
+                SCANNER_OVERVIEW_ISSUES_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.overview_issues,
+                    &mut diagnostics,
+                ),
+                SCANNER_ERRORS_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.errors,
+                    &mut diagnostics,
+                ),
+                SCANNER_WRONG_FORMAT_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.wrong_format,
+                    &mut diagnostics,
+                ),
+                SCANNER_LOOSE_PREVIS_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.loose_previs,
+                    &mut diagnostics,
+                ),
+                SCANNER_JUNK_FILES_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.junk_files,
+                    &mut diagnostics,
+                ),
+                SCANNER_PROBLEM_OVERRIDES_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.problem_overrides,
+                    &mut diagnostics,
+                ),
+                SCANNER_RACE_SUBGRAPHS_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.scanner.race_subgraphs,
+                    &mut diagnostics,
+                ),
+                DOWNGRADER_KEEP_BACKUPS_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.downgrader.keep_backups,
+                    &mut diagnostics,
+                ),
+                DOWNGRADER_DELETE_DELTAS_KEY => apply_bool(
+                    value,
+                    key,
+                    &mut settings.downgrader.delete_deltas,
+                    &mut diagnostics,
+                ),
+                _ => diagnostics.push(RepairDiagnostic::UnknownKey { key: key.clone() }),
+            }
+        }
+
+        SettingsRepairResult {
+            settings,
+            diagnostics,
+        }
+    }
+
     /// Converts settings into the reference-compatible JSON object shape.
     ///
     /// Keys intentionally preserve the mixed-case scanner names used by
@@ -52,6 +186,52 @@ impl AppSettings {
     }
 }
 
+fn apply_bool(
+    value: &Value,
+    key: &str,
+    target: &mut bool,
+    diagnostics: &mut Vec<RepairDiagnostic>,
+) {
+    if let Some(value) = value.as_bool() {
+        *target = value;
+    } else {
+        diagnostics.push(RepairDiagnostic::InvalidType {
+            key: key.to_owned(),
+        });
+    }
+}
+
+/// Parsed settings plus diagnostics describing any quiet repairs made.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SettingsRepairResult {
+    /// Typed settings after valid values were applied and invalid values defaulted.
+    pub settings: AppSettings,
+    /// Diagnostics for test assertions and later logging; values are deliberately omitted.
+    pub diagnostics: Vec<RepairDiagnostic>,
+}
+
+/// Non-sensitive diagnostic for a single settings repair action.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepairDiagnostic {
+    /// A known reference key was absent and retained its default value.
+    MissingKey { key: String },
+    /// A known enum/string key had an unsupported string value.
+    InvalidValue { key: String },
+    /// A known key had the wrong JSON type.
+    InvalidType { key: String },
+    /// An unknown key was ignored and will be omitted on resave.
+    UnknownKey { key: String },
+}
+
+/// Parse errors that require the platform store to reset settings to defaults.
+#[derive(Debug)]
+pub enum SettingsParseError {
+    /// JSON parsing failed before a trustworthy object could be inspected.
+    MalformedJson(serde_json::Error),
+    /// The parsed JSON root was not an object.
+    NonObjectRoot,
+}
+
 /// Reference log level values exposed by the Settings tab.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LogLevel {
@@ -70,6 +250,16 @@ impl LogLevel {
             Self::Debug => "DEBUG",
             Self::Info => "INFO",
             Self::Error => "ERROR",
+        }
+    }
+
+    /// Converts a persisted log-level string into the typed value when supported.
+    pub fn from_wire_value(value: &str) -> Option<Self> {
+        match value {
+            "DEBUG" => Some(Self::Debug),
+            "INFO" => Some(Self::Info),
+            "ERROR" => Some(Self::Error),
+            _ => None,
         }
     }
 }
@@ -95,6 +285,17 @@ impl UpdateSource {
             Self::Github => "github",
             Self::Nexus => "nexus",
             Self::None => "none",
+        }
+    }
+
+    /// Converts a persisted update-source string into the typed value when supported.
+    pub fn from_wire_value(value: &str) -> Option<Self> {
+        match value {
+            "both" => Some(Self::Both),
+            "github" => Some(Self::Github),
+            "nexus" => Some(Self::Nexus),
+            "none" => Some(Self::None),
+            _ => None,
         }
     }
 }
