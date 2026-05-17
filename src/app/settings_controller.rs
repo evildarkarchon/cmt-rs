@@ -21,8 +21,9 @@ impl<R: AssetResolver> SettingsController<R> {
     /// Loads settings through the provided store and initializes UI-facing state.
     ///
     /// Any repairs performed by the settings store are reflected in the initial
-    /// snapshot, so unsupported persisted values such as `WARNING` surface as the
-    /// default `info` radio selection.
+    /// snapshot. Reference-valid persisted values that are not exposed as Phase 2
+    /// radio choices, such as `WARNING`, are preserved until the user selects a
+    /// displayed value.
     pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
         let loaded = store.load()?;
 
@@ -73,9 +74,9 @@ impl<R: AssetResolver> SettingsController<R> {
     /// Persists a Log Level radio selection and returns the lowercase UI value to show.
     ///
     /// Slint emits lowercase values (`debug`, `info`, `error`), while the domain
-    /// model persists uppercase wire values (`DEBUG`, `INFO`, `ERROR`). Unsupported
-    /// callback strings are repaired to `INFO` before saving, matching the settings
-    /// domain's unsupported-value fallback contract for values such as `WARNING`.
+    /// model persists uppercase wire values. Unsupported callback strings are
+    /// repaired to `INFO` before saving so tampered UI input cannot persist an
+    /// unrepresented radio state.
     pub fn select_log_level(&mut self, selected: &str) -> &'static str {
         let log_level = ui_value_to_log_level(selected).unwrap_or_else(|| {
             tracing::error!(
@@ -134,7 +135,7 @@ fn ui_value_to_log_level(value: &str) -> Option<LogLevel> {
         "debug" => Some(LogLevel::Debug),
         "info" => Some(LogLevel::Info),
         "error" => Some(LogLevel::Error),
-        _ => LogLevel::from_wire_value(value),
+        _ => None,
     }
 }
 
@@ -142,6 +143,7 @@ fn log_level_to_ui_value(log_level: LogLevel) -> &'static str {
     match log_level {
         LogLevel::Debug => "debug",
         LogLevel::Info => "info",
+        LogLevel::Warning => "warning",
         LogLevel::Error => "error",
     }
 }
@@ -194,23 +196,27 @@ mod tests {
     }
 
     #[test]
-    fn settings_controller_repairs_unsupported_loaded_log_level_to_info_ui_value() {
-        let (_root, settings_path) = isolated_settings_path("warning-repair");
+    fn settings_controller_preserves_loaded_warning_log_level_until_user_selection() {
+        let (_root, settings_path) = isolated_settings_path("warning-preserve");
         fs::write(
             &settings_path,
             r#"{"log_level":"WARNING","update_source":"github"}"#,
         )
         .expect("test fixture should write settings");
         let store = SettingsStore::with_asset_resolver(
-            settings_path,
+            settings_path.clone(),
             StaticAssetResolver::new(Some("nexus")),
         );
 
         let controller =
             SettingsController::load(store).expect("controller should repair settings");
 
-        assert_eq!(controller.visible_log_level(), "info");
+        assert_eq!(controller.visible_log_level(), "warning");
         assert_eq!(controller.visible_update_source(), "github");
+        let persisted = fs::read_to_string(settings_path).expect("settings should persist");
+        let persisted_json = persisted_json(&persisted);
+        assert_eq!(persisted_json["log_level"], "WARNING");
+        assert_eq!(persisted_json["update_source"], "github");
     }
 
     #[test]

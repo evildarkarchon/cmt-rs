@@ -230,13 +230,15 @@ pub enum SettingsParseError {
     NonObjectRoot,
 }
 
-/// Reference log level values exposed by the Settings tab.
+/// Reference log level values accepted by the persisted settings contract.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum LogLevel {
     /// Extra-verbose log output.
     Debug,
     /// Reference default log level.
     Info,
+    /// Warning-and-above log output accepted by the reference settings schema.
+    Warning,
     /// Error-only log output.
     Error,
 }
@@ -247,6 +249,7 @@ impl LogLevel {
         match self {
             Self::Debug => "DEBUG",
             Self::Info => "INFO",
+            Self::Warning => "WARNING",
             Self::Error => "ERROR",
         }
     }
@@ -256,6 +259,7 @@ impl LogLevel {
         match value {
             "DEBUG" => Some(Self::Debug),
             "INFO" => Some(Self::Info),
+            "WARNING" => Some(Self::Warning),
             "ERROR" => Some(Self::Error),
             _ => None,
         }
@@ -393,6 +397,7 @@ mod tests {
         assert_eq!(json["log_level"], "INFO");
         assert_eq!(LogLevel::Debug.as_wire_value(), "DEBUG");
         assert_eq!(LogLevel::Info.as_wire_value(), "INFO");
+        assert_eq!(LogLevel::Warning.as_wire_value(), "WARNING");
         assert_eq!(LogLevel::Error.as_wire_value(), "ERROR");
         assert_eq!(json["update_source"], "nexus");
         assert!(!object.contains_key("scanner_overview_issues"));
@@ -465,8 +470,8 @@ mod tests {
             .expect("repaired settings should serialize as object");
         assert!(!repaired_object.contains_key("unknown_setting"));
 
-        let unsupported_warning = AppSettings::from_json_str(r#"{"log_level":"WARNING"}"#)
-            .expect("unsupported log_level should repair to default");
-        assert_eq!(unsupported_warning.settings.log_level, LogLevel::Info);
+        let warning = AppSettings::from_json_str(r#"{"log_level":"WARNING"}"#)
+            .expect("reference-valid WARNING log_level should load");
+        assert_eq!(warning.settings.log_level, LogLevel::Warning);
     }
 }

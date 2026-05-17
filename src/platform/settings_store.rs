@@ -333,13 +333,13 @@ mod tests {
 
         let loaded = store.load().expect("partial JSON should repair and resave");
 
-        assert_eq!(loaded.settings.log_level, LogLevel::Info);
+        assert_eq!(loaded.settings.log_level, LogLevel::Warning);
         assert_eq!(loaded.settings.update_source, UpdateSource::Github);
         assert!(!loaded.settings.scanner.overview_issues);
         let persisted =
             fs::read_to_string(settings_path).expect("repaired settings should be persisted");
         let persisted_json = persisted_json(&persisted);
-        assert_eq!(persisted_json["log_level"], "INFO");
+        assert_eq!(persisted_json["log_level"], "WARNING");
         assert_eq!(persisted_json["update_source"], "github");
         assert!(persisted_json.get("unknown_setting").is_none());
     }
@@ -378,6 +378,7 @@ mod tests {
         );
         assert_eq!(LogLevel::Debug.as_wire_value(), "DEBUG");
         assert_eq!(LogLevel::Info.as_wire_value(), "INFO");
+        assert_eq!(LogLevel::Warning.as_wire_value(), "WARNING");
         assert_eq!(LogLevel::Error.as_wire_value(), "ERROR");
     }
 
