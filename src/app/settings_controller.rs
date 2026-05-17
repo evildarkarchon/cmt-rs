@@ -21,9 +21,8 @@ impl<R: AssetResolver> SettingsController<R> {
     /// Loads settings through the provided store and initializes UI-facing state.
     ///
     /// Any repairs performed by the settings store are reflected in the initial
-    /// snapshot. Reference-valid persisted values that are not exposed as Phase 2
-    /// radio choices, such as `WARNING`, are preserved until the user selects a
-    /// displayed value.
+    /// snapshot. Reference-valid persisted values, including `WARNING`, are
+    /// preserved and mapped onto their displayed radio choices.
     pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
         let loaded = store.load()?;
 
