@@ -67,3 +67,65 @@ pub struct DowngraderSettings {
     /// Deletes delta files after later downgrader operations use them.
     pub delete_deltas: bool,
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const REFERENCE_KEYS: [&str; 11] = [
+        "log_level",
+        "update_source",
+        "scanner_OverviewIssues",
+        "scanner_Errors",
+        "scanner_WrongFormat",
+        "scanner_LoosePrevis",
+        "scanner_JunkFiles",
+        "scanner_ProblemOverrides",
+        "scanner_RaceSubgraphs",
+        "downgrader_keep_backups",
+        "downgrader_delete_deltas",
+    ];
+
+    #[test]
+    fn settings_missing_file_defaults() {
+        let settings = AppSettings::default();
+
+        assert_eq!(settings.log_level, LogLevel::Info);
+        assert_eq!(settings.update_source, UpdateSource::Nexus);
+        assert!(settings.downgrader.keep_backups);
+        assert!(settings.downgrader.delete_deltas);
+    }
+
+    #[test]
+    fn settings_persist_reference_keys() {
+        let json = AppSettings::default().to_json_value();
+        let object = json.as_object().expect("settings should serialize as object");
+
+        let mut keys: Vec<&str> = object.keys().map(String::as_str).collect();
+        keys.sort_unstable();
+        let mut expected_keys = REFERENCE_KEYS.to_vec();
+        expected_keys.sort_unstable();
+        assert_eq!(keys, expected_keys);
+
+        assert_eq!(json["log_level"], "INFO");
+        assert_eq!(LogLevel::Debug.as_wire_value(), "DEBUG");
+        assert_eq!(LogLevel::Info.as_wire_value(), "INFO");
+        assert_eq!(LogLevel::Error.as_wire_value(), "ERROR");
+        assert_eq!(json["update_source"], "nexus");
+        assert!(!object.contains_key("scanner_overview_issues"));
+        assert!(!object.contains_key("scanner_wrong_format"));
+    }
+
+    #[test]
+    fn scanner_settings_defaults_enabled() {
+        let scanner = ScannerSettings::default();
+
+        assert!(scanner.overview_issues);
+        assert!(scanner.errors);
+        assert!(scanner.wrong_format);
+        assert!(scanner.loose_previs);
+        assert!(scanner.junk_files);
+        assert!(scanner.problem_overrides);
+        assert!(scanner.race_subgraphs);
+    }
+}
