@@ -14,7 +14,7 @@ Fallout 4 mod users can run a faithful Rust/Slint Collective Modding Toolkit tha
 
 ### Validated
 
-(None yet - ship to validate)
+- [x] Phase 02 validated Settings persistence and defaults, including update channel, log level, scanner toggles, and downgrader options. The Settings tab now uses the dark-only UI palette, exposes `Debug`, `Info`, `Warning`, and `Error`, and persists/repairs settings through typed Rust domain and platform boundaries.
 
 ### Active
 
@@ -24,7 +24,6 @@ Fallout 4 mod users can run a faithful Rust/Slint Collective Modding Toolkit tha
 - [ ] Port the F4SE tab's DLL scanning table and compatibility status behavior.
 - [ ] Port the Scanner tab's selectable scan settings, scan execution flow, tree results, details pane, URL/details actions, and auto-fix result feedback.
 - [ ] Port Toolkit Utilities and external tool links from the Tools tab, including Downgrade Manager and Archive Patcher workflows.
-- [ ] Port Settings persistence and defaults, including update channel, log level, scanner toggles, and downgrader options.
 - [ ] Port the About tab's attribution, links, Discord invite actions, and original user-facing text.
 - [ ] Keep long-running filesystem scans, parsing, and process work off the Slint UI thread.
 - [ ] Use typed Rust domain models for settings, game/mod-manager discovery, scan results, archive/module metadata, and tool execution state.
@@ -83,4 +82,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-05-17 after initialization*
+*Last updated: 2026-05-17 after Phase 02 completion*
