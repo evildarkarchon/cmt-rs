@@ -17,7 +17,7 @@ component SettingsRadioOption inherits Rectangle {
             height: 14px;
             border-radius: 7px;
             border-width: 1px;
-            border-color: root.checked ? #0067c0 : #707070;
+            border-color: root.checked ? #4da3ff : #9a9a9a;
 
             Rectangle {
                 width: 8px;
@@ -25,13 +25,14 @@ component SettingsRadioOption inherits Rectangle {
                 x: 3px;
                 y: 3px;
                 border-radius: 4px;
-                background: root.checked ? #0067c0 : transparent;
+                background: root.checked ? #4da3ff : transparent;
             }
         }
 
         Text {
             text: root.text;
             font-size: 14px;
+            color: #f3f3f3;
             vertical-alignment: center;
         }
     }
@@ -49,7 +50,7 @@ export component SettingsTab inherits Rectangle {
     callback update-source-selected(string);
     callback log-level-selected(string);
 
-    background: #f3f3f3;
+    background: #202020;
 
     VerticalLayout {
         padding: 24px;

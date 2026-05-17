@@ -269,6 +269,13 @@ mod tests {
     }
 
     #[test]
+    fn settings_tab_uses_dark_mode_palette() {
+        assert!(SETTINGS_SLINT.contains("background: #202020;"));
+        assert!(SETTINGS_SLINT.contains("color: #f3f3f3;"));
+        assert!(!SETTINGS_SLINT.contains("background: #f3f3f3;"));
+    }
+
+    #[test]
     fn main_window_forwards_settings_tab_api() {
         assert_source_contains_in_order(
             MAIN_SLINT,
