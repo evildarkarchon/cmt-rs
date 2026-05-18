@@ -5,6 +5,7 @@
 //! user prompts out of the domain-facing behavior so workflows remain testable.
 
 pub mod discovery;
+pub mod f4se;
 pub mod overview;
 pub mod overview_collector;
 pub mod tools;
