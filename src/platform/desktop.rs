@@ -18,6 +18,7 @@ pub struct DesktopActionResult {
     /// Success or typed failure state.
     pub outcome: DesktopActionOutcome,
     safe_message: String,
+    diagnostic: Option<String>,
 }
 
 impl DesktopActionResult {
@@ -28,6 +29,7 @@ impl DesktopActionResult {
             target: target.into(),
             outcome: DesktopActionOutcome::Succeeded,
             safe_message: operation.success_message().to_owned(),
+            diagnostic: None,
         }
     }
 
@@ -38,6 +40,7 @@ impl DesktopActionResult {
             target: error.target.clone(),
             outcome: DesktopActionOutcome::Failed(error.kind),
             safe_message: error.user_message().to_owned(),
+            diagnostic: error.diagnostic().map(ToOwned::to_owned),
         }
     }
 
@@ -57,6 +60,11 @@ impl DesktopActionResult {
     /// Returns safe user-facing text for status surfaces.
     pub fn safe_message(&self) -> &str {
         &self.safe_message
+    }
+
+    /// Returns optional diagnostic detail for logs or tests, never UI text.
+    pub fn diagnostic(&self) -> Option<&str> {
+        self.diagnostic.as_deref()
     }
 }
 

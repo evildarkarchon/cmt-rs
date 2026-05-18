@@ -21,6 +21,7 @@ use crate::{
         PlatformError, PlatformErrorKind, PlatformOperation,
         desktop::{DesktopActionOutcome, DesktopActionResult},
     },
+    services::tools::{AboutActionFeedback, ToolsActionFeedback},
 };
 
 /// Stable identity for one background task.
@@ -386,6 +387,10 @@ pub enum WorkerPayload {
     Download(WorkerMessage),
     /// Overview-specific snapshot, update, or desktop-action result.
     Overview(OverviewWorkerPayload),
+    /// Tools-tab action completion result.
+    ToolsAction(ToolsActionWorkerPayload),
+    /// About-tab action completion result.
+    AboutAction(AboutActionWorkerPayload),
     /// External process, tool, or desktop-action result.
     ExternalAction(ExternalActionPayload),
     /// Cancellation details.
@@ -445,6 +450,34 @@ impl OverviewWorkerPayload {
         error: Option<OverviewActionError>,
     ) -> Self {
         Self::DesktopActionCompleted { action, error }
+    }
+}
+
+/// Worker payload for one Tools-tab action completion.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ToolsActionWorkerPayload {
+    /// Owned feedback produced by the action service.
+    pub feedback: ToolsActionFeedback,
+}
+
+impl ToolsActionWorkerPayload {
+    /// Creates a Tools action-completion payload.
+    pub fn action_completed(feedback: ToolsActionFeedback) -> Self {
+        Self { feedback }
+    }
+}
+
+/// Worker payload for one About-tab action completion.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct AboutActionWorkerPayload {
+    /// Owned feedback produced by the action service.
+    pub feedback: AboutActionFeedback,
+}
+
+impl AboutActionWorkerPayload {
+    /// Creates an About action-completion payload.
+    pub fn action_completed(feedback: AboutActionFeedback) -> Self {
+        Self { feedback }
     }
 }
 
@@ -724,6 +757,56 @@ mod tests {
         assert!(!requested.status.is_terminal());
         assert!(!acknowledged.status.is_terminal());
         assert!(cancelled.status.is_terminal());
+    }
+
+    #[test]
+    fn s05_actions_worker_payload_round_trips_tools_and_about_feedback() {
+        use crate::{
+            domain::tools::{AboutActionId, AboutLinkId, ToolActionId},
+            services::tools::{
+                AboutActionFeedback, AboutActionKind, ActionRejectionKind, ToolsActionFeedback,
+            },
+        };
+
+        let tools_feedback = ToolsActionFeedback::rejected(
+            ToolActionId::ArchivePatcher.as_str(),
+            None,
+            ActionRejectionKind::DisabledUtility,
+            "Archive Patcher is not available in this Rust port yet.",
+            Some("deferred utility".to_owned()),
+        );
+        let about_feedback = AboutActionFeedback::succeeded(
+            AboutActionId::CopyGithub.as_str(),
+            AboutActionKind::Copy {
+                link_id: AboutLinkId::Github,
+                action_id: AboutActionId::CopyGithub,
+            },
+            "Copied to clipboard.",
+        );
+
+        let tools_event = WorkerEvent::completed(
+            WorkerTask::new("tools-action", WorkerTaskKind::DesktopAction),
+            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+                tools_feedback.clone(),
+            )),
+        );
+        let about_event = WorkerEvent::completed(
+            WorkerTask::new("about-action", WorkerTaskKind::DesktopAction),
+            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(
+                about_feedback.clone(),
+            )),
+        );
+
+        assert!(matches!(
+            tools_event.payload,
+            WorkerPayload::ToolsAction(ToolsActionWorkerPayload { ref feedback })
+                if feedback == &tools_feedback
+        ));
+        assert!(matches!(
+            about_event.payload,
+            WorkerPayload::AboutAction(AboutActionWorkerPayload { ref feedback })
+                if feedback == &about_feedback
+        ));
     }
 
     #[test]

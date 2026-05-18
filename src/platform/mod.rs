@@ -9,6 +9,7 @@
 
 use std::{fmt, io};
 
+pub mod clipboard;
 pub mod desktop;
 pub mod filesystem;
 pub mod process;
@@ -41,6 +42,8 @@ pub enum PlatformOperation {
     OpenUrl,
     /// Open a file or folder through the desktop handler.
     OpenPath,
+    /// Copy static text to the host clipboard.
+    CopyToClipboard,
     /// Launch an external tool executable.
     LaunchTool,
 }
@@ -59,6 +62,7 @@ impl PlatformOperation {
             Self::ReadSystemMetadata => "System metadata read",
             Self::OpenUrl => "URL open",
             Self::OpenPath => "Path open",
+            Self::CopyToClipboard => "Clipboard copy",
             Self::LaunchTool => "Tool launch",
         }
     }
@@ -68,6 +72,7 @@ impl PlatformOperation {
         match self {
             Self::OpenUrl => "Opened URL.",
             Self::OpenPath => "Opened path.",
+            Self::CopyToClipboard => "Copied to clipboard.",
             Self::LaunchTool => "Launched tool.",
             _ => "Operation completed.",
         }
@@ -278,5 +283,7 @@ mod tests {
         assert_type::<crate::platform::process::ProcessInfo>();
         assert_type::<crate::platform::desktop::RealDesktopActions>();
         assert_type::<crate::platform::desktop::DesktopActionResult>();
+        assert_type::<crate::platform::clipboard::RealClipboardActions>();
+        assert_type::<crate::platform::clipboard::ClipboardActionResult>();
     }
 }
