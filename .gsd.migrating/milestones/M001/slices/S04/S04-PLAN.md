@@ -89,7 +89,7 @@ Consumes S03 DiscoveryService, Fallout4Installation, DiscoveredModManager, Syste
   - Files: `src/services/overview_collector.rs`, `src/services/mod.rs`, `src/services/overview.rs`, `src/domain/overview.rs`, `Cargo.toml`, `Cargo.lock`
   - Verify: cargo test overview_collector
 
-- [ ] **T04: Add update and link services** `est:4h`
+- [x] **T04: Add update and link services** `est:4h`
   ---
   estimated_steps: 8
   estimated_files: 5
@@ -102,7 +102,7 @@ Consumes S03 DiscoveryService, Fallout4Installation, DiscoveredModManager, Syste
   - Files: `src/services/update.rs`, `src/services/mod.rs`, `src/domain/overview.rs`, `Cargo.toml`, `Cargo.lock`
   - Verify: cargo test overview_update
 
-- [ ] **T05: Wire Overview controller and workers** `est:6h`
+- [x] **T05: Wire Overview controller and workers** `est:6h`
   ---
   estimated_steps: 10
   estimated_files: 7
@@ -115,7 +115,7 @@ Consumes S03 DiscoveryService, Fallout4Installation, DiscoveredModManager, Syste
   - Files: `src/app/overview_controller.rs`, `src/app/mod.rs`, `src/app/settings_controller.rs`, `src/main.rs`, `src/workers/events.rs`, `src/workers/mod.rs`, `src/services/overview.rs`, `src/services/update.rs`
   - Verify: cargo test overview_controller
 
-- [ ] **T06: Replace Overview Slint placeholder** `est:5h`
+- [x] **T06: Replace Overview Slint placeholder** `est:5h`
   ---
   estimated_steps: 9
   estimated_files: 4

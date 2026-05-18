@@ -1,0 +1,161 @@
+## src/domain/overview.rs
+138: pub enum OverviewRefreshPhase {
+154: pub struct OverviewRefreshState {
+161: impl OverviewRefreshState {
+219: impl Default for OverviewRefreshState {
+227: pub enum OverviewTopStatusKind {
+238: impl OverviewTopStatusKind {
+262: pub struct OverviewTopStatusRow {
+277: pub enum OverviewModManagerStatus {
+285: impl OverviewModManagerStatus {
+323: pub enum OverviewGamePathStatus {
+331: impl OverviewGamePathStatus {
+356: pub struct OverviewTopStatus {
+367: impl OverviewTopStatus {
+455: impl Default for OverviewTopStatus {
+468: pub enum OverviewAvailability {
+478: impl OverviewAvailability {
+582: pub struct OverviewCountRow {
+593: impl OverviewCountRow {
+837: pub enum UpdateProvider {
+844: impl UpdateProvider {
+864: pub struct UpdateRelease {
+873: impl UpdateRelease {
+896: pub struct UpdateCheckFailure {
+903: impl UpdateCheckFailure {
+915: pub enum UpdateBannerState {
+950: impl UpdateBannerState {
+999: pub enum OverviewDeferredActionKind {
+1018: pub enum OverviewDeferredActionTarget {
+1029: pub struct OverviewDeferredAction {
+1040: impl OverviewDeferredAction {
+1082: pub enum OverviewProblemSource {
+1101: pub enum OverviewProblemType {
+1120: impl OverviewProblemType {
+1138: pub struct OverviewProblemLink {
+1145: impl OverviewProblemLink {
+1157: pub struct OverviewProblemDetail {
+1164: impl OverviewProblemDetail {
+1176: pub struct OverviewProblem {
+1201: impl OverviewProblem {
+1277: pub struct OverviewActionError {
+1284: impl OverviewActionError {
+1296: pub struct OverviewSnapshot {
+1315: impl OverviewSnapshot {
+
+## src/services/overview.rs
+65: pub struct OverviewDiagnosticsInput<'a> {
+86: pub struct OverviewDiagnostics;
+88: impl OverviewDiagnostics {
+148: pub struct OverviewBinaryFact {
+161: impl OverviewBinaryFact {
+198: pub enum OverviewFilePresence {
+210: impl OverviewFilePresence {
+236: pub struct OverviewAddressLibraryFact {
+247: impl OverviewAddressLibraryFact {
+281: pub struct OverviewEnablementFacts {
+292: pub enum OverviewUpdateCheckState {
+312: pub struct OverviewDesktopActionFeedback {
+319: impl OverviewDesktopActionFeedback {
+321: pub const fn succeeded(action: OverviewDeferredActionKind) -> Self {
+341: pub enum OverviewDesktopActionOutcome {
+
+## src/services/overview_collector.rs
+176: pub struct OverviewCollectionEnvironment {
+183: impl OverviewCollectionEnvironment {
+213: pub struct OverviewCollectionRequest<'a> {
+235: pub struct OverviewCollectedFacts {
+250: pub enum OverviewCollectionPhase {
+265: impl OverviewCollectionPhase {
+281: pub enum OverviewCollectionDiagnosticKind {
+296: pub struct OverviewCollectionPhaseSummary {
+305: pub struct OverviewCollectionErrorDetail {
+318: pub struct OverviewCollectionDiagnostics {
+339: impl OverviewCollectionDiagnostics {
+381: pub struct OverviewCollector<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> {
+1513: impl FakeFilesystem {
+1577: impl Filesystem for FakeFilesystem {
+1685: impl FakeProcessInspector {
+1707: impl ProcessInspector for FakeProcessInspector {
+
+## src/services/update.rs
+42: pub type UpdateClientFuture<'a> = Pin<Box<dyn Future<Output = UpdateHttpResult> + Send + 'a>>;
+44: pub type UpdateHttpResult = Result<UpdateHttpResponse, UpdateClientError>;
+48: pub struct UpdateHttpResponse {
+55: impl UpdateHttpResponse {
+72: pub enum UpdateClientErrorKind {
+83: pub struct UpdateClientError {
+89: impl UpdateClientError {
+131: pub trait UpdateCheckClient: Send + Sync {
+141: pub struct RealUpdateCheckClient {
+145: impl RealUpdateCheckClient {
+188: impl UpdateCheckClient for RealUpdateCheckClient {
+212: pub enum UpdateFailureKind {
+229: impl UpdateFailureKind {
+244: impl From<UpdateClientErrorKind> for UpdateFailureKind {
+256: pub enum UpdateSourceOutcome {
+283: pub struct UpdateSourceResult {
+290: impl UpdateSourceResult {
+335: pub struct UpdateCheckReport {
+342: impl UpdateCheckReport {
+427: pub struct UpdateCheckService<C> {
+592: pub struct OverviewLinkService<D> {
+831: impl FakeUpdateCheckClient {
+877: impl UpdateCheckClient for FakeUpdateCheckClient {
+892: impl FakeDesktopActions {
+917: impl DesktopActions for FakeDesktopActions {
+
+## src/services/discovery.rs
+41: pub struct DiscoveryRequest {
+50: impl DiscoveryRequest {
+75: pub struct DiscoveryReport {
+132: pub enum ModManagerDiscoveryError {
+146: impl ModManagerDiscoveryError {
+173: impl fmt::Display for ModManagerDiscoveryError {
+179: impl std::error::Error for ModManagerDiscoveryError {}
+183: pub enum DiscoverySource {
+194: impl DiscoverySource {
+208: pub enum DiscoveryAttemptOutcome {
+221: pub struct DiscoveryAttempt {
+230: impl DiscoveryAttempt {
+272: pub enum ModManagerDiscoveryStage {
+291: pub enum ModManagerDiscoveryStepOutcome {
+304: pub struct ModManagerDiscoveryStep {
+313: impl ModManagerDiscoveryStep {
+328: pub struct DiscoveryService<'a, F, R, P>
+1350: impl FakeFilesystem {
+1384: impl Filesystem for FakeFilesystem {
+1482: impl Default for FakeProcessInspector {
+1492: impl FakeProcessInspector {
+1511: impl ProcessInspector for FakeProcessInspector {
+
+## src/domain/settings.rs
+36: pub struct AppSettings {
+47: impl Default for AppSettings {
+58: impl AppSettings {
+271: pub enum UpdateSource {
+282: impl UpdateSource {
+
+## src/platform/mod.rs
+246: pub struct PlatformServices;
+
+## src/platform/filesystem.rs
+85: pub trait Filesystem {
+142: pub struct RealFilesystem;
+144: impl RealFilesystem {
+151: impl Filesystem for RealFilesystem {
+294: impl FakeFilesystem {
+333: impl Filesystem for FakeFilesystem {
+
+## src/platform/process.rs
+16: pub struct ProcessInfo {
+27: impl ProcessInfo {
+65: pub struct SystemMetadata {
+80: impl SystemMetadata {
+102: pub trait ProcessInspector {
+115: pub struct RealProcessInspector;
+117: impl RealProcessInspector {
+124: impl ProcessInspector for RealProcessInspector {
+294: impl Default for FakeProcessInspector {
+311: impl ProcessInspector for FakeProcessInspector {
+

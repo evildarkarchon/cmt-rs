@@ -1,0 +1,18 @@
+{
+  "id": "844a51dd-2b55-4cb7-9fa5-5e53e6582f74",
+  "runtime": "bash",
+  "purpose": "full clippy gate after overview wiring",
+  "script_chars": 41,
+  "started_at": "2026-05-17T23:35:46.663Z",
+  "finished_at": "2026-05-17T23:36:03.317Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16654,
+  "stdout_bytes": 0,
+  "stderr_bytes": 3012,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\844a51dd-2b55-4cb7-9fa5-5e53e6582f74.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\844a51dd-2b55-4cb7-9fa5-5e53e6582f74.stderr"
+}

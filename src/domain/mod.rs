@@ -8,6 +8,7 @@ pub mod discovery;
 pub mod mod_manager;
 pub mod overview;
 pub mod settings;
+pub mod tools;
 
 /// No-op domain state marker reserved for future typed application data.
 ///
@@ -37,5 +38,12 @@ mod tests {
         assert_type::<crate::domain::overview::OverviewSnapshot>();
         assert_type::<crate::domain::overview::OverviewProblem>();
         assert_type::<crate::domain::overview::UpdateBannerState>();
+        assert_type::<crate::domain::tools::ToolGroup>();
+        assert_type::<crate::domain::tools::ToolEntry>();
+        assert_type::<crate::domain::tools::ToolActionId>();
+        assert_type::<crate::domain::tools::AboutLink>();
+        assert_type::<crate::domain::tools::AboutActionId>();
+        let _ = crate::domain::tools::TOOL_GROUPS;
+        let _ = crate::domain::tools::ABOUT_LINKS;
     }
 }

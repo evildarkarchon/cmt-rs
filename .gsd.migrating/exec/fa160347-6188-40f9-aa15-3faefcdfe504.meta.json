@@ -1,0 +1,18 @@
+{
+  "id": "fa160347-6188-40f9-aa15-3faefcdfe504",
+  "runtime": "bash",
+  "purpose": "final cargo check after overview UI replacement",
+  "script_chars": 11,
+  "started_at": "2026-05-18T00:01:14.573Z",
+  "finished_at": "2026-05-18T00:01:27.217Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12644,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fa160347-6188-40f9-aa15-3faefcdfe504.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fa160347-6188-40f9-aa15-3faefcdfe504.stderr"
+}

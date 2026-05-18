@@ -1,0 +1,18 @@
+{
+  "id": "777648db-b7df-4f69-8cc5-e33ef4883169",
+  "runtime": "bash",
+  "purpose": "cargo check after moving test-only imports",
+  "script_chars": 11,
+  "started_at": "2026-05-17T23:03:43.368Z",
+  "finished_at": "2026-05-17T23:03:56.001Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12633,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\777648db-b7df-4f69-8cc5-e33ef4883169.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\777648db-b7df-4f69-8cc5-e33ef4883169.stderr"
+}

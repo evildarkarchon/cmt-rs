@@ -1,0 +1,18 @@
+{
+  "id": "ba1560fb-6944-4006-a8d8-61df8bd0ddfc",
+  "runtime": "bash",
+  "purpose": "S04 observability and source-contract closeout inspection",
+  "script_chars": 1439,
+  "started_at": "2026-05-18T00:20:51.662Z",
+  "finished_at": "2026-05-18T00:20:51.770Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 108,
+  "stdout_bytes": 473,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\ba1560fb-6944-4006-a8d8-61df8bd0ddfc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\ba1560fb-6944-4006-a8d8-61df8bd0ddfc.stderr"
+}

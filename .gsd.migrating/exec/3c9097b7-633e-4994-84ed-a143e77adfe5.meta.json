@@ -1,0 +1,18 @@
+{
+  "id": "3c9097b7-633e-4994-84ed-a143e77adfe5",
+  "runtime": "bash",
+  "purpose": "cargo check after unused import fix",
+  "script_chars": 11,
+  "started_at": "2026-05-17T23:02:32.492Z",
+  "finished_at": "2026-05-17T23:03:05.563Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 33071,
+  "stdout_bytes": 0,
+  "stderr_bytes": 11791,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3c9097b7-633e-4994-84ed-a143e77adfe5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3c9097b7-633e-4994-84ed-a143e77adfe5.stderr"
+}

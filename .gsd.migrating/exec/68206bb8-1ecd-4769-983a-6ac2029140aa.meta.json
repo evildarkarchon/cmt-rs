@@ -1,0 +1,18 @@
+{
+  "id": "68206bb8-1ecd-4769-983a-6ac2029140aa",
+  "runtime": "bash",
+  "purpose": "summarize overview_collector implementation surface before completing T03",
+  "script_chars": 1090,
+  "started_at": "2026-05-18T00:13:45.574Z",
+  "finished_at": "2026-05-18T00:13:45.696Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 122,
+  "stdout_bytes": 825,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\68206bb8-1ecd-4769-983a-6ac2029140aa.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\68206bb8-1ecd-4769-983a-6ac2029140aa.stderr"
+}

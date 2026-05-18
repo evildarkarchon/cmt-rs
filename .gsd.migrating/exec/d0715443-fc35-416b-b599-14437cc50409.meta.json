@@ -1,0 +1,18 @@
+{
+  "id": "d0715443-fc35-416b-b599-14437cc50409",
+  "runtime": "bash",
+  "purpose": "apply cargo fmt after update service",
+  "script_chars": 9,
+  "started_at": "2026-05-17T22:58:47.487Z",
+  "finished_at": "2026-05-17T22:58:47.891Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 404,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d0715443-fc35-416b-b599-14437cc50409.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d0715443-fc35-416b-b599-14437cc50409.stderr"
+}

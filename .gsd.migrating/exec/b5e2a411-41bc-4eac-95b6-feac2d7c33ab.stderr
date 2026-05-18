@@ -1,0 +1,5 @@
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.57s
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.15s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-1eaba2067f35b79e)
+    Checking cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 15.37s

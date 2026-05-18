@@ -1,0 +1,18 @@
+{
+  "id": "4081a944-b858-4e22-a003-ebee9ba5c24a",
+  "runtime": "bash",
+  "purpose": "S04 closeout verification: fmt, check, test, clippy",
+  "script_chars": 553,
+  "started_at": "2026-05-18T00:04:41.016Z",
+  "finished_at": "2026-05-18T00:04:41.239Z",
+  "exit_code": 127,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 223,
+  "stdout_bytes": 8,
+  "stderr_bytes": 41,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4081a944-b858-4e22-a003-ebee9ba5c24a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4081a944-b858-4e22-a003-ebee9ba5c24a.stderr"
+}

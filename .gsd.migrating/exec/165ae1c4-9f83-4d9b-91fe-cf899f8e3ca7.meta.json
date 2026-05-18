@@ -1,0 +1,18 @@
+{
+  "id": "165ae1c4-9f83-4d9b-91fe-cf899f8e3ca7",
+  "runtime": "bash",
+  "purpose": "verify cargo fmt check after overview UI replacement",
+  "script_chars": 17,
+  "started_at": "2026-05-17T23:57:51.538Z",
+  "finished_at": "2026-05-17T23:57:51.963Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 425,
+  "stdout_bytes": 2620,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\165ae1c4-9f83-4d9b-91fe-cf899f8e3ca7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\165ae1c4-9f83-4d9b-91fe-cf899f8e3ca7.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "63cdad16-98c2-4247-b5dd-f259ba07e96a",
+  "runtime": "bash",
+  "purpose": "compile check after boxed overview payload",
+  "script_chars": 11,
+  "started_at": "2026-05-17T23:38:04.192Z",
+  "finished_at": "2026-05-17T23:38:16.684Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 12492,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\63cdad16-98c2-4247-b5dd-f259ba07e96a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\63cdad16-98c2-4247-b5dd-f259ba07e96a.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "cf919911-e3f6-4f25-85a9-d6ece26bc1fc",
+  "runtime": "bash",
+  "purpose": "verify cargo check after overview model UI projection",
+  "script_chars": 120,
+  "started_at": "2026-05-17T23:57:17.775Z",
+  "finished_at": "2026-05-17T23:57:33.351Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 15576,
+  "stdout_bytes": 14,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\cf919911-e3f6-4f25-85a9-d6ece26bc1fc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\cf919911-e3f6-4f25-85a9-d6ece26bc1fc.stderr"
+}

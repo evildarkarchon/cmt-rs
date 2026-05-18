@@ -1,0 +1,18 @@
+{
+  "id": "7372578f-a17d-4503-815b-301b32984a4e",
+  "runtime": "bash",
+  "purpose": "apply rustfmt after boxed overview payload",
+  "script_chars": 9,
+  "started_at": "2026-05-17T23:37:04.606Z",
+  "finished_at": "2026-05-17T23:37:05.049Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 443,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7372578f-a17d-4503-815b-301b32984a4e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7372578f-a17d-4503-815b-301b32984a4e.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "52340126-4a01-45b3-9c71-b623f5eea37d",
+  "runtime": "bash",
+  "purpose": "apply cargo fmt after moving test-only GITHUB_LINK import",
+  "script_chars": 9,
+  "started_at": "2026-05-17T23:03:37.002Z",
+  "finished_at": "2026-05-17T23:03:37.419Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 417,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\52340126-4a01-45b3-9c71-b623f5eea37d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\52340126-4a01-45b3-9c71-b623f5eea37d.stderr"
+}

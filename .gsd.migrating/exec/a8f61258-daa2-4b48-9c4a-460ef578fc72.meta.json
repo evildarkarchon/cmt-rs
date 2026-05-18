@@ -1,0 +1,18 @@
+{
+  "id": "a8f61258-daa2-4b48-9c4a-460ef578fc72",
+  "runtime": "bash",
+  "purpose": "full test suite after overview wiring",
+  "script_chars": 10,
+  "started_at": "2026-05-17T23:35:09.000Z",
+  "finished_at": "2026-05-17T23:35:42.412Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 33412,
+  "stdout_bytes": 14946,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a8f61258-daa2-4b48-9c4a-460ef578fc72.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a8f61258-daa2-4b48-9c4a-460ef578fc72.stderr"
+}

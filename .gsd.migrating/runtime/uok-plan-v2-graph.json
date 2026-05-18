@@ -1,12 +1,12 @@
 {
-  "compiledAt": "2026-05-17T12:19:45.653Z",
+  "compiledAt": "2026-05-18T00:19:02.057Z",
   "milestoneId": "M001",
   "pipeline": {
     "clarifyRoundLimit": 3,
     "researchSynthesized": true,
     "draftContextIncluded": false,
     "finalizedContextIncluded": true,
-    "sourcePhase": "executing"
+    "sourcePhase": "summarizing"
   },
   "nodes": [
     {
@@ -276,7 +276,8 @@
       "writes": [
         "src/services/overview_collector.rs",
         "src/services/mod.rs",
-        "src/platform/filesystem.rs",
+        "src/domain/overview.rs",
+        "src/services/overview.rs",
         "Cargo.toml",
         "Cargo.lock"
       ],
@@ -293,12 +294,18 @@
       "dependsOn": [
         "execute-task:M001:S04:T03"
       ],
-      "writes": [],
+      "writes": [
+        "src/services/update.rs",
+        "src/services/mod.rs",
+        "Cargo.toml",
+        "Cargo.lock",
+        "src/services/overview_collector.rs"
+      ],
       "metadata": {
         "unitType": "execute-task",
         "unitId": "M001.S04.T04",
-        "title": "Add update and link services",
-        "status": "pending"
+        "title": "Added a fakeable async Overview update checker and safe desktop link executor with reference-compatible silent failure behavior.",
+        "status": "complete"
       }
     },
     {
@@ -307,12 +314,24 @@
       "dependsOn": [
         "execute-task:M001:S04:T04"
       ],
-      "writes": [],
+      "writes": [
+        "src/app/overview_controller.rs",
+        "src/app/mod.rs",
+        "src/app/settings_controller.rs",
+        "src/main.rs",
+        "src/workers/events.rs",
+        "src/workers/handoff.rs",
+        "src/workers/mod.rs",
+        "src/services/overview.rs",
+        "src/services/update.rs",
+        "ui/overview_tab.slint",
+        "ui/main.slint"
+      ],
       "metadata": {
         "unitType": "execute-task",
         "unitId": "M001.S04.T05",
-        "title": "Wire Overview controller and workers",
-        "status": "pending"
+        "title": "Wired the Overview tab through a Slint-safe controller, worker handoff payloads, real discovery/collector/update composition, and visible refresh/action diagnostics.",
+        "status": "complete"
       }
     },
     {
@@ -321,12 +340,17 @@
       "dependsOn": [
         "execute-task:M001:S04:T05"
       ],
-      "writes": [],
+      "writes": [
+        "ui/overview_tab.slint",
+        "ui/main.slint",
+        "src/main.rs",
+        ".gsd/DECISIONS.md"
+      ],
       "metadata": {
         "unitType": "execute-task",
         "unitId": "M001.S04.T06",
-        "title": "Replace Overview Slint placeholder",
-        "status": "pending"
+        "title": "Replaced the Overview Slint placeholder with model-backed status panels, callback forwarding, deferred utility controls, and source-contract tests.",
+        "status": "complete"
       }
     },
     {

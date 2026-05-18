@@ -1,0 +1,18 @@
+{
+  "id": "c9bdb29b-9b9c-4513-a3d2-d69a0f6be020",
+  "runtime": "bash",
+  "purpose": "rerun cargo test after projection assertion fix",
+  "script_chars": 10,
+  "started_at": "2026-05-17T23:59:43.267Z",
+  "finished_at": "2026-05-18T00:00:20.155Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 36888,
+  "stdout_bytes": 15031,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c9bdb29b-9b9c-4513-a3d2-d69a0f6be020.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c9bdb29b-9b9c-4513-a3d2-d69a0f6be020.stderr"
+}

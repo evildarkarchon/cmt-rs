@@ -1,0 +1,18 @@
+{
+  "id": "10616b27-9331-4944-9ff1-13661fdb3542",
+  "runtime": "bash",
+  "purpose": "Investigate reviewer blocker: ini_files production overview path",
+  "script_chars": 215,
+  "started_at": "2026-05-18T00:11:09.133Z",
+  "finished_at": "2026-05-18T00:11:09.246Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 17279,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\10616b27-9331-4944-9ff1-13661fdb3542.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\10616b27-9331-4944-9ff1-13661fdb3542.stderr"
+}

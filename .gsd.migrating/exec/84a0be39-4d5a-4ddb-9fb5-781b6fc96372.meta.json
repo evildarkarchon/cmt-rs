@@ -1,0 +1,18 @@
+{
+  "id": "84a0be39-4d5a-4ddb-9fb5-781b6fc96372",
+  "runtime": "bash",
+  "purpose": "summarize overview/update/discovery APIs for controller wiring",
+  "script_chars": 848,
+  "started_at": "2026-05-17T23:11:40.322Z",
+  "finished_at": "2026-05-17T23:11:40.501Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 179,
+  "stdout_bytes": 5847,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\84a0be39-4d5a-4ddb-9fb5-781b6fc96372.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\84a0be39-4d5a-4ddb-9fb5-781b6fc96372.stderr"
+}

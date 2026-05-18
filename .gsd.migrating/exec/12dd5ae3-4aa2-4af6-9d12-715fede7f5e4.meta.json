@@ -1,0 +1,18 @@
+{
+  "id": "12dd5ae3-4aa2-4af6-9d12-715fede7f5e4",
+  "runtime": "bash",
+  "purpose": "T05/S04 fresh cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-18T00:17:44.273Z",
+  "finished_at": "2026-05-18T00:17:52.647Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8374,
+  "stdout_bytes": 15031,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\12dd5ae3-4aa2-4af6-9d12-715fede7f5e4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\12dd5ae3-4aa2-4af6-9d12-715fede7f5e4.stderr"
+}

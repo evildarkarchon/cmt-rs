@@ -1,8 +1,8 @@
 # GSD State
 
 **Active Milestone:** M001: Initial Port
-**Active Slice:** S04: S04
-**Phase:** executing
+**Active Slice:** S05: Tools Shell, Links & About
+**Phase:** planning
 **Requirements Status:** 42 active · 12 validated · 0 deferred · 0 out of scope
 
 ## Milestone Registry
@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Execute T04: Add update and link services in slice S04.
+Slice S05 has no DB tasks. Plan slice tasks before execution.

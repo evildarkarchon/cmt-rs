@@ -1,0 +1,18 @@
+{
+  "id": "c03b0ae6-6846-4831-b15d-422f87b248a9",
+  "runtime": "bash",
+  "purpose": "worker tests after boxed overview payload",
+  "script_chars": 18,
+  "started_at": "2026-05-17T23:37:15.235Z",
+  "finished_at": "2026-05-17T23:37:55.792Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 40557,
+  "stdout_bytes": 1214,
+  "stderr_bytes": 366,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c03b0ae6-6846-4831-b15d-422f87b248a9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c03b0ae6-6846-4831-b15d-422f87b248a9.stderr"
+}

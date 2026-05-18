@@ -1,0 +1,18 @@
+{
+  "id": "7ee170a5-5efc-4fa6-b2c8-6dbf849a5055",
+  "runtime": "bash",
+  "purpose": "S04 closeout observability and label contract check retry",
+  "script_chars": 1938,
+  "started_at": "2026-05-18T00:21:27.486Z",
+  "finished_at": "2026-05-18T00:21:27.607Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 121,
+  "stdout_bytes": 333,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7ee170a5-5efc-4fa6-b2c8-6dbf849a5055.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7ee170a5-5efc-4fa6-b2c8-6dbf849a5055.stderr"
+}

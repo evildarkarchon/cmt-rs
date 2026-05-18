@@ -1,0 +1,21 @@
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on package cache
+    Blocking waiting for file lock on build directory
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: unused import: `OverviewRefreshState`
+  --> src/app/overview_controller.rs:13:67
+   |
+13 | ...s, OverviewRefreshState,
+   |       ^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `WorkerTask`
+  --> src/main.rs:51:35
+   |
+51 | ...e, WorkerTask, W...
+   |       ^^^^^^^^^^
+
+warning: `cmt-rs` (bin "cmt-rs") generated 2 warnings (run `cargo fix --bin "cmt-rs" -p cmt-rs` to apply 2 suggestions)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 49.51s

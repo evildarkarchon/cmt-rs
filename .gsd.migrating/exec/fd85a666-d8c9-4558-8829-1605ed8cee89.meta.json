@@ -1,0 +1,18 @@
+{
+  "id": "fd85a666-d8c9-4558-8829-1605ed8cee89",
+  "runtime": "bash",
+  "purpose": "summarize overview_collector tracing/diagnostics surfaces",
+  "script_chars": 380,
+  "started_at": "2026-05-18T00:14:23.918Z",
+  "finished_at": "2026-05-18T00:14:24.030Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 112,
+  "stdout_bytes": 168,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fd85a666-d8c9-4558-8829-1605ed8cee89.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fd85a666-d8c9-4558-8829-1605ed8cee89.stderr"
+}

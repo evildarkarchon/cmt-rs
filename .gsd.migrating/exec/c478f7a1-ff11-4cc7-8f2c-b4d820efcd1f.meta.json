@@ -1,0 +1,18 @@
+{
+  "id": "c478f7a1-ff11-4cc7-8f2c-b4d820efcd1f",
+  "runtime": "bash",
+  "purpose": "worker regression tests for T05 overview payload impact",
+  "script_chars": 18,
+  "started_at": "2026-05-17T23:31:32.016Z",
+  "finished_at": "2026-05-17T23:32:03.012Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 30996,
+  "stdout_bytes": 1214,
+  "stderr_bytes": 684,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c478f7a1-ff11-4cc7-8f2c-b4d820efcd1f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c478f7a1-ff11-4cc7-8f2c-b4d820efcd1f.stderr"
+}

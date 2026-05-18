@@ -1,0 +1,18 @@
+{
+  "id": "a247637b-a1fc-4958-ac10-ebb324e3142f",
+  "runtime": "bash",
+  "purpose": "confirm T03 summary artifact exists after gsd_task_complete",
+  "script_chars": 226,
+  "started_at": "2026-05-18T00:15:21.004Z",
+  "finished_at": "2026-05-18T00:15:21.094Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 90,
+  "stdout_bytes": 62,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a247637b-a1fc-4958-ac10-ebb324e3142f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a247637b-a1fc-4958-ac10-ebb324e3142f.stderr"
+}

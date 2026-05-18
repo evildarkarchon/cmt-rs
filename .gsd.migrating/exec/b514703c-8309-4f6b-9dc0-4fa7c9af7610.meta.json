@@ -1,0 +1,18 @@
+{
+  "id": "b514703c-8309-4f6b-9dc0-4fa7c9af7610",
+  "runtime": "bash",
+  "purpose": "verify cargo fmt after update service",
+  "script_chars": 17,
+  "started_at": "2026-05-17T22:58:35.462Z",
+  "finished_at": "2026-05-17T22:58:36.089Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 627,
+  "stdout_bytes": 5656,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b514703c-8309-4f6b-9dc0-4fa7c9af7610.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b514703c-8309-4f6b-9dc0-4fa7c9af7610.stderr"
+}

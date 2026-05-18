@@ -1,0 +1,18 @@
+{
+  "id": "b21e2e3e-0624-405f-a9e6-5e6ed019647f",
+  "runtime": "bash",
+  "purpose": "cargo clippy all targets all features after update service",
+  "script_chars": 41,
+  "started_at": "2026-05-17T23:05:26.343Z",
+  "finished_at": "2026-05-17T23:05:47.880Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 21537,
+  "stdout_bytes": 0,
+  "stderr_bytes": 3789,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b21e2e3e-0624-405f-a9e6-5e6ed019647f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b21e2e3e-0624-405f-a9e6-5e6ed019647f.stderr"
+}
