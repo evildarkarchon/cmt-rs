@@ -20,6 +20,7 @@ use app::{
         OverviewController, action_target_label, overview_desktop_action_payload,
         overview_desktop_task, unavailable_action_error,
     },
+    scanner_controller::{ScannerController, ScannerControllerPhase},
     settings_controller::SettingsController,
     tools_controller::{
         TOOLS_DEFAULT_DISABLED_UTILITY_STATUS, ToolsController, ToolsState, ToolsTransitionResult,
@@ -34,6 +35,11 @@ use domain::{
         OverviewDeferredActionTarget, OverviewProblem, OverviewRefreshState, OverviewSnapshot,
         OverviewTopStatusRow, StatusSeverity, UpdateBannerState, UpdateCheckFailure,
         UpdateProvider,
+    },
+    scanner::{
+        DETAIL_LABEL_MOD, DETAIL_LABEL_PROBLEM, DETAIL_LABEL_SOLUTION, DETAIL_LABEL_SUMMARY,
+        ScannerActionKind, ScannerCategoryKind, ScannerCategoryProjection, ScannerFileList,
+        ScannerResult, ScannerResultGroup,
     },
     settings::{AppSettings, UpdateSource},
     tools::{ABOUT_LINKS, AboutLinkId},
@@ -120,6 +126,47 @@ struct F4seUiProjection {
     rows: Vec<F4seUiRow>,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct ScannerCategoryToggleProjection {
+    overview_issues: bool,
+    errors: bool,
+    wrong_file_formats: bool,
+    loose_previs: bool,
+    junk_files: bool,
+    problem_overrides: bool,
+    race_subgraphs: bool,
+    read_only: bool,
+}
+
+struct ScannerUiProjection {
+    categories: ScannerCategoryToggleProjection,
+    scan_button_text: String,
+    scan_button_enabled: bool,
+    busy: bool,
+    status_text: String,
+    progress_text: String,
+    progress_percent: f32,
+    result_count_text: String,
+    result_rows: Vec<ScannerResultUiRow>,
+    show_mod_column: bool,
+    detail_visible: bool,
+    detail_mod: String,
+    detail_problem: String,
+    detail_summary: String,
+    detail_solution: String,
+    action_feedback: String,
+    open_path_enabled: bool,
+    open_url_enabled: bool,
+    copy_url_enabled: bool,
+    file_list_enabled: bool,
+    file_list_visible: bool,
+    file_list_title: String,
+    file_list_description: String,
+    file_list_first_column: String,
+    file_list_second_column: String,
+    file_list_rows: Vec<ScannerFileListUiRow>,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -132,6 +179,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let settings_controller = Rc::new(RefCell::new(load_settings_controller()));
     let overview_controller = Arc::new(Mutex::new(OverviewController::new()));
     let f4se_controller = Arc::new(Mutex::new(F4seController::new()));
+    let scanner_controller = Arc::new(Mutex::new(ScannerController::new(
+        settings_controller
+            .borrow()
+            .current_scanner_settings()
+            .clone(),
+    )));
     let tools_controller = Arc::new(Mutex::new(ToolsController::new()));
     let about_controller = Arc::new(Mutex::new(AboutController::new()));
     let worker_runtime = WorkerRuntime::new();
@@ -140,6 +193,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.set_log_level(settings_controller.borrow().visible_log_level().into());
     apply_current_overview_snapshot(&app, &overview_controller);
     apply_current_f4se_snapshot(&app, &f4se_controller);
+    apply_current_scanner_state(&app, &scanner_controller);
     apply_current_tools_state(&app, &tools_controller);
     apply_current_about_state(&app, &about_controller);
 
@@ -1527,6 +1581,23 @@ fn with_f4se_controller_mut<T>(
     }
 }
 
+fn with_scanner_controller_mut<T>(
+    controller: &Arc<Mutex<ScannerController>>,
+    action: impl FnOnce(&mut ScannerController) -> T,
+) -> Option<T> {
+    match controller.lock() {
+        Ok(mut controller) => Some(action(&mut controller)),
+        Err(error) => {
+            tracing::error!(
+                event = "s07-scanner-controller-lock-poisoned",
+                diagnostic = %error,
+                "Scanner controller state is unavailable"
+            );
+            None
+        }
+    }
+}
+
 fn with_tools_controller_mut<T>(
     controller: &Arc<Mutex<ToolsController>>,
     action: impl FnOnce(&mut ToolsController) -> T,
@@ -1586,6 +1657,15 @@ fn apply_current_f4se_snapshot(app: &MainWindow, controller: &Arc<Mutex<F4seCont
         return;
     };
     apply_f4se_projection(app, projection);
+}
+
+fn apply_current_scanner_state(app: &MainWindow, controller: &Arc<Mutex<ScannerController>>) {
+    let Some(projection) =
+        with_scanner_controller_mut(controller, |controller| project_scanner_state(controller))
+    else {
+        return;
+    };
+    apply_scanner_projection(app, projection);
 }
 
 fn project_f4se_snapshot(snapshot: &F4seScanSnapshot) -> F4seUiProjection {
@@ -1653,6 +1733,268 @@ fn apply_f4se_projection(app: &MainWindow, projection: F4seUiProjection) {
     app.set_f4se_loading_or_error_text(projection.loading_or_error_text.as_str().into());
     app.set_f4se_unknown_game_detail(projection.unknown_game_detail.as_str().into());
     app.set_f4se_rows(model_from_vec(projection.rows));
+}
+
+fn project_scanner_state(controller: &ScannerController) -> ScannerUiProjection {
+    let categories = scanner_category_toggles(controller.category_projection());
+    let detail = project_scanner_detail(controller.selected_detail());
+    let visible_file_list = controller.visible_file_list();
+
+    ScannerUiProjection {
+        categories,
+        scan_button_text: controller.scan_button_text().to_owned(),
+        scan_button_enabled: controller.scan_button_enabled(),
+        busy: controller.phase() == ScannerControllerPhase::Scanning,
+        status_text: controller.status_text().to_owned(),
+        progress_text: controller.progress_text().to_owned(),
+        progress_percent: controller.progress_percent(),
+        result_count_text: controller.result_count_text().to_owned(),
+        result_rows: format_scanner_result_rows(controller.groups(), controller.results()),
+        show_mod_column: controller
+            .results()
+            .iter()
+            .any(|result| result.mod_attribution.is_some()),
+        detail_visible: detail.visible,
+        detail_mod: detail.mod_name,
+        detail_problem: detail.problem,
+        detail_summary: detail.summary,
+        detail_solution: detail.solution,
+        action_feedback: controller
+            .last_action_feedback()
+            .map(|feedback| feedback.safe_message().to_owned())
+            .unwrap_or_default(),
+        open_path_enabled: detail.open_path_enabled,
+        open_url_enabled: detail.open_url_enabled,
+        copy_url_enabled: detail.copy_url_enabled,
+        file_list_enabled: detail.file_list_enabled,
+        file_list_visible: controller.file_list_visible(),
+        file_list_title: visible_file_list
+            .map(|file_list| file_list.title.clone())
+            .unwrap_or_else(|| "Files".to_owned()),
+        file_list_description: visible_file_list
+            .map(|file_list| file_list.description.clone())
+            .unwrap_or_default(),
+        file_list_first_column: visible_file_list
+            .map(|file_list| file_list.columns[0].clone())
+            .unwrap_or_else(|| "Value".to_owned()),
+        file_list_second_column: visible_file_list
+            .map(|file_list| file_list.columns[1].clone())
+            .unwrap_or_else(|| "File".to_owned()),
+        file_list_rows: visible_file_list
+            .map(format_scanner_file_list_rows)
+            .unwrap_or_default(),
+    }
+}
+
+fn scanner_category_toggles(
+    categories: Vec<ScannerCategoryProjection>,
+) -> ScannerCategoryToggleProjection {
+    let mut projection = ScannerCategoryToggleProjection {
+        overview_issues: false,
+        errors: false,
+        wrong_file_formats: false,
+        loose_previs: false,
+        junk_files: false,
+        problem_overrides: false,
+        race_subgraphs: false,
+        read_only: true,
+    };
+
+    for category in categories {
+        projection.read_only &= category.read_only;
+        match category.kind {
+            ScannerCategoryKind::OverviewIssues => projection.overview_issues = category.enabled,
+            ScannerCategoryKind::Errors => projection.errors = category.enabled,
+            ScannerCategoryKind::WrongFormat => projection.wrong_file_formats = category.enabled,
+            ScannerCategoryKind::LoosePrevis => projection.loose_previs = category.enabled,
+            ScannerCategoryKind::JunkFiles => projection.junk_files = category.enabled,
+            ScannerCategoryKind::ProblemOverrides => {
+                projection.problem_overrides = category.enabled;
+            }
+            ScannerCategoryKind::RaceSubgraphs => projection.race_subgraphs = category.enabled,
+        }
+    }
+
+    projection
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ScannerDetailProjection {
+    visible: bool,
+    mod_name: String,
+    problem: String,
+    summary: String,
+    solution: String,
+    open_path_enabled: bool,
+    open_url_enabled: bool,
+    copy_url_enabled: bool,
+    file_list_enabled: bool,
+}
+
+fn project_scanner_detail(
+    detail: Option<&app::scanner_controller::ScannerSelectedDetail>,
+) -> ScannerDetailProjection {
+    let Some(detail) = detail else {
+        return ScannerDetailProjection {
+            visible: false,
+            mod_name: String::new(),
+            problem: String::new(),
+            summary: String::new(),
+            solution: String::new(),
+            open_path_enabled: false,
+            open_url_enabled: false,
+            copy_url_enabled: false,
+            file_list_enabled: false,
+        };
+    };
+
+    ScannerDetailProjection {
+        visible: true,
+        mod_name: scanner_detail_value(&detail.records, DETAIL_LABEL_MOD),
+        problem: scanner_detail_value(&detail.records, DETAIL_LABEL_PROBLEM),
+        summary: scanner_detail_value(&detail.records, DETAIL_LABEL_SUMMARY),
+        solution: scanner_detail_value(&detail.records, DETAIL_LABEL_SOLUTION),
+        open_path_enabled: scanner_detail_has_enabled_action(
+            detail,
+            ScannerActionKind::OpenLocation,
+        ),
+        open_url_enabled: scanner_detail_has_enabled_action(
+            detail,
+            ScannerActionKind::OpenSolutionUrl,
+        ),
+        copy_url_enabled: scanner_detail_has_enabled_action(
+            detail,
+            ScannerActionKind::CopySolutionUrl,
+        ),
+        file_list_enabled: scanner_detail_has_enabled_action(
+            detail,
+            ScannerActionKind::ShowFileList,
+        ),
+    }
+}
+
+fn scanner_detail_value(records: &[domain::scanner::ScannerDetailRecord], label: &str) -> String {
+    records
+        .iter()
+        .find(|record| record.label == label)
+        .map(|record| record.value.clone())
+        .unwrap_or_default()
+}
+
+fn scanner_detail_has_enabled_action(
+    detail: &app::scanner_controller::ScannerSelectedDetail,
+    action: ScannerActionKind,
+) -> bool {
+    detail
+        .actions
+        .iter()
+        .any(|descriptor| descriptor.kind == action && descriptor.enabled)
+}
+
+fn format_scanner_result_rows(
+    groups: &[ScannerResultGroup],
+    flat_results: &[ScannerResult],
+) -> Vec<ScannerResultUiRow> {
+    let mut rows = Vec::new();
+    let mut used_flat_indices = vec![false; flat_results.len()];
+
+    for group in groups {
+        rows.push(ScannerResultUiRow {
+            row_kind: "group".into(),
+            result_index: -1,
+            problem: group.label.as_str().into(),
+            mod_name: SharedString::default(),
+            has_mod: false,
+        });
+
+        for result in &group.results {
+            let result_index =
+                scanner_flat_result_index(result, flat_results, &mut used_flat_indices);
+            rows.push(ScannerResultUiRow {
+                row_kind: "result".into(),
+                result_index: usize_to_i32(result_index),
+                problem: result.tree_label.as_str().into(),
+                mod_name: result
+                    .mod_attribution
+                    .as_ref()
+                    .map(|mod_attribution| mod_attribution.display_name())
+                    .unwrap_or_default()
+                    .into(),
+                has_mod: result.mod_attribution.is_some(),
+            });
+        }
+    }
+
+    rows
+}
+
+fn scanner_flat_result_index(
+    result: &ScannerResult,
+    flat_results: &[ScannerResult],
+    used_flat_indices: &mut [bool],
+) -> usize {
+    for (index, candidate) in flat_results.iter().enumerate() {
+        if !used_flat_indices[index] && candidate == result {
+            used_flat_indices[index] = true;
+            return index;
+        }
+    }
+    0
+}
+
+fn usize_to_i32(value: usize) -> i32 {
+    if value > i32::MAX as usize {
+        i32::MAX
+    } else {
+        value as i32
+    }
+}
+
+fn format_scanner_file_list_rows(file_list: &ScannerFileList) -> Vec<ScannerFileListUiRow> {
+    file_list
+        .entries
+        .iter()
+        .map(|entry| ScannerFileListUiRow {
+            value: entry.value.as_str().into(),
+            path: entry.path.display().to_string().into(),
+        })
+        .collect()
+}
+
+fn apply_scanner_projection(app: &MainWindow, projection: ScannerUiProjection) {
+    app.set_scanner_overview_issues_enabled(projection.categories.overview_issues);
+    app.set_scanner_errors_enabled(projection.categories.errors);
+    app.set_scanner_wrong_file_formats_enabled(projection.categories.wrong_file_formats);
+    app.set_scanner_loose_previs_enabled(projection.categories.loose_previs);
+    app.set_scanner_junk_files_enabled(projection.categories.junk_files);
+    app.set_scanner_problem_overrides_enabled(projection.categories.problem_overrides);
+    app.set_scanner_race_subgraphs_enabled(projection.categories.race_subgraphs);
+    app.set_scanner_settings_read_only(projection.categories.read_only);
+    app.set_scanner_scan_button_text(projection.scan_button_text.as_str().into());
+    app.set_scanner_scan_button_enabled(projection.scan_button_enabled);
+    app.set_scanner_busy(projection.busy);
+    app.set_scanner_status_text(projection.status_text.as_str().into());
+    app.set_scanner_progress_text(projection.progress_text.as_str().into());
+    app.set_scanner_progress_percent(projection.progress_percent);
+    app.set_scanner_result_count_text(projection.result_count_text.as_str().into());
+    app.set_scanner_result_rows(model_from_vec(projection.result_rows));
+    app.set_scanner_show_mod_column(projection.show_mod_column);
+    app.set_scanner_detail_visible(projection.detail_visible);
+    app.set_scanner_detail_mod(projection.detail_mod.as_str().into());
+    app.set_scanner_detail_problem(projection.detail_problem.as_str().into());
+    app.set_scanner_detail_summary(projection.detail_summary.as_str().into());
+    app.set_scanner_detail_solution(projection.detail_solution.as_str().into());
+    app.set_scanner_action_feedback(projection.action_feedback.as_str().into());
+    app.set_scanner_open_path_enabled(projection.open_path_enabled);
+    app.set_scanner_open_url_enabled(projection.open_url_enabled);
+    app.set_scanner_copy_url_enabled(projection.copy_url_enabled);
+    app.set_scanner_file_list_enabled(projection.file_list_enabled);
+    app.set_scanner_file_list_visible(projection.file_list_visible);
+    app.set_scanner_file_list_title(projection.file_list_title.as_str().into());
+    app.set_scanner_file_list_description(projection.file_list_description.as_str().into());
+    app.set_scanner_file_list_first_column(projection.file_list_first_column.as_str().into());
+    app.set_scanner_file_list_second_column(projection.file_list_second_column.as_str().into());
+    app.set_scanner_file_list_rows(model_from_vec(projection.file_list_rows));
 }
 
 fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
@@ -2045,6 +2387,13 @@ mod tests {
             F4SE_HEADING, F4SE_LEGEND_TEXT, F4SE_LOADING_TEXT, F4SE_TABLE_COLUMNS, F4seDllFacts,
             render_f4se_dll_row,
         },
+        scanner::{
+            ACTION_COPY_DETAILS_LABEL, ACTION_COPY_URL_LABEL, ACTION_FILE_LIST_LABEL,
+            ACTION_OPEN_URL_LABEL, DETAIL_LABEL_MOD, DETAIL_LABEL_PROBLEM, DETAIL_LABEL_SOLUTION,
+            DETAIL_LABEL_SUMMARY, SCAN_BUTTON_LABEL, SCANNER_CATEGORY_LABELS,
+            SCANNING_BUTTON_LABEL, ScannerExtraData, ScannerFileList, ScannerFileListEntry,
+            ScannerProblemType, ScannerResult, ScannerScanSnapshot,
+        },
         tools::{
             ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
             ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, AboutActionId, AboutLinkId,
@@ -2056,6 +2405,7 @@ mod tests {
     const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
     const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
     const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
+    const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
     const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
     const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
     const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
@@ -2070,7 +2420,7 @@ mod tests {
             "ui/scanner_tab.slint",
             "ScannerTab",
             "Scanner",
-            include_str!("../ui/scanner_tab.slint"),
+            SCANNER_SLINT,
         ),
         ("ui/tools_tab.slint", "ToolsTab", "Tools", TOOLS_SLINT),
         (
@@ -2081,7 +2431,7 @@ mod tests {
         ),
         ("ui/about_tab.slint", "AboutTab", "About", ABOUT_SLINT),
     ];
-    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 1] = [TAB_COMPONENTS[2]];
+    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 0] = [];
 
     fn slint_string_property_values(source: &str, property: &str) -> Vec<String> {
         let prefix = format!("{property}:");
@@ -2462,6 +2812,276 @@ mod tests {
             warning_projection
                 .unknown_game_detail
                 .contains("could not be classified")
+        );
+    }
+
+    #[test]
+    fn s07_scanner_slint_contract_replaces_placeholder_with_read_only_surface() {
+        assert!(SCANNER_SLINT.contains("export struct ScannerResultUiRow"));
+        assert!(SCANNER_SLINT.contains("export struct ScannerFileListUiRow"));
+        assert!(SCANNER_SLINT.contains("background: #202020;"));
+        assert!(!SCANNER_SLINT.contains("Scanner behavior is reserved for a later port phase."));
+
+        assert_source_contains_in_order(
+            SCANNER_SLINT,
+            &[
+                "title: \"Scan Settings\"",
+                "text: \"Overview Issues\"",
+                "text: \"Errors\"",
+                "text: \"Wrong File Formats\"",
+                "text: \"Loose Previs\"",
+                "text: \"Junk Files\"",
+                "text: \"Problem Overrides\"",
+                "text: \"Race Subgraphs\"",
+                "text: root.scanner-busy ? \"Scanning...\" : root.scanner-scan-button-text",
+                "title: \"Progress\"",
+                "text: \"Scanner\"",
+                "text: root.scanner-result-count-text",
+                "ScannerResultHeader {",
+                "for row in root.scanner-result-rows",
+                "title: \"Details\"",
+                "label: \"Mod:\"",
+                "label: \"Problem:\"",
+                "label: \"Summary:\"",
+                "label: \"Solution:\"",
+                "text: \"Copy Details\"",
+                "text: \"File List\"",
+                "text: \"Open Path\"",
+                "text: \"Open URL\"",
+                "text: \"Copy URL\"",
+            ],
+        );
+
+        assert_source_contains_in_order(
+            SCANNER_SLINT,
+            &[
+                "component ScannerResultHeader",
+                "text: \"Problem\"",
+                "if root.show-mod-column: Text",
+                "text: \"Mod\"",
+            ],
+        );
+
+        let expected_category_assignments = SCANNER_CATEGORY_LABELS
+            .iter()
+            .map(|label| slint_assignment("text", label))
+            .collect::<Vec<_>>();
+        assert_source_contains_strings_in_order(SCANNER_SLINT, &expected_category_assignments);
+
+        for field in [
+            "row_kind: string",
+            "result_index: int",
+            "problem: string",
+            "mod_name: string",
+            "has_mod: bool",
+            "value: string",
+            "path: string",
+        ] {
+            assert!(
+                SCANNER_SLINT.contains(field),
+                "Scanner Slint structs should expose field {field:?}"
+            );
+        }
+
+        for callback in [
+            "callback category-toggled(string, bool)",
+            "callback scan-requested()",
+            "callback result-selected(int)",
+            "callback copy-details-requested()",
+            "callback file-list-requested()",
+            "callback open-path-requested()",
+            "callback open-url-requested()",
+            "callback copy-url-requested()",
+        ] {
+            assert!(
+                SCANNER_SLINT.contains(callback),
+                "ScannerTab should expose callback {callback:?}"
+            );
+        }
+
+        for prohibited in ["Auto-Fix", "Fixed!", "Fix Failed", "auto-fix"] {
+            assert!(
+                !SCANNER_SLINT.contains(prohibited),
+                "Scanner UI must not expose deferred write action marker {prohibited:?}"
+            );
+            assert!(
+                !MAIN_SLINT.contains(prohibited),
+                "MainWindow must not forward deferred write action marker {prohibited:?}"
+            );
+        }
+
+        assert!(SCANNER_SLINT.contains(SCAN_BUTTON_LABEL));
+        assert!(SCANNER_SLINT.contains(SCANNING_BUTTON_LABEL));
+        assert!(SCANNER_SLINT.contains(ACTION_COPY_DETAILS_LABEL));
+        assert!(SCANNER_SLINT.contains(ACTION_FILE_LIST_LABEL));
+        assert!(SCANNER_SLINT.contains(ACTION_OPEN_URL_LABEL));
+        assert!(SCANNER_SLINT.contains(ACTION_COPY_URL_LABEL));
+        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_MOD));
+        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_PROBLEM));
+        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_SUMMARY));
+        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_SOLUTION));
+    }
+
+    #[test]
+    fn s07_scanner_slint_contract_main_window_forwards_properties_models_and_callbacks() {
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "import { ScannerTab, ScannerResultUiRow, ScannerFileListUiRow }",
+                "in-out property <bool> scanner-overview-issues-enabled",
+                "in-out property <bool> scanner-errors-enabled",
+                "in-out property <bool> scanner-wrong-file-formats-enabled",
+                "in-out property <bool> scanner-loose-previs-enabled",
+                "in-out property <bool> scanner-junk-files-enabled",
+                "in-out property <bool> scanner-problem-overrides-enabled",
+                "in-out property <bool> scanner-race-subgraphs-enabled",
+                "in-out property <bool> scanner-settings-read-only",
+                "in-out property <string> scanner-scan-button-text",
+                "in-out property <bool> scanner-scan-button-enabled",
+                "in-out property <bool> scanner-busy",
+                "in-out property <string> scanner-status-text",
+                "in-out property <string> scanner-progress-text",
+                "in-out property <float> scanner-progress-percent",
+                "in-out property <string> scanner-result-count-text",
+                "in-out property <[ScannerResultUiRow]> scanner-result-rows",
+                "in-out property <bool> scanner-show-mod-column",
+                "in-out property <bool> scanner-detail-visible",
+                "in-out property <[ScannerFileListUiRow]> scanner-file-list-rows",
+                "callback scanner-category-toggled(string, bool)",
+                "callback scanner-scan-requested()",
+                "callback scanner-result-selected(int)",
+                "callback scanner-copy-details-requested()",
+                "callback scanner-file-list-requested()",
+                "callback scanner-open-path-requested()",
+                "callback scanner-open-url-requested()",
+                "callback scanner-copy-url-requested()",
+            ],
+        );
+
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "title: \"Scanner\"",
+                "ScannerTab {",
+                "scanner-overview-issues-enabled <=> root.scanner-overview-issues-enabled",
+                "scanner-errors-enabled <=> root.scanner-errors-enabled",
+                "scanner-wrong-file-formats-enabled <=> root.scanner-wrong-file-formats-enabled",
+                "scanner-loose-previs-enabled <=> root.scanner-loose-previs-enabled",
+                "scanner-junk-files-enabled <=> root.scanner-junk-files-enabled",
+                "scanner-problem-overrides-enabled <=> root.scanner-problem-overrides-enabled",
+                "scanner-race-subgraphs-enabled <=> root.scanner-race-subgraphs-enabled",
+                "scanner-result-rows <=> root.scanner-result-rows",
+                "scanner-file-list-rows <=> root.scanner-file-list-rows",
+                "root.scanner-category-toggled(id, enabled)",
+                "root.scanner-scan-requested()",
+                "root.scanner-result-selected(index)",
+                "root.scanner-copy-details-requested()",
+                "root.scanner-file-list-requested()",
+                "root.scanner-open-path-requested()",
+                "root.scanner-open-url-requested()",
+                "root.scanner-copy-url-requested()",
+            ],
+        );
+    }
+
+    #[test]
+    fn s07_scanner_slint_contract_runtime_projection_uses_controller_snapshot() {
+        let mut controller = ScannerController::new(Default::default());
+        let idle = project_scanner_state(&controller);
+
+        assert_eq!(idle.scan_button_text, SCAN_BUTTON_LABEL);
+        assert!(idle.scan_button_enabled);
+        assert!(!idle.busy);
+        assert!(idle.categories.read_only);
+        assert!(idle.categories.overview_issues);
+        assert!(idle.categories.errors);
+        assert!(idle.categories.wrong_file_formats);
+        assert!(idle.categories.loose_previs);
+        assert!(idle.categories.junk_files);
+        assert!(idle.categories.problem_overrides);
+        assert!(idle.categories.race_subgraphs);
+        assert_eq!(
+            idle.result_count_text,
+            "0 Results ~ Select an item for details"
+        );
+        assert!(idle.result_rows.is_empty());
+        assert!(!idle.detail_visible);
+        assert!(!idle.show_mod_column);
+
+        let request = controller
+            .request_scan()
+            .expect("enabled scanner categories should allow scan requests");
+        let result = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            PathBuf::from("/game/Data/Sound/example.mp3"),
+            PathBuf::from("Sound/example.mp3"),
+            "Format not in whitelist for sound.",
+            Some("This file may need to be converted.".to_owned()),
+        )
+        .with_mod_attribution("Example Mod")
+        .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/cmt")])
+        .with_file_list(ScannerFileList::generic(vec![ScannerFileListEntry::new(
+            1,
+            PathBuf::from("Sound/example.mp3"),
+        )]));
+        let snapshot = ScannerScanSnapshot::from_results(
+            request.scan_id,
+            vec![result],
+            "Scanner scan complete.",
+        );
+
+        controller.scan_completed(request.scan_id, snapshot);
+        controller.select_result(0);
+        let selected = project_scanner_state(&controller);
+
+        assert_eq!(selected.result_rows.len(), 2);
+        assert_eq!(selected.result_rows[0].row_kind.as_str(), "group");
+        assert_eq!(
+            selected.result_rows[0].problem.as_str(),
+            "Unexpected Format"
+        );
+        assert_eq!(selected.result_rows[1].row_kind.as_str(), "result");
+        assert_eq!(selected.result_rows[1].result_index, 0);
+        assert_eq!(selected.result_rows[1].problem.as_str(), "example.mp3");
+        assert_eq!(selected.result_rows[1].mod_name.as_str(), "Example Mod");
+        assert!(selected.result_rows[1].has_mod);
+        assert!(selected.show_mod_column);
+        assert!(selected.detail_visible);
+        assert_eq!(selected.detail_mod, "Example Mod");
+        assert_eq!(selected.detail_problem, "Sound/example.mp3");
+        assert_eq!(
+            selected.detail_summary,
+            "Format not in whitelist for sound."
+        );
+        assert!(
+            selected
+                .detail_solution
+                .contains("This file may need to be converted.")
+        );
+        assert!(
+            selected
+                .detail_solution
+                .contains("https://example.invalid/cmt")
+        );
+        assert!(selected.open_path_enabled);
+        assert!(selected.open_url_enabled);
+        assert!(selected.copy_url_enabled);
+        assert!(selected.file_list_enabled);
+        assert!(!selected.file_list_visible);
+
+        controller.toggle_file_list();
+        let file_list = project_scanner_state(&controller);
+        assert!(file_list.file_list_visible);
+        assert_eq!(file_list.file_list_title, "Files");
+        assert_eq!(file_list.file_list_first_column, "Value");
+        assert_eq!(file_list.file_list_second_column, " File");
+        assert_eq!(file_list.file_list_rows.len(), 1);
+        assert_eq!(file_list.file_list_rows[0].value.as_str(), "1");
+        assert!(
+            file_list.file_list_rows[0]
+                .path
+                .as_str()
+                .contains("example.mp3")
         );
     }
 

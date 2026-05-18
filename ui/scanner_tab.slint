@@ -1,20 +1,652 @@
-export component ScannerTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { Button, GroupBox, ScrollView } from "std-widgets.slint";
+
+export struct ScannerResultUiRow {
+    row_kind: string,
+    result_index: int,
+    problem: string,
+    mod_name: string,
+    has_mod: bool,
+}
+
+export struct ScannerFileListUiRow {
+    value: string,
+    path: string,
+}
+
+component ScannerCheckOption inherits Rectangle {
+    in property <string> category-id;
+    in property <string> text;
+    in property <string> help-text: "";
+    in-out property <bool> checked: true;
+    in property <bool> read-only: true;
+
+    callback toggled(string, bool);
+
+    min-height: root.help-text == "" ? 28px : 58px;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Rectangle {
+            width: 15px;
+            height: 15px;
+            border-radius: 2px;
+            border-width: 1px;
+            border-color: root.checked ? #4da3ff : #9a9a9a;
+            background: root.read-only ? #252525 : #303030;
+
+            Text {
+                text: root.checked ? "✓" : "";
+                color: root.read-only ? #b8d9ff : #f3f3f3;
+                font-size: 12px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        VerticalLayout {
+            spacing: 2px;
+            alignment: start;
+
+            Text {
+                text: root.text;
+                color: root.read-only ? #d8d8d8 : #f3f3f3;
+                font-size: 13px;
+                vertical-alignment: center;
+            }
+
+            if root.help-text != "": Text {
+                text: root.help-text;
+                color: #8f8f8f;
+                font-size: 10px;
+                wrap: word-wrap;
+            }
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            if (!root.read-only) {
+                root.checked = !root.checked;
+                root.toggled(root.category-id, root.checked);
+            }
+        }
+    }
+}
+
+component ScannerProgressBar inherits Rectangle {
+    in property <float> percent: 0;
+
+    height: 12px;
+    background: #303030;
+    border-color: #484848;
+    border-width: 1px;
+    border-radius: 3px;
+
+    Rectangle {
+        x: 1px;
+        y: 1px;
+        height: parent.height - 2px;
+        width: (parent.width - 2px) * root.percent / 100;
+        background: #4da3ff;
+        border-radius: 2px;
+    }
+}
+
+component ScannerResultHeader inherits Rectangle {
+    in property <bool> show-mod-column: false;
+
+    height: 28px;
+    background: #303030;
+    border-color: #484848;
+    border-width: 1px;
+    border-radius: 3px;
+
+    HorizontalLayout {
+        padding-left: 8px;
+        padding-right: 8px;
+        spacing: 8px;
+        alignment: start;
 
         Text {
-            text: "Scanner";
-            font-size: 18px;
+            text: "Problem";
+            width: root.show-mod-column ? 368px : 560px;
+            color: #f3f3f3;
+            font-size: 12px;
+            font-weight: 700;
+            vertical-alignment: center;
+        }
+
+        if root.show-mod-column: Text {
+            text: "Mod";
+            width: 176px;
+            color: #f3f3f3;
+            font-size: 12px;
+            font-weight: 700;
+            horizontal-alignment: right;
+            vertical-alignment: center;
+        }
+    }
+}
+
+component ScannerResultRow inherits Rectangle {
+    in property <ScannerResultUiRow> entry;
+    in property <bool> show-mod-column: false;
+    callback result-selected(int);
+
+    property <bool> group-row: root.entry.row_kind == "group";
+
+    min-height: root.group-row ? 30px : 32px;
+    background: root.group-row ? #303030 : #262626;
+    border-color: root.group-row ? #565656 : #383838;
+    border-width: 1px;
+    border-radius: 3px;
+
+    HorizontalLayout {
+        padding-left: root.group-row ? 8px : 18px;
+        padding-right: 8px;
+        spacing: 8px;
+        alignment: start;
+
+        Text {
+            text: root.entry.problem;
+            width: root.show-mod-column ? 358px : 550px;
+            color: root.group-row ? #f3f3f3 : #d8d8d8;
+            font-size: root.group-row ? 13px : 12px;
+            font-weight: root.group-row ? 700 : 400;
+            vertical-alignment: center;
+            wrap: word-wrap;
+        }
+
+        if root.show-mod-column: Text {
+            text: root.group-row || !root.entry.has_mod ? "" : root.entry.mod_name;
+            width: 176px;
+            color: #c8c8c8;
+            font-size: 12px;
+            horizontal-alignment: right;
+            vertical-alignment: center;
+            wrap: word-wrap;
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            if (!root.group-row) {
+                root.result-selected(root.entry.result_index);
+            }
+        }
+    }
+}
+
+component ScannerDetailValueRow inherits Rectangle {
+    in property <string> label;
+    in property <string> value;
+    in property <length> label-width: 70px;
+
+    min-height: 28px;
+
+    HorizontalLayout {
+        spacing: 6px;
+        alignment: start;
+
+        Text {
+            text: root.label;
+            width: root.label-width;
+            color: #f3f3f3;
+            font-size: 12px;
             font-weight: 600;
-            horizontal-alignment: center;
+            horizontal-alignment: right;
+            vertical-alignment: top;
         }
 
         Text {
-            text: "Scanner behavior is reserved for a later port phase.";
-            font-size: 14px;
-            horizontal-alignment: center;
+            text: root.value;
+            color: #d8d8d8;
+            font-size: 12px;
+            wrap: word-wrap;
+        }
+    }
+}
+
+component ScannerFileListPanel inherits Rectangle {
+    in property <string> title;
+    in property <string> description;
+    in property <string> first-column: "Value";
+    in property <string> second-column: "File";
+    in property <[ScannerFileListUiRow]> rows;
+
+    min-height: 128px;
+
+    GroupBox {
+        title: root.title;
+
+        VerticalLayout {
+            padding: 8px;
+            spacing: 6px;
+            alignment: start;
+
+            if root.description != "": Text {
+                text: root.description;
+                color: #a8a8a8;
+                font-size: 11px;
+                wrap: word-wrap;
+            }
+
+            Rectangle {
+                height: 24px;
+                background: #303030;
+                border-color: #484848;
+                border-width: 1px;
+                border-radius: 3px;
+
+                HorizontalLayout {
+                    padding-left: 5px;
+                    padding-right: 5px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    Text {
+                        text: root.first-column;
+                        width: 72px;
+                        color: #f3f3f3;
+                        font-size: 11px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+
+                    Text {
+                        text: root.second-column;
+                        color: #f3f3f3;
+                        font-size: 11px;
+                        font-weight: 700;
+                        vertical-alignment: center;
+                    }
+                }
+            }
+
+            ScrollView {
+                min-height: 80px;
+
+                VerticalLayout {
+                    padding: 0px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    if root.rows.length == 0: Text {
+                        text: "No file-list rows to display.";
+                        color: #a8a8a8;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    for entry in root.rows: Rectangle {
+                        min-height: 24px;
+                        background: #262626;
+                        border-color: #383838;
+                        border-width: 1px;
+                        border-radius: 3px;
+
+                        HorizontalLayout {
+                            padding-left: 5px;
+                            padding-right: 5px;
+                            spacing: 8px;
+                            alignment: start;
+
+                            Text {
+                                text: entry.value;
+                                width: 72px;
+                                color: #d8d8d8;
+                                font-size: 11px;
+                                vertical-alignment: center;
+                                wrap: word-wrap;
+                            }
+
+                            Text {
+                                text: entry.path;
+                                color: #d8d8d8;
+                                font-size: 11px;
+                                vertical-alignment: center;
+                                wrap: word-wrap;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+component ScannerFeedbackBanner inherits Rectangle {
+    in property <string> message;
+
+    height: 32px;
+    background: #263447;
+    border-color: #5e8fc2;
+    border-width: 1px;
+    border-radius: 4px;
+
+    Text {
+        text: root.message;
+        color: #d9ebff;
+        font-size: 12px;
+        x: 8px;
+        y: 7px;
+        wrap: word-wrap;
+    }
+}
+
+export component ScannerTab inherits Rectangle {
+    in-out property <bool> scanner-overview-issues-enabled: true;
+    in-out property <bool> scanner-errors-enabled: true;
+    in-out property <bool> scanner-wrong-file-formats-enabled: true;
+    in-out property <bool> scanner-loose-previs-enabled: true;
+    in-out property <bool> scanner-junk-files-enabled: true;
+    in-out property <bool> scanner-problem-overrides-enabled: true;
+    in-out property <bool> scanner-race-subgraphs-enabled: true;
+    in-out property <bool> scanner-settings-read-only: true;
+    in-out property <string> scanner-scan-button-text: "Scan Game";
+    in-out property <bool> scanner-scan-button-enabled: true;
+    in-out property <bool> scanner-busy: false;
+    in-out property <string> scanner-status-text: "";
+    in-out property <string> scanner-progress-text: "";
+    in-out property <float> scanner-progress-percent: 0;
+    in-out property <string> scanner-result-count-text: "0 Results ~ Select an item for details";
+    in-out property <[ScannerResultUiRow]> scanner-result-rows;
+    in-out property <bool> scanner-show-mod-column: false;
+    in-out property <bool> scanner-detail-visible: false;
+    in-out property <string> scanner-detail-mod: "";
+    in-out property <string> scanner-detail-problem: "";
+    in-out property <string> scanner-detail-summary: "";
+    in-out property <string> scanner-detail-solution: "";
+    in-out property <string> scanner-action-feedback: "";
+    in-out property <bool> scanner-open-path-enabled: false;
+    in-out property <bool> scanner-open-url-enabled: false;
+    in-out property <bool> scanner-copy-url-enabled: false;
+    in-out property <bool> scanner-file-list-enabled: false;
+    in-out property <bool> scanner-file-list-visible: false;
+    in-out property <string> scanner-file-list-title: "Files";
+    in-out property <string> scanner-file-list-description: "";
+    in-out property <string> scanner-file-list-first-column: "Value";
+    in-out property <string> scanner-file-list-second-column: "File";
+    in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
+
+    callback category-toggled(string, bool);
+    callback scan-requested();
+    callback result-selected(int);
+    callback copy-details-requested();
+    callback file-list-requested();
+    callback open-path-requested();
+    callback open-url-requested();
+    callback copy-url-requested();
+
+    background: #202020;
+
+    HorizontalLayout {
+        padding: 20px;
+        spacing: 12px;
+        alignment: start;
+
+        VerticalLayout {
+            width: 228px;
+            spacing: 12px;
+            alignment: start;
+
+            GroupBox {
+                title: "Scan Settings";
+                width: 228px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    Text {
+                        text: root.scanner-settings-read-only ? "Settings are read-only in this port slice." : "Settings are editable until Scan Game is pressed.";
+                        color: #a8a8a8;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "overview-issues";
+                        text: "Overview Issues";
+                        help-text: "Report details of issues from Overview";
+                        checked <=> root.scanner-overview-issues-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "errors";
+                        text: "Errors";
+                        help-text: "Check for errors in mod configuration or files.";
+                        checked <=> root.scanner-errors-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "wrong-file-formats";
+                        text: "Wrong File Formats";
+                        help-text: "Check file types against a whitelist per Data folder.";
+                        checked <=> root.scanner-wrong-file-formats-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "loose-previs";
+                        text: "Loose Previs";
+                        help-text: "Report loose Data/Vis/ and Data/Meshes/Precombined/ folders.";
+                        checked <=> root.scanner-loose-previs-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "junk-files";
+                        text: "Junk Files";
+                        help-text: "Report desktop.ini, Thumbs.db, and leftover fomod folders.";
+                        checked <=> root.scanner-junk-files-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "problem-overrides";
+                        text: "Problem Overrides";
+                        help-text: "Check overrides that typically cause issues.";
+                        checked <=> root.scanner-problem-overrides-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    ScannerCheckOption {
+                        category-id: "race-subgraphs";
+                        text: "Race Subgraphs";
+                        help-text: "Counts race animation subgraph records (RACE \\ SADD).";
+                        checked <=> root.scanner-race-subgraphs-enabled;
+                        read-only: root.scanner-settings-read-only;
+                        toggled(id, enabled) => { root.category-toggled(id, enabled); }
+                    }
+
+                    Button {
+                        text: root.scanner-busy ? "Scanning..." : root.scanner-scan-button-text;
+                        enabled: root.scanner-scan-button-enabled && !root.scanner-busy;
+                        clicked => { root.scan-requested(); }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Progress";
+                width: 228px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    Text {
+                        text: root.scanner-status-text == "" ? "Scanner has not run yet." : root.scanner-status-text;
+                        color: root.scanner-busy ? #8ecbff : #d8d8d8;
+                        font-size: 12px;
+                        wrap: word-wrap;
+                    }
+
+                    Text {
+                        text: root.scanner-progress-text == "" ? "Progress will appear here." : root.scanner-progress-text;
+                        color: #a8a8a8;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    ScannerProgressBar {
+                        percent: root.scanner-progress-percent;
+                    }
+                }
+            }
+        }
+
+        VerticalLayout {
+            width: 588px;
+            spacing: 12px;
+            alignment: start;
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                Text {
+                    text: "Scanner";
+                    color: #f3f3f3;
+                    font-size: 18px;
+                    font-weight: 600;
+                    vertical-alignment: center;
+                }
+
+                Text {
+                    text: root.scanner-result-count-text;
+                    color: #a8a8a8;
+                    font-size: 12px;
+                    vertical-alignment: center;
+                    wrap: word-wrap;
+                }
+            }
+
+            ScannerResultHeader {
+                show-mod-column: root.scanner-show-mod-column;
+            }
+
+            ScrollView {
+                min-height: 256px;
+
+                VerticalLayout {
+                    padding: 0px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    if root.scanner-result-rows.length == 0: Text {
+                        text: root.scanner-busy ? "Scanning..." : "No scanner results to display.";
+                        color: #a8a8a8;
+                        font-size: 12px;
+                        wrap: word-wrap;
+                    }
+
+                    for row in root.scanner-result-rows: ScannerResultRow {
+                        entry: row;
+                        show-mod-column: root.scanner-show-mod-column;
+                        result-selected(index) => { root.result-selected(index); }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Details";
+                width: 588px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    if !root.scanner-detail-visible: Text {
+                        text: "Select an item for details.";
+                        color: #a8a8a8;
+                        font-size: 12px;
+                    }
+
+                    if root.scanner-detail-visible: ScannerDetailValueRow {
+                        label: "Mod:";
+                        value: root.scanner-detail-mod;
+                    }
+
+                    if root.scanner-detail-visible: ScannerDetailValueRow {
+                        label: "Problem:";
+                        value: root.scanner-detail-problem;
+                    }
+
+                    if root.scanner-detail-visible: ScannerDetailValueRow {
+                        label: "Summary:";
+                        value: root.scanner-detail-summary;
+                    }
+
+                    if root.scanner-detail-visible: ScannerDetailValueRow {
+                        label: "Solution:";
+                        value: root.scanner-detail-solution;
+                    }
+
+                    if root.scanner-detail-visible: HorizontalLayout {
+                        spacing: 8px;
+                        alignment: start;
+
+                        Button {
+                            text: "Copy Details";
+                            clicked => { root.copy-details-requested(); }
+                        }
+
+                        if root.scanner-file-list-enabled: Button {
+                            text: "File List";
+                            clicked => { root.file-list-requested(); }
+                        }
+
+                        if root.scanner-open-path-enabled: Button {
+                            text: "Open Path";
+                            clicked => { root.open-path-requested(); }
+                        }
+
+                        if root.scanner-open-url-enabled: Button {
+                            text: "Open URL";
+                            clicked => { root.open-url-requested(); }
+                        }
+
+                        if root.scanner-copy-url-enabled: Button {
+                            text: "Copy URL";
+                            clicked => { root.copy-url-requested(); }
+                        }
+                    }
+
+                    if root.scanner-file-list-enabled: Text {
+                        text: root.scanner-file-list-visible ? "File List shown below." : "File List is available for this result.";
+                        color: #a8a8a8;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    if root.scanner-action-feedback != "": ScannerFeedbackBanner {
+                        message: root.scanner-action-feedback;
+                    }
+
+                    if root.scanner-file-list-visible: ScannerFileListPanel {
+                        title: root.scanner-file-list-title;
+                        description: root.scanner-file-list-description;
+                        first-column: root.scanner-file-list-first-column;
+                        second-column: root.scanner-file-list-second-column;
+                        rows: root.scanner-file-list-rows;
+                    }
+                }
+            }
         }
     }
 }

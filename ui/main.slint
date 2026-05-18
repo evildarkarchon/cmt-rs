@@ -1,7 +1,7 @@
 import { TabWidget } from "std-widgets.slint";
 import { OverviewTab, OverviewUiRow } from "overview_tab.slint";
 import { F4seTab, F4seUiRow } from "f4se_tab.slint";
-import { ScannerTab } from "scanner_tab.slint";
+import { ScannerTab, ScannerResultUiRow, ScannerFileListUiRow } from "scanner_tab.slint";
 import { ToolsTab } from "tools_tab.slint";
 import { SettingsTab } from "settings_tab.slint";
 import { AboutTab } from "about_tab.slint";
@@ -35,6 +35,39 @@ export component MainWindow inherits Window {
     in-out property <string> f4se-loading-or-error-text: "";
     in-out property <string> f4se-unknown-game-detail: "";
     in-out property <[F4seUiRow]> f4se-rows;
+    in-out property <bool> scanner-overview-issues-enabled: true;
+    in-out property <bool> scanner-errors-enabled: true;
+    in-out property <bool> scanner-wrong-file-formats-enabled: true;
+    in-out property <bool> scanner-loose-previs-enabled: true;
+    in-out property <bool> scanner-junk-files-enabled: true;
+    in-out property <bool> scanner-problem-overrides-enabled: true;
+    in-out property <bool> scanner-race-subgraphs-enabled: true;
+    in-out property <bool> scanner-settings-read-only: true;
+    in-out property <string> scanner-scan-button-text: "Scan Game";
+    in-out property <bool> scanner-scan-button-enabled: true;
+    in-out property <bool> scanner-busy: false;
+    in-out property <string> scanner-status-text: "";
+    in-out property <string> scanner-progress-text: "";
+    in-out property <float> scanner-progress-percent: 0;
+    in-out property <string> scanner-result-count-text: "0 Results ~ Select an item for details";
+    in-out property <[ScannerResultUiRow]> scanner-result-rows;
+    in-out property <bool> scanner-show-mod-column: false;
+    in-out property <bool> scanner-detail-visible: false;
+    in-out property <string> scanner-detail-mod: "";
+    in-out property <string> scanner-detail-problem: "";
+    in-out property <string> scanner-detail-summary: "";
+    in-out property <string> scanner-detail-solution: "";
+    in-out property <string> scanner-action-feedback: "";
+    in-out property <bool> scanner-open-path-enabled: false;
+    in-out property <bool> scanner-open-url-enabled: false;
+    in-out property <bool> scanner-copy-url-enabled: false;
+    in-out property <bool> scanner-file-list-enabled: false;
+    in-out property <bool> scanner-file-list-visible: false;
+    in-out property <string> scanner-file-list-title: "Files";
+    in-out property <string> scanner-file-list-description: "";
+    in-out property <string> scanner-file-list-first-column: "Value";
+    in-out property <string> scanner-file-list-second-column: "File";
+    in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
     property <int> active-tab-index: 0;
     property <bool> f4se-tab-activation-observed: false;
     in-out property <string> tools-last-action-error: "";
@@ -55,6 +88,14 @@ export component MainWindow inherits Window {
     callback overview-open-downgrade-manager-requested();
     callback overview-open-archive-patcher-requested();
     callback f4se-tab-activated();
+    callback scanner-category-toggled(string, bool);
+    callback scanner-scan-requested();
+    callback scanner-result-selected(int);
+    callback scanner-copy-details-requested();
+    callback scanner-file-list-requested();
+    callback scanner-open-path-requested();
+    callback scanner-open-url-requested();
+    callback scanner-copy-url-requested();
     callback tool-action-requested(string);
     callback about-open-requested(string);
     callback about-copy-requested(string);
@@ -134,7 +175,65 @@ export component MainWindow inherits Window {
 
         Tab {
             title: "Scanner";
-            ScannerTab {}
+            ScannerTab {
+                scanner-overview-issues-enabled <=> root.scanner-overview-issues-enabled;
+                scanner-errors-enabled <=> root.scanner-errors-enabled;
+                scanner-wrong-file-formats-enabled <=> root.scanner-wrong-file-formats-enabled;
+                scanner-loose-previs-enabled <=> root.scanner-loose-previs-enabled;
+                scanner-junk-files-enabled <=> root.scanner-junk-files-enabled;
+                scanner-problem-overrides-enabled <=> root.scanner-problem-overrides-enabled;
+                scanner-race-subgraphs-enabled <=> root.scanner-race-subgraphs-enabled;
+                scanner-settings-read-only <=> root.scanner-settings-read-only;
+                scanner-scan-button-text <=> root.scanner-scan-button-text;
+                scanner-scan-button-enabled <=> root.scanner-scan-button-enabled;
+                scanner-busy <=> root.scanner-busy;
+                scanner-status-text <=> root.scanner-status-text;
+                scanner-progress-text <=> root.scanner-progress-text;
+                scanner-progress-percent <=> root.scanner-progress-percent;
+                scanner-result-count-text <=> root.scanner-result-count-text;
+                scanner-result-rows <=> root.scanner-result-rows;
+                scanner-show-mod-column <=> root.scanner-show-mod-column;
+                scanner-detail-visible <=> root.scanner-detail-visible;
+                scanner-detail-mod <=> root.scanner-detail-mod;
+                scanner-detail-problem <=> root.scanner-detail-problem;
+                scanner-detail-summary <=> root.scanner-detail-summary;
+                scanner-detail-solution <=> root.scanner-detail-solution;
+                scanner-action-feedback <=> root.scanner-action-feedback;
+                scanner-open-path-enabled <=> root.scanner-open-path-enabled;
+                scanner-open-url-enabled <=> root.scanner-open-url-enabled;
+                scanner-copy-url-enabled <=> root.scanner-copy-url-enabled;
+                scanner-file-list-enabled <=> root.scanner-file-list-enabled;
+                scanner-file-list-visible <=> root.scanner-file-list-visible;
+                scanner-file-list-title <=> root.scanner-file-list-title;
+                scanner-file-list-description <=> root.scanner-file-list-description;
+                scanner-file-list-first-column <=> root.scanner-file-list-first-column;
+                scanner-file-list-second-column <=> root.scanner-file-list-second-column;
+                scanner-file-list-rows <=> root.scanner-file-list-rows;
+                category-toggled(id, enabled) => {
+                    root.scanner-category-toggled(id, enabled);
+                }
+                scan-requested => {
+                    root.scanner-scan-requested();
+                }
+                result-selected(index) => {
+                    root.scanner-result-selected(index);
+                }
+                copy-details-requested => {
+                    root.scanner-copy-details-requested();
+                }
+                file-list-requested => {
+                    root.scanner-file-list-requested();
+                }
+                open-path-requested => {
+                    root.scanner-open-path-requested();
+                }
+                open-url-requested => {
+                    root.scanner-open-url-requested();
+                }
+                copy-url-requested => {
+                    root.scanner-copy-url-requested();
+                }
+            }
         }
 
         Tab {
