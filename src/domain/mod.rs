@@ -64,6 +64,8 @@ mod tests {
         assert_type::<crate::domain::downgrader::DowngraderStatusRow>();
         assert_type::<crate::domain::downgrader::DowngraderOptionsSnapshot>();
         assert_type::<crate::domain::downgrader::DowngraderPlanAction>();
+        assert_type::<crate::domain::downgrader::DowngraderPlanStepKind>();
+        assert_type::<crate::domain::downgrader::DowngraderPlanStep>();
         assert_type::<crate::domain::downgrader::DowngraderPlanRow>();
         assert_type::<crate::domain::downgrader::DowngraderExecutionLogRow>();
         assert_type::<crate::domain::downgrader::DowngraderLogLevel>();

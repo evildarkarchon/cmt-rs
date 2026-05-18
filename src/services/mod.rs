@@ -6,6 +6,7 @@
 
 pub mod autofix;
 pub mod discovery;
+pub mod downgrader;
 pub mod f4se;
 pub mod overview;
 pub mod overview_collector;

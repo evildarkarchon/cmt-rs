@@ -370,6 +370,88 @@ impl DowngraderPlanAction {
     }
 }
 
+/// Detailed preview step kind for one file in the inline Downgrader plan.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DowngraderPlanStepKind {
+    /// File will be skipped because it already matches the selected target.
+    SkipAlreadyDesired,
+    /// File will be skipped because it is not present in the game root.
+    SkipNotFound,
+    /// File will be skipped because its CRC cannot be used as a patch source.
+    SkipUnsupportedVersion,
+    /// Existing backup of the current version can be reused as the patch source.
+    ReuseCurrentBackup,
+    /// Existing backup is not useful for the current file and should be deleted before running.
+    DeleteInvalidCurrentBackup,
+    /// Existing desired-version backup has the wrong CRC and should be deleted before running.
+    DeleteInvalidDesiredBackup,
+    /// Current file should be backed up before restore or patch work mutates it.
+    CreateCurrentBackup,
+    /// Desired-version backup should be restored instead of downloading a delta.
+    RestoreDesiredBackup,
+    /// Delta patch asset must be downloaded before patching can continue.
+    DownloadDelta,
+    /// Delta patch should be applied to the current-version backup.
+    ApplyDeltaPatch,
+    /// Current-version backup should be deleted after a successful restore or patch.
+    DeleteCurrentBackup,
+    /// Downloaded delta patch should be deleted after a successful patch.
+    DeleteDeltaPatch,
+    /// Planning failed safely before any mutation could be attempted.
+    PlanFailure,
+}
+
+impl DowngraderPlanStepKind {
+    /// Returns a stable lowercase diagnostic label for tracing and tests.
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::SkipAlreadyDesired => "skip_already_desired",
+            Self::SkipNotFound => "skip_not_found",
+            Self::SkipUnsupportedVersion => "skip_unsupported_version",
+            Self::ReuseCurrentBackup => "reuse_current_backup",
+            Self::DeleteInvalidCurrentBackup => "delete_invalid_current_backup",
+            Self::DeleteInvalidDesiredBackup => "delete_invalid_desired_backup",
+            Self::CreateCurrentBackup => "create_current_backup",
+            Self::RestoreDesiredBackup => "restore_desired_backup",
+            Self::DownloadDelta => "download_delta",
+            Self::ApplyDeltaPatch => "apply_delta_patch",
+            Self::DeleteCurrentBackup => "delete_current_backup",
+            Self::DeleteDeltaPatch => "delete_delta_patch",
+            Self::PlanFailure => "plan_failure",
+        }
+    }
+
+    /// Returns true when this step represents work that mutates files during execution.
+    pub const fn is_mutating_execution_step(self) -> bool {
+        !matches!(
+            self,
+            Self::SkipAlreadyDesired
+                | Self::SkipNotFound
+                | Self::SkipUnsupportedVersion
+                | Self::PlanFailure
+        )
+    }
+}
+
+/// Render-ready detail row for inline plan confirmation.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderPlanStep {
+    /// Machine-readable step kind for controllers, tests, and tracing.
+    pub kind: DowngraderPlanStepKind,
+    /// Safe user-facing summary of what a later confirmed run would do.
+    pub message: String,
+}
+
+impl DowngraderPlanStep {
+    /// Creates a preview step without performing any filesystem mutation.
+    pub fn new(kind: DowngraderPlanStepKind, message: impl Into<String>) -> Self {
+        Self {
+            kind,
+            message: message.into(),
+        }
+    }
+}
+
 /// Pure row describing the planned treatment of one downgrader-managed file.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct DowngraderPlanRow {
@@ -1022,6 +1104,18 @@ mod tests {
         assert_eq!(row.current_backup_name, "Fallout4_downgradeBackup.exe");
         assert_eq!(row.patch_name, "NG-to-OG-Fallout4.exe.xdelta");
         assert!(row.skip_log_row().is_none());
+
+        let step = DowngraderPlanStep::new(
+            DowngraderPlanStepKind::CreateCurrentBackup,
+            "Create backup Fallout4_downgradeBackup.exe from Fallout4.exe.",
+        );
+        assert_eq!(step.kind.as_str(), "create_current_backup");
+        assert!(step.kind.is_mutating_execution_step());
+        assert_eq!(
+            step.message,
+            "Create backup Fallout4_downgradeBackup.exe from Fallout4.exe."
+        );
+        assert!(!DowngraderPlanStepKind::SkipNotFound.is_mutating_execution_step());
 
         let already =
             DowngraderPlanRow::from_definition(fallout4, DowngraderInstallStatus::OldGen, options);

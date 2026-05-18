@@ -1,0 +1,1606 @@
+//! Read-only Downgrader status and preview-plan service.
+//!
+//! The Python reference computes file CRCs when the modal opens and performs all
+//! destructive backup/restore/xdelta work only after the `Patch All` action is
+//! confirmed. This service preserves that split: it depends only on the
+//! read-only [`Filesystem`] trait, validates every managed path under the
+//! discovered Fallout 4 root, and returns Slint-free status/plan payloads that a
+//! later worker can execute through separate mutation/download/apply seams.
+
+use std::{
+    path::{Component, Path, PathBuf},
+    sync::OnceLock,
+};
+
+use thiserror::Error;
+use tracing::{debug, info, info_span, warn};
+
+use crate::{
+    domain::{
+        discovery::{FALLOUT4_NOT_FOUND_MESSAGE, Fallout4Installation},
+        downgrader::{
+            DOWNGRADER_FILE_DEFINITIONS, DowngraderFileDefinition, DowngraderFileGroup,
+            DowngraderInstallStatus, DowngraderOptionsSnapshot, DowngraderPlanAction,
+            DowngraderPlanRow, DowngraderPlanStep, DowngraderPlanStepKind, DowngraderStatusRow,
+            DowngraderTarget, accepted_source_crcs_for_target, crcs_for_status,
+            skipped_already_message, skipped_not_found_message, skipped_unsupported_message,
+        },
+    },
+    platform::{PlatformErrorKind, filesystem::Filesystem},
+};
+
+const UNSAFE_ROOT_MESSAGE: &str = "Fallout 4 installation path is unsafe.";
+const UNSAFE_MANAGED_PATH_MESSAGE: &str = "Downgrader managed file path is unsafe.";
+const ROOT_NOT_DIRECTORY_MESSAGE: &str = "Fallout 4 installation path is not a folder.";
+const CURRENT_FILE_READ_FAILURE_MESSAGE: &str =
+    "Current file could not be read; patching is disabled for this file.";
+const BACKUP_READ_FAILURE_MESSAGE: &str =
+    "Backup file could not be read; patching is disabled for this file.";
+
+/// Request input for a read-only Downgrader status snapshot.
+#[derive(Debug, Clone, Copy)]
+pub struct DowngraderStatusRequest<'a> {
+    /// Monotonic request id assigned by the caller for stale-event rejection and tracing.
+    pub request_id: u64,
+    /// Optional discovered Fallout 4 installation.
+    pub installation: Option<&'a Fallout4Installation>,
+}
+
+impl<'a> DowngraderStatusRequest<'a> {
+    /// Creates a status request from already-discovered installation facts.
+    pub const fn new(request_id: u64, installation: Option<&'a Fallout4Installation>) -> Self {
+        Self {
+            request_id,
+            installation,
+        }
+    }
+}
+
+/// Request input for a read-only Downgrader inline preview plan.
+#[derive(Debug, Clone, Copy)]
+pub struct DowngraderPlanRequest<'a> {
+    /// Monotonic request id assigned by the caller for stale-event rejection and tracing.
+    pub request_id: u64,
+    /// Optional discovered Fallout 4 installation.
+    pub installation: Option<&'a Fallout4Installation>,
+    /// User-selected target and cleanup preferences.
+    pub options: DowngraderOptionsSnapshot,
+}
+
+impl<'a> DowngraderPlanRequest<'a> {
+    /// Creates a plan request from already-discovered installation facts and options.
+    pub const fn new(
+        request_id: u64,
+        installation: Option<&'a Fallout4Installation>,
+        options: DowngraderOptionsSnapshot,
+    ) -> Self {
+        Self {
+            request_id,
+            installation,
+            options,
+        }
+    }
+}
+
+/// Safe failure returned before any status or plan output can be trusted.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum DowngraderServiceError {
+    /// No discovered game root was supplied or the supplied root is absent.
+    #[error("{safe_message}")]
+    MissingGameRoot {
+        /// User-facing safe failure text.
+        safe_message: String,
+    },
+    /// The discovered game root was malformed, inaccessible, or not a directory.
+    #[error("{safe_message}")]
+    InvalidGameRoot {
+        /// Rejected root path retained for diagnostics/tests.
+        root: PathBuf,
+        /// User-facing safe failure text.
+        safe_message: String,
+    },
+    /// A managed relative path was malformed or escaped the game root.
+    #[error("{safe_message}")]
+    UnsafeManagedPath {
+        /// Malformed relative path retained for diagnostics/tests.
+        relative_path: String,
+        /// User-facing safe failure text.
+        safe_message: String,
+    },
+}
+
+impl DowngraderServiceError {
+    /// Returns the safe text suitable for modal logs or disabled-state banners.
+    pub fn user_message(&self) -> &str {
+        match self {
+            Self::MissingGameRoot { safe_message }
+            | Self::InvalidGameRoot { safe_message, .. }
+            | Self::UnsafeManagedPath { safe_message, .. } => safe_message,
+        }
+    }
+}
+
+/// A per-file read diagnostic captured while building a status snapshot.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderStatusDiagnostic {
+    /// Managed relative path involved in the diagnostic.
+    pub relative_path: &'static str,
+    /// Safe summary suitable for logs/tests.
+    pub safe_message: String,
+}
+
+/// Render-ready status row plus raw CRC facts from one managed file.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderStatusFile {
+    /// Managed relative path from the Fallout 4 root.
+    pub relative_path: &'static str,
+    /// Basename displayed in the modal.
+    pub display_name: &'static str,
+    /// Reference modal group for this row.
+    pub group: DowngraderFileGroup,
+    /// Actual CRC classification before any display-only translation.
+    pub detected_status: DowngraderInstallStatus,
+    /// Status label to display after the `steam_api64.dll` NG/AE rule is applied.
+    pub display_status: DowngraderInstallStatus,
+    /// Uppercase eight-character CRC32 when the file was readable.
+    pub crc32: Option<String>,
+    /// Absolute or caller-relative resolved path under the game root.
+    pub resolved_path: PathBuf,
+    /// Safe read/metadata diagnostic when the row had to fall back to `Unknown`.
+    pub read_error: Option<String>,
+}
+
+impl DowngraderStatusFile {
+    /// Returns a compatibility row using the display status expected by the modal.
+    pub fn display_row(&self) -> DowngraderStatusRow {
+        DowngraderStatusRow {
+            relative_path: self.relative_path,
+            display_name: self.display_name,
+            group: self.group,
+            status: self.display_status,
+        }
+    }
+
+    /// Returns a row preserving the raw CRC classification before display translation.
+    pub fn detected_row(&self) -> DowngraderStatusRow {
+        DowngraderStatusRow {
+            relative_path: self.relative_path,
+            display_name: self.display_name,
+            group: self.group,
+            status: self.detected_status,
+        }
+    }
+}
+
+/// Complete read-only status snapshot for the Downgrader modal.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderStatusSnapshot {
+    /// Request id copied from the status request.
+    pub request_id: u64,
+    /// Validated game root used to resolve all managed files.
+    pub game_root: PathBuf,
+    /// Six managed status rows in reference display/patch order.
+    pub rows: Vec<DowngraderStatusFile>,
+    /// Reference default radio target derived from `Fallout4.exe`.
+    pub default_target: DowngraderTarget,
+    /// Whether any game-group file is `Unknown` or `Not Found`.
+    pub unknown_game: bool,
+    /// Whether any Creation Kit-group file is `Unknown` or `Not Found`.
+    pub unknown_creation_kit: bool,
+    /// Safe non-fatal diagnostics captured while reading rows.
+    pub diagnostics: Vec<DowngraderStatusDiagnostic>,
+}
+
+impl DowngraderStatusSnapshot {
+    /// Returns the status for a managed file by reference display name or path.
+    pub fn status_for(&self, file_name_or_path: &str) -> Option<&DowngraderStatusFile> {
+        self.rows.iter().find(|row| {
+            row.relative_path.eq_ignore_ascii_case(file_name_or_path)
+                || row.display_name.eq_ignore_ascii_case(file_name_or_path)
+        })
+    }
+}
+
+/// Backup CRC probe used by preview rows to explain why a branch was chosen.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderBackupProbe {
+    /// Resolved backup path under the same directory as the managed file.
+    pub path: PathBuf,
+    /// Backup file name used by the Python reference.
+    pub file_name: String,
+    /// Whether metadata reported a regular file.
+    pub exists: bool,
+    /// Uppercase CRC32 when the backup was readable.
+    pub crc32: Option<String>,
+    /// Safe read/metadata diagnostic when the backup existed but could not be read.
+    pub read_error: Option<String>,
+}
+
+impl DowngraderBackupProbe {
+    fn missing(path: PathBuf, file_name: impl Into<String>) -> Self {
+        Self {
+            path,
+            file_name: file_name.into(),
+            exists: false,
+            crc32: None,
+            read_error: None,
+        }
+    }
+}
+
+/// Detailed preview row for one managed file.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderPreviewPlanRow {
+    /// Pure reference row with first-pass skip/worker action metadata.
+    pub plan: DowngraderPlanRow,
+    /// Display status after `steam_api64.dll` NG/AE translation.
+    pub display_status: DowngraderInstallStatus,
+    /// Uppercase CRC32 of the current file when readable.
+    pub current_crc32: Option<String>,
+    /// Resolved current file path under the game root.
+    pub current_path: PathBuf,
+    /// Desired-version backup probe, read only when the row reaches backup planning.
+    pub desired_backup: Option<DowngraderBackupProbe>,
+    /// Current-version backup probe, read only when the row reaches backup planning.
+    pub current_backup: Option<DowngraderBackupProbe>,
+    /// Ordered steps a later confirmed worker would perform for this file.
+    pub steps: Vec<DowngraderPlanStep>,
+    /// Safe per-row failure that disables execution when planning cannot continue safely.
+    pub failure: Option<String>,
+}
+
+impl DowngraderPreviewPlanRow {
+    /// Returns whether this row can be handed to a later mutation worker.
+    pub fn can_execute(&self) -> bool {
+        self.failure.is_none()
+    }
+
+    /// Returns true when the row contains a delta download step.
+    pub fn requires_download(&self) -> bool {
+        self.steps
+            .iter()
+            .any(|step| step.kind == DowngraderPlanStepKind::DownloadDelta)
+    }
+
+    /// Returns true when the row restores from an existing desired-version backup.
+    pub fn restores_from_backup(&self) -> bool {
+        self.steps
+            .iter()
+            .any(|step| step.kind == DowngraderPlanStepKind::RestoreDesiredBackup)
+    }
+}
+
+/// Aggregate counts from a generated preview plan.
+#[derive(Debug, Default, Clone, PartialEq, Eq)]
+pub struct DowngraderPreviewPlanCounts {
+    /// Rows that produce only reference skip messages.
+    pub skipped_rows: usize,
+    /// Rows that will restore from a desired-version backup.
+    pub restore_from_backup_rows: usize,
+    /// Rows that require downloading an xdelta patch.
+    pub delta_download_rows: usize,
+    /// Rows that failed safely during planning.
+    pub failed_rows: usize,
+    /// Total mutating execution steps that would happen only after confirmation.
+    pub mutating_step_count: usize,
+}
+
+/// Complete inline plan returned before any mutation, download, or patching occurs.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderPreviewPlan {
+    /// Request id copied from the plan request.
+    pub request_id: u64,
+    /// Validated game root used to resolve all managed files.
+    pub game_root: PathBuf,
+    /// User options used for this plan.
+    pub options: DowngraderOptionsSnapshot,
+    /// Status snapshot used as the source of truth for the plan.
+    pub status: DowngraderStatusSnapshot,
+    /// Six preview rows in reference patch order.
+    pub rows: Vec<DowngraderPreviewPlanRow>,
+    /// Aggregate row/step counts for diagnostics and UI summary text.
+    pub counts: DowngraderPreviewPlanCounts,
+    /// False when any row failed during read-only planning.
+    pub can_execute: bool,
+}
+
+impl DowngraderPreviewPlan {
+    fn from_rows(
+        request_id: u64,
+        game_root: PathBuf,
+        options: DowngraderOptionsSnapshot,
+        status: DowngraderStatusSnapshot,
+        rows: Vec<DowngraderPreviewPlanRow>,
+    ) -> Self {
+        let mut counts = DowngraderPreviewPlanCounts::default();
+        for row in &rows {
+            if row.failure.is_some() {
+                counts.failed_rows += 1;
+            }
+            if row.steps.iter().all(|step| {
+                matches!(
+                    step.kind,
+                    DowngraderPlanStepKind::SkipAlreadyDesired
+                        | DowngraderPlanStepKind::SkipNotFound
+                        | DowngraderPlanStepKind::SkipUnsupportedVersion
+                )
+            }) {
+                counts.skipped_rows += 1;
+            }
+            if row.restores_from_backup() {
+                counts.restore_from_backup_rows += 1;
+            }
+            if row.requires_download() {
+                counts.delta_download_rows += 1;
+            }
+            counts.mutating_step_count += row
+                .steps
+                .iter()
+                .filter(|step| step.kind.is_mutating_execution_step())
+                .count();
+        }
+        let can_execute = counts.failed_rows == 0;
+        Self {
+            request_id,
+            game_root,
+            options,
+            status,
+            rows,
+            counts,
+            can_execute,
+        }
+    }
+}
+
+/// Read-only service that classifies Downgrader files and builds preview plans.
+#[derive(Debug, Clone, Copy)]
+pub struct DowngraderService<'a, F: Filesystem + ?Sized> {
+    filesystem: &'a F,
+}
+
+impl<'a, F: Filesystem + ?Sized> DowngraderService<'a, F> {
+    /// Creates a Downgrader service over a read-only filesystem adapter.
+    pub const fn new(filesystem: &'a F) -> Self {
+        Self { filesystem }
+    }
+
+    /// Builds a read-only status snapshot for the six reference-managed files.
+    pub fn status_snapshot(
+        &self,
+        request: DowngraderStatusRequest<'_>,
+    ) -> Result<DowngraderStatusSnapshot, DowngraderServiceError> {
+        let span = info_span!(
+            "downgrader.status_snapshot",
+            request_id = request.request_id,
+            has_installation = request.installation.is_some(),
+        );
+        let _guard = span.enter();
+        info!(
+            event = "downgrader-status-request",
+            "Downgrader status requested"
+        );
+
+        let game_root = self.validated_game_root(request.installation)?;
+        validate_managed_definitions(&game_root)?;
+
+        let mut raw_rows = Vec::with_capacity(DOWNGRADER_FILE_DEFINITIONS.len());
+        let mut diagnostics = Vec::new();
+        for definition in DOWNGRADER_FILE_DEFINITIONS {
+            let resolved_path =
+                resolve_managed_relative_path(&game_root, definition.relative_path)?;
+            let row = self.read_managed_file(definition, resolved_path);
+            if let Some(read_error) = &row.read_error {
+                diagnostics.push(DowngraderStatusDiagnostic {
+                    relative_path: row.relative_path,
+                    safe_message: read_error.clone(),
+                });
+            }
+            debug!(
+                event = "downgrader-status-row",
+                request_id = request.request_id,
+                relative_path = definition.relative_path,
+                status = row.detected_status.as_reference_str(),
+                has_crc = row.crc32.is_some(),
+                "Downgrader status row classified"
+            );
+            raw_rows.push(row);
+        }
+
+        let fallout4_status = raw_rows
+            .iter()
+            .find(|row| row.relative_path == "Fallout4.exe")
+            .map(|row| row.detected_status)
+            .unwrap_or(DowngraderInstallStatus::Unknown);
+        for row in &mut raw_rows {
+            row.display_status =
+                display_status_for(row.relative_path, row.detected_status, fallout4_status);
+        }
+
+        let default_target = default_target_from_fallout4(fallout4_status);
+        let unknown_game = raw_rows.iter().any(|row| {
+            row.group == DowngraderFileGroup::Game
+                && matches!(
+                    row.detected_status,
+                    DowngraderInstallStatus::Unknown | DowngraderInstallStatus::NotFound
+                )
+        });
+        let unknown_creation_kit = raw_rows.iter().any(|row| {
+            row.group == DowngraderFileGroup::CreationKit
+                && matches!(
+                    row.detected_status,
+                    DowngraderInstallStatus::Unknown | DowngraderInstallStatus::NotFound
+                )
+        });
+
+        info!(
+            event = "downgrader-status-complete",
+            request_id = request.request_id,
+            row_count = raw_rows.len(),
+            diagnostic_count = diagnostics.len(),
+            default_target = default_target.as_reference_str(),
+            unknown_game,
+            unknown_creation_kit,
+            "Downgrader status snapshot built"
+        );
+
+        Ok(DowngraderStatusSnapshot {
+            request_id: request.request_id,
+            game_root,
+            rows: raw_rows,
+            default_target,
+            unknown_game,
+            unknown_creation_kit,
+            diagnostics,
+        })
+    }
+
+    /// Builds an inline preview plan without mutating files, downloading deltas, or applying patches.
+    pub fn preview_plan(
+        &self,
+        request: DowngraderPlanRequest<'_>,
+    ) -> Result<DowngraderPreviewPlan, DowngraderServiceError> {
+        let span = info_span!(
+            "downgrader.preview_plan",
+            request_id = request.request_id,
+            target = request.options.target.as_reference_str(),
+            keep_backups = request.options.keep_backups,
+            delete_deltas = request.options.delete_deltas,
+            has_installation = request.installation.is_some(),
+        );
+        let _guard = span.enter();
+        info!(
+            event = "downgrader-plan-request",
+            "Downgrader preview plan requested"
+        );
+
+        let status = self.status_snapshot(DowngraderStatusRequest::new(
+            request.request_id,
+            request.installation,
+        ))?;
+        let mut rows = Vec::with_capacity(status.rows.len());
+        for status_row in &status.rows {
+            let definition = definition_for_status_row(status_row)?;
+            rows.push(self.plan_row(definition, status_row, request.options));
+        }
+
+        let plan = DowngraderPreviewPlan::from_rows(
+            request.request_id,
+            status.game_root.clone(),
+            request.options,
+            status,
+            rows,
+        );
+        info!(
+            event = "downgrader-plan-complete",
+            request_id = plan.request_id,
+            row_count = plan.rows.len(),
+            skipped_rows = plan.counts.skipped_rows,
+            restore_from_backup_rows = plan.counts.restore_from_backup_rows,
+            delta_download_rows = plan.counts.delta_download_rows,
+            failed_rows = plan.counts.failed_rows,
+            mutating_step_count = plan.counts.mutating_step_count,
+            can_execute = plan.can_execute,
+            "Downgrader preview plan built"
+        );
+        Ok(plan)
+    }
+
+    fn validated_game_root(
+        &self,
+        installation: Option<&Fallout4Installation>,
+    ) -> Result<PathBuf, DowngraderServiceError> {
+        let root = installation
+            .map(|installation| installation.game_path.as_path())
+            .ok_or_else(|| DowngraderServiceError::MissingGameRoot {
+                safe_message: FALLOUT4_NOT_FOUND_MESSAGE.to_owned(),
+            })?;
+
+        validate_game_root_path(root)?;
+        match self.filesystem.metadata(root) {
+            Ok(metadata) if metadata.is_dir() => Ok(root.to_path_buf()),
+            Ok(_) => Err(DowngraderServiceError::InvalidGameRoot {
+                root: root.to_path_buf(),
+                safe_message: ROOT_NOT_DIRECTORY_MESSAGE.to_owned(),
+            }),
+            Err(error) if error.kind == PlatformErrorKind::NotFound => {
+                warn!(
+                    event = "downgrader-root-missing",
+                    root = %root.display(),
+                    "Downgrader root was not found"
+                );
+                Err(DowngraderServiceError::MissingGameRoot {
+                    safe_message: FALLOUT4_NOT_FOUND_MESSAGE.to_owned(),
+                })
+            }
+            Err(error) => {
+                warn!(
+                    event = "downgrader-root-unavailable",
+                    root = %root.display(),
+                    failure_kind = ?error.kind,
+                    "Downgrader root could not be validated"
+                );
+                Err(DowngraderServiceError::InvalidGameRoot {
+                    root: root.to_path_buf(),
+                    safe_message: error.user_message().to_owned(),
+                })
+            }
+        }
+    }
+
+    fn read_managed_file(
+        &self,
+        definition: DowngraderFileDefinition,
+        resolved_path: PathBuf,
+    ) -> DowngraderStatusFile {
+        let probe = self.read_crc(&resolved_path);
+        let (status, crc32, read_error) = match probe {
+            CrcProbe::Readable { crc32 } => (
+                definition
+                    .status_for_crc(&crc32)
+                    .unwrap_or(DowngraderInstallStatus::Unknown),
+                Some(crc32),
+                None,
+            ),
+            CrcProbe::Missing => (DowngraderInstallStatus::NotFound, None, None),
+            CrcProbe::Unreadable { safe_message } => {
+                (DowngraderInstallStatus::Unknown, None, Some(safe_message))
+            }
+        };
+        DowngraderStatusFile {
+            relative_path: definition.relative_path,
+            display_name: definition.display_name,
+            group: definition.group,
+            detected_status: status,
+            display_status: status,
+            crc32,
+            resolved_path,
+            read_error,
+        }
+    }
+
+    fn plan_row(
+        &self,
+        definition: DowngraderFileDefinition,
+        status_row: &DowngraderStatusFile,
+        options: DowngraderOptionsSnapshot,
+    ) -> DowngraderPreviewPlanRow {
+        let base_plan =
+            DowngraderPlanRow::from_definition(definition, status_row.detected_status, options);
+        let mut row = DowngraderPreviewPlanRow {
+            plan: base_plan,
+            display_status: status_row.display_status,
+            current_crc32: status_row.crc32.clone(),
+            current_path: status_row.resolved_path.clone(),
+            desired_backup: None,
+            current_backup: None,
+            steps: Vec::new(),
+            failure: None,
+        };
+
+        match row.plan.action {
+            DowngraderPlanAction::SkipAlreadyDesired => {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::SkipAlreadyDesired,
+                    skipped_already_message(
+                        row.plan.display_name,
+                        row.plan.target.desired_status(),
+                    ),
+                ));
+                return row;
+            }
+            DowngraderPlanAction::SkipNotFound => {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::SkipNotFound,
+                    skipped_not_found_message(row.plan.display_name),
+                ));
+                return row;
+            }
+            DowngraderPlanAction::SkipUnsupportedVersion => {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::SkipUnsupportedVersion,
+                    skipped_unsupported_message(row.plan.display_name),
+                ));
+                return row;
+            }
+            DowngraderPlanAction::ValidateBackupOrPatch => {}
+        }
+
+        if status_row.read_error.is_some() {
+            fail_row(&mut row, CURRENT_FILE_READ_FAILURE_MESSAGE);
+            return row;
+        }
+
+        let Some(current_crc32) = row.current_crc32.clone() else {
+            fail_row(&mut row, CURRENT_FILE_READ_FAILURE_MESSAGE);
+            return row;
+        };
+
+        if !crc_is_supported_source_for_target(&current_crc32, row.plan.target) {
+            row.steps.push(DowngraderPlanStep::new(
+                DowngraderPlanStepKind::SkipUnsupportedVersion,
+                skipped_unsupported_message(row.plan.display_name),
+            ));
+            debug!(
+                event = "downgrader-plan-unsupported-source",
+                relative_path = row.plan.relative_path,
+                crc32 = current_crc32,
+                target = row.plan.target.as_reference_str(),
+                "Downgrader source CRC is unsupported for target"
+            );
+            return row;
+        }
+
+        let current_backup_path = backup_path_for(&row.current_path, &row.plan.current_backup_name);
+        let desired_backup_path = backup_path_for(&row.current_path, &row.plan.desired_backup_name);
+        let current_backup =
+            self.probe_backup(current_backup_path, row.plan.current_backup_name.clone());
+        let desired_backup =
+            self.probe_backup(desired_backup_path, row.plan.desired_backup_name.clone());
+
+        if let Some(read_error) = current_backup.read_error.clone() {
+            row.current_backup = Some(current_backup);
+            row.desired_backup = Some(desired_backup);
+            fail_row(&mut row, read_error);
+            return row;
+        }
+        if let Some(read_error) = desired_backup.read_error.clone() {
+            row.current_backup = Some(current_backup);
+            row.desired_backup = Some(desired_backup);
+            fail_row(&mut row, read_error);
+            return row;
+        }
+
+        let current_backup_matches = current_backup
+            .crc32
+            .as_deref()
+            .is_some_and(|backup_crc| backup_crc.eq_ignore_ascii_case(&current_crc32));
+        if current_backup.exists {
+            if current_backup_matches {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::ReuseCurrentBackup,
+                    format!(
+                        "Use existing backup {} for {}.",
+                        row.plan.current_backup_name, row.plan.display_name
+                    ),
+                ));
+            } else {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::DeleteInvalidCurrentBackup,
+                    format!("Delete invalid backup {}.", row.plan.current_backup_name),
+                ));
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::CreateCurrentBackup,
+                    format!(
+                        "Create backup {} from {}.",
+                        row.plan.current_backup_name, row.plan.display_name
+                    ),
+                ));
+            }
+        } else {
+            row.steps.push(DowngraderPlanStep::new(
+                DowngraderPlanStepKind::CreateCurrentBackup,
+                format!(
+                    "Create backup {} from {}.",
+                    row.plan.current_backup_name, row.plan.display_name
+                ),
+            ));
+        }
+
+        let desired_backup_is_valid = desired_backup
+            .crc32
+            .as_deref()
+            .is_some_and(|backup_crc| crc_is_desired_target_for_plan(backup_crc, row.plan.target));
+        if desired_backup.exists && desired_backup_is_valid {
+            row.steps.push(DowngraderPlanStep::new(
+                DowngraderPlanStepKind::RestoreDesiredBackup,
+                format!(
+                    "Restore {} from {}.",
+                    row.plan.display_name, row.plan.desired_backup_name
+                ),
+            ));
+            if !options.keep_backups {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::DeleteCurrentBackup,
+                    format!(
+                        "Delete backup {} after restore.",
+                        row.plan.current_backup_name
+                    ),
+                ));
+            }
+        } else {
+            if desired_backup.exists {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::DeleteInvalidDesiredBackup,
+                    format!("Delete invalid backup {}.", row.plan.desired_backup_name),
+                ));
+            }
+            row.steps.push(DowngraderPlanStep::new(
+                DowngraderPlanStepKind::DownloadDelta,
+                format!("Download {}.", row.plan.patch_name),
+            ));
+            row.steps.push(DowngraderPlanStep::new(
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                format!(
+                    "Apply {} to {}.",
+                    row.plan.patch_name, row.plan.display_name
+                ),
+            ));
+            if !options.keep_backups {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::DeleteCurrentBackup,
+                    format!(
+                        "Delete backup {} after patch.",
+                        row.plan.current_backup_name
+                    ),
+                ));
+            }
+            if options.delete_deltas {
+                row.steps.push(DowngraderPlanStep::new(
+                    DowngraderPlanStepKind::DeleteDeltaPatch,
+                    format!("Delete patch {} after patching.", row.plan.patch_name),
+                ));
+            }
+        }
+
+        row.current_backup = Some(current_backup);
+        row.desired_backup = Some(desired_backup);
+        debug!(
+            event = "downgrader-plan-row",
+            relative_path = row.plan.relative_path,
+            target = row.plan.target.as_reference_str(),
+            step_count = row.steps.len(),
+            requires_download = row.requires_download(),
+            restores_from_backup = row.restores_from_backup(),
+            "Downgrader preview row planned"
+        );
+        row
+    }
+
+    fn probe_backup(&self, path: PathBuf, file_name: String) -> DowngraderBackupProbe {
+        match self.read_crc(&path) {
+            CrcProbe::Readable { crc32 } => DowngraderBackupProbe {
+                path,
+                file_name,
+                exists: true,
+                crc32: Some(crc32),
+                read_error: None,
+            },
+            CrcProbe::Missing => DowngraderBackupProbe::missing(path, file_name),
+            CrcProbe::Unreadable { safe_message } => DowngraderBackupProbe {
+                path,
+                file_name,
+                exists: true,
+                crc32: None,
+                read_error: Some(format!("{BACKUP_READ_FAILURE_MESSAGE} {safe_message}")),
+            },
+        }
+    }
+
+    fn read_crc(&self, path: &Path) -> CrcProbe {
+        match self.filesystem.metadata(path) {
+            Ok(metadata) if metadata.is_file() => self.read_crc_bytes(path),
+            Ok(_) => CrcProbe::Missing,
+            Err(error) if error.kind == PlatformErrorKind::NotFound => CrcProbe::Missing,
+            Err(error) => CrcProbe::Unreadable {
+                safe_message: error.user_message().to_owned(),
+            },
+        }
+    }
+
+    fn read_crc_bytes(&self, path: &Path) -> CrcProbe {
+        match self.filesystem.read_bytes(path) {
+            Ok(bytes) => CrcProbe::Readable {
+                crc32: crc32_hex(&bytes),
+            },
+            Err(error) if error.kind == PlatformErrorKind::NotFound => CrcProbe::Unreadable {
+                safe_message: error.user_message().to_owned(),
+            },
+            Err(error) => CrcProbe::Unreadable {
+                safe_message: error.user_message().to_owned(),
+            },
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum CrcProbe {
+    Readable { crc32: String },
+    Missing,
+    Unreadable { safe_message: String },
+}
+
+fn fail_row(row: &mut DowngraderPreviewPlanRow, safe_message: impl Into<String>) {
+    let safe_message = safe_message.into();
+    row.failure = Some(safe_message.clone());
+    row.steps.push(DowngraderPlanStep::new(
+        DowngraderPlanStepKind::PlanFailure,
+        format!("Cannot plan {}: {safe_message}", row.plan.display_name),
+    ));
+    warn!(
+        event = "downgrader-plan-row-failed",
+        relative_path = row.plan.relative_path,
+        safe_message,
+        "Downgrader preview row failed safely"
+    );
+}
+
+fn definition_for_status_row(
+    row: &DowngraderStatusFile,
+) -> Result<DowngraderFileDefinition, DowngraderServiceError> {
+    DOWNGRADER_FILE_DEFINITIONS
+        .iter()
+        .copied()
+        .find(|definition| definition.relative_path == row.relative_path)
+        .ok_or_else(|| DowngraderServiceError::UnsafeManagedPath {
+            relative_path: row.relative_path.to_owned(),
+            safe_message: UNSAFE_MANAGED_PATH_MESSAGE.to_owned(),
+        })
+}
+
+fn default_target_from_fallout4(status: DowngraderInstallStatus) -> DowngraderTarget {
+    if status == DowngraderInstallStatus::OldGen {
+        DowngraderTarget::OldGen
+    } else {
+        DowngraderTarget::NextGen
+    }
+}
+
+fn display_status_for(
+    relative_path: &str,
+    detected_status: DowngraderInstallStatus,
+    fallout4_status: DowngraderInstallStatus,
+) -> DowngraderInstallStatus {
+    if !relative_path.eq_ignore_ascii_case("steam_api64.dll")
+        || detected_status != DowngraderInstallStatus::NextGenAnniversary
+    {
+        return detected_status;
+    }
+
+    match fallout4_status {
+        DowngraderInstallStatus::Anniversary => DowngraderInstallStatus::Anniversary,
+        DowngraderInstallStatus::NextGen => DowngraderInstallStatus::NextGen,
+        _ => DowngraderInstallStatus::NextGenAnniversary,
+    }
+}
+
+fn crc_is_supported_source_for_target(crc32: &str, target: DowngraderTarget) -> bool {
+    accepted_source_crcs(target)
+        .iter()
+        .any(|accepted| accepted.eq_ignore_ascii_case(crc32))
+}
+
+fn crc_is_desired_target_for_plan(crc32: &str, target: DowngraderTarget) -> bool {
+    desired_target_crcs(target)
+        .iter()
+        .any(|accepted| accepted.eq_ignore_ascii_case(crc32))
+}
+
+fn accepted_source_crcs(target: DowngraderTarget) -> &'static Vec<&'static str> {
+    static OLD_GEN_TARGET_SOURCE_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    static NEXT_GEN_TARGET_SOURCE_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    match target {
+        DowngraderTarget::OldGen => OLD_GEN_TARGET_SOURCE_CRCS
+            .get_or_init(|| accepted_source_crcs_for_target(DowngraderTarget::OldGen)),
+        DowngraderTarget::NextGen => NEXT_GEN_TARGET_SOURCE_CRCS
+            .get_or_init(|| accepted_source_crcs_for_target(DowngraderTarget::NextGen)),
+    }
+}
+
+fn desired_target_crcs(target: DowngraderTarget) -> &'static Vec<&'static str> {
+    static OLD_GEN_TARGET_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    static NEXT_GEN_TARGET_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+    match target {
+        DowngraderTarget::OldGen => {
+            OLD_GEN_TARGET_CRCS.get_or_init(|| crcs_for_status(DowngraderInstallStatus::OldGen))
+        }
+        DowngraderTarget::NextGen => {
+            NEXT_GEN_TARGET_CRCS.get_or_init(|| crcs_for_status(DowngraderInstallStatus::NextGen))
+        }
+    }
+}
+
+fn backup_path_for(current_path: &Path, backup_name: &str) -> PathBuf {
+    current_path
+        .parent()
+        .map(|parent| parent.join(backup_name))
+        .unwrap_or_else(|| PathBuf::from(backup_name))
+}
+
+fn crc32_hex(bytes: &[u8]) -> String {
+    format!("{:08X}", crc32fast::hash(bytes))
+}
+
+fn validate_game_root_path(root: &Path) -> Result<(), DowngraderServiceError> {
+    let has_component = root.components().next().is_some();
+    let has_parent = root
+        .components()
+        .any(|component| matches!(component, Component::ParentDir));
+    if !has_component || has_parent {
+        warn!(
+            event = "downgrader-root-unsafe",
+            root = %root.display(),
+            "Downgrader rejected unsafe game root"
+        );
+        return Err(DowngraderServiceError::InvalidGameRoot {
+            root: root.to_path_buf(),
+            safe_message: UNSAFE_ROOT_MESSAGE.to_owned(),
+        });
+    }
+    Ok(())
+}
+
+fn validate_managed_definitions(root: &Path) -> Result<(), DowngraderServiceError> {
+    for definition in DOWNGRADER_FILE_DEFINITIONS {
+        resolve_managed_relative_path(root, definition.relative_path)?;
+    }
+    Ok(())
+}
+
+fn resolve_managed_relative_path(
+    root: &Path,
+    relative_path: &'static str,
+) -> Result<PathBuf, DowngraderServiceError> {
+    if relative_path.is_empty()
+        || relative_path.contains(':')
+        || Path::new(relative_path).is_absolute()
+        || Path::new(relative_path).components().any(|component| {
+            matches!(
+                component,
+                Component::Prefix(_) | Component::RootDir | Component::ParentDir
+            )
+        })
+    {
+        return unsafe_managed_path(relative_path);
+    }
+
+    let mut resolved = root.to_path_buf();
+    for segment in relative_path.split(['\\', '/']) {
+        if segment.is_empty() || segment == "." || segment == ".." {
+            return unsafe_managed_path(relative_path);
+        }
+        resolved.push(segment);
+    }
+
+    if !resolved.starts_with(root) {
+        return unsafe_managed_path(relative_path);
+    }
+    Ok(resolved)
+}
+
+fn unsafe_managed_path(relative_path: &'static str) -> Result<PathBuf, DowngraderServiceError> {
+    warn!(
+        event = "downgrader-managed-path-unsafe",
+        relative_path, "Downgrader rejected unsafe managed path"
+    );
+    Err(DowngraderServiceError::UnsafeManagedPath {
+        relative_path: relative_path.to_owned(),
+        safe_message: UNSAFE_MANAGED_PATH_MESSAGE.to_owned(),
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        cell::RefCell,
+        collections::BTreeMap,
+        path::{Path, PathBuf},
+    };
+
+    use crate::{
+        domain::{
+            discovery::Fallout4Installation,
+            downgrader::{
+                DowngraderInstallStatus, DowngraderOptionsSnapshot, DowngraderPlanStepKind,
+                DowngraderTarget,
+            },
+        },
+        platform::{
+            PlatformError, PlatformErrorKind, PlatformOperation,
+            filesystem::{DirectoryEntry, FileMetadata, FileType, Filesystem},
+        },
+    };
+
+    use super::*;
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    enum FakeNode {
+        File(Vec<u8>),
+        Directory,
+        UnreadableFile,
+    }
+
+    #[derive(Debug, Default, Clone)]
+    struct FakeFilesystem {
+        nodes: BTreeMap<PathBuf, FakeNode>,
+        metadata_reads: RefCell<Vec<PathBuf>>,
+        read_files: RefCell<Vec<PathBuf>>,
+    }
+
+    impl FakeFilesystem {
+        fn with_dir(mut self, path: impl Into<PathBuf>) -> Self {
+            self.nodes.insert(path.into(), FakeNode::Directory);
+            self
+        }
+
+        fn with_file(mut self, path: impl Into<PathBuf>, bytes: impl Into<Vec<u8>>) -> Self {
+            let path = path.into();
+            self.ensure_parent_dirs(&path);
+            self.nodes.insert(path, FakeNode::File(bytes.into()));
+            self
+        }
+
+        fn with_crc_file(self, path: impl Into<PathBuf>, crc32: &str) -> Self {
+            self.with_file(path, bytes_with_crc(crc32))
+        }
+
+        fn with_unreadable_file(mut self, path: impl Into<PathBuf>) -> Self {
+            let path = path.into();
+            self.ensure_parent_dirs(&path);
+            self.nodes.insert(path, FakeNode::UnreadableFile);
+            self
+        }
+
+        fn ensure_parent_dirs(&mut self, path: &Path) {
+            let mut parents = Vec::new();
+            let mut current = path.parent();
+            while let Some(parent) = current {
+                if parent.as_os_str().is_empty() {
+                    break;
+                }
+                parents.push(parent.to_path_buf());
+                current = parent.parent();
+            }
+            for parent in parents.into_iter().rev() {
+                self.nodes.entry(parent).or_insert(FakeNode::Directory);
+            }
+        }
+
+        fn node(
+            &self,
+            path: &Path,
+            operation: PlatformOperation,
+        ) -> Result<&FakeNode, PlatformError> {
+            self.nodes.get(path).ok_or_else(|| {
+                PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    format!("{} target was not found.", operation.label()),
+                )
+            })
+        }
+    }
+
+    fn safe_platform_error(
+        path: &Path,
+        operation: PlatformOperation,
+        kind: PlatformErrorKind,
+    ) -> PlatformError {
+        PlatformError::new(
+            operation,
+            path.display().to_string(),
+            kind,
+            format!(
+                "{} target could not be accessed because permission was denied.",
+                operation.label()
+            ),
+        )
+    }
+
+    impl Filesystem for FakeFilesystem {
+        fn metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
+            self.metadata_reads.borrow_mut().push(path.to_path_buf());
+            match self.node(path, PlatformOperation::ReadMetadata)? {
+                FakeNode::File(bytes) => Ok(FileMetadata {
+                    file_type: FileType::File,
+                    len: bytes.len() as u64,
+                }),
+                FakeNode::Directory => Ok(FileMetadata {
+                    file_type: FileType::Directory,
+                    len: 0,
+                }),
+                FakeNode::UnreadableFile => Ok(FileMetadata {
+                    file_type: FileType::File,
+                    len: 0,
+                }),
+            }
+        }
+
+        fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
+            self.read_files.borrow_mut().push(path.to_path_buf());
+            match self.node(path, PlatformOperation::ReadFile)? {
+                FakeNode::File(bytes) => Ok(bytes.clone()),
+                FakeNode::Directory => Err(PlatformError::new(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File read target is invalid.",
+                )),
+                FakeNode::UnreadableFile => Err(safe_platform_error(
+                    path,
+                    PlatformOperation::ReadFile,
+                    PlatformErrorKind::PermissionDenied,
+                )),
+            }
+        }
+
+        fn read_to_string(&self, path: &Path) -> Result<String, PlatformError> {
+            String::from_utf8(self.read_bytes(path)?).map_err(|error| {
+                PlatformError::parse_error(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    error.to_string(),
+                )
+            })
+        }
+
+        fn read_dir(&self, path: &Path) -> Result<Vec<DirectoryEntry>, PlatformError> {
+            self.node(path, PlatformOperation::ReadDirectory)?;
+            Ok(Vec::new())
+        }
+
+        fn walk_dir(&self, path: &Path) -> Result<Vec<DirectoryEntry>, PlatformError> {
+            self.node(path, PlatformOperation::WalkDirectory)?;
+            Ok(Vec::new())
+        }
+    }
+
+    fn installation() -> Fallout4Installation {
+        Fallout4Installation::new(game_root())
+    }
+
+    fn game_root() -> PathBuf {
+        PathBuf::from("Game")
+    }
+
+    fn options(
+        target: DowngraderTarget,
+        keep_backups: bool,
+        delete_deltas: bool,
+    ) -> DowngraderOptionsSnapshot {
+        DowngraderOptionsSnapshot::new(target, keep_backups, delete_deltas)
+    }
+
+    fn full_status_fs(fallout4_crc: &str) -> FakeFilesystem {
+        FakeFilesystem::default()
+            .with_dir(game_root())
+            .with_crc_file("Game/Fallout4.exe", fallout4_crc)
+            .with_crc_file("Game/Fallout4Launcher.exe", "F6A06FF5")
+            .with_crc_file("Game/steam_api64.dll", "E36E7B4D")
+            .with_crc_file("Game/CreationKit.exe", "481CCE95")
+            .with_crc_file("Game/Tools/Archive2/Archive2.exe", "71A5240B")
+            .with_crc_file("Game/Tools/Archive2/Archive2Interop.dll", "EFBE3622")
+    }
+
+    fn fallout4_next_gen_others_old_gen_fs() -> FakeFilesystem {
+        FakeFilesystem::default()
+            .with_dir(game_root())
+            .with_crc_file("Game/Fallout4.exe", "C5965A2E")
+            .with_crc_file("Game/Fallout4Launcher.exe", "02445570")
+            .with_crc_file("Game/steam_api64.dll", "BBD912FC")
+            .with_crc_file("Game/CreationKit.exe", "0F5C065B")
+            .with_crc_file("Game/Tools/Archive2/Archive2.exe", "4CDFC7B5")
+            .with_crc_file("Game/Tools/Archive2/Archive2Interop.dll", "850D36A9")
+    }
+
+    fn row_steps(row: &DowngraderPreviewPlanRow) -> Vec<DowngraderPlanStepKind> {
+        row.steps.iter().map(|step| step.kind).collect()
+    }
+
+    fn bytes_with_crc(hex: &str) -> Vec<u8> {
+        let target = u32::from_str_radix(hex, 16).expect("test CRC hex");
+        let base = crc32fast::hash(&[0, 0, 0, 0]);
+        let mut columns = [0_u32; 32];
+        for bit in 0..32 {
+            let mut suffix = [0_u8; 4];
+            suffix[bit / 8] = 1 << (bit % 8);
+            columns[bit] = crc32fast::hash(&suffix) ^ base;
+        }
+
+        let mut basis = [0_u32; 32];
+        let mut basis_vector = [0_u32; 32];
+        for (bit, column) in columns.into_iter().enumerate() {
+            let mut value = column;
+            let mut vector = 1_u32 << bit;
+            for pivot in (0..32).rev() {
+                if value & (1_u32 << pivot) == 0 {
+                    continue;
+                }
+                if basis[pivot] == 0 {
+                    basis[pivot] = value;
+                    basis_vector[pivot] = vector;
+                    break;
+                }
+                value ^= basis[pivot];
+                vector ^= basis_vector[pivot];
+            }
+        }
+
+        let mut remainder = base ^ target;
+        let mut solution = 0_u32;
+        for pivot in (0..32).rev() {
+            if remainder & (1_u32 << pivot) == 0 {
+                continue;
+            }
+            assert_ne!(basis[pivot], 0, "CRC matrix should be full rank");
+            remainder ^= basis[pivot];
+            solution ^= basis_vector[pivot];
+        }
+        assert_eq!(remainder, 0, "target CRC should be reachable by four bytes");
+
+        let mut suffix = [0_u8; 4];
+        for bit in 0..32 {
+            if solution & (1_u32 << bit) != 0 {
+                suffix[bit / 8] |= 1 << (bit % 8);
+            }
+        }
+        assert_eq!(crc32_hex(&suffix), hex.to_ascii_uppercase());
+        suffix.to_vec()
+    }
+
+    #[test]
+    fn downgrader_service_plan_status_classifies_rows_and_default_target() {
+        let fs = full_status_fs("C5965A2E");
+        let service = DowngraderService::new(&fs);
+
+        let snapshot = service
+            .status_snapshot(DowngraderStatusRequest::new(7, Some(&installation())))
+            .expect("status snapshot");
+
+        assert_eq!(snapshot.request_id, 7);
+        assert_eq!(snapshot.rows.len(), 6);
+        assert_eq!(snapshot.default_target, DowngraderTarget::NextGen);
+        assert_eq!(snapshot.rows[0].display_name, "Fallout4.exe");
+        assert_eq!(
+            snapshot.rows[5].relative_path,
+            "Tools\\Archive2\\Archive2Interop.dll"
+        );
+        assert_eq!(
+            snapshot
+                .status_for("Fallout4.exe")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::NextGen)
+        );
+        assert_eq!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::NextGenAnniversary)
+        );
+        assert_eq!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .map(|row| row.display_status),
+            Some(DowngraderInstallStatus::NextGen)
+        );
+        assert!(!snapshot.unknown_game);
+        assert!(!snapshot.unknown_creation_kit);
+
+        let old_gen = full_status_fs("C6053902");
+        let snapshot = DowngraderService::new(&old_gen)
+            .status_snapshot(DowngraderStatusRequest::new(8, Some(&installation())))
+            .expect("old-gen status snapshot");
+        assert_eq!(snapshot.default_target, DowngraderTarget::OldGen);
+        assert_eq!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .map(|row| row.display_status),
+            Some(DowngraderInstallStatus::NextGenAnniversary)
+        );
+
+        let anniversary = full_status_fs("CF47788D");
+        let snapshot = DowngraderService::new(&anniversary)
+            .status_snapshot(DowngraderStatusRequest::new(9, Some(&installation())))
+            .expect("anniversary status snapshot");
+        assert_eq!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .map(|row| row.display_status),
+            Some(DowngraderInstallStatus::Anniversary)
+        );
+        assert_eq!(snapshot.default_target, DowngraderTarget::NextGen);
+    }
+
+    #[test]
+    fn downgrader_service_plan_marks_missing_unknown_obsolete_and_anniversary_rows_safely() {
+        let fs = FakeFilesystem::default()
+            .with_dir(game_root())
+            .with_crc_file("Game/Fallout4.exe", "97DA3E03")
+            .with_file(
+                "Game/Fallout4Launcher.exe",
+                b"not a known launcher crc".to_vec(),
+            )
+            .with_unreadable_file("Game/steam_api64.dll")
+            .with_crc_file("Game/CreationKit.exe", "49E45284");
+        let service = DowngraderService::new(&fs);
+
+        let snapshot = service
+            .status_snapshot(DowngraderStatusRequest::new(10, Some(&installation())))
+            .expect("status snapshot");
+
+        assert_eq!(snapshot.rows.len(), 6);
+        assert_eq!(
+            snapshot
+                .status_for("Fallout4.exe")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::Obsolete)
+        );
+        assert_eq!(
+            snapshot
+                .status_for("Fallout4Launcher.exe")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::Unknown)
+        );
+        assert_eq!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::Unknown)
+        );
+        assert!(
+            snapshot
+                .status_for("steam_api64.dll")
+                .and_then(|row| row.read_error.as_deref())
+                .is_some_and(|message| message.contains("permission was denied"))
+        );
+        assert_eq!(
+            snapshot
+                .status_for("Archive2.exe")
+                .map(|row| row.detected_status),
+            Some(DowngraderInstallStatus::NotFound)
+        );
+        assert!(snapshot.unknown_game);
+        assert!(snapshot.unknown_creation_kit);
+    }
+
+    #[test]
+    fn downgrader_service_plan_builds_restore_from_valid_desired_backup() {
+        let fs = fallout4_next_gen_others_old_gen_fs()
+            .with_crc_file("Game/Fallout4_upgradeBackup.exe", "C6053902")
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E");
+        let before_nodes = fs.nodes.clone();
+        let service = DowngraderService::new(&fs);
+
+        let plan = service
+            .preview_plan(DowngraderPlanRequest::new(
+                11,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, false, false),
+            ))
+            .expect("preview plan");
+
+        let fallout = plan.rows.first().expect("Fallout4 plan row");
+        assert_eq!(
+            row_steps(fallout),
+            vec![
+                DowngraderPlanStepKind::ReuseCurrentBackup,
+                DowngraderPlanStepKind::RestoreDesiredBackup,
+                DowngraderPlanStepKind::DeleteCurrentBackup,
+            ]
+        );
+        assert!(fallout.restores_from_backup());
+        assert!(!fallout.requires_download());
+        assert_eq!(
+            fallout
+                .desired_backup
+                .as_ref()
+                .and_then(|probe| probe.crc32.as_deref()),
+            Some("C6053902")
+        );
+        assert!(plan.can_execute);
+        assert_eq!(plan.counts.restore_from_backup_rows, 1);
+        assert_eq!(
+            fs.nodes, before_nodes,
+            "preview planning must not mutate fake files"
+        );
+    }
+
+    #[test]
+    fn downgrader_service_plan_builds_invalid_backup_cleanup_download_patch_and_optional_cleanup() {
+        let fs = fallout4_next_gen_others_old_gen_fs()
+            .with_crc_file("Game/Fallout4_upgradeBackup.exe", "F6A06FF5")
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C6053902");
+        let service = DowngraderService::new(&fs);
+
+        let plan = service
+            .preview_plan(DowngraderPlanRequest::new(
+                12,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, false, true),
+            ))
+            .expect("preview plan");
+
+        let fallout = &plan.rows[0];
+        assert_eq!(
+            row_steps(fallout),
+            vec![
+                DowngraderPlanStepKind::DeleteInvalidCurrentBackup,
+                DowngraderPlanStepKind::CreateCurrentBackup,
+                DowngraderPlanStepKind::DeleteInvalidDesiredBackup,
+                DowngraderPlanStepKind::DownloadDelta,
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                DowngraderPlanStepKind::DeleteCurrentBackup,
+                DowngraderPlanStepKind::DeleteDeltaPatch,
+            ]
+        );
+        assert!(fallout.requires_download());
+        assert_eq!(plan.counts.delta_download_rows, 1);
+        assert_eq!(plan.counts.mutating_step_count, 7);
+        assert!(
+            fs.read_files
+                .borrow()
+                .iter()
+                .any(|path| path == &PathBuf::from("Game/Fallout4_upgradeBackup.exe")),
+            "plan should read desired backup CRC for accuracy"
+        );
+        assert!(
+            fs.read_files
+                .borrow()
+                .iter()
+                .all(|path| path.extension().and_then(|ext| ext.to_str()) != Some("xdelta")),
+            "preview must not read or download delta files"
+        );
+    }
+
+    #[test]
+    fn downgrader_service_plan_skips_reference_rows_in_order() {
+        let fs = FakeFilesystem::default()
+            .with_dir(game_root())
+            .with_crc_file("Game/Fallout4.exe", "C6053902")
+            .with_crc_file("Game/Fallout4Launcher.exe", "02445570")
+            .with_crc_file("Game/steam_api64.dll", "BBD912FC")
+            .with_crc_file("Game/CreationKit.exe", "49E45284")
+            .with_file(
+                "Game/Tools/Archive2/Archive2.exe",
+                b"unknown archive2".to_vec(),
+            );
+        let service = DowngraderService::new(&fs);
+
+        let plan = service
+            .preview_plan(DowngraderPlanRequest::new(
+                13,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, true, false),
+            ))
+            .expect("preview plan");
+
+        assert_eq!(
+            plan.rows
+                .iter()
+                .map(|row| row.plan.display_name)
+                .collect::<Vec<_>>(),
+            vec![
+                "Fallout4.exe",
+                "Fallout4Launcher.exe",
+                "steam_api64.dll",
+                "CreationKit.exe",
+                "Archive2.exe",
+                "Archive2Interop.dll",
+            ]
+        );
+        assert_eq!(
+            row_steps(&plan.rows[0]),
+            vec![DowngraderPlanStepKind::SkipAlreadyDesired]
+        );
+        assert_eq!(
+            row_steps(&plan.rows[3]),
+            vec![DowngraderPlanStepKind::SkipUnsupportedVersion]
+        );
+        assert_eq!(
+            row_steps(&plan.rows[4]),
+            vec![DowngraderPlanStepKind::SkipUnsupportedVersion]
+        );
+        assert_eq!(
+            row_steps(&plan.rows[5]),
+            vec![DowngraderPlanStepKind::SkipNotFound]
+        );
+        assert!(plan.can_execute);
+    }
+
+    #[test]
+    fn downgrader_service_plan_fails_row_when_current_or_backup_cannot_be_read() {
+        let fs = full_status_fs("C5965A2E")
+            .with_unreadable_file("Game/Fallout4_upgradeBackup.exe")
+            .with_unreadable_file("Game/Fallout4_downgradeBackup.exe");
+        let service = DowngraderService::new(&fs);
+
+        let plan = service
+            .preview_plan(DowngraderPlanRequest::new(
+                14,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, true, false),
+            ))
+            .expect("preview plan");
+        let fallout = &plan.rows[0];
+        assert_eq!(
+            row_steps(fallout),
+            vec![DowngraderPlanStepKind::PlanFailure]
+        );
+        assert!(
+            fallout
+                .failure
+                .as_deref()
+                .is_some_and(|failure| failure.contains(BACKUP_READ_FAILURE_MESSAGE))
+        );
+        assert!(!plan.can_execute);
+
+        let fs = FakeFilesystem::default()
+            .with_dir(game_root())
+            .with_unreadable_file("Game/Fallout4.exe");
+        let service = DowngraderService::new(&fs);
+        let plan = service
+            .preview_plan(DowngraderPlanRequest::new(
+                15,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, true, false),
+            ))
+            .expect("preview plan with unreadable current");
+        assert_eq!(
+            row_steps(&plan.rows[0]),
+            vec![DowngraderPlanStepKind::PlanFailure]
+        );
+        assert!(!plan.can_execute);
+    }
+
+    #[test]
+    fn downgrader_service_plan_rejects_missing_and_unsafe_roots() {
+        let fs = FakeFilesystem::default();
+        let service = DowngraderService::new(&fs);
+
+        let error = service
+            .status_snapshot(DowngraderStatusRequest::new(16, None))
+            .expect_err("missing installation should fail safely");
+        assert_eq!(error.user_message(), FALLOUT4_NOT_FOUND_MESSAGE);
+
+        let missing_installation = Fallout4Installation::new("MissingGame");
+        let error = service
+            .status_snapshot(DowngraderStatusRequest::new(
+                17,
+                Some(&missing_installation),
+            ))
+            .expect_err("missing root should fail safely");
+        assert_eq!(error.user_message(), FALLOUT4_NOT_FOUND_MESSAGE);
+
+        let unsafe_installation = Fallout4Installation::new("../Game");
+        let error = service
+            .status_snapshot(DowngraderStatusRequest::new(18, Some(&unsafe_installation)))
+            .expect_err("unsafe root should fail safely");
+        assert_eq!(error.user_message(), UNSAFE_ROOT_MESSAGE);
+    }
+
+    #[test]
+    fn downgrader_service_plan_rejects_escaping_managed_paths_before_output() {
+        let root = Path::new("Game");
+
+        assert!(resolve_managed_relative_path(root, "Tools\\Archive2\\Archive2.exe").is_ok());
+        let error = resolve_managed_relative_path(root, "..\\Fallout4.exe")
+            .expect_err("parent escape should be rejected");
+        assert_eq!(error.user_message(), UNSAFE_MANAGED_PATH_MESSAGE);
+        let error = resolve_managed_relative_path(root, "/Fallout4.exe")
+            .expect_err("absolute managed path should be rejected");
+        assert_eq!(error.user_message(), UNSAFE_MANAGED_PATH_MESSAGE);
+        let error = resolve_managed_relative_path(root, "C:\\Fallout4.exe")
+            .expect_err("drive-qualified managed path should be rejected");
+        assert_eq!(error.user_message(), UNSAFE_MANAGED_PATH_MESSAGE);
+    }
+}
