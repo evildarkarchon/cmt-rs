@@ -7,8 +7,14 @@
 //! request off the event loop, and feed owned worker events back through this
 //! reducer.
 
+use std::collections::BTreeMap;
+
 use crate::{
     domain::{
+        autofix::{
+            AutoFixButtonState, AutoFixCompletion, AutoFixOperationKey, AutoFixResultDetail,
+            AutoFixSelectionIdentity, AutoFixStatus, AutoFixStatusKind,
+        },
         scanner::{
             PROGRESS_REFRESHING_OVERVIEW_TEXT, SCAN_BUTTON_LABEL, SCANNING_BUTTON_LABEL,
             ScannerActionDescriptor, ScannerActionFeedback, ScannerActionKind, ScannerCategoryKind,
@@ -18,6 +24,7 @@ use crate::{
         },
         settings::ScannerSettings,
     },
+    services::autofix::AutoFixSupportCatalog,
     workers::{
         ScannerWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerProgress,
         WorkerSpawnError, WorkerTask, WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
@@ -26,8 +33,24 @@ use crate::{
 
 /// Stable prefix for S07 Scanner scan worker task identifiers.
 pub const SCANNER_SCAN_TASK_PREFIX: &str = "s07-scanner-scan:";
+/// Stable prefix for S08 Scanner Auto-Fix worker task identifiers.
+pub const SCANNER_AUTO_FIX_TASK_PREFIX: &str = "s08-scanner-autofix:";
 /// Safe status shown when a Scanner worker cannot be scheduled.
 pub const SCANNER_SCAN_START_FAILED_MESSAGE: &str = "Scanner scan could not be started.";
+/// Safe status shown when a Scanner Auto-Fix worker cannot be scheduled.
+pub const SCANNER_AUTO_FIX_START_FAILED_MESSAGE: &str = "Auto-Fix could not be started.";
+/// Safe status shown when Scanner Auto-Fix is invoked without a selected row.
+pub const SCANNER_AUTO_FIX_NO_SELECTION_MESSAGE: &str =
+    "Select a scanner result before using Auto-Fix.";
+/// Safe status shown when Scanner Auto-Fix is unavailable for the selected row.
+pub const SCANNER_AUTO_FIX_UNAVAILABLE_MESSAGE: &str = "Auto-Fix is not available for this result.";
+/// Safe status shown when Scanner Auto-Fix input no longer matches the visible scan.
+pub const SCANNER_AUTO_FIX_STALE_MESSAGE: &str =
+    "Auto-Fix could not run because the scan results changed. Scan again and retry.";
+/// Safe status shown while a Scanner Auto-Fix operation is executing.
+pub const SCANNER_AUTO_FIX_RUNNING_MESSAGE: &str = "Auto-Fix is running...";
+/// Safe status shown when a Scanner Auto-Fix worker reports failure without text.
+pub const SCANNER_AUTO_FIX_FAILED_MESSAGE: &str = "Auto-Fix could not complete this operation.";
 /// Safe status shown when every scanner checkbox is disabled.
 pub const SCANNER_NO_ENABLED_CATEGORIES_MESSAGE: &str = "No scanner categories are enabled.";
 /// Safe generic text for invalid or unavailable scanner actions.
@@ -95,6 +118,105 @@ impl ScannerScanWorkerRequest {
     }
 }
 
+/// Work request returned by accepted Scanner Auto-Fix intents and consumed by worker wiring.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannerAutoFixWorkerRequest {
+    /// Scan id the selected result belonged to when the request was accepted.
+    pub scan_id: ScannerScanId,
+    /// Flat scanner result index selected by the UI.
+    pub result_index: usize,
+    /// Identity captured from the selected result at request time.
+    pub selection_identity: AutoFixSelectionIdentity,
+    /// Typed operation key resolved from retained scanner solution identity.
+    pub operation_key: AutoFixOperationKey,
+    /// Worker task metadata that must accompany lifecycle events.
+    pub task: WorkerTask,
+}
+
+impl ScannerAutoFixWorkerRequest {
+    /// Creates an owned Auto-Fix worker request for the selected Scanner result.
+    pub fn new(
+        scan_id: ScannerScanId,
+        result_index: usize,
+        selection_identity: AutoFixSelectionIdentity,
+        operation_key: AutoFixOperationKey,
+    ) -> Self {
+        Self {
+            scan_id,
+            result_index,
+            selection_identity,
+            operation_key,
+            task: scanner_auto_fix_task(scan_id, result_index, operation_key),
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+struct ScannerAutoFixResultKey {
+    scan_id: ScannerScanId,
+    result_index: usize,
+    selection_identity: AutoFixSelectionIdentity,
+}
+
+impl ScannerAutoFixResultKey {
+    fn new(
+        scan_id: ScannerScanId,
+        result_index: usize,
+        selection_identity: AutoFixSelectionIdentity,
+    ) -> Self {
+        Self {
+            scan_id,
+            result_index,
+            selection_identity,
+        }
+    }
+}
+
+/// Render-ready Auto-Fix state for the currently selected Scanner result.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannerAutoFixRenderState {
+    /// Scan id the selected result belongs to.
+    pub scan_id: ScannerScanId,
+    /// Flat scanner result index selected by the UI.
+    pub result_index: usize,
+    /// Typed operation key resolved without display-string matching.
+    pub operation_key: AutoFixOperationKey,
+    /// Selected result identity used to reject stale/tampered events.
+    pub selection_identity: AutoFixSelectionIdentity,
+    /// Render-ready button state.
+    pub button: AutoFixButtonState,
+    /// Last safe status for this Auto-Fix lifecycle.
+    pub status: AutoFixStatus,
+    /// Inline `Auto-Fix Results` details shown after completion or failure.
+    pub result_detail: Option<AutoFixResultDetail>,
+    /// Whether this row should render as fixed.
+    pub row_fixed: bool,
+    /// Whether this row should render the checked state.
+    pub row_checked: bool,
+}
+
+impl ScannerAutoFixRenderState {
+    fn ready(
+        scan_id: ScannerScanId,
+        result_index: usize,
+        operation_key: AutoFixOperationKey,
+        selection_identity: AutoFixSelectionIdentity,
+        safe_preview: impl Into<String>,
+    ) -> Self {
+        Self {
+            scan_id,
+            result_index,
+            operation_key,
+            selection_identity,
+            button: AutoFixButtonState::from_status(AutoFixStatusKind::Ready),
+            status: AutoFixStatus::new(AutoFixStatusKind::Ready, safe_preview),
+            result_detail: None,
+            row_fixed: false,
+            row_checked: false,
+        }
+    }
+}
+
 /// Render-ready detail state for the currently selected scanner result.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScannerSelectedDetail {
@@ -110,10 +232,16 @@ pub struct ScannerSelectedDetail {
     pub actions: Vec<ScannerActionDescriptor>,
     /// Optional file-list metadata attached to the selected result.
     pub file_list: Option<ScannerFileList>,
+    /// Auto-Fix state exposed only when the typed solution is supported.
+    pub auto_fix: Option<ScannerAutoFixRenderState>,
 }
 
 impl ScannerSelectedDetail {
-    fn from_result(result_index: usize, result: &ScannerResult) -> Self {
+    fn from_result(
+        result_index: usize,
+        result: &ScannerResult,
+        auto_fix: Option<ScannerAutoFixRenderState>,
+    ) -> Self {
         Self {
             result_index,
             tree_label: result.tree_label.clone(),
@@ -121,6 +249,7 @@ impl ScannerSelectedDetail {
             copy_details_text: result.copy_details_text(true),
             actions: result.read_only_actions(),
             file_list: result.file_list.clone(),
+            auto_fix,
         }
     }
 
@@ -136,6 +265,8 @@ impl ScannerSelectedDetail {
 #[derive(Debug, Clone, PartialEq)]
 pub struct ScannerController {
     settings: ScannerSettings,
+    auto_fix_support_catalog: AutoFixSupportCatalog,
+    auto_fix_states: BTreeMap<ScannerAutoFixResultKey, ScannerAutoFixRenderState>,
     phase: ScannerControllerPhase,
     next_scan_id: ScannerScanId,
     active_scan_id: Option<ScannerScanId>,
@@ -163,9 +294,23 @@ impl Default for ScannerController {
 impl ScannerController {
     /// Creates an idle Scanner controller from the current visible scanner settings.
     pub fn new(settings: ScannerSettings) -> Self {
+        Self::with_auto_fix_support_catalog(settings, AutoFixSupportCatalog::empty())
+    }
+
+    /// Creates an idle Scanner controller with an injected Auto-Fix support catalog.
+    ///
+    /// Production should use [`Self::new`], which preserves the reference app's empty
+    /// Auto-Fix registry. Tests and future worker wiring can inject a fake catalog
+    /// without passing operation closures or filesystem adapters into the controller.
+    pub fn with_auto_fix_support_catalog(
+        settings: ScannerSettings,
+        auto_fix_support_catalog: AutoFixSupportCatalog,
+    ) -> Self {
         let scan_enabled = any_scanner_category_enabled(&settings);
         Self {
             settings,
+            auto_fix_support_catalog,
+            auto_fix_states: BTreeMap::new(),
             phase: ScannerControllerPhase::Idle,
             next_scan_id: 1,
             active_scan_id: None,
@@ -299,6 +444,29 @@ impl ScannerController {
         self.last_action_feedback.as_ref()
     }
 
+    /// Returns the injected closure-free Auto-Fix support catalog.
+    pub fn auto_fix_support_catalog(&self) -> &AutoFixSupportCatalog {
+        &self.auto_fix_support_catalog
+    }
+
+    /// Returns Auto-Fix state for the currently selected result, if visible.
+    pub fn selected_auto_fix(&self) -> Option<&ScannerAutoFixRenderState> {
+        self.selected_detail
+            .as_ref()
+            .and_then(|detail| detail.auto_fix.as_ref())
+    }
+
+    /// Returns tracked Auto-Fix state for a current flat result row.
+    pub fn auto_fix_state_for_result(
+        &self,
+        result_index: usize,
+    ) -> Option<&ScannerAutoFixRenderState> {
+        let result = self.results.get(result_index)?;
+        let scan_id = self.latest_scan_id?;
+        let key = ScannerAutoFixResultKey::new(scan_id, result_index, result.selection_identity());
+        self.auto_fix_states.get(&key)
+    }
+
     /// Applies a transient checkbox toggle without persisting settings.
     pub fn toggle_category(
         &mut self,
@@ -363,6 +531,7 @@ impl ScannerController {
         self.clear_selection();
         self.results.clear();
         self.groups.clear();
+        self.auto_fix_states.clear();
         self.result_count_text = scanner_result_count_text(0);
         self.last_action_feedback = None;
 
@@ -466,6 +635,7 @@ impl ScannerController {
         self.result_count_text = snapshot.result_count_text;
         self.results = snapshot.results;
         self.groups = snapshot.groups;
+        self.auto_fix_states.clear();
         self.clear_selection();
 
         tracing::info!(
@@ -534,7 +704,7 @@ impl ScannerController {
 
     /// Selects a flat result row and prepares details/actions; missing rows clear details safely.
     pub fn select_result(&mut self, result_index: usize) -> ScannerTransitionResult {
-        let Some(result) = self.results.get(result_index) else {
+        let Some(result) = self.results.get(result_index).cloned() else {
             self.clear_selection();
             tracing::debug!(
                 event = "s07-scanner-selection-cleared",
@@ -544,7 +714,12 @@ impl ScannerController {
             return ScannerTransitionResult::Applied;
         };
 
-        self.selected_detail = Some(ScannerSelectedDetail::from_result(result_index, result));
+        let auto_fix = self.auto_fix_state_for_selection(result_index, &result);
+        self.selected_detail = Some(ScannerSelectedDetail::from_result(
+            result_index,
+            &result,
+            auto_fix,
+        ));
         self.file_list_visible = false;
         self.visible_file_list = None;
         tracing::debug!(
@@ -556,9 +731,375 @@ impl ScannerController {
                 .as_ref()
                 .map(|detail| detail.actions.len())
                 .unwrap_or_default(),
+            auto_fix_visible = self.selected_auto_fix().is_some(),
             "Scanner result selected"
         );
         ScannerTransitionResult::Applied
+    }
+
+    /// Requests Auto-Fix for the selected supported Scanner result.
+    ///
+    /// The controller performs only state transition and stale/tamper checks. The
+    /// returned owned request is safe to move to a worker; operation execution stays
+    /// outside this reducer.
+    pub fn request_selected_auto_fix(&mut self) -> Option<ScannerAutoFixWorkerRequest> {
+        tracing::info!(
+            event = "s08-scanner-autofix-requested",
+            latest_scan_id = ?self.latest_scan_id,
+            selected_result_index = ?self.selected_detail.as_ref().map(|detail| detail.result_index),
+            "Scanner Auto-Fix requested"
+        );
+
+        let Some(selected_auto_fix) = self.selected_auto_fix().cloned() else {
+            let reason = if self.selected_detail.is_some() {
+                "unsupported-or-missing-support"
+            } else {
+                "no-selection"
+            };
+            let message = if self.selected_detail.is_some() {
+                SCANNER_AUTO_FIX_UNAVAILABLE_MESSAGE
+            } else {
+                SCANNER_AUTO_FIX_NO_SELECTION_MESSAGE
+            };
+            self.reject_auto_fix_request(reason, message, None, None, None, None);
+            return None;
+        };
+
+        let scan_id = selected_auto_fix.scan_id;
+        let result_index = selected_auto_fix.result_index;
+        let operation_key = selected_auto_fix.operation_key;
+        let selection_identity = selected_auto_fix.selection_identity.clone();
+
+        if self.latest_scan_id != Some(scan_id) {
+            self.reject_auto_fix_request(
+                "scan-mismatch",
+                SCANNER_AUTO_FIX_STALE_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(selection_identity),
+            );
+            return None;
+        }
+
+        let Some(result) = self.results.get(result_index) else {
+            self.reject_auto_fix_request(
+                "result-missing",
+                SCANNER_AUTO_FIX_STALE_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(selection_identity),
+            );
+            return None;
+        };
+
+        let current_identity = result.selection_identity();
+        if current_identity != selection_identity {
+            self.reject_auto_fix_request(
+                "identity-mismatch",
+                SCANNER_AUTO_FIX_STALE_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(selection_identity),
+            );
+            return None;
+        }
+
+        if result.auto_fix_operation_key() != Some(operation_key) {
+            self.reject_auto_fix_request(
+                "operation-mismatch",
+                SCANNER_AUTO_FIX_UNAVAILABLE_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(current_identity),
+            );
+            return None;
+        }
+
+        if self
+            .auto_fix_support_catalog
+            .support_for_key(operation_key)
+            .is_none()
+        {
+            self.reject_auto_fix_request(
+                "missing-support",
+                SCANNER_AUTO_FIX_UNAVAILABLE_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(current_identity),
+            );
+            return None;
+        }
+
+        let key = ScannerAutoFixResultKey::new(scan_id, result_index, current_identity.clone());
+        let state = self
+            .auto_fix_states
+            .entry(key.clone())
+            .or_insert_with(|| selected_auto_fix.clone());
+        state.button = AutoFixButtonState::from_status(AutoFixStatusKind::Fixing);
+        state.status =
+            AutoFixStatus::new(AutoFixStatusKind::Fixing, SCANNER_AUTO_FIX_RUNNING_MESSAGE);
+        state.result_detail = None;
+        state.row_fixed = false;
+        state.row_checked = false;
+        self.status_text = SCANNER_AUTO_FIX_RUNNING_MESSAGE.to_owned();
+        self.sync_selected_auto_fix_state(&key);
+
+        let request = ScannerAutoFixWorkerRequest::new(
+            scan_id,
+            result_index,
+            current_identity,
+            operation_key,
+        );
+        tracing::info!(
+            event = "s08-scanner-autofix-scheduled",
+            scan_id,
+            result_index,
+            operation_key = %operation_key.as_id(),
+            task_id = %request.task.id,
+            "Scanner Auto-Fix worker request prepared"
+        );
+        tracing::debug!(
+            event = "s08-scanner-autofix-fixing",
+            scan_id,
+            result_index,
+            operation_key = %operation_key.as_id(),
+            "Scanner Auto-Fix state moved to Fixing"
+        );
+        Some(request)
+    }
+
+    /// Applies a completed Auto-Fix payload when it still matches the selected result.
+    pub fn auto_fix_completed(&mut self, completion: AutoFixCompletion) -> ScannerTransitionResult {
+        let Some(scan_id) = completion.scan_id else {
+            return self.auto_fix_stale_ignored(
+                "missing-scan-id",
+                None,
+                completion.result_index,
+                Some(completion.operation_key),
+            );
+        };
+        let Some(result_index) = completion.result_index else {
+            return self.auto_fix_stale_ignored(
+                "missing-result-index",
+                Some(scan_id),
+                None,
+                Some(completion.operation_key),
+            );
+        };
+        let operation_key = completion.operation_key;
+
+        let Some(selected_auto_fix) = self.selected_auto_fix().cloned() else {
+            return self.auto_fix_stale_ignored(
+                "selection-missing",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        };
+        if self.latest_scan_id != Some(scan_id)
+            || selected_auto_fix.scan_id != scan_id
+            || selected_auto_fix.result_index != result_index
+            || selected_auto_fix.operation_key != operation_key
+            || selected_auto_fix.selection_identity != completion.selection_identity
+        {
+            return self.auto_fix_stale_ignored(
+                "selection-mismatch",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        }
+
+        let Some(result) = self.results.get(result_index) else {
+            return self.auto_fix_stale_ignored(
+                "result-missing",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        };
+        let current_identity = result.selection_identity();
+        if current_identity != completion.selection_identity
+            || result.auto_fix_operation_key() != Some(operation_key)
+            || self
+                .auto_fix_support_catalog
+                .support_for_key(operation_key)
+                .is_none()
+        {
+            return self.auto_fix_stale_ignored(
+                "result-mismatch",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        }
+
+        let key = ScannerAutoFixResultKey::new(scan_id, result_index, current_identity);
+        let fixed = completion.status.kind == AutoFixStatusKind::Fixed;
+        let kind = if fixed {
+            AutoFixStatusKind::Fixed
+        } else {
+            AutoFixStatusKind::Failed
+        };
+        let mut status = completion.status.clone();
+        status.kind = kind;
+        let state = ScannerAutoFixRenderState {
+            scan_id,
+            result_index,
+            operation_key,
+            selection_identity: completion.selection_identity,
+            button: AutoFixButtonState::from_status(kind),
+            status: status.clone(),
+            result_detail: Some(completion.detail.clone()),
+            row_fixed: fixed,
+            row_checked: fixed,
+        };
+        self.auto_fix_states.insert(key.clone(), state);
+        self.status_text = status.safe_message.clone();
+        self.sync_selected_auto_fix_state(&key);
+
+        if fixed {
+            tracing::info!(
+                event = "s08-scanner-autofix-completed",
+                scan_id,
+                result_index,
+                operation_key = %operation_key.as_id(),
+                safe_message = %status.safe_message,
+                "Scanner Auto-Fix completed"
+            );
+        } else {
+            tracing::warn!(
+                event = "s08-scanner-autofix-failed",
+                scan_id,
+                result_index,
+                operation_key = %operation_key.as_id(),
+                safe_message = %status.safe_message,
+                diagnostic = status.diagnostic.as_deref().unwrap_or(""),
+                "Scanner Auto-Fix completed with failure"
+            );
+        }
+        ScannerTransitionResult::Applied
+    }
+
+    /// Maps a worker failure into Fix Failed feedback for a matching Auto-Fix task.
+    pub fn auto_fix_worker_failed(
+        &mut self,
+        scan_id: ScannerScanId,
+        result_index: usize,
+        operation_key: AutoFixOperationKey,
+        failure: WorkerFailure,
+    ) -> ScannerTransitionResult {
+        let Some(selected_auto_fix) = self.selected_auto_fix().cloned() else {
+            return self.auto_fix_stale_ignored(
+                "selection-missing",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        };
+        if self.latest_scan_id != Some(scan_id)
+            || selected_auto_fix.scan_id != scan_id
+            || selected_auto_fix.result_index != result_index
+            || selected_auto_fix.operation_key != operation_key
+        {
+            return self.auto_fix_stale_ignored(
+                "selection-mismatch",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        }
+        let Some(result) = self.results.get(result_index) else {
+            return self.auto_fix_stale_ignored(
+                "result-missing",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        };
+        let current_identity = result.selection_identity();
+        if current_identity != selected_auto_fix.selection_identity
+            || result.auto_fix_operation_key() != Some(operation_key)
+        {
+            return self.auto_fix_stale_ignored(
+                "result-mismatch",
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+            );
+        }
+
+        let safe_message = if failure.safe_message().is_empty() {
+            SCANNER_AUTO_FIX_FAILED_MESSAGE.to_owned()
+        } else {
+            failure.safe_message().to_owned()
+        };
+        let status = match failure.diagnostic.clone() {
+            Some(diagnostic) => AutoFixStatus::new(AutoFixStatusKind::Failed, safe_message.clone())
+                .with_diagnostic(diagnostic),
+            None => AutoFixStatus::new(AutoFixStatusKind::Failed, safe_message.clone()),
+        };
+        let detail = match failure.diagnostic.clone() {
+            Some(diagnostic) => {
+                AutoFixResultDetail::new(safe_message.clone(), safe_message.clone())
+                    .with_diagnostic(diagnostic)
+            }
+            None => AutoFixResultDetail::new(safe_message.clone(), safe_message.clone()),
+        };
+        let key = ScannerAutoFixResultKey::new(scan_id, result_index, current_identity);
+        let state = ScannerAutoFixRenderState {
+            scan_id,
+            result_index,
+            operation_key,
+            selection_identity: selected_auto_fix.selection_identity,
+            button: AutoFixButtonState::from_status(AutoFixStatusKind::Failed),
+            status: status.clone(),
+            result_detail: Some(detail),
+            row_fixed: false,
+            row_checked: false,
+        };
+        self.auto_fix_states.insert(key.clone(), state);
+        self.status_text = safe_message;
+        self.sync_selected_auto_fix_state(&key);
+        tracing::warn!(
+            event = "s08-scanner-autofix-failed",
+            scan_id,
+            result_index,
+            operation_key = %operation_key.as_id(),
+            safe_message = %status.safe_message,
+            diagnostic = status.diagnostic.as_deref().unwrap_or(""),
+            "Scanner Auto-Fix worker failed"
+        );
+        ScannerTransitionResult::Applied
+    }
+
+    /// Maps a worker spawn failure into safe Auto-Fix failure feedback.
+    pub fn auto_fix_spawn_failed(
+        &mut self,
+        request: &ScannerAutoFixWorkerRequest,
+        error: WorkerSpawnError,
+    ) -> ScannerTransitionResult {
+        tracing::error!(
+            event = "s08-scanner-autofix-worker-spawn-failed",
+            scan_id = request.scan_id,
+            result_index = request.result_index,
+            operation_key = %request.operation_key.as_id(),
+            task_id = %request.task.id,
+            diagnostic = %error,
+            "Scanner Auto-Fix worker could not be scheduled"
+        );
+        self.auto_fix_worker_failed(
+            request.scan_id,
+            request.result_index,
+            request.operation_key,
+            WorkerFailure::new(SCANNER_AUTO_FIX_START_FAILED_MESSAGE)
+                .with_diagnostic(error.to_string()),
+        )
     }
 
     /// Returns an enabled selected action for a stable action id, recording safe feedback if absent.
@@ -692,6 +1233,16 @@ impl ScannerController {
                     None => ScannerTransitionResult::Ignored,
                 }
             }
+            WorkerPayload::Error(failure)
+                if task.kind == WorkerTaskKind::Patch && status == WorkerTaskStatus::Failed =>
+            {
+                match scanner_auto_fix_task_parts(&task.id) {
+                    Some((scan_id, result_index, operation_key)) => {
+                        self.auto_fix_worker_failed(scan_id, result_index, operation_key, failure)
+                    }
+                    None => ScannerTransitionResult::Ignored,
+                }
+            }
             WorkerPayload::None
                 if task.kind == WorkerTaskKind::Scan && status == WorkerTaskStatus::Running =>
             {
@@ -723,8 +1274,115 @@ impl ScannerController {
             {
                 self.action_completed(feedback)
             }
+            ScannerWorkerPayload::AutoFixCompleted { completion }
+                if task.kind == WorkerTaskKind::Patch && status == WorkerTaskStatus::Completed =>
+            {
+                match scanner_auto_fix_task_parts(&task.id) {
+                    Some((scan_id, result_index, operation_key))
+                        if completion.scan_id == Some(scan_id)
+                            && completion.result_index == Some(result_index)
+                            && completion.operation_key == operation_key =>
+                    {
+                        self.auto_fix_completed(*completion)
+                    }
+                    Some((scan_id, result_index, operation_key)) => self.auto_fix_stale_ignored(
+                        "task-payload-mismatch",
+                        Some(scan_id),
+                        Some(result_index),
+                        Some(operation_key),
+                    ),
+                    None => ScannerTransitionResult::Ignored,
+                }
+            }
             _ => ScannerTransitionResult::Ignored,
         }
+    }
+
+    fn auto_fix_state_for_selection(
+        &mut self,
+        result_index: usize,
+        result: &ScannerResult,
+    ) -> Option<ScannerAutoFixRenderState> {
+        let scan_id = self.latest_scan_id?;
+        let operation_support = self
+            .auto_fix_support_catalog
+            .support_for_result(result)?
+            .clone();
+        let selection_identity = result.selection_identity();
+        let key = ScannerAutoFixResultKey::new(scan_id, result_index, selection_identity.clone());
+        if let Some(state) = self.auto_fix_states.get(&key) {
+            return Some(state.clone());
+        }
+
+        let state = ScannerAutoFixRenderState::ready(
+            scan_id,
+            result_index,
+            operation_support.operation_key,
+            selection_identity,
+            operation_support.safe_preview,
+        );
+        self.auto_fix_states.insert(key, state.clone());
+        Some(state)
+    }
+
+    fn reject_auto_fix_request(
+        &mut self,
+        reason: &'static str,
+        safe_message: &'static str,
+        scan_id: Option<ScannerScanId>,
+        result_index: Option<usize>,
+        operation_key: Option<AutoFixOperationKey>,
+        selection_identity: Option<AutoFixSelectionIdentity>,
+    ) {
+        self.status_text = safe_message.to_owned();
+        let operation_id = operation_key
+            .map(AutoFixOperationKey::as_id)
+            .unwrap_or("unknown");
+        tracing::warn!(
+            event = "s08-scanner-autofix-rejected",
+            scan_id = ?scan_id,
+            result_index = ?result_index,
+            operation_key = %operation_id,
+            reason,
+            safe_message,
+            identity = selection_identity.as_ref().map(AutoFixSelectionIdentity::as_str).unwrap_or(""),
+            "Scanner Auto-Fix request rejected"
+        );
+    }
+
+    fn sync_selected_auto_fix_state(&mut self, key: &ScannerAutoFixResultKey) {
+        let Some(detail) = self.selected_detail.as_mut() else {
+            return;
+        };
+        if detail.result_index != key.result_index {
+            return;
+        }
+        if let Some(state) = self.auto_fix_states.get(key).cloned() {
+            detail.auto_fix = Some(state);
+        }
+    }
+
+    fn auto_fix_stale_ignored(
+        &self,
+        reason: &'static str,
+        scan_id: Option<ScannerScanId>,
+        result_index: Option<usize>,
+        operation_key: Option<AutoFixOperationKey>,
+    ) -> ScannerTransitionResult {
+        let operation_id = operation_key
+            .map(AutoFixOperationKey::as_id)
+            .unwrap_or("unknown");
+        tracing::debug!(
+            event = "s08-scanner-autofix-stale-ignored",
+            scan_id = ?scan_id,
+            result_index = ?result_index,
+            operation_key = %operation_id,
+            reason,
+            latest_scan_id = ?self.latest_scan_id,
+            selected_result_index = ?self.selected_detail.as_ref().map(|detail| detail.result_index),
+            "Ignoring stale Scanner Auto-Fix event"
+        );
+        ScannerTransitionResult::StaleIgnored
     }
 
     fn is_active_scan(&self, scan_id: ScannerScanId) -> bool {
@@ -747,6 +1405,27 @@ pub fn scanner_scan_task(scan_id: ScannerScanId) -> WorkerTask {
     .with_label("Scan Game")
 }
 
+/// Builds worker metadata for a blocking Scanner Auto-Fix operation.
+pub fn scanner_auto_fix_task(
+    scan_id: ScannerScanId,
+    result_index: usize,
+    operation_key: AutoFixOperationKey,
+) -> WorkerTask {
+    WorkerTask::new(
+        format!(
+            "{SCANNER_AUTO_FIX_TASK_PREFIX}{scan_id}:{result_index}:{}",
+            operation_key.as_id()
+        ),
+        WorkerTaskKind::Patch,
+    )
+    .with_label("Scanner Auto-Fix")
+}
+
+/// Converts a completed Auto-Fix result into the Scanner worker payload shape.
+pub fn scanner_auto_fix_completed_payload(completion: AutoFixCompletion) -> WorkerPayload {
+    WorkerPayload::Scanner(ScannerWorkerPayload::auto_fix_completed(completion))
+}
+
 /// Converts a completed scan snapshot into the Scanner worker payload shape.
 pub fn scanner_scan_completed_payload(
     scan_id: ScannerScanId,
@@ -766,6 +1445,23 @@ pub fn scanner_scan_id_from_task_id(task_id: &WorkerTaskId) -> Option<ScannerSca
         .as_str()
         .strip_prefix(SCANNER_SCAN_TASK_PREFIX)
         .and_then(|value| value.parse::<ScannerScanId>().ok())
+}
+
+/// Parses S08 Scanner Auto-Fix task identity from a worker task id.
+pub fn scanner_auto_fix_task_parts(
+    task_id: &WorkerTaskId,
+) -> Option<(ScannerScanId, usize, AutoFixOperationKey)> {
+    let value = task_id
+        .as_str()
+        .strip_prefix(SCANNER_AUTO_FIX_TASK_PREFIX)?;
+    let mut parts = value.split(':');
+    let scan_id = parts.next()?.parse::<ScannerScanId>().ok()?;
+    let result_index = parts.next()?.parse::<usize>().ok()?;
+    let operation_key = AutoFixOperationKey::from_id(parts.next()?)?;
+    if parts.next().is_some() {
+        return None;
+    }
+    Some((scan_id, result_index, operation_key))
 }
 
 /// Returns true when at least one scanner category is enabled.
@@ -794,10 +1490,53 @@ fn scanner_setting_mut(settings: &mut ScannerSettings, category: ScannerCategory
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::scanner::{
-        ACTION_COPY_DETAILS_LABEL, ScannerExtraData, ScannerFileList, ScannerFileListEntry,
-        ScannerProblemType, ScannerSolutionKind, group_scanner_results,
+    use crate::{
+        domain::{
+            autofix::{
+                AutoFixCompletion, AutoFixResultDetail, AutoFixRevalidationPlan, AutoFixStatus,
+            },
+            scanner::{
+                ACTION_COPY_DETAILS_LABEL, ScannerExtraData, ScannerFileList, ScannerFileListEntry,
+                ScannerProblemType, ScannerSolutionKind, group_scanner_results,
+            },
+        },
+        services::autofix::{
+            AutoFixOperationContext, AutoFixOperationFailure, AutoFixOperationRunner,
+            AutoFixOperationSuccess, AutoFixOperationSupport, AutoFixRegistry,
+        },
     };
+
+    struct NoopAutoFixRunner;
+
+    impl AutoFixOperationRunner for NoopAutoFixRunner {
+        fn execute(
+            &self,
+            _context: &AutoFixOperationContext<'_>,
+        ) -> Result<AutoFixOperationSuccess, AutoFixOperationFailure> {
+            Ok(AutoFixOperationSuccess::new(
+                "Fixed fake scanner result.",
+                "Fake Auto-Fix details.",
+            ))
+        }
+    }
+
+    fn fake_auto_fix_catalog(keys: &[AutoFixOperationKey]) -> AutoFixSupportCatalog {
+        let mut registry = AutoFixRegistry::empty();
+        for key in keys {
+            registry.register(
+                AutoFixOperationSupport::new(*key, "Fake Auto-Fix", "Fake Auto-Fix preview."),
+                NoopAutoFixRunner,
+            );
+        }
+        registry.support_catalog()
+    }
+
+    fn controller_with_fake_auto_fix(keys: &[AutoFixOperationKey]) -> ScannerController {
+        ScannerController::with_auto_fix_support_catalog(
+            ScannerSettings::default(),
+            fake_auto_fix_catalog(keys),
+        )
+    }
 
     fn example_result(detail_path: &str) -> ScannerResult {
         ScannerResult::with_path(
@@ -807,6 +1546,17 @@ mod tests {
             "This is a junk file not used by the game or mod managers.",
             Some(ScannerSolutionKind::DeleteOrIgnoreFile.into_solution_text()),
         )
+    }
+
+    fn auto_fix_result(detail_path: &str, solution_kind: ScannerSolutionKind) -> ScannerResult {
+        ScannerResult::with_path(
+            ScannerProblemType::JunkFile,
+            format!("C:/Games/Fallout 4/Data/{detail_path}"),
+            detail_path,
+            "This is a junk file not used by the game or mod managers.",
+            None,
+        )
+        .with_solution_kind(solution_kind)
     }
 
     fn completed_snapshot(
@@ -1148,5 +1898,307 @@ mod tests {
             vec!["Junk File", "Limit Exceeded"]
         );
         assert_eq!(group_scanner_results(&snapshot.results), snapshot.groups);
+    }
+
+    #[test]
+    fn scanner_controller_autofix_production_catalog_hides_button_and_rejects_tampered_request() {
+        let mut controller = ScannerController::default();
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            completed_snapshot(
+                request.scan_id,
+                vec![auto_fix_result(
+                    "desktop.ini",
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
+                )],
+            ),
+        );
+        controller.select_result(0);
+
+        assert!(controller.auto_fix_support_catalog().is_empty());
+        assert!(controller.selected_auto_fix().is_none());
+        assert!(controller.request_selected_auto_fix().is_none());
+        assert_eq!(
+            controller.status_text(),
+            SCANNER_AUTO_FIX_UNAVAILABLE_MESSAGE
+        );
+    }
+
+    #[test]
+    fn scanner_controller_autofix_fake_catalog_accepts_request_and_sets_fixing_state() {
+        let mut controller =
+            controller_with_fake_auto_fix(&[AutoFixOperationKey::DeleteOrIgnoreFile]);
+        let scan = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            scan.scan_id,
+            completed_snapshot(
+                scan.scan_id,
+                vec![auto_fix_result(
+                    "desktop.ini",
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
+                )],
+            ),
+        );
+        controller.select_result(0);
+
+        let ready = controller
+            .selected_auto_fix()
+            .expect("supported typed solution should expose Auto-Fix");
+        assert_eq!(ready.button.label, "Auto-Fix");
+        assert!(ready.button.enabled);
+        assert_eq!(ready.status.safe_message, "Fake Auto-Fix preview.");
+
+        let fix = controller
+            .request_selected_auto_fix()
+            .expect("supported selection should return a worker request");
+
+        assert_eq!(fix.scan_id, scan.scan_id);
+        assert_eq!(fix.result_index, 0);
+        assert_eq!(fix.operation_key, AutoFixOperationKey::DeleteOrIgnoreFile);
+        assert_eq!(fix.task.kind, WorkerTaskKind::Patch);
+        assert_eq!(
+            scanner_auto_fix_task_parts(&fix.task.id),
+            Some((scan.scan_id, 0, AutoFixOperationKey::DeleteOrIgnoreFile))
+        );
+        let fixing = controller
+            .selected_auto_fix()
+            .expect("Auto-Fix should remain visible while fixing");
+        assert_eq!(fixing.button.label, "Fixing...");
+        assert!(!fixing.button.enabled);
+        assert_eq!(fixing.status.safe_message, SCANNER_AUTO_FIX_RUNNING_MESSAGE);
+    }
+
+    #[test]
+    fn scanner_controller_autofix_success_completion_sets_fixed_detail_and_row_state() {
+        let mut controller =
+            controller_with_fake_auto_fix(&[AutoFixOperationKey::DeleteOrIgnoreFile]);
+        let scan = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            scan.scan_id,
+            completed_snapshot(
+                scan.scan_id,
+                vec![auto_fix_result(
+                    "desktop.ini",
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
+                )],
+            ),
+        );
+        controller.select_result(0);
+        let request = controller
+            .request_selected_auto_fix()
+            .expect("Auto-Fix should schedule");
+        let completion = AutoFixCompletion {
+            scan_id: Some(request.scan_id),
+            result_index: Some(request.result_index),
+            operation_key: request.operation_key,
+            selection_identity: request.selection_identity.clone(),
+            revalidation: AutoFixRevalidationPlan::required(request.selection_identity.clone())
+                .with_observed_identity(request.selection_identity.clone()),
+            status: AutoFixStatus::new(AutoFixStatusKind::Fixed, "Fixed fake scanner result."),
+            detail: AutoFixResultDetail::new(
+                "Fixed fake scanner result.",
+                "Deleted the fake junk file.",
+            ),
+        };
+
+        let result = controller.handle_worker_event(WorkerEvent::completed(
+            request.task,
+            scanner_auto_fix_completed_payload(completion),
+        ));
+
+        assert_eq!(result, ScannerTransitionResult::Applied);
+        let fixed = controller
+            .selected_auto_fix()
+            .expect("Auto-Fix state should remain selected");
+        assert_eq!(fixed.button.label, "Fixed!");
+        assert!(fixed.button.enabled);
+        assert!(fixed.row_fixed);
+        assert!(fixed.row_checked);
+        assert_eq!(fixed.status.safe_message, "Fixed fake scanner result.");
+        assert_eq!(
+            fixed
+                .result_detail
+                .as_ref()
+                .map(|detail| detail.details.as_str()),
+            Some("Deleted the fake junk file.")
+        );
+        let row_state = controller
+            .auto_fix_state_for_result(0)
+            .expect("row state should be tracked");
+        assert!(row_state.row_fixed);
+        assert!(row_state.row_checked);
+    }
+
+    #[test]
+    fn scanner_controller_autofix_failure_completion_uses_safe_text_and_keeps_diagnostics_off_ui() {
+        let mut controller =
+            controller_with_fake_auto_fix(&[AutoFixOperationKey::DeleteOrIgnoreFile]);
+        let scan = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            scan.scan_id,
+            completed_snapshot(
+                scan.scan_id,
+                vec![auto_fix_result(
+                    "desktop.ini",
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
+                )],
+            ),
+        );
+        controller.select_result(0);
+        let request = controller
+            .request_selected_auto_fix()
+            .expect("Auto-Fix should schedule");
+        let completion = AutoFixCompletion {
+            scan_id: Some(request.scan_id),
+            result_index: Some(request.result_index),
+            operation_key: request.operation_key,
+            selection_identity: request.selection_identity.clone(),
+            revalidation: AutoFixRevalidationPlan::required(request.selection_identity.clone()),
+            status: AutoFixStatus::new(
+                AutoFixStatusKind::Failed,
+                "Auto-Fix could not complete this operation.",
+            )
+            .with_diagnostic("raw adapter failure"),
+            detail: AutoFixResultDetail::new(
+                "Auto-Fix could not complete this operation.",
+                "No files were changed.",
+            )
+            .with_diagnostic("raw adapter failure"),
+        };
+
+        assert_eq!(
+            controller.handle_worker_event(WorkerEvent::completed(
+                request.task,
+                scanner_auto_fix_completed_payload(completion),
+            )),
+            ScannerTransitionResult::Applied
+        );
+
+        let failed = controller
+            .selected_auto_fix()
+            .expect("failed Auto-Fix state should remain visible");
+        assert_eq!(failed.button.label, "Fix Failed");
+        assert!(failed.button.enabled);
+        assert!(!failed.row_fixed);
+        assert!(!failed.row_checked);
+        assert_eq!(
+            failed.status.safe_message,
+            "Auto-Fix could not complete this operation."
+        );
+        assert!(!failed.status.safe_message.contains("raw adapter"));
+        let detail = failed.result_detail.as_ref().expect("details should exist");
+        assert_eq!(detail.details, "No files were changed.");
+        assert!(!detail.details.contains("raw adapter"));
+        assert_eq!(detail.diagnostic.as_deref(), Some("raw adapter failure"));
+    }
+
+    #[test]
+    fn scanner_controller_autofix_selection_change_and_new_scan_make_completion_stale() {
+        let mut controller =
+            controller_with_fake_auto_fix(&[AutoFixOperationKey::DeleteOrIgnoreFile]);
+        let first = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            first.scan_id,
+            completed_snapshot(
+                first.scan_id,
+                vec![
+                    auto_fix_result("desktop.ini", ScannerSolutionKind::DeleteOrIgnoreFile),
+                    auto_fix_result("thumbs.db", ScannerSolutionKind::DeleteOrIgnoreFile),
+                ],
+            ),
+        );
+        controller.select_result(0);
+        let request = controller
+            .request_selected_auto_fix()
+            .expect("Auto-Fix should schedule");
+        controller.select_result(1);
+        let stale_completion = AutoFixCompletion {
+            scan_id: Some(request.scan_id),
+            result_index: Some(request.result_index),
+            operation_key: request.operation_key,
+            selection_identity: request.selection_identity.clone(),
+            revalidation: AutoFixRevalidationPlan::required(request.selection_identity.clone()),
+            status: AutoFixStatus::new(AutoFixStatusKind::Fixed, "Fixed stale result."),
+            detail: AutoFixResultDetail::new("Fixed stale result.", "Should be ignored."),
+        };
+
+        assert_eq!(
+            controller.handle_worker_event(WorkerEvent::completed(
+                request.task.clone(),
+                scanner_auto_fix_completed_payload(stale_completion),
+            )),
+            ScannerTransitionResult::StaleIgnored
+        );
+        assert!(
+            !controller
+                .auto_fix_state_for_result(0)
+                .expect("row zero state should exist")
+                .row_fixed
+        );
+
+        let second = controller.request_scan().expect("new scan should start");
+        let stale_new_scan = AutoFixCompletion {
+            scan_id: Some(first.scan_id),
+            result_index: Some(0),
+            operation_key: AutoFixOperationKey::DeleteOrIgnoreFile,
+            selection_identity: request.selection_identity,
+            revalidation: AutoFixRevalidationPlan::required(
+                AutoFixSelectionIdentity::from_fingerprint("scanner-result:v1:stale"),
+            ),
+            status: AutoFixStatus::new(AutoFixStatusKind::Fixed, "Fixed old scan."),
+            detail: AutoFixResultDetail::new("Fixed old scan.", "Should be ignored."),
+        };
+        assert_eq!(second.scan_id, 2);
+        assert_eq!(
+            controller.handle_worker_event(WorkerEvent::completed(
+                request.task,
+                scanner_auto_fix_completed_payload(stale_new_scan),
+            )),
+            ScannerTransitionResult::StaleIgnored
+        );
+        assert_eq!(controller.active_scan_id(), Some(second.scan_id));
+    }
+
+    #[test]
+    fn scanner_controller_autofix_worker_failure_maps_safe_message_without_diagnostics() {
+        let mut controller =
+            controller_with_fake_auto_fix(&[AutoFixOperationKey::DeleteOrIgnoreFile]);
+        let scan = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            scan.scan_id,
+            completed_snapshot(
+                scan.scan_id,
+                vec![auto_fix_result(
+                    "desktop.ini",
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
+                )],
+            ),
+        );
+        controller.select_result(0);
+        let request = controller
+            .request_selected_auto_fix()
+            .expect("Auto-Fix should schedule");
+
+        let result = controller.handle_worker_event(WorkerEvent::failed(
+            request.task,
+            WorkerFailure::new("Auto-Fix could not be started.")
+                .with_diagnostic("raw worker spawn failure"),
+        ));
+
+        assert_eq!(result, ScannerTransitionResult::Applied);
+        let failed = controller
+            .selected_auto_fix()
+            .expect("worker failure should be visible as Auto-Fix state");
+        assert_eq!(failed.button.label, "Fix Failed");
+        assert_eq!(failed.status.safe_message, "Auto-Fix could not be started.");
+        assert!(!failed.status.safe_message.contains("raw worker"));
+        let detail = failed.result_detail.as_ref().expect("detail should exist");
+        assert_eq!(detail.details, "Auto-Fix could not be started.");
+        assert!(!detail.details.contains("raw worker"));
+        assert_eq!(
+            detail.diagnostic.as_deref(),
+            Some("raw worker spawn failure")
+        );
     }
 }

@@ -15,6 +15,7 @@ use std::{
 
 use crate::{
     domain::{
+        autofix::AutoFixCompletion,
         f4se::F4seScanSnapshot,
         overview::{
             OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
@@ -424,6 +425,11 @@ pub enum ScannerWorkerPayload {
         /// Owned action feedback produced by a copy/open/file-list worker.
         feedback: ScannerActionFeedback,
     },
+    /// A Scanner Auto-Fix worker completed with safe result feedback.
+    AutoFixCompleted {
+        /// Owned Auto-Fix completion produced off the UI thread.
+        completion: Box<AutoFixCompletion>,
+    },
 }
 
 impl ScannerWorkerPayload {
@@ -440,11 +446,19 @@ impl ScannerWorkerPayload {
         Self::ActionCompleted { feedback }
     }
 
+    /// Creates a Scanner Auto-Fix completion payload.
+    pub fn auto_fix_completed(completion: AutoFixCompletion) -> Self {
+        Self::AutoFixCompleted {
+            completion: Box::new(completion),
+        }
+    }
+
     /// Returns the scan id attached to this payload when one is present.
     pub fn scan_id(&self) -> Option<u64> {
         match self {
             Self::ScanCompleted { scan_id, .. } => Some(*scan_id),
             Self::ActionCompleted { feedback } => feedback.scan_id,
+            Self::AutoFixCompleted { completion } => completion.scan_id,
         }
     }
 
@@ -452,7 +466,15 @@ impl ScannerWorkerPayload {
     pub fn snapshot(&self) -> Option<&ScannerScanSnapshot> {
         match self {
             Self::ScanCompleted { snapshot, .. } => Some(snapshot),
-            Self::ActionCompleted { .. } => None,
+            Self::ActionCompleted { .. } | Self::AutoFixCompleted { .. } => None,
+        }
+    }
+
+    /// Returns the owned Auto-Fix completion by shared reference when present.
+    pub fn auto_fix_completion(&self) -> Option<&AutoFixCompletion> {
+        match self {
+            Self::AutoFixCompleted { completion } => Some(completion),
+            Self::ScanCompleted { .. } | Self::ActionCompleted { .. } => None,
         }
     }
 }
@@ -872,6 +894,44 @@ mod tests {
                 if actual == &feedback
         ));
         assert!(!feedback.safe_message().contains("raw platform"));
+    }
+
+    #[test]
+    fn scanner_worker_payload_autofix_round_trips_owned_completion() {
+        use crate::domain::autofix::{
+            AutoFixCompletion, AutoFixOperationKey, AutoFixResultDetail, AutoFixRevalidationPlan,
+            AutoFixSelectionIdentity, AutoFixStatus, AutoFixStatusKind,
+        };
+
+        let identity = AutoFixSelectionIdentity::from_fingerprint("scanner-result:v1:test");
+        let completion = AutoFixCompletion {
+            scan_id: Some(42),
+            result_index: Some(3),
+            operation_key: AutoFixOperationKey::DeleteFile,
+            selection_identity: identity.clone(),
+            revalidation: AutoFixRevalidationPlan::required(identity.clone())
+                .with_observed_identity(identity),
+            status: AutoFixStatus::new(AutoFixStatusKind::Fixed, "Fixed fake result."),
+            detail: AutoFixResultDetail::new("Fixed fake result.", "Fake details."),
+        };
+        let task = WorkerTask::new(
+            "s08-scanner-autofix:42:3:delete-file",
+            WorkerTaskKind::Patch,
+        );
+        let event = WorkerEvent::completed(
+            task,
+            WorkerPayload::Scanner(ScannerWorkerPayload::auto_fix_completed(completion.clone())),
+        );
+
+        assert!(matches!(
+            event.payload,
+            WorkerPayload::Scanner(ScannerWorkerPayload::AutoFixCompleted { completion: ref actual })
+                if actual.as_ref() == &completion
+        ));
+        let payload = ScannerWorkerPayload::auto_fix_completed(completion.clone());
+        assert_eq!(payload.scan_id(), Some(42));
+        assert!(payload.snapshot().is_none());
+        assert_eq!(payload.auto_fix_completion(), Some(&completion));
     }
 
     #[test]
