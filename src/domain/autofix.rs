@@ -337,6 +337,8 @@ pub struct AutoFixRequest {
 pub struct AutoFixCompletion {
     /// Optional scan id the request belonged to.
     pub scan_id: Option<u64>,
+    /// Optional flat scanner result index the request belonged to.
+    pub result_index: Option<usize>,
     /// Operation that completed.
     pub operation_key: AutoFixOperationKey,
     /// Selected result identity from the request.
@@ -352,12 +354,20 @@ pub struct AutoFixCompletion {
 /// Reason an Auto-Fix request was rejected before execution.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum AutoFixRejectionReason {
+    /// The request did not match the current scan snapshot.
+    ScanMismatch,
+    /// The selected result index does not exist in the current scan snapshot.
+    ResultNotFound,
     /// No registry handler exists for the typed operation key.
     NoRegisteredHandler,
     /// The selected result had no typed solution key.
     UnsupportedSolution,
+    /// The request operation did not match the selected result's typed solution key.
+    OperationMismatch,
     /// The operation requires a path and the selected result had none.
     MissingTargetPath,
+    /// The request target path did not match the selected result.
+    TargetMismatch,
     /// The pre-mutation identity did not match the selected identity.
     StaleSelection,
     /// Confirmation was required but not supplied.
@@ -375,6 +385,8 @@ pub enum AutoFixRejectionReason {
 pub struct AutoFixRejection {
     /// Optional scan id the request belonged to.
     pub scan_id: Option<u64>,
+    /// Optional flat scanner result index the request belonged to.
+    pub result_index: Option<usize>,
     /// Operation that was rejected, when it was known.
     pub operation_key: Option<AutoFixOperationKey>,
     /// Selected result identity from the request, when available.
@@ -396,6 +408,7 @@ impl AutoFixRejection {
     pub fn new(reason: AutoFixRejectionReason, safe_message: impl Into<String>) -> Self {
         Self {
             scan_id: None,
+            result_index: None,
             operation_key: None,
             selection_identity: None,
             observed_identity: None,

@@ -4,6 +4,7 @@
 //! process, and background seams through traits, but they should keep Slint and
 //! user prompts out of the domain-facing behavior so workflows remain testable.
 
+pub mod autofix;
 pub mod discovery;
 pub mod f4se;
 pub mod overview;
