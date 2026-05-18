@@ -8,6 +8,7 @@ pub mod discovery;
 pub mod f4se;
 pub mod overview;
 pub mod overview_collector;
+pub mod scanner;
 pub mod tools;
 pub mod update;
 
