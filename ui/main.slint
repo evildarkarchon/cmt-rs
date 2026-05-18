@@ -30,6 +30,15 @@ export component MainWindow inherits Window {
     in-out property <bool> overview-archive-patcher-enabled: false;
     in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
     in-out property <string> overview-last-action-error: "";
+    in-out property <string> tools-last-action-error: "";
+    in-out property <string> tools-disabled-utility-status: "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
+    in-out property <string> about-last-action-error: "";
+    in-out property <string> about-nexus-copy-label: "Copy Link";
+    in-out property <bool> about-nexus-copy-enabled: true;
+    in-out property <string> about-discord-copy-label: "Copy Invite";
+    in-out property <bool> about-discord-copy-enabled: true;
+    in-out property <string> about-github-copy-label: "Copy Link";
+    in-out property <bool> about-github-copy-enabled: true;
     callback update-source-selected(string);
     callback log-level-selected(string);
     callback overview-refresh-requested();
@@ -38,6 +47,10 @@ export component MainWindow inherits Window {
     callback overview-open-github-update-requested();
     callback overview-open-downgrade-manager-requested();
     callback overview-open-archive-patcher-requested();
+    callback tool-action-requested(string);
+    callback about-open-requested(string);
+    callback about-copy-requested(string);
+    callback about-copy-label-reset-requested(string);
 
     title: "Collective Modding Toolkit";
     width: 900px;
@@ -102,7 +115,13 @@ export component MainWindow inherits Window {
 
         Tab {
             title: "Tools";
-            ToolsTab {}
+            ToolsTab {
+                tools-last-action-error <=> root.tools-last-action-error;
+                tools-disabled-utility-status <=> root.tools-disabled-utility-status;
+                tool-action-requested(action_id) => {
+                    root.tool-action-requested(action_id);
+                }
+            }
         }
 
         Tab {
@@ -121,7 +140,24 @@ export component MainWindow inherits Window {
 
         Tab {
             title: "About";
-            AboutTab {}
+            AboutTab {
+                about-last-action-error <=> root.about-last-action-error;
+                about-nexus-copy-label <=> root.about-nexus-copy-label;
+                about-nexus-copy-enabled <=> root.about-nexus-copy-enabled;
+                about-discord-copy-label <=> root.about-discord-copy-label;
+                about-discord-copy-enabled <=> root.about-discord-copy-enabled;
+                about-github-copy-label <=> root.about-github-copy-label;
+                about-github-copy-enabled <=> root.about-github-copy-enabled;
+                about-open-requested(action_id) => {
+                    root.about-open-requested(action_id);
+                }
+                about-copy-requested(action_id) => {
+                    root.about-copy-requested(action_id);
+                }
+                about-copy-label-reset-requested(action_id) => {
+                    root.about-copy-label-reset-requested(action_id);
+                }
+            }
         }
     }
 }

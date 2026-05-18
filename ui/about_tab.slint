@@ -1,20 +1,205 @@
-export component AboutTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { Button, ScrollView } from "std-widgets.slint";
 
-        Text {
-            text: "About";
-            font-size: 18px;
-            font-weight: 600;
-            horizontal-alignment: center;
+component SafeErrorBanner inherits Rectangle {
+    in property <string> message;
+
+    height: 34px;
+    background: #4a2424;
+    border-color: #d36b6b;
+    border-width: 1px;
+    border-radius: 4px;
+
+    Text {
+        text: root.message;
+        color: #ffd6d6;
+        font-size: 13px;
+        x: 8px;
+        y: 8px;
+        wrap: word-wrap;
+    }
+}
+
+component AboutLinkRow inherits Rectangle {
+    in property <image> logo-source;
+    in property <string> open-label;
+    in property <string> copy-label;
+    in property <bool> copy-enabled: true;
+    in property <string> open-action-id;
+    in property <string> copy-action-id;
+
+    callback open-requested(string);
+    callback copy-requested(string);
+
+    height: 88px;
+    width: 298px;
+
+    HorizontalLayout {
+        spacing: 10px;
+        alignment: start;
+
+        Image {
+            source: root.logo-source;
+            width: 156px;
+            height: 72px;
+            image-fit: contain;
         }
 
-        Text {
-            text: "About behavior is reserved for a later port phase.";
-            font-size: 14px;
-            horizontal-alignment: center;
+        Rectangle {
+            width: 1px;
+            height: 72px;
+            background: #5a5a5a;
+        }
+
+        VerticalLayout {
+            spacing: 8px;
+            alignment: start;
+
+            Button {
+                text: root.open-label;
+                width: 112px;
+                clicked => {
+                    root.open-requested(root.open-action-id);
+                }
+            }
+
+            Button {
+                text: root.copy-label;
+                enabled: root.copy-enabled;
+                width: 112px;
+                clicked => {
+                    root.copy-requested(root.copy-action-id);
+                }
+            }
+        }
+    }
+}
+
+export component AboutTab inherits Rectangle {
+    in-out property <string> about-last-action-error: "";
+    in-out property <string> about-nexus-copy-label: "Copy Link";
+    in-out property <bool> about-nexus-copy-enabled: true;
+    in-out property <string> about-discord-copy-label: "Copy Invite";
+    in-out property <bool> about-discord-copy-enabled: true;
+    in-out property <string> about-github-copy-label: "Copy Link";
+    in-out property <bool> about-github-copy-enabled: true;
+
+    callback about-open-requested(string);
+    callback about-copy-requested(string);
+    callback about-copy-label-reset-requested(string);
+
+    background: #202020;
+
+    Timer {
+        interval: 3000ms;
+        running: !root.about-nexus-copy-enabled && root.about-nexus-copy-label == "Copied!";
+        triggered => {
+            root.about-copy-label-reset-requested("about.nexus.copy");
+        }
+    }
+
+    Timer {
+        interval: 3000ms;
+        running: !root.about-discord-copy-enabled && root.about-discord-copy-label == "Copied!";
+        triggered => {
+            root.about-copy-label-reset-requested("about.discord.copy");
+        }
+    }
+
+    Timer {
+        interval: 3000ms;
+        running: !root.about-github-copy-enabled && root.about-github-copy-label == "Copied!";
+        triggered => {
+            root.about-copy-label-reset-requested("about.github.copy");
+        }
+    }
+
+    ScrollView {
+        HorizontalLayout {
+            padding: 24px;
+            spacing: 24px;
+            alignment: center;
+
+            VerticalLayout {
+                spacing: 16px;
+                alignment: center;
+
+                Text {
+                    text: "Collective Modding\nToolkit";
+                    color: #f3f3f3;
+                    font-size: 26px;
+                    font-weight: 700;
+                    horizontal-alignment: center;
+                }
+
+                Image {
+                    source: @image-url("../resources/images/icon-256.png");
+                    width: 256px;
+                    height: 256px;
+                    image-fit: contain;
+                }
+            }
+
+            VerticalLayout {
+                spacing: 12px;
+                alignment: center;
+
+                Text {
+                    text: "v0.6.1\n\nCreated by wxMichael for the\nCollective Modding Community\n#cm-toolkit on Discord";
+                    color: #f3f3f3;
+                    font-size: 15px;
+                    horizontal-alignment: center;
+                    wrap: word-wrap;
+                }
+
+                if root.about-last-action-error != "": SafeErrorBanner {
+                    message: root.about-last-action-error;
+                }
+
+                AboutLinkRow {
+                    logo-source: @image-url("../resources/images/logo-nexusmods.png");
+                    open-label: "Open Link";
+                    copy-label: root.about-nexus-copy-label;
+                    copy-enabled: root.about-nexus-copy-enabled;
+                    open-action-id: "about.nexus.open";
+                    copy-action-id: "about.nexus.copy";
+                    open-requested(action_id) => {
+                        root.about-open-requested(action_id);
+                    }
+                    copy-requested(action_id) => {
+                        root.about-copy-requested(action_id);
+                    }
+                }
+
+                AboutLinkRow {
+                    logo-source: @image-url("../resources/images/logo-discord.png");
+                    open-label: "Open Invite";
+                    copy-label: root.about-discord-copy-label;
+                    copy-enabled: root.about-discord-copy-enabled;
+                    open-action-id: "about.discord.open";
+                    copy-action-id: "about.discord.copy";
+                    open-requested(action_id) => {
+                        root.about-open-requested(action_id);
+                    }
+                    copy-requested(action_id) => {
+                        root.about-copy-requested(action_id);
+                    }
+                }
+
+                AboutLinkRow {
+                    logo-source: @image-url("../resources/images/logo-github.png");
+                    open-label: "Open Link";
+                    copy-label: root.about-github-copy-label;
+                    copy-enabled: root.about-github-copy-enabled;
+                    open-action-id: "about.github.open";
+                    copy-action-id: "about.github.copy";
+                    open-requested(action_id) => {
+                        root.about-open-requested(action_id);
+                    }
+                    copy-requested(action_id) => {
+                        root.about-copy-requested(action_id);
+                    }
+                }
+            }
         }
     }
 }

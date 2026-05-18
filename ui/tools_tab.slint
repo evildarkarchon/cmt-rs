@@ -1,20 +1,233 @@
-export component ToolsTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { Button, GroupBox, ScrollView } from "std-widgets.slint";
 
-        Text {
-            text: "Tools";
-            font-size: 18px;
-            font-weight: 600;
-            horizontal-alignment: center;
+component SafeErrorBanner inherits Rectangle {
+    in property <string> message;
+
+    height: 34px;
+    background: #4a2424;
+    border-color: #d36b6b;
+    border-width: 1px;
+    border-radius: 4px;
+
+    Text {
+        text: root.message;
+        color: #ffd6d6;
+        font-size: 13px;
+        x: 8px;
+        y: 8px;
+        wrap: word-wrap;
+    }
+}
+
+component ToolActionRow inherits Rectangle {
+    in property <string> label;
+    in property <string> action-id;
+    in property <string> helper-text: "";
+    in property <bool> button-enabled: true;
+
+    callback action-requested(string);
+
+    min-height: root.helper-text == "" ? 38px : 78px;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Button {
+            text: root.label;
+            enabled: root.button-enabled;
+            width: 218px;
+            clicked => {
+                root.action-requested(root.action-id);
+            }
         }
 
-        Text {
-            text: "Tools behavior is reserved for a later port phase.";
-            font-size: 14px;
-            horizontal-alignment: center;
+        if root.helper-text != "": Text {
+            text: root.helper-text;
+            color: #a8a8a8;
+            font-size: 11px;
+            wrap: word-wrap;
+            vertical-alignment: center;
+        }
+    }
+}
+
+export component ToolsTab inherits Rectangle {
+    in-out property <string> tools-last-action-error: "";
+    in-out property <string> tools-disabled-utility-status: "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
+
+    callback tool-action-requested(string);
+
+    background: #202020;
+
+    ScrollView {
+        HorizontalLayout {
+            padding: 20px;
+            spacing: 12px;
+            alignment: start;
+
+            GroupBox {
+                title: "Toolkit Utilities";
+                width: 282px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    if root.tools-last-action-error != "": SafeErrorBanner {
+                        message: root.tools-last-action-error;
+                    }
+
+                    Text {
+                        text: root.tools-disabled-utility-status;
+                        color: #a8a8a8;
+                        font-size: 12px;
+                        wrap: word-wrap;
+                    }
+
+                    ToolActionRow {
+                        label: "Downgrade Manager";
+                        action-id: "tools.downgrade_manager";
+                        button-enabled: false;
+                        helper-text: "Deferred until S09 Downgrade Manager workflow is ported.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "Archive Patcher";
+                        action-id: "tools.archive_patcher";
+                        button-enabled: false;
+                        helper-text: "Deferred until S10 Archive Patcher workflow is ported.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Other CM Authors' Tools";
+                width: 288px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    ToolActionRow {
+                        label: "Bethini Pie";
+                        action-id: "tools.bethini_pie";
+                        helper-text: "Bethini Pie (Performance INI Editor) makes editing INI config files simple.\nDiscord channel: #bethini-doubleyou-etc";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "CLASSIC Crash Log Scanner";
+                        action-id: "tools.classic_crash_log_scanner";
+                        helper-text: "Scans Buffout crash logs for key indicators of crashes.\nYou can also post crash logs to the CM Discord for assistance.\nDiscord channel: #fo4-crash-logs";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "  Vault-Tec Enhanced\nFaceGen System (VEFS)";
+                        action-id: "tools.vault_tec_enhanced_facegen_system";
+                        helper-text: "Automates the process of generating FaceGen models and textures with xEdit/CK.\nDiscord channel: #bethini-doubleyou-etc";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "PJM's Precombine/Previs\n    Patching Scripts";
+                        action-id: "tools.pjms_precombine_previs_patching_scripts";
+                        helper-text: "Scripts to find precombine/previs (flickering/occlusion) errors in your mod list, and optionally generate a patch to fix those problems.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "DDS Texture Scanner";
+                        action-id: "tools.dds_texture_scanner";
+                        helper-text: "Sniff out textures that might CTD your game. With BA2 support.\nDiscord channel: #nistonmakemod";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Other Useful Tools";
+                width: 288px;
+
+                VerticalLayout {
+                    padding: 8px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    ToolActionRow {
+                        label: "xEdit / FO4Edit";
+                        action-id: "tools.xedit_fo4edit";
+                        helper-text: "Module editor and conflict detector for Bethesda games.\nFO4Edit/SSEEdit are xEdit, renamed to auto-set a game mode.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "Creation Kit Platform\n   Extended (CKPE)";
+                        action-id: "tools.creation_kit_platform_extended";
+                        helper-text: "Various patches and bug fixes for the Creation Kit to make life easier.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "Cathedral Assets\nOptimizer (CAO)";
+                        action-id: "tools.cathedral_assets_optimizer";
+                        helper-text: "An automation tool used to optimize BSAs, meshes, textures and animations.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "BA2 Merging Automation\n     Tool (BMAT)";
+                        action-id: "tools.ba2_merging_automation_tool";
+                        helper-text: "Automated BA2 files repackaging and merging.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "IceStorm's Texture Tools";
+                        action-id: "tools.icestorms_texture_tools";
+                        helper-text: "Converts textures from various formats into a Fallout 4 compatible format.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+
+                    ToolActionRow {
+                        label: "CapFrameX";
+                        action-id: "tools.capframex";
+                        helper-text: "Benchmarking tool - Record FPS, frametime, and sensors; analyse and plot the results.";
+                        action-requested(action_id) => {
+                            root.tool-action-requested(action_id);
+                        }
+                    }
+                }
+            }
         }
     }
 }

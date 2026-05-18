@@ -945,10 +945,16 @@ mod tests {
         services::ServiceLayer,
         workers::WorkerRuntime,
     };
+    use crate::domain::tools::{
+        ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
+        ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, IMAGE_RESOURCE_PATHS, TOOL_GROUPS,
+    };
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
     const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
     const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
+    const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
+    const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
     const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
         (
             "ui/overview_tab.slint",
@@ -968,31 +974,17 @@ mod tests {
             "Scanner",
             include_str!("../ui/scanner_tab.slint"),
         ),
-        (
-            "ui/tools_tab.slint",
-            "ToolsTab",
-            "Tools",
-            include_str!("../ui/tools_tab.slint"),
-        ),
+        ("ui/tools_tab.slint", "ToolsTab", "Tools", TOOLS_SLINT),
         (
             "ui/settings_tab.slint",
             "SettingsTab",
             "Settings",
             SETTINGS_SLINT,
         ),
-        (
-            "ui/about_tab.slint",
-            "AboutTab",
-            "About",
-            include_str!("../ui/about_tab.slint"),
-        ),
+        ("ui/about_tab.slint", "AboutTab", "About", ABOUT_SLINT),
     ];
-    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 4] = [
-        TAB_COMPONENTS[1],
-        TAB_COMPONENTS[2],
-        TAB_COMPONENTS[3],
-        TAB_COMPONENTS[5],
-    ];
+    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 2] =
+        [TAB_COMPONENTS[1], TAB_COMPONENTS[2]];
 
     fn slint_string_property_values(source: &str, property: &str) -> Vec<String> {
         let prefix = format!("{property}:");
@@ -1014,6 +1006,47 @@ mod tests {
                 panic!("expected source to contain {value:?} after byte {search_from}")
             });
             search_from += relative_index + value.len();
+        }
+    }
+
+    fn assert_source_contains_strings_in_order(source: &str, expected: &[String]) {
+        let mut search_from = 0;
+
+        for value in expected {
+            let relative_index = source[search_from..].find(value).unwrap_or_else(|| {
+                panic!("expected source to contain {value:?} after byte {search_from}")
+            });
+            search_from += relative_index + value.len();
+        }
+    }
+
+    fn slint_string_literal(value: &str) -> String {
+        value
+            .replace('\\', "\\\\")
+            .replace('\n', "\\n")
+            .replace('"', "\\\"")
+    }
+
+    fn slint_assignment(property: &str, value: &str) -> String {
+        format!("{property}: \"{}\"", slint_string_literal(value))
+    }
+
+    fn slint_image_reference(resource_path: &str) -> String {
+        format!("@image-url(\"../{resource_path}\")")
+    }
+
+    fn assert_no_direct_urls_or_reference_tree(source_name: &str, source: &str) {
+        for marker in [
+            "https://",
+            "http://",
+            "webbrowser",
+            "@image-url(\"../CMT",
+            "@image-url(\"CMT",
+        ] {
+            assert!(
+                !source.contains(marker),
+                "{source_name} should not embed direct URL/reference-tree marker {marker:?}"
+            );
         }
     }
 
@@ -1096,6 +1129,147 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups() {
+        assert!(TOOLS_SLINT.contains("export component ToolsTab"));
+        assert!(TOOLS_SLINT.contains("background: #202020;"));
+        assert!(TOOLS_SLINT.contains("in-out property <string> tools-last-action-error"));
+        assert!(TOOLS_SLINT.contains("in-out property <string> tools-disabled-utility-status"));
+        assert!(TOOLS_SLINT.contains("callback tool-action-requested(string)"));
+        assert!(TOOLS_SLINT.contains("SafeErrorBanner"));
+        assert!(!TOOLS_SLINT.contains("Tools behavior is reserved for a later port phase."));
+
+        let mut expected = Vec::new();
+        for group in TOOL_GROUPS {
+            expected.push(slint_assignment("title", group.label));
+            for entry in group.entries {
+                expected.push(slint_assignment("label", entry.label));
+                expected.push(slint_assignment("action-id", entry.id.as_str()));
+            }
+        }
+        assert_source_contains_strings_in_order(TOOLS_SLINT, &expected);
+
+        assert_source_contains_in_order(
+            TOOLS_SLINT,
+            &[
+                "title: \"Toolkit Utilities\"",
+                "label: \"Downgrade Manager\"",
+                "action-id: \"tools.downgrade_manager\"",
+                "button-enabled: false;",
+                "Deferred until S09 Downgrade Manager workflow is ported.",
+                "label: \"Archive Patcher\"",
+                "action-id: \"tools.archive_patcher\"",
+                "button-enabled: false;",
+                "Deferred until S10 Archive Patcher workflow is ported.",
+            ],
+        );
+        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 2);
+        assert!(TOOLS_SLINT.contains("root.tool-action-requested(action_id)"));
+        assert_no_direct_urls_or_reference_tree("ui/tools_tab.slint", TOOLS_SLINT);
+    }
+
+    #[test]
+    fn s05_slint_contract_about_tab_replaces_placeholder_with_reference_assets_and_copy_state() {
+        assert!(ABOUT_SLINT.contains("export component AboutTab"));
+        assert!(ABOUT_SLINT.contains("background: #202020;"));
+        assert!(ABOUT_SLINT.contains("in-out property <string> about-last-action-error"));
+        assert!(ABOUT_SLINT.contains("callback about-open-requested(string)"));
+        assert!(ABOUT_SLINT.contains("callback about-copy-requested(string)"));
+        assert!(ABOUT_SLINT.contains("callback about-copy-label-reset-requested(string)"));
+        assert!(ABOUT_SLINT.contains("SafeErrorBanner"));
+        assert!(!ABOUT_SLINT.contains("About behavior is reserved for a later port phase."));
+
+        assert!(ABOUT_SLINT.contains(&slint_assignment("text", ABOUT_TITLE_LABEL)));
+        assert!(ABOUT_SLINT.contains(&slint_assignment("text", ABOUT_CREDIT_LABEL)));
+        for resource_path in IMAGE_RESOURCE_PATHS {
+            assert!(
+                ABOUT_SLINT.contains(&slint_image_reference(resource_path)),
+                "About tab should use Rust-owned image resource {resource_path}"
+            );
+        }
+
+        assert!(ABOUT_SLINT.contains(&format!(
+            "in-out property <string> about-nexus-copy-label: \"{}\"",
+            ABOUT_COPY_LINK_LABEL
+        )));
+        assert!(ABOUT_SLINT.contains(&format!(
+            "in-out property <string> about-discord-copy-label: \"{}\"",
+            ABOUT_COPY_INVITE_LABEL
+        )));
+        assert!(ABOUT_SLINT.contains(&format!(
+            "in-out property <string> about-github-copy-label: \"{}\"",
+            ABOUT_COPY_LINK_LABEL
+        )));
+        assert!(ABOUT_SLINT.contains("in-out property <bool> about-nexus-copy-enabled: true"));
+        assert!(ABOUT_SLINT.contains("in-out property <bool> about-discord-copy-enabled: true"));
+        assert!(ABOUT_SLINT.contains("in-out property <bool> about-github-copy-enabled: true"));
+
+        for link in ABOUT_LINKS {
+            assert!(ABOUT_SLINT.contains(&slint_assignment(
+                "open-action-id",
+                link.open_action_id.as_str()
+            )));
+            assert!(ABOUT_SLINT.contains(&slint_assignment(
+                "copy-action-id",
+                link.copy_action_id.as_str()
+            )));
+            assert!(ABOUT_SLINT.contains(&slint_assignment("open-label", link.open_button_label)));
+            assert!(ABOUT_SLINT.contains(&format!(
+                "root.about-copy-label-reset-requested(\"{}\")",
+                link.copy_action_id.as_str()
+            )));
+        }
+        assert_eq!(ABOUT_SLINT.matches("Timer {").count(), 3);
+        assert_eq!(ABOUT_SLINT.matches("interval: 3000ms;").count(), 3);
+        assert_eq!(ABOUT_SLINT.matches(ABOUT_COPY_SUCCESS_LABEL).count(), 3);
+        assert!(ABOUT_SLINT.contains("root.about-open-requested(action_id)"));
+        assert!(ABOUT_SLINT.contains("root.about-copy-requested(action_id)"));
+        assert_no_direct_urls_or_reference_tree("ui/about_tab.slint", ABOUT_SLINT);
+    }
+
+    #[test]
+    fn s05_slint_contract_main_window_forwards_tools_and_about_properties_and_callbacks() {
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "in-out property <string> tools-last-action-error",
+                "in-out property <string> tools-disabled-utility-status",
+                "in-out property <string> about-last-action-error",
+                "in-out property <string> about-nexus-copy-label",
+                "in-out property <bool> about-nexus-copy-enabled",
+                "in-out property <string> about-discord-copy-label",
+                "in-out property <bool> about-discord-copy-enabled",
+                "in-out property <string> about-github-copy-label",
+                "in-out property <bool> about-github-copy-enabled",
+                "callback tool-action-requested(string)",
+                "callback about-open-requested(string)",
+                "callback about-copy-requested(string)",
+                "callback about-copy-label-reset-requested(string)",
+            ],
+        );
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "ToolsTab {",
+                "tools-last-action-error <=> root.tools-last-action-error",
+                "tools-disabled-utility-status <=> root.tools-disabled-utility-status",
+                "root.tool-action-requested(action_id)",
+                "AboutTab {",
+                "about-last-action-error <=> root.about-last-action-error",
+                "about-nexus-copy-label <=> root.about-nexus-copy-label",
+                "about-nexus-copy-enabled <=> root.about-nexus-copy-enabled",
+                "about-discord-copy-label <=> root.about-discord-copy-label",
+                "about-discord-copy-enabled <=> root.about-discord-copy-enabled",
+                "about-github-copy-label <=> root.about-github-copy-label",
+                "about-github-copy-enabled <=> root.about-github-copy-enabled",
+                "root.about-open-requested(action_id)",
+                "root.about-copy-requested(action_id)",
+                "root.about-copy-label-reset-requested(action_id)",
+            ],
+        );
+        assert_no_direct_urls_or_reference_tree("ui/main.slint", MAIN_SLINT);
     }
 
     #[test]
