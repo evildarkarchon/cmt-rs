@@ -6,6 +6,7 @@
 
 pub mod autofix;
 pub mod discovery;
+pub mod downgrader;
 pub mod f4se;
 pub mod mod_manager;
 pub mod overview;
@@ -55,6 +56,26 @@ mod tests {
         let _ = crate::domain::autofix::AUTO_FIX_FIXED_BUTTON_LABEL;
         let _ = crate::domain::autofix::AUTO_FIX_FAILED_BUTTON_LABEL;
         let _ = crate::domain::autofix::AUTO_FIX_RESULTS_TITLE;
+        assert_type::<crate::domain::downgrader::DowngraderFileDefinition>();
+        assert_type::<crate::domain::downgrader::DowngraderCrcMapping>();
+        assert_type::<crate::domain::downgrader::DowngraderFileGroup>();
+        assert_type::<crate::domain::downgrader::DowngraderInstallStatus>();
+        assert_type::<crate::domain::downgrader::DowngraderTarget>();
+        assert_type::<crate::domain::downgrader::DowngraderStatusRow>();
+        assert_type::<crate::domain::downgrader::DowngraderOptionsSnapshot>();
+        assert_type::<crate::domain::downgrader::DowngraderPlanAction>();
+        assert_type::<crate::domain::downgrader::DowngraderPlanRow>();
+        assert_type::<crate::domain::downgrader::DowngraderExecutionLogRow>();
+        assert_type::<crate::domain::downgrader::DowngraderLogLevel>();
+        assert_type::<crate::domain::downgrader::DowngraderProgress>();
+        let _ = crate::domain::downgrader::DOWNGRADER_MODAL_TITLE;
+        let _ = crate::domain::downgrader::PATCH_ALL_BUTTON_LABEL;
+        let _ = crate::domain::downgrader::INITIAL_LOG_LINE;
+        let _ = crate::domain::downgrader::ABOUT_DOWNGRADING_TITLE;
+        let _ = crate::domain::downgrader::ABOUT_DOWNGRADING_BODY;
+        let _ = crate::domain::downgrader::TOOLTIP_DOWNGRADER_BACKUPS;
+        let _ = crate::domain::downgrader::TOOLTIP_DOWNGRADER_DELTAS;
+        let _ = crate::domain::downgrader::DOWNGRADER_FILE_DEFINITIONS;
         assert_type::<crate::domain::scanner::ScannerResult>();
         assert_type::<crate::domain::scanner::ScannerProblemType>();
         assert_type::<crate::domain::scanner::ScannerSolutionKind>();
