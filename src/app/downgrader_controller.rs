@@ -472,6 +472,7 @@ impl DowngraderController {
         let unknown_game = snapshot.unknown_game;
         let unknown_creation_kit = snapshot.unknown_creation_kit;
         self.active_status_request_id = None;
+        self.installation = Some(Fallout4Installation::new(snapshot.game_root.clone()));
         self.status = Some(snapshot);
         self.safe_error = None;
         if is_initial_load {

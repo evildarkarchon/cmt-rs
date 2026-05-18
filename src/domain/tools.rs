@@ -192,14 +192,25 @@ pub struct ToolEntry {
 impl ToolEntry {
     /// Returns true when the entry should be enabled for direct user action.
     pub const fn is_enabled(self) -> bool {
-        matches!(self.action, ToolEntryAction::ExternalLink(_))
+        matches!(
+            self.action,
+            ToolEntryAction::ExternalLink(_) | ToolEntryAction::InternalUtility(_)
+        )
+    }
+
+    /// Returns the internal utility metadata when this entry opens an in-app workflow.
+    pub const fn internal_utility(self) -> Option<ToolInternalUtility> {
+        match self.action {
+            ToolEntryAction::InternalUtility(utility) => Some(utility),
+            ToolEntryAction::DeferredUtility(_) | ToolEntryAction::ExternalLink(_) => None,
+        }
     }
 
     /// Returns the deferred metadata when this entry is intentionally disabled.
     pub const fn deferred_utility(self) -> Option<ToolDeferredUtility> {
         match self.action {
             ToolEntryAction::DeferredUtility(utility) => Some(utility),
-            ToolEntryAction::ExternalLink(_) => None,
+            ToolEntryAction::InternalUtility(_) | ToolEntryAction::ExternalLink(_) => None,
         }
     }
 
@@ -207,7 +218,7 @@ impl ToolEntry {
     pub const fn external_link(self) -> Option<ToolExternalLink> {
         match self.action {
             ToolEntryAction::ExternalLink(link) => Some(link),
-            ToolEntryAction::DeferredUtility(_) => None,
+            ToolEntryAction::InternalUtility(_) | ToolEntryAction::DeferredUtility(_) => None,
         }
     }
 }
@@ -215,10 +226,21 @@ impl ToolEntry {
 /// Tools-tab action metadata.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ToolEntryAction {
+    /// Utility is implemented inside the Rust port and opens an in-app workflow.
+    InternalUtility(ToolInternalUtility),
     /// Utility exists in the reference but is deferred/disabled in this slice.
     DeferredUtility(ToolDeferredUtility),
     /// Static external URL action from the reference.
     ExternalLink(ToolExternalLink),
+}
+
+/// Metadata for an in-app utility workflow that is available in this slice.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ToolInternalUtility {
+    /// Internal utility key for diagnostics and routing.
+    pub key: &'static str,
+    /// Safe status text that can be displayed in the UI.
+    pub status_text: &'static str,
 }
 
 /// Metadata for a utility entry that must remain disabled until its workflow is ported.
@@ -283,9 +305,9 @@ const TOOLKIT_UTILITIES: &[ToolEntry] = &[
     ToolEntry {
         id: ToolActionId::DowngradeManager,
         label: "Downgrade Manager",
-        action: ToolEntryAction::DeferredUtility(ToolDeferredUtility {
+        action: ToolEntryAction::InternalUtility(ToolInternalUtility {
             key: "downgrade_manager",
-            status_text: "Downgrade Manager is not available in this Rust port yet.",
+            status_text: "Open the Downgrade Manager workflow.",
         }),
         help_text: None,
     },
@@ -722,7 +744,7 @@ mod tests {
     }
 
     #[test]
-    fn s05_reference_contract_deferred_utilities_are_disabled_and_ids_are_unique() {
+    fn s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows() {
         let entries = TOOL_GROUPS
             .iter()
             .flat_map(|group| group.entries.iter())
@@ -737,6 +759,28 @@ mod tests {
             );
         }
 
+        let internal_entries = entries
+            .iter()
+            .filter_map(|entry| {
+                entry
+                    .internal_utility()
+                    .map(|utility| (entry.label, utility))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(
+            internal_entries,
+            [(
+                "Downgrade Manager",
+                ToolInternalUtility {
+                    key: "downgrade_manager",
+                    status_text: "Open the Downgrade Manager workflow.",
+                },
+            )]
+        );
+        assert!(TOOL_GROUPS[0].entries[0].is_enabled());
+        assert!(TOOL_GROUPS[0].entries[0].external_link().is_none());
+        assert!(TOOL_GROUPS[0].entries[0].deferred_utility().is_none());
+
         let deferred_entries = entries
             .iter()
             .filter_map(|entry| {
@@ -747,34 +791,24 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(
             deferred_entries,
-            [
-                (
-                    "Downgrade Manager",
-                    ToolDeferredUtility {
-                        key: "downgrade_manager",
-                        status_text: "Downgrade Manager is not available in this Rust port yet.",
-                    },
-                ),
-                (
-                    "Archive Patcher",
-                    ToolDeferredUtility {
-                        key: "archive_patcher",
-                        status_text: "Archive Patcher is not available in this Rust port yet.",
-                    },
-                ),
-            ]
+            [(
+                "Archive Patcher",
+                ToolDeferredUtility {
+                    key: "archive_patcher",
+                    status_text: "Archive Patcher is not available in this Rust port yet.",
+                },
+            )]
         );
+        assert!(!TOOL_GROUPS[0].entries[1].is_enabled());
+        assert!(TOOL_GROUPS[0].entries[1].external_link().is_none());
 
-        for (entry, _) in TOOL_GROUPS[0].entries.iter().zip(deferred_entries) {
-            assert!(!entry.is_enabled());
-            assert!(entry.external_link().is_none());
-        }
         for entry in entries
             .iter()
             .filter(|entry| entry.external_link().is_some())
         {
             assert!(entry.is_enabled());
             assert!(entry.deferred_utility().is_none());
+            assert!(entry.internal_utility().is_none());
         }
 
         let mut seen_about_ids = HashSet::new();

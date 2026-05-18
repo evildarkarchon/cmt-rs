@@ -1,7 +1,7 @@
 use std::io;
 
 use crate::{
-    domain::settings::{AppSettings, LogLevel, ScannerSettings, UpdateSource},
+    domain::settings::{AppSettings, DowngraderSettings, LogLevel, ScannerSettings, UpdateSource},
     platform::settings_store::{AssetResolver, SettingsStore},
 };
 
@@ -17,6 +17,22 @@ pub struct ScannerSettingsSaveResult {
 impl ScannerSettingsSaveResult {
     /// Returns true when callers may schedule a scan with the visible settings snapshot.
     pub const fn should_schedule_scan(&self) -> bool {
+        self.saved
+    }
+}
+
+/// Result of persisting Downgrader options before planning or confirmed execution.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderSettingsSaveResult {
+    /// Downgrader settings snapshot Slint should display after the save attempt.
+    pub visible_settings: DowngraderSettings,
+    /// True when the candidate Downgrader settings were successfully persisted.
+    pub saved: bool,
+}
+
+impl DowngraderSettingsSaveResult {
+    /// Returns true when callers may schedule Downgrader work with the visible settings snapshot.
+    pub const fn should_schedule_workflow(&self) -> bool {
         self.saved
     }
 }
@@ -67,6 +83,11 @@ impl<R: AssetResolver> SettingsController<R> {
         &self.last_persisted.scanner
     }
 
+    /// Returns the last successfully persisted Downgrader workflow settings.
+    pub fn current_downgrader_settings(&self) -> &DowngraderSettings {
+        &self.last_persisted.downgrader
+    }
+
     /// Persists scanner settings when the Scanner tab starts `Scan Game`.
     ///
     /// Individual Scanner checkbox toggles are transient controller state. They
@@ -102,6 +123,48 @@ impl<R: AssetResolver> SettingsController<R> {
                 );
                 ScannerSettingsSaveResult {
                     visible_settings: self.last_persisted.scanner.clone(),
+                    saved: false,
+                }
+            }
+        }
+    }
+
+    /// Persists Downgrader options before planning or confirmed patch execution.
+    ///
+    /// Downgrader checkbox toggles are modal-local until the user starts the
+    /// workflow. If persistence fails, callers receive the last persisted
+    /// snapshot so Slint can revert the checkboxes and suppress status/plan/run
+    /// workers that would otherwise use unpersisted preferences.
+    pub fn save_downgrader_settings_for_workflow(
+        &mut self,
+        downgrader: DowngraderSettings,
+    ) -> DowngraderSettingsSaveResult {
+        let mut candidate = self.last_persisted.clone();
+        candidate.downgrader = downgrader;
+
+        match self.store.save(&candidate) {
+            Ok(()) => {
+                self.last_persisted = candidate;
+                tracing::info!(
+                    event = "s09-downgrader-settings-save-succeeded",
+                    keep_backups = self.last_persisted.downgrader.keep_backups,
+                    delete_deltas = self.last_persisted.downgrader.delete_deltas,
+                    "Downgrader settings persisted at workflow start"
+                );
+                DowngraderSettingsSaveResult {
+                    visible_settings: self.last_persisted.downgrader.clone(),
+                    saved: true,
+                }
+            }
+            Err(error) => {
+                tracing::error!(
+                    event = "s09-downgrader-settings-save-failed",
+                    path = %self.store.settings_path().display(),
+                    %error,
+                    "Downgrader settings failed to save at workflow start; reverting visible options"
+                );
+                DowngraderSettingsSaveResult {
+                    visible_settings: self.last_persisted.downgrader.clone(),
                     saved: false,
                 }
             }
@@ -404,6 +467,56 @@ mod tests {
         assert!(!result.should_schedule_scan());
         assert_eq!(result.visible_settings, persisted_scanner);
         assert_eq!(controller.current_scanner_settings(), &persisted_scanner);
+    }
+
+    #[test]
+    fn settings_controller_saves_downgrader_snapshot_for_workflow_start() {
+        let (_root, settings_path) = isolated_settings_path("downgrader-save-on-start");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(store).expect("controller should load");
+        let candidate = crate::domain::settings::DowngraderSettings {
+            keep_backups: false,
+            delete_deltas: true,
+        };
+
+        let result = controller.save_downgrader_settings_for_workflow(candidate.clone());
+
+        assert!(result.should_schedule_workflow());
+        assert_eq!(result.visible_settings, candidate);
+        assert_eq!(controller.current_downgrader_settings(), &candidate);
+        let persisted = fs::read_to_string(settings_path).expect("settings should persist");
+        let persisted_json = persisted_json(&persisted);
+        assert_eq!(persisted_json["downgrader_keep_backups"], false);
+        assert_eq!(persisted_json["downgrader_delete_deltas"], true);
+    }
+
+    #[test]
+    fn settings_controller_saves_downgrader_reverts_visible_options_on_save_failure() {
+        let (_root, settings_path) = isolated_settings_path("downgrader-save-failure-revert");
+        let setup_store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(setup_store).expect("controller should load");
+        let persisted_downgrader = controller.current_downgrader_settings().clone();
+        fs::remove_file(&settings_path).expect("settings file should be removable");
+        fs::create_dir_all(&settings_path).expect("directory should block future saves");
+        let candidate = crate::domain::settings::DowngraderSettings {
+            keep_backups: false,
+            delete_deltas: false,
+        };
+
+        let result = controller.save_downgrader_settings_for_workflow(candidate);
+
+        assert!(!result.should_schedule_workflow());
+        assert_eq!(result.visible_settings, persisted_downgrader);
+        assert_eq!(
+            controller.current_downgrader_settings(),
+            &persisted_downgrader
+        );
     }
 
     fn isolated_settings_path(case_name: &str) -> (PathBuf, PathBuf) {

@@ -37,6 +37,8 @@ impl ActionSurface {
 /// Parsed Tools-tab action identity.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ToolsActionKind {
+    /// An enabled in-app utility entry such as the Downgrade Manager modal.
+    InternalUtility(ToolActionId),
     /// An enabled static external-link entry.
     ExternalLink(ToolActionId),
     /// A known utility entry that is intentionally disabled/deferred.
@@ -301,9 +303,10 @@ impl AboutActionFeedback {
 
 /// Parses a Tools-tab callback id without touching platform adapters.
 ///
-/// Unknown ids and disabled/internal utilities return the same safe feedback the
-/// full service would have produced, allowing UI callbacks to fail closed before
-/// scheduling background work.
+/// Unknown ids and disabled utilities return the same safe feedback the full
+/// service would have produced, allowing UI callbacks to fail closed before
+/// scheduling background work. Enabled internal utilities are returned so the UI
+/// layer can route them to in-app workflow windows without desktop handoff.
 pub fn tools_action_for_id(action_id: &str) -> Result<ToolsActionKind, ToolsActionFeedback> {
     let Some(entry) = find_tool_entry(action_id) else {
         tracing::warn!(
@@ -338,6 +341,17 @@ pub fn tools_action_for_id(action_id: &str) -> Result<ToolsActionKind, ToolsActi
             utility.status_text,
             Some(format!("deferred Tools utility: {}", utility.key)),
         ));
+    }
+
+    if let Some(utility) = entry.internal_utility() {
+        tracing::info!(
+            event = "s09-tools-internal-utility-routed",
+            surface = ActionSurface::Tools.label(),
+            action_id = entry.id.as_str(),
+            utility_key = utility.key,
+            "Tools internal utility action parsed for in-app routing"
+        );
+        return Ok(ToolsActionKind::InternalUtility(entry.id));
     }
 
     if entry.external_link().is_some() {
@@ -431,6 +445,21 @@ impl<D: DesktopActions, C: ClipboardActions> ToolsActionService<D, C> {
                 ActionRejectionKind::DisabledUtility,
                 utility.status_text,
                 Some(format!("deferred Tools utility: {}", utility.key)),
+            );
+        }
+
+        if let Some(utility) = entry.internal_utility() {
+            tracing::info!(
+                event = "s09-tools-internal-utility-routed",
+                surface = ActionSurface::Tools.label(),
+                action_id = entry.id.as_str(),
+                utility_key = utility.key,
+                "Tools internal utility action completed by in-app routing"
+            );
+            return ToolsActionFeedback::succeeded(
+                entry.id.as_str(),
+                ToolsActionKind::InternalUtility(entry.id),
+                utility.status_text,
             );
         }
 
@@ -953,26 +982,44 @@ mod tests {
     }
 
     #[test]
-    fn s05_actions_disabled_utilities_are_rejected_without_launching() {
+    fn s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred()
+     {
         let desktop = FakeDesktopActions::default();
         let clipboard = FakeClipboardActions::default();
         let service = ToolsActionService::new(desktop.clone(), clipboard.clone());
 
-        let feedback = service.execute_tools_action(ToolActionId::DowngradeManager.as_str());
+        let downgrade_feedback =
+            service.execute_tools_action(ToolActionId::DowngradeManager.as_str());
 
+        assert_eq!(downgrade_feedback.outcome, ActionOutcome::Succeeded);
         assert_eq!(
-            feedback.outcome,
-            ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
-        );
-        assert_eq!(
-            feedback.action,
-            Some(ToolsActionKind::DeferredUtility(
+            downgrade_feedback.action,
+            Some(ToolsActionKind::InternalUtility(
                 ToolActionId::DowngradeManager
             ))
         );
         assert_eq!(
-            feedback.safe_message(),
-            "Downgrade Manager is not available in this Rust port yet."
+            downgrade_feedback.safe_message(),
+            "Open the Downgrade Manager workflow."
+        );
+        assert!(desktop.calls().is_empty());
+        assert!(clipboard.copied().is_empty());
+
+        let archive_feedback = service.execute_tools_action(ToolActionId::ArchivePatcher.as_str());
+
+        assert_eq!(
+            archive_feedback.outcome,
+            ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
+        );
+        assert_eq!(
+            archive_feedback.action,
+            Some(ToolsActionKind::DeferredUtility(
+                ToolActionId::ArchivePatcher
+            ))
+        );
+        assert_eq!(
+            archive_feedback.safe_message(),
+            "Archive Patcher is not available in this Rust port yet."
         );
         assert!(desktop.calls().is_empty());
         assert!(clipboard.copied().is_empty());
