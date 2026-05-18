@@ -21,9 +21,10 @@ use app::{
         overview_desktop_task, unavailable_action_error,
     },
     scanner_controller::{
-        SCANNER_ACTION_UNAVAILABLE_MESSAGE, ScannerController, ScannerControllerPhase,
-        ScannerScanWorkerRequest, ScannerTransitionResult, any_scanner_category_enabled,
-        scanner_action_completed_payload, scanner_scan_completed_payload,
+        SCANNER_ACTION_UNAVAILABLE_MESSAGE, ScannerAutoFixWorkerRequest, ScannerController,
+        ScannerControllerPhase, ScannerScanWorkerRequest, ScannerTransitionResult,
+        any_scanner_category_enabled, scanner_action_completed_payload,
+        scanner_auto_fix_completed_payload, scanner_scan_completed_payload,
     },
     settings_controller::SettingsController,
     tools_controller::{
@@ -31,6 +32,10 @@ use app::{
     },
 };
 use domain::{
+    autofix::{
+        AutoFixCompletion, AutoFixRejection, AutoFixRequest, AutoFixResultDetail,
+        AutoFixRevalidationPlan, AutoFixStatus, AutoFixStatusKind,
+    },
     discovery::{FALLOUT4_EXECUTABLE, Fallout4InstallType},
     f4se::{F4seDllRow, F4seGameTarget, F4seRowSeverity, F4seScanSnapshot, F4seScanStatus},
     mod_manager::ModManagerContext,
@@ -59,6 +64,7 @@ use platform::{
     settings_store::{AssetResolver, FileAssetResolver, SettingsStore},
 };
 use services::{
+    autofix::{AutoFixService, AutoFixServiceResult},
     discovery::{DiscoveredModManager, DiscoveryRequest, DiscoveryService},
     f4se::{
         F4seScanDiagnosticKind, F4seScanDiagnostics, F4seScanRequest, F4seScanService,
@@ -99,6 +105,12 @@ const SCANNER_ACTION_START_ERROR: &str = "Scanner action could not be started.";
 struct PreparedScannerScan {
     request: ScannerScanWorkerRequest,
     settings: AppSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct PreparedScannerAutoFix {
+    request: ScannerAutoFixWorkerRequest,
+    snapshot: ScannerScanSnapshot,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -187,6 +199,14 @@ struct ScannerUiProjection {
     file_list_first_column: String,
     file_list_second_column: String,
     file_list_rows: Vec<ScannerFileListUiRow>,
+    auto_fix_button_visible: bool,
+    auto_fix_button_label: String,
+    auto_fix_button_enabled: bool,
+    auto_fix_status_text: String,
+    auto_fix_results_visible: bool,
+    auto_fix_results_title: String,
+    auto_fix_results_summary: String,
+    auto_fix_results_details: String,
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -645,6 +665,18 @@ fn bind_scanner_callbacks(
                 && let Some(app) = app.upgrade()
             {
                 apply_current_scanner_state(&app, &controller);
+            }
+        }
+    });
+
+    app.on_scanner_auto_fix_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_auto_fix(&app, &controller, worker_runtime, scanner_sink.clone());
             }
         }
     });
@@ -1745,6 +1777,188 @@ fn toggle_scanner_file_list(app: &MainWindow, controller: &Arc<Mutex<ScannerCont
     }
 }
 
+fn request_scanner_auto_fix(
+    app: &MainWindow,
+    controller: &Arc<Mutex<ScannerController>>,
+    worker_runtime: WorkerRuntime,
+    scanner_sink: SlintEventLoopSink,
+) {
+    let Some(prepared) = prepare_scanner_auto_fix_request(controller) else {
+        apply_current_scanner_state(app, controller);
+        return;
+    };
+
+    apply_current_scanner_state(app, controller);
+
+    let request = prepared.request;
+    let snapshot = prepared.snapshot;
+    let task = request.task.clone();
+    let worker_task = task.clone();
+    let request_for_worker = request.clone();
+    let request_for_failure = request.clone();
+    tracing::info!(
+        event = "s08-scanner-autofix-schedule",
+        scan_id = request.scan_id,
+        result_index = request.result_index,
+        operation_key = %request.operation_key.as_id(),
+        task_id = %task.id,
+        "Scheduling Scanner Auto-Fix worker"
+    );
+
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |_context| {
+        build_scanner_auto_fix_payload(request_for_worker, snapshot)
+    }) {
+        tracing::error!(
+            event = "s08-scanner-autofix-spawn-failed",
+            scan_id = request_for_failure.scan_id,
+            result_index = request_for_failure.result_index,
+            operation_key = %request_for_failure.operation_key.as_id(),
+            task_id = %worker_task.id,
+            error = %error,
+            "Scanner Auto-Fix worker could not be scheduled"
+        );
+        with_scanner_controller_mut(controller, |controller| {
+            controller.auto_fix_spawn_failed(&request_for_failure, error);
+        });
+        apply_current_scanner_state(app, controller);
+    }
+}
+
+fn prepare_scanner_auto_fix_request(
+    controller: &Arc<Mutex<ScannerController>>,
+) -> Option<PreparedScannerAutoFix> {
+    with_scanner_controller_mut(controller, |controller| {
+        let request = controller.request_selected_auto_fix()?;
+        let snapshot = ScannerScanSnapshot::from_grouped(
+            request.scan_id,
+            controller.results().to_vec(),
+            controller.groups().to_vec(),
+            controller.status_text().to_owned(),
+        );
+        Some(PreparedScannerAutoFix { request, snapshot })
+    })
+    .flatten()
+}
+
+fn build_scanner_auto_fix_payload(
+    request: ScannerAutoFixWorkerRequest,
+    snapshot: ScannerScanSnapshot,
+) -> BlockingWorkerResult {
+    let filesystem = RealFilesystem::new();
+    let service = AutoFixService::new(&filesystem);
+    execute_scanner_auto_fix_with_service(request, snapshot, &service)
+}
+
+fn execute_scanner_auto_fix_with_service(
+    request: ScannerAutoFixWorkerRequest,
+    snapshot: ScannerScanSnapshot,
+    service: &AutoFixService<'_>,
+) -> BlockingWorkerResult {
+    tracing::info!(
+        event = "s08-scanner-autofix-worker-started",
+        scan_id = request.scan_id,
+        result_index = request.result_index,
+        operation_key = %request.operation_key.as_id(),
+        task_id = %request.task.id,
+        "Scanner Auto-Fix worker started"
+    );
+
+    let target_path = snapshot
+        .results
+        .get(request.result_index)
+        .and_then(|result| result.absolute_path.clone());
+    let auto_fix_request = AutoFixRequest {
+        scan_id: Some(request.scan_id),
+        operation_key: request.operation_key,
+        selection_identity: request.selection_identity.clone(),
+        target_path,
+        confirmation: None,
+        revalidation: AutoFixRevalidationPlan::required(request.selection_identity.clone()),
+    };
+
+    let completion = match service.execute(&snapshot, request.result_index, auto_fix_request) {
+        AutoFixServiceResult::Completed(completion) => completion,
+        AutoFixServiceResult::Rejected(rejection) => {
+            tracing::warn!(
+                event = "s08-scanner-autofix-rejected",
+                scan_id = ?rejection.scan_id,
+                result_index = ?rejection.result_index,
+                operation_key = %rejection
+                    .operation_key
+                    .map(|key| key.as_id())
+                    .unwrap_or("unknown"),
+                safe_message = %rejection.safe_message,
+                diagnostic = rejection.diagnostic.as_deref().unwrap_or(""),
+                "Scanner Auto-Fix service rejected the request"
+            );
+            auto_fix_completion_from_rejection(rejection, &request)
+        }
+    };
+
+    if completion.status.kind == AutoFixStatusKind::Fixed {
+        tracing::info!(
+            event = "s08-scanner-autofix-completed",
+            scan_id = ?completion.scan_id,
+            result_index = ?completion.result_index,
+            operation_key = %completion.operation_key.as_id(),
+            safe_message = %completion.status.safe_message,
+            "Scanner Auto-Fix worker completed"
+        );
+    } else {
+        tracing::warn!(
+            event = "s08-scanner-autofix-failed",
+            scan_id = ?completion.scan_id,
+            result_index = ?completion.result_index,
+            operation_key = %completion.operation_key.as_id(),
+            safe_message = %completion.status.safe_message,
+            diagnostic = completion.status.diagnostic.as_deref().unwrap_or(""),
+            "Scanner Auto-Fix worker completed with failure"
+        );
+    }
+
+    Ok(WorkerTaskOutcome::Completed(
+        scanner_auto_fix_completed_payload(completion),
+    ))
+}
+
+fn auto_fix_completion_from_rejection(
+    rejection: AutoFixRejection,
+    request: &ScannerAutoFixWorkerRequest,
+) -> AutoFixCompletion {
+    let selection_identity = rejection
+        .selection_identity
+        .clone()
+        .unwrap_or_else(|| request.selection_identity.clone());
+    let mut revalidation = AutoFixRevalidationPlan::required(selection_identity.clone());
+    if let Some(observed_identity) = rejection.observed_identity.clone() {
+        revalidation = revalidation.with_observed_identity(observed_identity);
+    }
+
+    let status = AutoFixStatus::new(AutoFixStatusKind::Failed, rejection.safe_message.clone());
+    let status = match rejection.diagnostic.clone() {
+        Some(diagnostic) => status.with_diagnostic(diagnostic),
+        None => status,
+    };
+    let detail = AutoFixResultDetail::new(
+        rejection.safe_message.clone(),
+        rejection.safe_message.clone(),
+    );
+    let detail = match rejection.diagnostic {
+        Some(diagnostic) => detail.with_diagnostic(diagnostic),
+        None => detail,
+    };
+
+    AutoFixCompletion {
+        scan_id: rejection.scan_id.or(Some(request.scan_id)),
+        result_index: rejection.result_index.or(Some(request.result_index)),
+        operation_key: rejection.operation_key.unwrap_or(request.operation_key),
+        selection_identity,
+        revalidation,
+        status,
+        detail,
+    }
+}
+
 fn request_scanner_action(
     app: &MainWindow,
     controller: &Arc<Mutex<ScannerController>>,
@@ -2588,7 +2802,11 @@ fn project_scanner_state(controller: &ScannerController) -> ScannerUiProjection 
         progress_text: controller.progress_text().to_owned(),
         progress_percent: controller.progress_percent(),
         result_count_text: controller.result_count_text().to_owned(),
-        result_rows: format_scanner_result_rows(controller.groups(), controller.results()),
+        result_rows: format_scanner_result_rows(
+            controller.groups(),
+            controller.results(),
+            controller,
+        ),
         show_mod_column: controller
             .results()
             .iter()
@@ -2622,6 +2840,14 @@ fn project_scanner_state(controller: &ScannerController) -> ScannerUiProjection 
         file_list_rows: visible_file_list
             .map(format_scanner_file_list_rows)
             .unwrap_or_default(),
+        auto_fix_button_visible: detail.auto_fix_button_visible,
+        auto_fix_button_label: detail.auto_fix_button_label,
+        auto_fix_button_enabled: detail.auto_fix_button_enabled,
+        auto_fix_status_text: detail.auto_fix_status_text,
+        auto_fix_results_visible: detail.auto_fix_results_visible,
+        auto_fix_results_title: detail.auto_fix_results_title,
+        auto_fix_results_summary: detail.auto_fix_results_summary,
+        auto_fix_results_details: detail.auto_fix_results_details,
     }
 }
 
@@ -2668,6 +2894,14 @@ struct ScannerDetailProjection {
     open_url_enabled: bool,
     copy_url_enabled: bool,
     file_list_enabled: bool,
+    auto_fix_button_visible: bool,
+    auto_fix_button_label: String,
+    auto_fix_button_enabled: bool,
+    auto_fix_status_text: String,
+    auto_fix_results_visible: bool,
+    auto_fix_results_title: String,
+    auto_fix_results_summary: String,
+    auto_fix_results_details: String,
 }
 
 fn project_scanner_detail(
@@ -2684,8 +2918,19 @@ fn project_scanner_detail(
             open_url_enabled: false,
             copy_url_enabled: false,
             file_list_enabled: false,
+            auto_fix_button_visible: false,
+            auto_fix_button_label: String::new(),
+            auto_fix_button_enabled: false,
+            auto_fix_status_text: String::new(),
+            auto_fix_results_visible: false,
+            auto_fix_results_title: String::new(),
+            auto_fix_results_summary: String::new(),
+            auto_fix_results_details: String::new(),
         };
     };
+
+    let auto_fix = detail.auto_fix.as_ref();
+    let auto_fix_result_detail = auto_fix.and_then(|state| state.result_detail.as_ref());
 
     ScannerDetailProjection {
         visible: true,
@@ -2709,6 +2954,26 @@ fn project_scanner_detail(
             detail,
             ScannerActionKind::ShowFileList,
         ),
+        auto_fix_button_visible: auto_fix.is_some(),
+        auto_fix_button_label: auto_fix
+            .map(|state| state.button.label.to_owned())
+            .unwrap_or_default(),
+        auto_fix_button_enabled: auto_fix
+            .map(|state| state.button.enabled)
+            .unwrap_or_default(),
+        auto_fix_status_text: auto_fix
+            .map(|state| state.status.safe_message.clone())
+            .unwrap_or_default(),
+        auto_fix_results_visible: auto_fix_result_detail.is_some(),
+        auto_fix_results_title: auto_fix_result_detail
+            .map(|result_detail| result_detail.title.to_owned())
+            .unwrap_or_default(),
+        auto_fix_results_summary: auto_fix_result_detail
+            .map(|result_detail| result_detail.safe_summary.clone())
+            .unwrap_or_default(),
+        auto_fix_results_details: auto_fix_result_detail
+            .map(|result_detail| result_detail.details.clone())
+            .unwrap_or_default(),
     }
 }
 
@@ -2733,6 +2998,7 @@ fn scanner_detail_has_enabled_action(
 fn format_scanner_result_rows(
     groups: &[ScannerResultGroup],
     flat_results: &[ScannerResult],
+    controller: &ScannerController,
 ) -> Vec<ScannerResultUiRow> {
     let mut rows = Vec::new();
     let mut used_flat_indices = vec![false; flat_results.len()];
@@ -2744,11 +3010,14 @@ fn format_scanner_result_rows(
             problem: group.label.as_str().into(),
             mod_name: SharedString::default(),
             has_mod: false,
+            row_fixed: false,
+            row_checked: false,
         });
 
         for result in &group.results {
             let result_index =
                 scanner_flat_result_index(result, flat_results, &mut used_flat_indices);
+            let row_state = controller.auto_fix_state_for_result(result_index);
             rows.push(ScannerResultUiRow {
                 row_kind: "result".into(),
                 result_index: usize_to_i32(result_index),
@@ -2760,6 +3029,8 @@ fn format_scanner_result_rows(
                     .unwrap_or_default()
                     .into(),
                 has_mod: result.mod_attribution.is_some(),
+                row_fixed: row_state.map(|state| state.row_fixed).unwrap_or_default(),
+                row_checked: row_state.map(|state| state.row_checked).unwrap_or_default(),
             });
         }
     }
@@ -2834,6 +3105,14 @@ fn apply_scanner_projection(app: &MainWindow, projection: ScannerUiProjection) {
     app.set_scanner_file_list_first_column(projection.file_list_first_column.as_str().into());
     app.set_scanner_file_list_second_column(projection.file_list_second_column.as_str().into());
     app.set_scanner_file_list_rows(model_from_vec(projection.file_list_rows));
+    app.set_scanner_auto_fix_button_visible(projection.auto_fix_button_visible);
+    app.set_scanner_auto_fix_button_label(projection.auto_fix_button_label.as_str().into());
+    app.set_scanner_auto_fix_button_enabled(projection.auto_fix_button_enabled);
+    app.set_scanner_auto_fix_status_text(projection.auto_fix_status_text.as_str().into());
+    app.set_scanner_auto_fix_results_visible(projection.auto_fix_results_visible);
+    app.set_scanner_auto_fix_results_title(projection.auto_fix_results_title.as_str().into());
+    app.set_scanner_auto_fix_results_summary(projection.auto_fix_results_summary.as_str().into());
+    app.set_scanner_auto_fix_results_details(projection.auto_fix_results_details.as_str().into());
 }
 
 fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
@@ -3219,9 +3498,13 @@ mod tests {
         domain::DomainState,
         platform::PlatformServices,
         services::ServiceLayer,
-        workers::WorkerRuntime,
+        workers::{WorkerRuntime, WorkerTaskStatus},
     };
     use crate::domain::{
+        autofix::{
+            AUTO_FIX_BUTTON_LABEL, AUTO_FIX_FAILED_BUTTON_LABEL, AUTO_FIX_FIXED_BUTTON_LABEL,
+            AUTO_FIX_RESULTS_TITLE, AUTO_FIXING_BUTTON_LABEL, AutoFixOperationKey,
+        },
         f4se::{
             F4SE_HEADING, F4SE_LEGEND_TEXT, F4SE_LOADING_TEXT, F4SE_TABLE_COLUMNS, F4seDllFacts,
             render_f4se_dll_row,
@@ -3231,13 +3514,17 @@ mod tests {
             ACTION_OPEN_URL_LABEL, DETAIL_LABEL_MOD, DETAIL_LABEL_PROBLEM, DETAIL_LABEL_SOLUTION,
             DETAIL_LABEL_SUMMARY, SCAN_BUTTON_LABEL, SCANNER_CATEGORY_LABELS,
             SCANNING_BUTTON_LABEL, ScannerExtraData, ScannerFileList, ScannerFileListEntry,
-            ScannerProblemType, ScannerResult, ScannerScanSnapshot,
+            ScannerProblemType, ScannerResult, ScannerScanSnapshot, ScannerSolutionKind,
         },
         tools::{
             ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
             ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, AboutActionId, AboutLinkId,
             IMAGE_RESOURCE_PATHS, TOOL_GROUPS, ToolActionId,
         },
+    };
+    use crate::services::autofix::{
+        AutoFixOperationContext, AutoFixOperationFailure, AutoFixOperationRunner,
+        AutoFixOperationSuccess, AutoFixOperationSupport, AutoFixRegistry,
     };
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
@@ -3669,7 +3956,7 @@ mod tests {
     }
 
     #[test]
-    fn s07_scanner_slint_contract_replaces_placeholder_with_read_only_surface() {
+    fn s08_scanner_autofix_slint_contract_replaces_placeholder_with_gated_auto_fix_surface() {
         assert!(SCANNER_SLINT.contains("export struct ScannerResultUiRow"));
         assert!(SCANNER_SLINT.contains("export struct ScannerFileListUiRow"));
         assert!(SCANNER_SLINT.contains("background: #202020;"));
@@ -3727,6 +4014,8 @@ mod tests {
             "problem: string",
             "mod_name: string",
             "has_mod: bool",
+            "row_fixed: bool",
+            "row_checked: bool",
             "value: string",
             "path: string",
         ] {
@@ -3740,6 +4029,7 @@ mod tests {
             "callback category-toggled(string, bool)",
             "callback scan-requested()",
             "callback result-selected(int)",
+            "callback auto-fix-requested()",
             "callback copy-details-requested()",
             "callback file-list-requested()",
             "callback open-path-requested()",
@@ -3752,19 +4042,26 @@ mod tests {
             );
         }
 
-        for prohibited in ["Auto-Fix", "Fixed!", "Fix Failed", "auto-fix"] {
-            assert!(
-                !SCANNER_SLINT.contains(prohibited),
-                "Scanner UI must not expose deferred write action marker {prohibited:?}"
-            );
-            assert!(
-                !MAIN_SLINT.contains(prohibited),
-                "MainWindow must not forward deferred write action marker {prohibited:?}"
-            );
-        }
+        assert_source_contains_in_order(
+            SCANNER_SLINT,
+            &[
+                "if root.scanner-auto-fix-button-visible: Button",
+                "text: root.scanner-auto-fix-button-label",
+                "enabled: root.scanner-auto-fix-button-enabled",
+                "root.auto-fix-requested()",
+                "if root.scanner-auto-fix-results-visible: GroupBox",
+                "title: root.scanner-auto-fix-results-title",
+                "text: root.scanner-auto-fix-results-summary",
+                "text: root.scanner-auto-fix-results-details",
+            ],
+        );
+        assert!(SCANNER_SLINT.contains("if root.entry.row_checked: Rectangle"));
+        assert!(!SCANNER_SLINT.contains("if !root.scanner-auto-fix-button-visible"));
 
         assert!(SCANNER_SLINT.contains(SCAN_BUTTON_LABEL));
         assert!(SCANNER_SLINT.contains(SCANNING_BUTTON_LABEL));
+        assert!(SCANNER_SLINT.contains(AUTO_FIX_BUTTON_LABEL));
+        assert!(SCANNER_SLINT.contains(AUTO_FIX_RESULTS_TITLE));
         assert!(SCANNER_SLINT.contains(ACTION_COPY_DETAILS_LABEL));
         assert!(SCANNER_SLINT.contains(ACTION_FILE_LIST_LABEL));
         assert!(SCANNER_SLINT.contains(ACTION_OPEN_URL_LABEL));
@@ -3776,7 +4073,7 @@ mod tests {
     }
 
     #[test]
-    fn s07_scanner_slint_contract_main_window_forwards_properties_models_and_callbacks() {
+    fn s08_scanner_autofix_slint_contract_main_window_forwards_properties_models_and_callbacks() {
         assert_source_contains_in_order(
             MAIN_SLINT,
             &[
@@ -3800,9 +4097,18 @@ mod tests {
                 "in-out property <bool> scanner-show-mod-column",
                 "in-out property <bool> scanner-detail-visible",
                 "in-out property <[ScannerFileListUiRow]> scanner-file-list-rows",
+                "in-out property <bool> scanner-auto-fix-button-visible",
+                "in-out property <string> scanner-auto-fix-button-label",
+                "in-out property <bool> scanner-auto-fix-button-enabled",
+                "in-out property <string> scanner-auto-fix-status-text",
+                "in-out property <bool> scanner-auto-fix-results-visible",
+                "in-out property <string> scanner-auto-fix-results-title",
+                "in-out property <string> scanner-auto-fix-results-summary",
+                "in-out property <string> scanner-auto-fix-results-details",
                 "callback scanner-category-toggled(string, bool)",
                 "callback scanner-scan-requested()",
                 "callback scanner-result-selected(int)",
+                "callback scanner-auto-fix-requested()",
                 "callback scanner-copy-details-requested()",
                 "callback scanner-file-list-requested()",
                 "callback scanner-open-path-requested()",
@@ -3825,9 +4131,18 @@ mod tests {
                 "scanner-race-subgraphs-enabled <=> root.scanner-race-subgraphs-enabled",
                 "scanner-result-rows <=> root.scanner-result-rows",
                 "scanner-file-list-rows <=> root.scanner-file-list-rows",
+                "scanner-auto-fix-button-visible <=> root.scanner-auto-fix-button-visible",
+                "scanner-auto-fix-button-label <=> root.scanner-auto-fix-button-label",
+                "scanner-auto-fix-button-enabled <=> root.scanner-auto-fix-button-enabled",
+                "scanner-auto-fix-status-text <=> root.scanner-auto-fix-status-text",
+                "scanner-auto-fix-results-visible <=> root.scanner-auto-fix-results-visible",
+                "scanner-auto-fix-results-title <=> root.scanner-auto-fix-results-title",
+                "scanner-auto-fix-results-summary <=> root.scanner-auto-fix-results-summary",
+                "scanner-auto-fix-results-details <=> root.scanner-auto-fix-results-details",
                 "root.scanner-category-toggled(id, enabled)",
                 "root.scanner-scan-requested()",
                 "root.scanner-result-selected(index)",
+                "root.scanner-auto-fix-requested()",
                 "root.scanner-copy-details-requested()",
                 "root.scanner-file-list-requested()",
                 "root.scanner-open-path-requested()",
@@ -3860,6 +4175,8 @@ mod tests {
         assert!(idle.result_rows.is_empty());
         assert!(!idle.detail_visible);
         assert!(!idle.show_mod_column);
+        assert!(!idle.auto_fix_button_visible);
+        assert!(!idle.auto_fix_results_visible);
 
         let request = controller
             .request_scan()
@@ -3921,6 +4238,11 @@ mod tests {
         assert!(selected.copy_url_enabled);
         assert!(selected.file_list_enabled);
         assert!(!selected.file_list_visible);
+        assert!(!selected.auto_fix_button_visible);
+        assert!(!selected.auto_fix_button_enabled);
+        assert_eq!(selected.auto_fix_button_label, "");
+        assert_eq!(selected.auto_fix_status_text, "");
+        assert!(!selected.auto_fix_results_visible);
 
         controller.toggle_file_list();
         let file_list = project_scanner_state(&controller);
@@ -4227,6 +4549,342 @@ mod tests {
         assert!(!projection.action_feedback.contains("raw worker"));
     }
 
+    #[test]
+    fn s08_scanner_autofix_runtime_wiring_empty_production_hidden_state_and_tampered_callback_rejected()
+     {
+        let mut controller = ScannerController::default();
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            ScannerScanSnapshot::from_results(
+                request.scan_id,
+                vec![scanner_autofix_runtime_result("desktop.ini")],
+                "Scanner scan complete.",
+            ),
+        );
+        controller.select_result(0);
+        let projection = project_scanner_state(&controller);
+
+        assert!(controller.auto_fix_support_catalog().is_empty());
+        assert!(!projection.auto_fix_button_visible);
+        assert!(!projection.auto_fix_button_enabled);
+        assert_eq!(projection.auto_fix_button_label, "");
+        assert_eq!(projection.auto_fix_status_text, "");
+        assert!(!projection.auto_fix_results_visible);
+        assert!(!projection.result_rows[1].row_fixed);
+        assert!(!projection.result_rows[1].row_checked);
+
+        let controller = Arc::new(Mutex::new(controller));
+        assert!(prepare_scanner_auto_fix_request(&controller).is_none());
+        let rejected = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+
+        assert_eq!(
+            rejected.status_text,
+            "Auto-Fix is not available for this result."
+        );
+        assert!(!rejected.auto_fix_button_visible);
+        assert!(!rejected.auto_fix_results_visible);
+    }
+
+    #[test]
+    fn s08_scanner_autofix_runtime_wiring_fake_projection_shows_button_and_rejects_repeated_fixing_click()
+     {
+        let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+        let ready = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+
+        assert!(ready.auto_fix_button_visible);
+        assert!(ready.auto_fix_button_enabled);
+        assert_eq!(ready.auto_fix_button_label, AUTO_FIX_BUTTON_LABEL);
+        assert_eq!(ready.auto_fix_status_text, "Fake Auto-Fix preview.");
+        assert!(!ready.auto_fix_results_visible);
+        assert!(!ready.result_rows[1].row_fixed);
+        assert!(!ready.result_rows[1].row_checked);
+
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        assert_eq!(prepared.request.task.kind, WorkerTaskKind::Patch);
+        assert_eq!(
+            prepared.request.operation_key,
+            AutoFixOperationKey::DeleteOrIgnoreFile
+        );
+
+        let fixing = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert!(fixing.auto_fix_button_visible);
+        assert!(!fixing.auto_fix_button_enabled);
+        assert_eq!(fixing.auto_fix_button_label, AUTO_FIXING_BUTTON_LABEL);
+        assert_eq!(fixing.auto_fix_status_text, "Auto-Fix is running...");
+
+        assert!(prepare_scanner_auto_fix_request(&controller).is_none());
+        let rejected_repeat = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert_eq!(
+            rejected_repeat.auto_fix_button_label,
+            AUTO_FIXING_BUTTON_LABEL
+        );
+        assert_eq!(rejected_repeat.status_text, "Auto-Fix is running...");
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn s08_scanner_autofix_runtime_wiring_fake_worker_success_shows_inline_results() {
+        let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        let task = prepared.request.task.clone();
+        let sink = workers::RecordingEventSink::new();
+        let handle = WorkerRuntime::new()
+            .spawn_blocking_task(task, sink.clone(), move |_context| {
+                let filesystem = RealFilesystem::new();
+                let service = AutoFixService::with_registry(
+                    &filesystem,
+                    scanner_autofix_runtime_registry(RuntimeAutoFixOutcome::Succeed),
+                );
+                execute_scanner_auto_fix_with_service(prepared.request, prepared.snapshot, &service)
+            })
+            .expect("active Tokio runtime should schedule fake Auto-Fix worker");
+
+        handle
+            .join()
+            .await
+            .expect("fake Auto-Fix worker should join");
+        let events = sink.events().expect("recorded events should be readable");
+        assert!(
+            events
+                .iter()
+                .any(|event| event.status == WorkerTaskStatus::Running)
+        );
+        assert!(
+            events
+                .iter()
+                .any(|event| event.status == WorkerTaskStatus::Completed)
+        );
+
+        with_scanner_controller_mut(&controller, |controller| {
+            for event in events {
+                handle_scanner_worker_event(controller, event);
+            }
+        });
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+
+        assert_eq!(
+            projection.auto_fix_button_label,
+            AUTO_FIX_FIXED_BUTTON_LABEL
+        );
+        assert!(projection.auto_fix_button_enabled);
+        assert_eq!(
+            projection.auto_fix_status_text,
+            "Fixed fake scanner result."
+        );
+        assert!(projection.auto_fix_results_visible);
+        assert_eq!(projection.auto_fix_results_title, AUTO_FIX_RESULTS_TITLE);
+        assert_eq!(
+            projection.auto_fix_results_summary,
+            "Fixed fake scanner result."
+        );
+        assert!(
+            projection
+                .auto_fix_results_details
+                .contains("Fixed delete-or-ignore-file at row 0.")
+        );
+        assert!(projection.result_rows[1].row_fixed);
+        assert!(projection.result_rows[1].row_checked);
+    }
+
+    #[test]
+    fn s08_scanner_autofix_runtime_wiring_fake_worker_failure_shows_safe_inline_results() {
+        let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        let filesystem = RealFilesystem::new();
+        let service = AutoFixService::with_registry(
+            &filesystem,
+            scanner_autofix_runtime_registry(RuntimeAutoFixOutcome::Fail),
+        );
+        let outcome = execute_scanner_auto_fix_with_service(
+            prepared.request.clone(),
+            prepared.snapshot,
+            &service,
+        )
+        .expect("fake service should return a controlled worker outcome");
+        let WorkerTaskOutcome::Completed(payload) = outcome else {
+            panic!("fake Auto-Fix should complete with a payload");
+        };
+
+        with_scanner_controller_mut(&controller, |controller| {
+            assert_eq!(
+                handle_scanner_worker_event(
+                    controller,
+                    WorkerEvent::completed(prepared.request.task, payload),
+                ),
+                ScannerTransitionResult::Applied
+            );
+        });
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+
+        assert_eq!(
+            projection.auto_fix_button_label,
+            AUTO_FIX_FAILED_BUTTON_LABEL
+        );
+        assert!(projection.auto_fix_button_enabled);
+        assert_eq!(
+            projection.auto_fix_status_text,
+            "Auto-Fix could not complete this operation."
+        );
+        assert!(projection.auto_fix_results_visible);
+        assert_eq!(
+            projection.auto_fix_results_details,
+            "The fake operation reported a controlled failure."
+        );
+        assert!(!projection.auto_fix_status_text.contains("raw fake"));
+        assert!(!projection.auto_fix_results_details.contains("raw fake"));
+        assert!(!projection.result_rows[1].row_fixed);
+        assert!(!projection.result_rows[1].row_checked);
+    }
+
+    #[test]
+    fn s08_scanner_autofix_runtime_wiring_worker_spawn_and_failure_feedback_are_safe() {
+        let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        let spawn_error = match WorkerRuntime::new().spawn_blocking_task(
+            prepared.request.task.clone(),
+            workers::RecordingEventSink::new(),
+            |_context| Ok(WorkerTaskOutcome::Completed(WorkerPayload::None)),
+        ) {
+            Ok(_) => panic!("spawning without an active Tokio runtime should fail safely"),
+            Err(error) => error,
+        };
+        with_scanner_controller_mut(&controller, |controller| {
+            controller.auto_fix_spawn_failed(&prepared.request, spawn_error);
+        });
+        let spawn_failed = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert_eq!(
+            spawn_failed.auto_fix_button_label,
+            AUTO_FIX_FAILED_BUTTON_LABEL
+        );
+        assert_eq!(
+            spawn_failed.auto_fix_status_text,
+            "Auto-Fix could not be started."
+        );
+        assert!(!spawn_failed.auto_fix_status_text.contains("runtime"));
+        assert!(spawn_failed.auto_fix_results_visible);
+
+        let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        with_scanner_controller_mut(&controller, |controller| {
+            assert_eq!(
+                handle_scanner_worker_event(
+                    controller,
+                    WorkerEvent::failed(
+                        prepared.request.task,
+                        WorkerFailure::new("Auto-Fix could not complete this operation.")
+                            .with_diagnostic("raw worker failure"),
+                    ),
+                ),
+                ScannerTransitionResult::Applied
+            );
+        });
+        let worker_failed = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert_eq!(
+            worker_failed.auto_fix_button_label,
+            AUTO_FIX_FAILED_BUTTON_LABEL
+        );
+        assert_eq!(
+            worker_failed.auto_fix_status_text,
+            "Auto-Fix could not complete this operation."
+        );
+        assert!(worker_failed.auto_fix_results_visible);
+        assert!(
+            !worker_failed
+                .auto_fix_results_details
+                .contains("raw worker")
+        );
+    }
+
+    #[test]
+    fn s08_scanner_autofix_runtime_wiring_stale_completion_is_ignored() {
+        let mut controller = ScannerController::with_auto_fix_support_catalog(
+            Default::default(),
+            scanner_autofix_runtime_registry(RuntimeAutoFixOutcome::Succeed).support_catalog(),
+        );
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            ScannerScanSnapshot::from_results(
+                request.scan_id,
+                vec![
+                    scanner_autofix_runtime_result("desktop.ini"),
+                    scanner_autofix_runtime_result("Thumbs.db"),
+                ],
+                "Scanner scan complete.",
+            ),
+        );
+        controller.select_result(0);
+        let controller = Arc::new(Mutex::new(controller));
+        let prepared = prepare_scanner_auto_fix_request(&controller)
+            .expect("fake supported result should prepare Auto-Fix worker data");
+        with_scanner_controller_mut(&controller, |controller| {
+            controller.select_result(1);
+        });
+
+        let filesystem = RealFilesystem::new();
+        let service = AutoFixService::with_registry(
+            &filesystem,
+            scanner_autofix_runtime_registry(RuntimeAutoFixOutcome::Succeed),
+        );
+        let outcome = execute_scanner_auto_fix_with_service(
+            prepared.request.clone(),
+            prepared.snapshot,
+            &service,
+        )
+        .expect("fake service should return a controlled worker outcome");
+        let WorkerTaskOutcome::Completed(payload) = outcome else {
+            panic!("fake Auto-Fix should complete with a payload");
+        };
+
+        let result = with_scanner_controller_mut(&controller, |controller| {
+            handle_scanner_worker_event(
+                controller,
+                WorkerEvent::completed(prepared.request.task, payload),
+            )
+        })
+        .expect("controller should be readable");
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+
+        assert_eq!(result, ScannerTransitionResult::StaleIgnored);
+        assert_eq!(projection.auto_fix_button_label, AUTO_FIX_BUTTON_LABEL);
+        assert!(!projection.result_rows[1].row_fixed);
+        assert!(!projection.result_rows[1].row_checked);
+        assert!(!projection.result_rows[2].row_fixed);
+        assert!(!projection.result_rows[2].row_checked);
+    }
+
     fn scanner_runtime_result() -> ScannerResult {
         ScannerResult::with_path(
             ScannerProblemType::UnexpectedFormat,
@@ -4240,6 +4898,83 @@ mod tests {
             1,
             PathBuf::from("Sound/example.mp3"),
         )]))
+    }
+
+    #[derive(Debug, Clone, Copy)]
+    enum RuntimeAutoFixOutcome {
+        Succeed,
+        Fail,
+    }
+
+    struct RuntimeAutoFixRunner {
+        outcome: RuntimeAutoFixOutcome,
+    }
+
+    impl AutoFixOperationRunner for RuntimeAutoFixRunner {
+        fn execute(
+            &self,
+            context: &AutoFixOperationContext<'_>,
+        ) -> Result<AutoFixOperationSuccess, AutoFixOperationFailure> {
+            match self.outcome {
+                RuntimeAutoFixOutcome::Succeed => Ok(AutoFixOperationSuccess::new(
+                    "Fixed fake scanner result.",
+                    format!(
+                        "Fixed {} at row {}.",
+                        context.operation_key.as_id(),
+                        context.result_index
+                    ),
+                )
+                .with_diagnostic("raw fake success diagnostic")),
+                RuntimeAutoFixOutcome::Fail => Err(AutoFixOperationFailure::new(
+                    "Auto-Fix could not complete this operation.",
+                    "The fake operation reported a controlled failure.",
+                )
+                .with_diagnostic("raw fake operation failure")),
+            }
+        }
+    }
+
+    fn scanner_autofix_runtime_registry(outcome: RuntimeAutoFixOutcome) -> AutoFixRegistry {
+        let mut registry = AutoFixRegistry::empty();
+        registry.register(
+            AutoFixOperationSupport::new(
+                AutoFixOperationKey::DeleteOrIgnoreFile,
+                "Fake Auto-Fix",
+                "Fake Auto-Fix preview.",
+            ),
+            RuntimeAutoFixRunner { outcome },
+        );
+        registry
+    }
+
+    fn scanner_autofix_runtime_controller() -> ScannerController {
+        let registry = scanner_autofix_runtime_registry(RuntimeAutoFixOutcome::Succeed);
+        let mut controller = ScannerController::with_auto_fix_support_catalog(
+            Default::default(),
+            registry.support_catalog(),
+        );
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            ScannerScanSnapshot::from_results(
+                request.scan_id,
+                vec![scanner_autofix_runtime_result("desktop.ini")],
+                "Scanner scan complete.",
+            ),
+        );
+        controller.select_result(0);
+        controller
+    }
+
+    fn scanner_autofix_runtime_result(name: &str) -> ScannerResult {
+        ScannerResult::with_path(
+            ScannerProblemType::JunkFile,
+            PathBuf::from(format!("C:/Games/Fallout 4/Data/{name}")),
+            PathBuf::from(name),
+            "This is a junk file not used by the game or mod managers.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::DeleteOrIgnoreFile)
     }
 
     fn main_test_settings_controller(

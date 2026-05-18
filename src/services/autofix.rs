@@ -832,6 +832,8 @@ fn validate_target(
     Ok(())
 }
 
+// Keep owned rejection diagnostics available without changing the public service payload shape.
+#[allow(clippy::result_large_err)]
 fn validate_revalidation(
     request: &AutoFixRequest,
     scan_id: u64,

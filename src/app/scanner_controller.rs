@@ -770,6 +770,18 @@ impl ScannerController {
         let operation_key = selected_auto_fix.operation_key;
         let selection_identity = selected_auto_fix.selection_identity.clone();
 
+        if selected_auto_fix.button.kind == AutoFixStatusKind::Fixing {
+            self.reject_auto_fix_request(
+                "already-running",
+                SCANNER_AUTO_FIX_RUNNING_MESSAGE,
+                Some(scan_id),
+                Some(result_index),
+                Some(operation_key),
+                Some(selection_identity),
+            );
+            return None;
+        }
+
         if self.latest_scan_id != Some(scan_id) {
             self.reject_auto_fix_request(
                 "scan-mismatch",

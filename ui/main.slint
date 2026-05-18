@@ -68,6 +68,14 @@ export component MainWindow inherits Window {
     in-out property <string> scanner-file-list-first-column: "Value";
     in-out property <string> scanner-file-list-second-column: "File";
     in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
+    in-out property <bool> scanner-auto-fix-button-visible: false;
+    in-out property <string> scanner-auto-fix-button-label: "Auto-Fix";
+    in-out property <bool> scanner-auto-fix-button-enabled: false;
+    in-out property <string> scanner-auto-fix-status-text: "";
+    in-out property <bool> scanner-auto-fix-results-visible: false;
+    in-out property <string> scanner-auto-fix-results-title: "Auto-Fix Results";
+    in-out property <string> scanner-auto-fix-results-summary: "";
+    in-out property <string> scanner-auto-fix-results-details: "";
     property <int> active-tab-index: 0;
     property <bool> f4se-tab-activation-observed: false;
     in-out property <string> tools-last-action-error: "";
@@ -91,6 +99,7 @@ export component MainWindow inherits Window {
     callback scanner-category-toggled(string, bool);
     callback scanner-scan-requested();
     callback scanner-result-selected(int);
+    callback scanner-auto-fix-requested();
     callback scanner-copy-details-requested();
     callback scanner-file-list-requested();
     callback scanner-open-path-requested();
@@ -209,6 +218,14 @@ export component MainWindow inherits Window {
                 scanner-file-list-first-column <=> root.scanner-file-list-first-column;
                 scanner-file-list-second-column <=> root.scanner-file-list-second-column;
                 scanner-file-list-rows <=> root.scanner-file-list-rows;
+                scanner-auto-fix-button-visible <=> root.scanner-auto-fix-button-visible;
+                scanner-auto-fix-button-label <=> root.scanner-auto-fix-button-label;
+                scanner-auto-fix-button-enabled <=> root.scanner-auto-fix-button-enabled;
+                scanner-auto-fix-status-text <=> root.scanner-auto-fix-status-text;
+                scanner-auto-fix-results-visible <=> root.scanner-auto-fix-results-visible;
+                scanner-auto-fix-results-title <=> root.scanner-auto-fix-results-title;
+                scanner-auto-fix-results-summary <=> root.scanner-auto-fix-results-summary;
+                scanner-auto-fix-results-details <=> root.scanner-auto-fix-results-details;
                 category-toggled(id, enabled) => {
                     root.scanner-category-toggled(id, enabled);
                 }
@@ -217,6 +234,9 @@ export component MainWindow inherits Window {
                 }
                 result-selected(index) => {
                     root.scanner-result-selected(index);
+                }
+                auto-fix-requested => {
+                    root.scanner-auto-fix-requested();
                 }
                 copy-details-requested => {
                     root.scanner-copy-details-requested();

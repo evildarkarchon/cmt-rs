@@ -6,6 +6,8 @@ export struct ScannerResultUiRow {
     problem: string,
     mod_name: string,
     has_mod: bool,
+    row_fixed: bool,
+    row_checked: bool,
 }
 
 export struct ScannerFileListUiRow {
@@ -149,10 +151,27 @@ component ScannerResultRow inherits Rectangle {
         spacing: 8px;
         alignment: start;
 
+        if root.entry.row_checked: Rectangle {
+            width: 16px;
+            height: 16px;
+            border-radius: 8px;
+            background: #2f5f3a;
+            border-color: #69b779;
+            border-width: 1px;
+
+            Text {
+                text: "✓";
+                color: #e4ffe8;
+                font-size: 11px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
         Text {
             text: root.entry.problem;
             width: root.show-mod-column ? 358px : 550px;
-            color: root.group-row ? #f3f3f3 : #d8d8d8;
+            color: root.group-row ? #f3f3f3 : (root.entry.row_fixed ? #bde7c5 : #d8d8d8);
             font-size: root.group-row ? 13px : 12px;
             font-weight: root.group-row ? 700 : 400;
             vertical-alignment: center;
@@ -370,10 +389,19 @@ export component ScannerTab inherits Rectangle {
     in-out property <string> scanner-file-list-first-column: "Value";
     in-out property <string> scanner-file-list-second-column: "File";
     in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
+    in-out property <bool> scanner-auto-fix-button-visible: false;
+    in-out property <string> scanner-auto-fix-button-label: "Auto-Fix";
+    in-out property <bool> scanner-auto-fix-button-enabled: false;
+    in-out property <string> scanner-auto-fix-status-text: "";
+    in-out property <bool> scanner-auto-fix-results-visible: false;
+    in-out property <string> scanner-auto-fix-results-title: "Auto-Fix Results";
+    in-out property <string> scanner-auto-fix-results-summary: "";
+    in-out property <string> scanner-auto-fix-results-details: "";
 
     callback category-toggled(string, bool);
     callback scan-requested();
     callback result-selected(int);
+    callback auto-fix-requested();
     callback copy-details-requested();
     callback file-list-requested();
     callback open-path-requested();
@@ -606,6 +634,12 @@ export component ScannerTab inherits Rectangle {
                             clicked => { root.copy-details-requested(); }
                         }
 
+                        if root.scanner-auto-fix-button-visible: Button {
+                            text: root.scanner-auto-fix-button-label;
+                            enabled: root.scanner-auto-fix-button-enabled;
+                            clicked => { root.auto-fix-requested(); }
+                        }
+
                         if root.scanner-file-list-enabled: Button {
                             text: "File List";
                             clicked => { root.file-list-requested(); }
@@ -624,6 +658,38 @@ export component ScannerTab inherits Rectangle {
                         if root.scanner-copy-url-enabled: Button {
                             text: "Copy URL";
                             clicked => { root.copy-url-requested(); }
+                        }
+                    }
+
+                    if root.scanner-auto-fix-button-visible && root.scanner-auto-fix-status-text != "": Text {
+                        text: root.scanner-auto-fix-status-text;
+                        color: #a8dcae;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    if root.scanner-auto-fix-results-visible: GroupBox {
+                        title: root.scanner-auto-fix-results-title;
+
+                        VerticalLayout {
+                            padding: 8px;
+                            spacing: 6px;
+                            alignment: start;
+
+                            Text {
+                                text: root.scanner-auto-fix-results-summary;
+                                color: #f3f3f3;
+                                font-size: 12px;
+                                font-weight: 600;
+                                wrap: word-wrap;
+                            }
+
+                            Text {
+                                text: root.scanner-auto-fix-results-details;
+                                color: #d8d8d8;
+                                font-size: 11px;
+                                wrap: word-wrap;
+                            }
                         }
                     }
 
