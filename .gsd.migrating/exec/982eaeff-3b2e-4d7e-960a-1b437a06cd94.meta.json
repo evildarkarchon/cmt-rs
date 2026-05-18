@@ -1,0 +1,18 @@
+{
+  "id": "982eaeff-3b2e-4d7e-960a-1b437a06cd94",
+  "runtime": "bash",
+  "purpose": "Run targeted downgrader executor tests after formatting",
+  "script_chars": 30,
+  "started_at": "2026-05-18T11:04:35.942Z",
+  "finished_at": "2026-05-18T11:05:15.167Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 39225,
+  "stdout_bytes": 805,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\982eaeff-3b2e-4d7e-960a-1b437a06cd94.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\982eaeff-3b2e-4d7e-960a-1b437a06cd94.stderr"
+}

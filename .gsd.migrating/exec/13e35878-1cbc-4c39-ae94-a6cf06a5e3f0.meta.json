@@ -1,0 +1,18 @@
+{
+  "id": "13e35878-1cbc-4c39-ae94-a6cf06a5e3f0",
+  "runtime": "bash",
+  "purpose": "Inspect oxidelta crate metadata and docs link for xdelta applier feasibility",
+  "script_chars": 19,
+  "started_at": "2026-05-18T10:39:50.709Z",
+  "finished_at": "2026-05-18T10:39:51.064Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 355,
+  "stdout_bytes": 716,
+  "stderr_bytes": 29,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\13e35878-1cbc-4c39-ae94-a6cf06a5e3f0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\13e35878-1cbc-4c39-ae94-a6cf06a5e3f0.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "256e1e73-3baa-4768-b435-912cf03001e5",
+  "runtime": "bash",
+  "purpose": "Format after downgrader helper refactor",
+  "script_chars": 9,
+  "started_at": "2026-05-18T11:08:20.093Z",
+  "finished_at": "2026-05-18T11:08:20.729Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 636,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\256e1e73-3baa-4768-b435-912cf03001e5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\256e1e73-3baa-4768-b435-912cf03001e5.stderr"
+}

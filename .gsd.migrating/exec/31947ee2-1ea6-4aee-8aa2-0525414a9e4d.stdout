@@ -1,0 +1,11 @@
+Diff in /mnt/j/cmt-rs/src/main.rs:5181:
+                 "callback modal-close-requested()",
+             ],
+         );
+[31m-        assert!(DOWNGRADER_SLINT.contains("Review the plan, then click Patch All again to confirm."));
+(B[m[32m+        assert!(
+(B[m[32m+            DOWNGRADER_SLINT.contains("Review the plan, then click Patch All again to confirm.")
+(B[m[32m+        );
+(B[m         assert!(DOWNGRADER_SLINT.contains("root.confirm-requested()"));
+         assert!(DOWNGRADER_SLINT.contains("root.patch-requested()"));
+         assert!(DOWNGRADER_SLINT.contains("close/Escape"));

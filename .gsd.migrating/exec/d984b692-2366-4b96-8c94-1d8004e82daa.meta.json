@@ -1,0 +1,18 @@
+{
+  "id": "d984b692-2366-4b96-8c94-1d8004e82daa",
+  "runtime": "bash",
+  "purpose": "S06 inspect cached pelite exports API",
+  "script_chars": 674,
+  "started_at": "2026-05-18T03:18:06.927Z",
+  "finished_at": "2026-05-18T03:18:07.091Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 164,
+  "stdout_bytes": 4939,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d984b692-2366-4b96-8c94-1d8004e82daa.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d984b692-2366-4b96-8c94-1d8004e82daa.stderr"
+}

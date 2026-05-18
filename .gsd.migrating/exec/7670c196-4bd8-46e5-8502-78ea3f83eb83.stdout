@@ -1,0 +1,16 @@
+
+running 11 tests
+test app::f4se_controller::tests::f4se_controller_worker_failure_event_surfaces_safe_message_without_diagnostic ... ok
+test app::f4se_controller::tests::f4se_controller_initial_scan_is_lazy_and_requested_once ... ok
+test app::f4se_controller::tests::f4se_controller_failed_worker_event_with_unmatched_task_id_is_ignored ... ok
+test app::f4se_controller::tests::f4se_controller_scan_started_sets_loading_state_for_active_scan ... ok
+test app::f4se_controller::tests::f4se_controller_non_f4se_scan_payload_is_ignored ... ok
+test app::f4se_controller::tests::f4se_controller_scan_ids_increment_monotonically ... ok
+test app::f4se_controller::tests::f4se_controller_spawn_failure_surfaces_safe_loading_error ... ok
+test app::f4se_controller::tests::f4se_controller_unknown_game_warning_rows_remain_visible_after_completion ... ok
+test app::f4se_controller::tests::f4se_controller_worker_payload_applies_latest_ready_rows ... ok
+test app::f4se_controller::tests::f4se_controller_unrelated_payload_is_ignored_and_preserves_ready_rows ... ok
+test app::f4se_controller::tests::f4se_controller_stale_completion_is_ignored_and_preserves_ready_rows ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 196 filtered out; finished in 0.01s
+

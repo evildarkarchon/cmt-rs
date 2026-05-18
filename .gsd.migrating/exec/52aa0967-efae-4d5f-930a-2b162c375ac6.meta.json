@@ -1,0 +1,18 @@
+{
+  "id": "52aa0967-efae-4d5f-930a-2b162c375ac6",
+  "runtime": "bash",
+  "purpose": "final grep for stale S09 deferred text",
+  "script_chars": 161,
+  "started_at": "2026-05-18T12:03:29.901Z",
+  "finished_at": "2026-05-18T12:03:30.043Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 142,
+  "stdout_bytes": 45,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\52aa0967-efae-4d5f-930a-2b162c375ac6.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\52aa0967-efae-4d5f-930a-2b162c375ac6.stderr"
+}

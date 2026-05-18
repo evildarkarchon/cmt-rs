@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T04",
+  "unitId": "M001/S09/T04",
+  "timestamp": 1779104493268,
+  "passed": true,
+  "discoverySource": "task-plan",
+  "checks": [
+    {
+      "command": "cargo test downgrader_controller\ncargo test downgrader_worker_payload",
+      "exitCode": 0,
+      "durationMs": 19406,
+      "verdict": "pass"
+    }
+  ]
+}

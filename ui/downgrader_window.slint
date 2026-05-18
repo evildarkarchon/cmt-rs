@@ -1,0 +1,505 @@
+import { Button, GroupBox, ScrollView } from "std-widgets.slint";
+
+export struct DowngraderStatusUiRow {
+    display-name: string,
+    status: string,
+    severity: string,
+    detail: string,
+}
+
+export struct DowngraderPlanUiRow {
+    display-name: string,
+    action: string,
+    detail: string,
+    severity: string,
+}
+
+export struct DowngraderLogUiRow {
+    level: string,
+    message: string,
+}
+
+component DowngraderStatusText inherits Text {
+    in property <string> severity: "unknown";
+
+    color: root.severity == "old-gen" ? #1e90ff :
+        root.severity == "next-gen" ? #ab82ff :
+        root.severity == "anniversary" ? #fa8072 :
+        root.severity == "good" ? #8fdc8f :
+        root.severity == "warning" ? #ffd166 :
+        root.severity == "error" ? #ff7b7b :
+        root.severity == "neutral" ? #a8a8a8 :
+        #d8d8d8;
+}
+
+component DowngraderOptionRadio inherits Rectangle {
+    in property <string> text;
+    in property <string> target-id;
+    in property <bool> checked;
+    in property <bool> enabled: true;
+    callback selected(string);
+
+    height: 22px;
+    min-width: 112px;
+    opacity: root.enabled ? 1 : 0.55;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Rectangle {
+            width: 13px;
+            height: 13px;
+            border-radius: 7px;
+            border-width: 1px;
+            border-color: root.checked ? #4da3ff : #9a9a9a;
+
+            Rectangle {
+                width: 7px;
+                height: 7px;
+                x: 3px;
+                y: 3px;
+                border-radius: 4px;
+                background: root.checked ? #4da3ff : transparent;
+            }
+        }
+
+        Text {
+            text: root.text;
+            color: #f3f3f3;
+            font-size: 13px;
+            vertical-alignment: center;
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            if (root.enabled) {
+                root.selected(root.target-id);
+            }
+        }
+    }
+}
+
+component DowngraderOptionCheck inherits Rectangle {
+    in property <string> text;
+    in property <string> option-id;
+    in-out property <bool> checked: false;
+    in property <bool> enabled: true;
+    callback toggled(string, bool);
+
+    height: 24px;
+    min-width: 126px;
+    opacity: root.enabled ? 1 : 0.55;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Rectangle {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            border-width: 1px;
+            border-color: root.checked ? #4da3ff : #9a9a9a;
+            background: root.checked ? #1f466d : #262626;
+
+            Text {
+                text: root.checked ? "✓" : "";
+                color: #eef7ff;
+                font-size: 10px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        Text {
+            text: root.text;
+            color: #f3f3f3;
+            font-size: 13px;
+            vertical-alignment: center;
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            if (root.enabled) {
+                root.checked = !root.checked;
+                root.toggled(root.option-id, root.checked);
+            }
+        }
+    }
+}
+
+component DowngraderStatusGroup inherits Rectangle {
+    in property <string> title;
+    in property <string> fixed-file-labels;
+    in property <[DowngraderStatusUiRow]> rows;
+
+    height: 92px;
+
+    GroupBox {
+        title: root.title;
+
+        HorizontalLayout {
+            padding: 6px;
+            spacing: 8px;
+            alignment: start;
+
+            Text {
+                text: root.fixed-file-labels;
+                width: 134px;
+                color: #f3f3f3;
+                font-size: 12px;
+                horizontal-alignment: right;
+                vertical-alignment: top;
+            }
+
+            VerticalLayout {
+                spacing: 0px;
+                alignment: start;
+
+                for row in root.rows: DowngraderStatusText {
+                    text: row.status;
+                    severity: row.severity;
+                    height: 19px;
+                    font-size: 12px;
+                    horizontal-alignment: right;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}
+
+component DowngraderPlanRowItem inherits Rectangle {
+    in property <DowngraderPlanUiRow> entry;
+
+    min-height: root.entry.detail == "" ? 22px : 40px;
+    background: root.entry.severity == "error" ? #3a2020 : #252525;
+    border-color: root.entry.severity == "error" ? #8a4545 : #383838;
+    border-width: 1px;
+    border-radius: 3px;
+
+    VerticalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        spacing: 1px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+
+            Text {
+                text: root.entry.display-name + ":";
+                width: 132px;
+                color: #f3f3f3;
+                font-size: 11px;
+                horizontal-alignment: right;
+                vertical-alignment: top;
+            }
+
+            Text {
+                text: root.entry.action;
+                color: root.entry.severity == "error" ? #ffb8b8 : #d8d8d8;
+                font-size: 11px;
+                wrap: word-wrap;
+            }
+        }
+
+        if root.entry.detail != "": HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+
+            Text {
+                text: "";
+                width: 132px;
+                font-size: 10px;
+            }
+
+            Text {
+                text: root.entry.detail;
+                color: #a8a8a8;
+                font-size: 10px;
+                wrap: word-wrap;
+            }
+        }
+    }
+}
+
+component DowngraderLogRowItem inherits Rectangle {
+    in property <DowngraderLogUiRow> entry;
+
+    min-height: 18px;
+
+    Text {
+        text: root.entry.message;
+        color: root.entry.level == "good" ? #8fdc8f :
+            root.entry.level == "bad" ? #ff7b7b :
+            #8ecbff;
+        font-size: 11px;
+        wrap: word-wrap;
+    }
+}
+
+component DowngraderProgressBar inherits Rectangle {
+    in property <float> percent: 0;
+
+    height: 10px;
+    background: #303030;
+    border-color: #484848;
+    border-width: 1px;
+
+    Rectangle {
+        x: 1px;
+        y: 1px;
+        height: parent.height - 2px;
+        width: (parent.width - 2px) * root.percent / 100;
+        background: #4da3ff;
+    }
+}
+
+// The Tk reference uses Toplevel grab plus WM_DELETE/Escape veto while patching.
+// Slint markup is kept as a source contract: runtime code must route platform
+// close/Escape requests into modal-close-requested() and honor close-blocked
+// while a confirmed Downgrader run is active.
+export component DowngraderWindow inherits Window {
+    in-out property <[DowngraderStatusUiRow]> current-game-status-rows;
+    in-out property <[DowngraderStatusUiRow]> current-creation-kit-status-rows;
+    in-out property <string> selected-target: "old_gen";
+    in-out property <bool> keep-backups: true;
+    in-out property <bool> delete-patches: false;
+    in-out property <[DowngraderPlanUiRow]> plan-rows;
+    in-out property <bool> plan-visible: false;
+    in-out property <string> confirmation-state: "idle";
+    in-out property <string> plan-confirmation-text: "Review the plan, then click Patch All again to confirm.";
+    in-out property <[DowngraderLogUiRow]> log-rows;
+    in-out property <string> log-text: "Patches will be downloaded and applied as-needed.";
+    in-out property <float> progress-percent: 0;
+    in-out property <string> progress-text: "";
+    in-out property <bool> patch-enabled: false;
+    in-out property <bool> about-enabled: true;
+    in-out property <bool> controls-enabled: true;
+    in-out property <bool> close-blocked: false;
+    in-out property <string> close-blocked-text: "Patching is in progress. Close is disabled until patching finishes.";
+
+    callback target-selected(string);
+    callback option-toggled(string, bool);
+    callback patch-requested();
+    callback confirm-requested();
+    callback about-requested();
+    callback modal-close-requested();
+
+    title: "Downgrader";
+    width: 600px;
+    height: 334px;
+
+    Rectangle {
+        background: #202020;
+
+        VerticalLayout {
+            padding: 8px;
+            spacing: 6px;
+            alignment: start;
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                VerticalLayout {
+                    spacing: 6px;
+                    alignment: start;
+
+                    DowngraderStatusGroup {
+                        title: "Current Game";
+                        fixed-file-labels: "Fallout4.exe:\nFallout4Launcher.exe:\nsteam_api64.dll:";
+                        rows: root.current-game-status-rows;
+                    }
+
+                    DowngraderStatusGroup {
+                        title: "Current Creation Kit";
+                        fixed-file-labels: "CreationKit.exe:\nArchive2.exe:\nArchive2Interop.dll:";
+                        rows: root.current-creation-kit-status-rows;
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    width: 142px;
+
+                    GroupBox {
+                        title: "Desired Version";
+                        height: 92px;
+
+                        VerticalLayout {
+                            padding: 6px;
+                            spacing: 6px;
+                            alignment: start;
+
+                            DowngraderOptionRadio {
+                                text: "Old-Gen";
+                                target-id: "old_gen";
+                                checked: root.selected-target == "old_gen";
+                                enabled: root.controls-enabled;
+                                selected(target_id) => {
+                                    root.selected-target = target_id;
+                                    root.target-selected(target_id);
+                                }
+                            }
+
+                            DowngraderOptionRadio {
+                                text: "Next-Gen";
+                                target-id: "next_gen";
+                                checked: root.selected-target == "next_gen";
+                                enabled: root.controls-enabled;
+                                selected(target_id) => {
+                                    root.selected-target = target_id;
+                                    root.target-selected(target_id);
+                                }
+                            }
+                        }
+                    }
+
+                    GroupBox {
+                        title: "Options";
+                        height: 92px;
+
+                        VerticalLayout {
+                            padding: 6px;
+                            spacing: 6px;
+                            alignment: start;
+
+                            DowngraderOptionCheck {
+                                text: "Keep Backups";
+                                option-id: "keep_backups";
+                                checked <=> root.keep-backups;
+                                enabled: root.controls-enabled;
+                                toggled(option_id, enabled) => {
+                                    root.option-toggled(option_id, enabled);
+                                }
+                            }
+
+                            DowngraderOptionCheck {
+                                text: "Delete Patches";
+                                option-id: "delete_patches";
+                                checked <=> root.delete-patches;
+                                enabled: root.controls-enabled;
+                                toggled(option_id, enabled) => {
+                                    root.option-toggled(option_id, enabled);
+                                }
+                            }
+                        }
+                    }
+                }
+
+                VerticalLayout {
+                    spacing: 6px;
+                    alignment: start;
+                    width: 86px;
+
+                    Button {
+                        text: "Patch\n All";
+                        enabled: root.patch-enabled;
+                        height: 92px;
+                        clicked => {
+                            if (root.confirmation-state == "needs-confirmation") {
+                                root.confirm-requested();
+                            } else {
+                                root.patch-requested();
+                            }
+                        }
+                    }
+
+                    Button {
+                        text: "About";
+                        enabled: root.about-enabled;
+                        height: 36px;
+                        clicked => {
+                            root.about-requested();
+                        }
+                    }
+
+                    if root.close-blocked: Text {
+                        text: root.close-blocked-text;
+                        color: #ffd166;
+                        font-size: 10px;
+                        wrap: word-wrap;
+                    }
+                }
+            }
+
+            if root.plan-visible: GroupBox {
+                title: "Plan";
+                height: 76px;
+
+                VerticalLayout {
+                    padding: 5px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    Text {
+                        text: root.plan-confirmation-text;
+                        color: #f3f3f3;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    ScrollView {
+                        height: 44px;
+
+                        VerticalLayout {
+                            spacing: 3px;
+                            alignment: start;
+
+                            for row in root.plan-rows: DowngraderPlanRowItem {
+                                entry: row;
+                            }
+                        }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Log";
+                height: root.plan-visible ? 58px : 134px;
+
+                ScrollView {
+                    VerticalLayout {
+                        padding: 5px;
+                        spacing: 2px;
+                        alignment: start;
+
+                        if root.log-rows.length == 0: DowngraderLogRowItem {
+                            entry: { level: "info", message: root.log-text };
+                        }
+
+                        for row in root.log-rows: DowngraderLogRowItem {
+                            entry: row;
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                DowngraderProgressBar {
+                    percent: root.progress-percent;
+                }
+
+                Text {
+                    text: root.progress-text;
+                    color: #a8a8a8;
+                    font-size: 11px;
+                    width: 138px;
+                    vertical-alignment: center;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,75 @@
+
+running 9 tests
+test domain::f4se::tests::f4se_domain_icon_mapping_matches_reference ... ok
+test domain::f4se::tests::f4se_domain_f4se_without_version_export_is_confirmed_unsupported_for_ngae ... ok
+test domain::f4se::tests::f4se_domain_current_game_mapping_is_target_specific ... ok
+test domain::f4se::tests::f4se_domain_scan_snapshot_models_loading_and_safe_errors ... ok
+test domain::f4se::tests::f4se_domain_reference_strings_are_locked ... ok
+test domain::f4se::tests::f4se_domain_unknown_game_target_warns_without_hiding_facts ... ok
+test domain::f4se::tests::f4se_domain_ambiguous_ngae_rendering_uses_warning_icons ... ok
+test domain::f4se::tests::f4se_domain_non_f4se_rendering_matches_reference ... ok
+test domain::f4se::tests::f4se_domain_inspection_failures_render_safe_unknown_cells ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 205 filtered out; finished in 0.00s
+
+
+running 10 tests
+test services::f4se::tests::f4se_scan_service_missing_data_for_absent_installation_or_data_path ... ok
+test services::f4se::tests::f4se_scan_service_missing_plugins_message_respects_manager_hint ... ok
+test services::f4se::tests::f4se_scan_service_plugins_read_error_returns_safe_scan_error ... ok
+test services::f4se::tests::f4se_scan_service_empty_plugin_folder_is_ready_with_zero_rows ... ok
+test services::f4se::tests::f4se_scan_service_unreadable_file_stays_visible_as_warning_row ... ok
+test services::f4se::tests::f4se_scan_service_msdia_ignore_skips_reference_helper_dlls ... ok
+test services::f4se::tests::f4se_scan_service_unknown_game_target_keeps_your_game_warning ... ok
+test services::f4se::tests::f4se_scan_service_classification_rows_use_export_facts ... ok
+test services::f4se::tests::f4se_scan_service_malformed_parser_failure_stays_visible_and_continues ... ok
+test services::f4se::tests::f4se_scan_service_direct_child_only_enumeration_and_deterministic_order ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 204 filtered out; finished in 0.01s
+
+
+running 2 tests
+test services::f4se::tests::f4se_dll_inspector_compatible_version_mapping_only_proves_known_runtime_support ... ok
+test services::f4se::tests::f4se_dll_inspector_malformed_bytes_return_typed_parse_failure ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.00s
+
+
+running 11 tests
+test app::f4se_controller::tests::f4se_controller_scan_ids_increment_monotonically ... ok
+test app::f4se_controller::tests::f4se_controller_initial_scan_is_lazy_and_requested_once ... ok
+test app::f4se_controller::tests::f4se_controller_scan_started_sets_loading_state_for_active_scan ... ok
+test app::f4se_controller::tests::f4se_controller_worker_failure_event_surfaces_safe_message_without_diagnostic ... ok
+test app::f4se_controller::tests::f4se_controller_non_f4se_scan_payload_is_ignored ... ok
+test app::f4se_controller::tests::f4se_controller_failed_worker_event_with_unmatched_task_id_is_ignored ... ok
+test app::f4se_controller::tests::f4se_controller_spawn_failure_surfaces_safe_loading_error ... ok
+test app::f4se_controller::tests::f4se_controller_unknown_game_warning_rows_remain_visible_after_completion ... ok
+test app::f4se_controller::tests::f4se_controller_unrelated_payload_is_ignored_and_preserves_ready_rows ... ok
+test app::f4se_controller::tests::f4se_controller_stale_completion_is_ignored_and_preserves_ready_rows ... ok
+test app::f4se_controller::tests::f4se_controller_worker_payload_applies_latest_ready_rows ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 203 filtered out; finished in 0.01s
+
+
+running 1 test
+test workers::events::tests::f4se_worker_payload_round_trips_owned_scan_snapshot ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 213 filtered out; finished in 0.01s
+
+
+running 2 tests
+test tests::s06_f4se_slint_contract_main_window_forwards_properties_and_lazy_activation ... ok
+test tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.00s
+
+
+running 5 tests
+test tests::s06_f4se_runtime_wiring_spawn_failure_maps_to_safe_projection ... ok
+test tests::s06_f4se_runtime_wiring_first_activation_schedules_once ... ok
+test tests::s06_f4se_runtime_wiring_error_empty_and_unknown_game_warning_states_are_visible ... ok
+test tests::s06_f4se_runtime_wiring_projects_controller_snapshots_to_slint_rows ... ok
+test tests::s06_f4se_runtime_wiring_worker_completion_application_and_unrelated_ignore ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 209 filtered out; finished in 0.01s
+

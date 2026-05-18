@@ -1,0 +1,13 @@
+error: unexpected closing delimiter: `}`
+   --> /mnt/j/cmt-rs/src/domain/autofix.rs:491:5
+    |
+426 | mod scanner_autofix_domain {
+    |                            - this opening brace...
+...
+489 | }
+    | - ...matches this closing brace
+490 |       assert!(first.as_str().st...
+491 |     }
+    |     ^ unexpected closing delimiter
+
+Error writing files: failed to resolve mod `autofix`: cannot parse /mnt/j/cmt-rs/src/domain/autofix.rs

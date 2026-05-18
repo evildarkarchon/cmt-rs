@@ -1,0 +1,18 @@
+{
+  "id": "3c06e8e2-7ffa-4764-b55b-bddcc8d677a4",
+  "runtime": "bash",
+  "purpose": "S07 BA2 suffix source survey",
+  "script_chars": 426,
+  "started_at": "2026-05-18T05:15:20.647Z",
+  "finished_at": "2026-05-18T05:15:20.830Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 183,
+  "stdout_bytes": 4457,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3c06e8e2-7ffa-4764-b55b-bddcc8d677a4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3c06e8e2-7ffa-4764-b55b-bddcc8d677a4.stderr"
+}

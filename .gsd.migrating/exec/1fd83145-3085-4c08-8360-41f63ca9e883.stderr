@@ -1,0 +1,14 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.00s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.94s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.24s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.06s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.10s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.16s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.87s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)

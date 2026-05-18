@@ -1,0 +1,349 @@
+## pub struct OverviewProblem
+1133:     }
+1134: }
+1135: 
+1136: /// Optional link metadata attached to an Overview problem.
+1137: #[derive(Debug, Clone, PartialEq, Eq)]
+1138: pub struct OverviewProblemLink {
+1139:     /// Optional display label for the link.
+1140:     pub label: Option<String>,
+1141:     /// URL to open via a later desktop adapter.
+1142:     pub url: String,
+1143: }
+1144: 
+1145: impl OverviewProblemLink {
+1146:     /// Creates a problem link with an optional display label.
+1147:     pub fn new(label: impl Into<Option<String>>, url: impl Into<String>) -> Self {
+1148:         Self {
+1149:             label: label.into(),
+1150:             url: url.into(),
+1151:         }
+1152:     }
+1153: }
+1154: 
+1155: /// Optional structured detail metadata attached to an Overview problem.
+1156: #[derive(Debug, Clone, PartialEq, Eq)]
+1157: pub struct OverviewProblemDetail {
+1158:     /// Detail name or column heading.
+1159:     pub name: String,
+1160:     /// Detail value.
+1161:     pub value: String,
+1162: }
+1163: 
+1164: impl OverviewProblemDetail {
+1165:     /// Creates a structured problem detail.
+1166:     pub fn new(name: impl Into<String>, value: impl Into<String>) -> Self {
+1167:         Self {
+1168:             name: name.into(),
+1169:             value: value.into(),
+1170:         }
+1171:     }
+1172: }
+1173: 
+1174: /// Scanner-ready Overview problem record.
+1175: #[derive(Debug, Clone, PartialEq, Eq)]
+1176: pub struct OverviewProblem {
+1177:     /// Source area that produced the problem.
+1178:     pub source: OverviewProblemSource,
+1179:     /// Reference-compatible problem type/label.
+1180:     pub problem: OverviewProblemType,
+1181:     /// Optional absolute path when one exists.
+1182:     pub path: Option<PathBuf>,
+1183:     /// Display path/name retained even for pathless simple problems.
+1184:     pub display_path: String,
+1185:     /// Optional relative path matching the reference `ProblemInfo.relative_path`.
+1186:     pub relative_path: Option<PathBuf>,
+1187:     /// Optional source mod name; absent for unmanaged/pathless problems.
+1188:     pub mod_name: Option<String>,
+1189:     /// Human-readable summary of the issue.
+1190:     pub summary: String,
+1191:     /// Optional suggested solution text.
+1192:     pub solution: Option<String>,
+1193:     /// Optional links carried from reference `extra_data` values.
+1194:     pub links: Vec<OverviewProblemLink>,
+1195:     /// Optional structured details, such as HEDR/version detail rows.
+1196:     pub details: Vec<OverviewProblemDetail>,
+1197:     /// Severity/color intent for this problem.
+1198:     pub severity: StatusSeverity,
+1199: }
+1200: 
+1201: impl OverviewProblem {
+1202:     /// Creates a problem without an absolute path.
+1203:     pub fn pathless(
+1204:         source: OverviewProblemSource,
+1205:         display_path: impl Into<String>,
+1206:         problem: OverviewProblemType,
+1207:         summary: impl Into<String>,
+1208:         solution: impl Into<Option<String>>,
+1209:     ) -> Self {
+1210:         Self {
+1211:             source,
+1212:             problem,
+1213:             path: None,
+1214:             display_path: display_path.into(),
+1215:             relative_path: None,
+1216:             mod_name: None,
+1217:             summary: summary.into(),
+
+## impl OverviewProblem
+1115:     UnknownGameVersion,
+1116:     /// Any later scanner/reference problem not yet modeled as a variant.
+1117:     Custom(String),
+1118: }
+1119: 
+1120: impl OverviewProblemType {
+1121:     /// Returns the user-facing problem label.
+1122:     pub fn label(&self) -> &str {
+1123:         match self {
+1124:             Self::InvalidArchive => "Invalid Archive",
+1125:             Self::InvalidModule => "Invalid Module",
+1126:             Self::FileNotFound => "File Not Found",
+1127:             Self::WrongVersion => "Wrong Version",
+1128:             Self::LimitExceeded => "Limit Exceeded",
+1129:             Self::NoModManager => "No Mod Manager",
+1130:             Self::UnknownGameVersion => "Unknown Game Version",
+1131:             Self::Custom(label) => label.as_str(),
+1132:         }
+1133:     }
+1134: }
+1135: 
+1136: /// Optional link metadata attached to an Overview problem.
+1137: #[derive(Debug, Clone, PartialEq, Eq)]
+1138: pub struct OverviewProblemLink {
+1139:     /// Optional display label for the link.
+1140:     pub label: Option<String>,
+1141:     /// URL to open via a later desktop adapter.
+1142:     pub url: String,
+1143: }
+1144: 
+1145: impl OverviewProblemLink {
+1146:     /// Creates a problem link with an optional display label.
+1147:     pub fn new(label: impl Into<Option<String>>, url: impl Into<String>) -> Self {
+1148:         Self {
+1149:             label: label.into(),
+1150:             url: url.into(),
+1151:         }
+1152:     }
+1153: }
+1154: 
+1155: /// Optional structured detail metadata attached to an Overview problem.
+1156: #[derive(Debug, Clone, PartialEq, Eq)]
+1157: pub struct OverviewProblemDetail {
+1158:     /// Detail name or column heading.
+1159:     pub name: String,
+1160:     /// Detail value.
+1161:     pub value: String,
+1162: }
+1163: 
+1164: impl OverviewProblemDetail {
+1165:     /// Creates a structured problem detail.
+1166:     pub fn new(name: impl Into<String>, value: impl Into<String>) -> Self {
+1167:         Self {
+1168:             name: name.into(),
+1169:             value: value.into(),
+1170:         }
+1171:     }
+1172: }
+1173: 
+1174: /// Scanner-ready Overview problem record.
+1175: #[derive(Debug, Clone, PartialEq, Eq)]
+1176: pub struct OverviewProblem {
+1177:     /// Source area that produced the problem.
+1178:     pub source: OverviewProblemSource,
+1179:     /// Reference-compatible problem type/label.
+1180:     pub problem: OverviewProblemType,
+1181:     /// Optional absolute path when one exists.
+1182:     pub path: Option<PathBuf>,
+1183:     /// Display path/name retained even for pathless simple problems.
+1184:     pub display_path: String,
+1185:     /// Optional relative path matching the reference `ProblemInfo.relative_path`.
+1186:     pub relative_path: Option<PathBuf>,
+1187:     /// Optional source mod name; absent for unmanaged/pathless problems.
+1188:     pub mod_name: Option<String>,
+1189:     /// Human-readable summary of the issue.
+1190:     pub summary: String,
+1191:     /// Optional suggested solution text.
+1192:     pub solution: Option<String>,
+1193:     /// Optional links carried from reference `extra_data` values.
+1194:     pub links: Vec<OverviewProblemLink>,
+1195:     /// Optional structured details, such as HEDR/version detail rows.
+1196:     pub details: Vec<OverviewProblemDetail>,
+1197:     /// Severity/color intent for this problem.
+1198:     pub severity: StatusSeverity,
+1199: }
+
+## problem_feed
+1691:         };
+1692:         assert_eq!(failures[0].summary, "request timed out");
+1693:     }
+1694: 
+1695:     #[test]
+1696:     fn problem_feed_records_carry_scanner_ready_overview_domain_fields() {
+1697:         let path_problem = OverviewProblem::with_path(
+1698:             OverviewProblemSource::Archives,
+1699:             "C:/Games/Fallout 4/Data/Broken.ba2",
+1700:             Some(PathBuf::from("Broken.ba2")),
+1701:             OverviewProblemType::InvalidArchive,
+1702:             "Archive is either corrupt or not in Bethesda Archive 2 format.",
+1703:             None::<String>,
+1704:         )
+1705:         .with_mod_name(Some("<Unmanaged>".to_owned()))
+1706:         .with_details(vec![OverviewProblemDetail::new("Version", "99")]);
+1707: 
+1708:         assert_eq!(path_problem.source, OverviewProblemSource::Archives);
+1709:         assert_eq!(
+1710:             path_problem.path.as_deref(),
+1711:             Some(Path::new("C:/Games/Fallout 4/Data/Broken.ba2"))
+1712:         );
+1713:         assert_eq!(
+1714:             path_problem.relative_path.as_deref(),
+1715:             Some(Path::new("Broken.ba2"))
+1716:         );
+1717:         assert_eq!(path_problem.problem.label(), "Invalid Archive");
+1718:         assert_eq!(
+1719:             path_problem.summary,
+1720:             "Archive is either corrupt or not in Bethesda Archive 2 format."
+1721:         );
+1722:         assert_eq!(path_problem.solution, None);
+1723:         assert_eq!(path_problem.details[0].value, "99");
+1724: 
+1725:         let pathless = OverviewProblem::pathless(
+1726:             OverviewProblemSource::CountLimit,
+1727:             "300 General Archives",
+1728:             OverviewProblemType::LimitExceeded,
+1729:             "You have 300 General Archives enabled. The limit is 256.",
+1730:             Some("Archives can be unpacked or merged to reduce your total.".to_owned()),
+1731:         )
+1732:         .with_links(vec![OverviewProblemLink::new(
+1733:             Some("Unpackrr".to_owned()),
+1734:             "https://www.nexusmods.com/fallout4/mods/82082",
+1735:         )])
+1736:         .with_details(vec![OverviewProblemDetail::new("Limit", "256")]);
+1737: 
+1738:         assert_eq!(pathless.path, None);
+1739:         assert_eq!(pathless.display_path, "300 General Archives");
+1740:         assert_eq!(pathless.problem.label(), "Limit Exceeded");
+1741:         assert_eq!(
+1742:             pathless.solution.as_deref(),
+1743:             Some("Archives can be unpacked or merged to reduce your total.")
+1744:         );
+1745:         assert_eq!(pathless.links[0].label.as_deref(), Some("Unpackrr"));
+1746:         assert_eq!(pathless.details[0].name, "Limit");
+1747:     }
+1748: 
+1749:     #[test]
+1750:     fn archive_and_module_record_counts_keep_reference_order_and_severity() {
+1751:         let archives = ArchivePanelSummary::from_counts(ArchivePanelCounts {
+1752:             general: 243,
+1753:             texture: 256,
+1754:             unreadable: 1,
+1755:             old_gen_version: 2,
+1756:             next_gen_version: 3,
+1757:         });
+1758:         assert_eq!(row_labels(&archives.rows), ARCHIVE_COUNT_LABELS);
+1759:         assert_eq!(archives.rows[0].severity, StatusSeverity::Warning);
+1760:         assert_eq!(archives.rows[1].severity, StatusSeverity::Error);
+1761:         assert_eq!(archives.rows[3].severity, StatusSeverity::Error);
+1762:         assert_eq!(archives.rows[4].value, 2);
+1763:         assert_eq!(archives.rows[5].value, 3);
+1764: 
+1765:         let modules = ModulePanelSummary::from_records(&[
+1766:             ModuleRecord::new(
+1767:                 "C:/Games/Fallout 4/Data/Full.esp",
+1768:                 ModuleKind::Full,
+1769:                 ModuleHeaderVersion::Version095,
+1770:                 true,
+1771:             ),
+1772:             ModuleRecord::new(
+1773:                 "C:/Games/Fallout 4/Data/Light.esl",
+1774:                 ModuleKind::Light,
+1775:                 ModuleHeaderVersion::Unknown("0.94".to_owned()),
+
+## OverviewProblemKind
+## pub struct OverviewSnapshot
+1291:     }
+1292: }
+1293: 
+1294: /// Complete, UI-independent Overview snapshot.
+1295: #[derive(Debug, Default, Clone, PartialEq, Eq)]
+1296: pub struct OverviewSnapshot {
+1297:     /// Last refresh lifecycle state.
+1298:     pub refresh: OverviewRefreshState,
+1299:     /// Top status rows derived from discovery and system metadata.
+1300:     pub top: OverviewTopStatus,
+1301:     /// Binary panel state.
+1302:     pub binaries: BinaryPanelSummary,
+1303:     /// Archive panel state.
+1304:     pub archives: ArchivePanelSummary,
+1305:     /// Module panel state.
+1306:     pub modules: ModulePanelSummary,
+1307:     /// Update banner state.
+1308:     pub update_banner: UpdateBannerState,
+1309:     /// Scanner-ready problem records.
+1310:     pub problems: Vec<OverviewProblem>,
+1311:     /// Last safe action error, such as a desktop-open failure.
+1312:     pub last_action_error: Option<OverviewActionError>,
+1313: }
+1314: 
+1315: impl OverviewSnapshot {
+1316:     /// Creates an empty snapshot with labels/actions present and no OS access.
+1317:     pub fn empty() -> Self {
+1318:         Self::default()
+1319:     }
+1320: 
+1321:     /// Creates a loading snapshot.
+1322:     pub fn loading(message: impl Into<String>) -> Self {
+1323:         Self {
+1324:             refresh: OverviewRefreshState::loading(message),
+1325:             ..Self::default()
+1326:         }
+1327:     }
+1328: 
+1329:     /// Creates a partial snapshot from already-safe data.
+1330:     pub fn partial(message: impl Into<String>, problems: Vec<OverviewProblem>) -> Self {
+1331:         Self {
+1332:             refresh: OverviewRefreshState::partial(message),
+1333:             problems,
+1334:             ..Self::default()
+1335:         }
+1336:     }
+1337: 
+1338:     /// Creates an error snapshot from a safe message.
+1339:     pub fn error(message: impl Into<String>) -> Self {
+1340:         Self {
+1341:             refresh: OverviewRefreshState::error(message),
+1342:             ..Self::default()
+1343:         }
+1344:     }
+1345: 
+1346:     /// Creates a snapshot from typed discovery results without reading the host OS.
+1347:     pub fn from_discovery_parts(
+1348:         installation: Option<Fallout4Installation>,
+1349:         mod_manager: Option<DiscoveredModManager>,
+1350:         system_metadata: Option<SystemMetadata>,
+1351:         update_source: UpdateSource,
+1352:     ) -> Self {
+1353:         let mut snapshot = Self {
+1354:             update_banner: UpdateBannerState::from_update_source(update_source),
+1355:             ..Self::default()
+1356:         };
+1357: 
+1358:         snapshot.top.system_metadata = system_metadata;
+1359: 
+1360:         if let Some(manager) = mod_manager {
+1361:             snapshot.top.mod_manager = OverviewModManagerStatus::detected(manager);
+1362:         } else {
+1363:             snapshot.problems.push(OverviewProblem::pathless(
+1364:                 OverviewProblemSource::TopStatus,
+1365:                 TOP_ROW_MOD_MANAGER_LABEL,
+1366:                 OverviewProblemType::NoModManager,
+1367:                 "No Mod Manager Detected",
+1368:                 Some("Your mod manager must launch the app to be detected.".to_owned()),
+1369:             ));
+1370:         }
+1371: 
+1372:         if let Some(installation) = installation {
+1373:             snapshot.top.game_path = OverviewGamePathStatus::found(installation.game_path.clone());
+1374:             snapshot.top.version = installation.install_type;
+1375:             snapshot.archives = ArchivePanelSummary::from_records(&installation.archives);
+

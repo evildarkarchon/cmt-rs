@@ -1,0 +1,18 @@
+{
+  "id": "7063114e-3d8d-41db-a3bb-c249ab04a3fc",
+  "runtime": "bash",
+  "purpose": "final format check for S09 downgrader Slint contract",
+  "script_chars": 17,
+  "started_at": "2026-05-18T12:00:26.582Z",
+  "finished_at": "2026-05-18T12:00:27.264Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 682,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7063114e-3d8d-41db-a3bb-c249ab04a3fc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7063114e-3d8d-41db-a3bb-c249ab04a3fc.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "c85fc732-e062-4ff5-84e0-589ec853202b",
+  "runtime": "bash",
+  "purpose": "replace remaining F4seRow row property references with entry",
+  "script_chars": 201,
+  "started_at": "2026-05-18T04:35:25.825Z",
+  "finished_at": "2026-05-18T04:35:25.938Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c85fc732-e062-4ff5-84e0-589ec853202b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c85fc732-e062-4ff5-84e0-589ec853202b.stderr"
+}

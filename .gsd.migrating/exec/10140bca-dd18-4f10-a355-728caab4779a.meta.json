@@ -1,0 +1,18 @@
+{
+  "id": "10140bca-dd18-4f10-a355-728caab4779a",
+  "runtime": "bash",
+  "purpose": "S06 locate Slint std-widgets source for TabWidget API",
+  "script_chars": 467,
+  "started_at": "2026-05-18T03:15:53.696Z",
+  "finished_at": "2026-05-18T03:15:54.765Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 1069,
+  "stdout_bytes": 758,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\10140bca-dd18-4f10-a355-728caab4779a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\10140bca-dd18-4f10-a355-728caab4779a.stderr"
+}

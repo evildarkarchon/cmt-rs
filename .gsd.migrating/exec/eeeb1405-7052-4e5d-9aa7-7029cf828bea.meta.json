@@ -1,0 +1,18 @@
+{
+  "id": "eeeb1405-7052-4e5d-9aa7-7029cf828bea",
+  "runtime": "bash",
+  "purpose": "List S07 task summaries and plan files",
+  "script_chars": 252,
+  "started_at": "2026-05-18T07:18:17.191Z",
+  "finished_at": "2026-05-18T07:18:17.283Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 92,
+  "stdout_bytes": 579,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\eeeb1405-7052-4e5d-9aa7-7029cf828bea.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\eeeb1405-7052-4e5d-9aa7-7029cf828bea.stderr"
+}

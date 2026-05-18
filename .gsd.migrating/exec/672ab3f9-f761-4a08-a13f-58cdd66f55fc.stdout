@@ -1,0 +1,62 @@
+===== RUN cargo test scanner_domain =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.50s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 250 filtered out; finished in 0.00s
+===== RESULT command='cargo test scanner_domain' exit=0 durationMs=586 =====
+===== RUN cargo test scanner_scan_service =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+test result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.00s
+===== RESULT command='cargo test scanner_scan_service' exit=0 durationMs=531 =====
+===== RUN cargo test scanner_controller =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 245 filtered out; finished in 0.00s
+===== RESULT command='cargo test scanner_controller' exit=0 durationMs=527 =====
+===== RUN cargo test scanner_worker_payload =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 256 filtered out; finished in 0.00s
+===== RESULT command='cargo test scanner_worker_payload' exit=0 durationMs=512 =====
+===== RUN cargo test settings_controller_saves_scanner =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.45s
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 255 filtered out; finished in 0.00s
+===== RESULT command='cargo test settings_controller_saves_scanner' exit=0 durationMs=529 =====
+===== RUN cargo test s07_scanner_slint_contract =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 254 filtered out; finished in 0.00s
+===== RESULT command='cargo test s07_scanner_slint_contract' exit=0 durationMs=517 =====
+===== RUN cargo test s07_scanner_runtime_wiring =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 251 filtered out; finished in 0.00s
+===== RESULT command='cargo test s07_scanner_runtime_wiring' exit=0 durationMs=508 =====
+===== RUN cargo fmt --check =====
+===== RESULT command='cargo fmt --check' exit=0 durationMs=283 =====
+===== RUN cargo check =====
+    Checking cmt-rs v0.1.0 (J:\cmt-rs)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.53s
+===== RESULT command='cargo check' exit=0 durationMs=4603 =====
+===== RUN cargo test =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.48s
+test result: ok. 257 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.02s
+===== RESULT command='cargo test' exit=0 durationMs=573 =====
+===== RUN cargo clippy --all-targets --all-features =====
+   Compiling cmt-rs v0.1.0 (J:\cmt-rs)
+warning: the `Err`-variant returned from this function is very large
+warning: the `Err`-variant returned from this function is very large
+warning: the `Err`-variant returned from this function is very large
+warning: the `Err`-variant returned from this function is very large
+warning: the `Err`-variant returned from this function is very large
+warning: this function has too many arguments (8/7)
+warning: `cmt-rs` (bin "cmt-rs") generated 6 warnings
+warning: `cmt-rs` (bin "cmt-rs" test) generated 6 warnings (6 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 17.49s
+===== RESULT command='cargo clippy --all-targets --all-features' exit=0 durationMs=17644 =====
+===== SUMMARY =====
+1|cargo test scanner_domain|0|586
+2|cargo test scanner_scan_service|0|531
+3|cargo test scanner_controller|0|527
+4|cargo test scanner_worker_payload|0|512
+5|cargo test settings_controller_saves_scanner|0|529
+6|cargo test s07_scanner_slint_contract|0|517
+7|cargo test s07_scanner_runtime_wiring|0|508
+8|cargo fmt --check|0|283
+9|cargo check|0|4603
+10|cargo test|0|573
+11|cargo clippy --all-targets --all-features|0|17644

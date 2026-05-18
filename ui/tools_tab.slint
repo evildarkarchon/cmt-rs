@@ -54,9 +54,10 @@ component ToolActionRow inherits Rectangle {
 
 export component ToolsTab inherits Rectangle {
     in-out property <string> tools-last-action-error: "";
-    in-out property <string> tools-disabled-utility-status: "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
+    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
 
     callback tool-action-requested(string);
+    callback open-downgrade-manager-requested();
 
     background: #202020;
 
@@ -89,10 +90,9 @@ export component ToolsTab inherits Rectangle {
                     ToolActionRow {
                         label: "Downgrade Manager";
                         action-id: "tools.downgrade_manager";
-                        button-enabled: false;
-                        helper-text: "Deferred until S09 Downgrade Manager workflow is ported.";
+                        helper-text: "Open the Downgrade Manager workflow.";
                         action-requested(action_id) => {
-                            root.tool-action-requested(action_id);
+                            root.open-downgrade-manager-requested();
                         }
                     }
 

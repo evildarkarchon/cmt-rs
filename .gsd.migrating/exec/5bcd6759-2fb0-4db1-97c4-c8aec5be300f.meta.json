@@ -1,0 +1,18 @@
+{
+  "id": "5bcd6759-2fb0-4db1-97c4-c8aec5be300f",
+  "runtime": "python",
+  "purpose": "S06 summarize main.rs callback/apply/test patterns",
+  "script_chars": 544,
+  "started_at": "2026-05-18T03:14:46.640Z",
+  "finished_at": "2026-05-18T03:14:46.740Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 100,
+  "stdout_bytes": 12099,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5bcd6759-2fb0-4db1-97c4-c8aec5be300f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5bcd6759-2fb0-4db1-97c4-c8aec5be300f.stderr"
+}

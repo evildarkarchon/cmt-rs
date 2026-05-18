@@ -1,0 +1,18 @@
+{
+  "id": "4de306d7-70db-4797-9d34-02f899ad7ece",
+  "runtime": "bash",
+  "purpose": "rerun s07 scanner runtime tests after formatting",
+  "script_chars": 37,
+  "started_at": "2026-05-18T07:09:38.140Z",
+  "finished_at": "2026-05-18T07:10:17.378Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 39238,
+  "stdout_bytes": 686,
+  "stderr_bytes": 482,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4de306d7-70db-4797-9d34-02f899ad7ece.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4de306d7-70db-4797-9d34-02f899ad7ece.stderr"
+}

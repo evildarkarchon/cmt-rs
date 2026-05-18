@@ -1,0 +1,18 @@
+{
+  "id": "32f760a0-7e1c-4876-9b69-7e9bec4268fe",
+  "runtime": "bash",
+  "purpose": "cargo check after F4SE scan service",
+  "script_chars": 11,
+  "started_at": "2026-05-18T03:58:51.042Z",
+  "finished_at": "2026-05-18T03:59:08.253Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 17211,
+  "stdout_bytes": 0,
+  "stderr_bytes": 551,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\32f760a0-7e1c-4876-9b69-7e9bec4268fe.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\32f760a0-7e1c-4876-9b69-7e9bec4268fe.stderr"
+}

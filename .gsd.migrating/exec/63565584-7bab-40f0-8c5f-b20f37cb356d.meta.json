@@ -1,0 +1,18 @@
+{
+  "id": "63565584-7bab-40f0-8c5f-b20f37cb356d",
+  "runtime": "bash",
+  "purpose": "Apply Rust formatting after downgrader service edits",
+  "script_chars": 9,
+  "started_at": "2026-05-18T10:35:45.342Z",
+  "finished_at": "2026-05-18T10:35:45.965Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 623,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\63565584-7bab-40f0-8c5f-b20f37cb356d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\63565584-7bab-40f0-8c5f-b20f37cb356d.stderr"
+}

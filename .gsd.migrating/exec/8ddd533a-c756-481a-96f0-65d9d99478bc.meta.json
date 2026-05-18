@@ -1,0 +1,18 @@
+{
+  "id": "8ddd533a-c756-481a-96f0-65d9d99478bc",
+  "runtime": "python",
+  "purpose": "S06 overview binary fact fields",
+  "script_chars": 442,
+  "started_at": "2026-05-18T03:31:40.712Z",
+  "finished_at": "2026-05-18T03:31:40.812Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 100,
+  "stdout_bytes": 1950,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8ddd533a-c756-481a-96f0-65d9d99478bc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8ddd533a-c756-481a-96f0-65d9d99478bc.stderr"
+}

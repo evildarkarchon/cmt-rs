@@ -1,0 +1,354 @@
+root /home/evild/.cargo/registry/src matches 6
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/builtins.slint
+viewbox-width;
+    in property <float> viewbox-height;
+    in property <ImageFit> fit: contain;
+    in property <bool> clip;
+    in property <bool> anti-alias: true;
+
+    //-disallow_global_types_as_child_elements
+    MoveTo { }
+
+    LineTo { }
+
+    ArcTo { }
+
+    CubicTo { }
+
+    QuadraticTo { }
+
+    Close { }
+
+    //-default_size_binding:expands_to_parent_geometry
+}
+
+component Tab {
+    in property <string> title;
+}
+
+// Note: not a native class, handled in the lower_tabs pass
+export component TabWidget {
+    in-out property <int> current-index;
+    in property <Orientation> orientation;
+
+    //-disallow_global_types_as_child_elements
+    Tab { }
+    //-default_size_binding:expands_to_parent_geometry
+    //-is_internal
+}
+
+// Note: not a native class, handled in the lower_popups pass
+export component PopupWindow {
+    //property <length> x;
+    //property <length> y;
+    in property <length> width;
+    in property <length> height;
+    /*property <length> anchor_x;
+    in property <length> anchor_y;
+    in property <length> anchor_height;
+    in property <length> anchor_width;*/
+    in property <bool> close-on-click;
+    in property <PopupClosePolicy> close-policy; // constexpr hardcoded in typeregister.rs
+    //show() is hardcoded in typeregister.rs
+}
+
+// Also not a real Item. Actually not an element at all
+export component Timer {
+    in property <duration> interval;
+    callback triggered;
+    in property <bool> running: true;
+    function start() {
+    }
+    function stop() {
+    }
+    function restart() {
+    }
+    //-is_non_item_type
+    //-disallow_global_types_as_child_elements
+}
+
+export component Dialog inherits WindowItem { }
+
+component PropertyAnimation {
+    in property <duration> delay;
+    in property <duration> duration;
+    in property <AnimationDirection> direction;
+    in property <easing> easing;
+    in property <float> iteration-count: 1.0;
+    //-is_non_item_type
+}
+
+export global TextInputInterface {
+    in property <bool> text-input-focused;
+}
+
+export global Platform {
+    out property <OperatingSystemType> os;
+    out property <string> style-name;
+    function open-url(url: string) -> bool { return false; }
+}
+
+export component NativeButton {
+    in property <string> text;
+    in property <image> icon;
+    out property <bool> pressed;
+    in property <bool> checkable;
+    in-out property <bool> checked;
+    out property <bool> has-focus;
+    in property <bool> primary;
+    in property <bool> colorize-icon;
+    in property <length> icon
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/qt/tabwidget.slint
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0
+
+import { TabBarBase } from "../common/tabwidget-base.slint";
+
+export component TabWidgetImpl inherits NativeTabWidget { }
+
+export component TabImpl inherits NativeTab {
+    accessible-role: tab;
+    accessible-enabled: root.enabled;
+    accessible-label <=> root.title;
+    accessible-item-index: root.tab-index;
+    accessible-item-selectable: true;
+    accessible-item-selected: root.tab-index == root.current;
+    accessible-action-default => {
+        root.current = root.tab-index;
+        root.current-focused = root.tab-index;
+    }
+}
+
+component QtTabBarBase inherits TabBarBase {
+    // injected properties:
+    // The currently focused tab
+    in-out property <int> current-focused: i-focus-scope.has-focus ? root.current : -1;
+
+    accessible-role: tab-list;
+    accessible-delegate-focus: root.current;
+    accessible-item-count: root.num-tabs;
+
+    i-focus-scope := FocusScope {
+        x: 0;
+        // Do not react on clicks
+        width: 0px;
+
+        key-pressed(event) => {
+            if (event.text == Key.LeftArrow) {
+                root.current = root.previous-tab();
+                return accept;
+            }
+            if (event.text == Key.RightArrow) {
+                root.current = root.next-tab();
+                return accept;
+            }
+            return reject;
+        }
+    }
+}
+
+export component TabBarHorizontalImpl inherits QtTabBarBase{
+    Rectangle {
+        // The breeze style draws outside of the tab bar, which is clip by default with Qt
+        clip: true;
+
+        HorizontalLayout {
+            // Qt renders Tabs next to each other and renders "spacing" as part of the tab itself
+            spacing: 0px;
+            alignment: NativeStyleMetrics.tab-bar-alignment;
+            @children
+        }
+    }
+}
+
+export component TabBarVerticalImpl inherits QtTabBarBase{
+    Rectangle {
+        // The breeze style draws outside of the tab bar, which is clip by default with Qt
+        clip: true;
+
+        VerticalLayout {
+            // Qt renders Tabs next to each other and renders "spacing" as part of the tab itself
+    
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/material/tabwidget.slint
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0
+
+
+import { MaterialPalette, MaterialFontSettings } from "styling.slint";
+import { TabBarBase } from "../common/tabwidget-base.slint";
+
+export component TabWidgetImpl inherits Rectangle {
+    in property <length> tabbar-preferred-height;
+    in property <length> tabbar-preferred-width;
+    in property <length> content-min-height;
+    in property <length> content-min-width;
+    in property <int> current-index;
+    in property <int> current-focused;
+    in property <Orientation> orientation: Orientation.horizontal;
+    out property <length> content-x: orientation==Orientation.horizontal?0:root.tabbar-preferred-width;
+    out property <length> content-y: orientation==Orientation.horizontal?root.tabbar-preferred-height:0;
+    out property <length> content-height: orientation==Orientation.horizontal?root.height - root.tabbar-preferred-height:root.height;
+    out property <length> content-width: orientation==Orientation.horizontal?root.width:root.width - root.tabbar-preferred-width;
+    out property <length> tabbar-x: 0;
+    out property <length> tabbar-y: 0;
+    out property <length> tabbar-height: orientation==Orientation.horizontal?root.tabbar-preferred-height:root.height;
+    out property <length> tabbar-width: orientation==Orientation.horizontal?root.width:root.tabbar-preferred-width;
+
+    preferred-width: root.content-min-width;
+    min-width: max(root.content-min-width, root.tabbar-preferred-width);
+    preferred-height: root.content-min-height + root.tabbar-preferred-height;
+    min-height: root.content-min-height + root.tabbar-preferred-height;
+}
+
+export component TabImpl inherits Rectangle {
+    // The currently focused tab
+    in property <int> current-focused;
+    // The index of this tab
+    in property <int> tab-index;
+    // The total number of tabs
+    in property <int> num-tabs;
+    in property <string> title <=> text.text;
+    in property <bool> enabled: true;
+    // The currently selected tab
+    in-out property <int> current;
+
+    property <bool> has-focus: root.current-focused == root.tab-index;
+    property <bool> active: root.tab-index == root.current;
+
+    min-width: max(48px, layout.min-width);
+  
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/cosmic/tabwidget.slint
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0
+
+import { CosmicPalette, CosmicFontSettings } from "styling.slint";
+import { StateLayerBase } from "components.slint";
+import { TabBarBase } from "../common/tabwidget-base.slint";
+
+export component TabWidgetImpl inherits Rectangle {
+    in property <length> tabbar-preferred-height;
+    in property <length> tabbar-preferred-width;
+    in property <length> content-min-height;
+    in property <length> content-min-width;
+    in property <int> current-index;
+    in property <int> current-focused;
+    in property <Orientation> orientation;
+    out property <length> content-x: orientation==Orientation.horizontal? 0: root.tabbar-preferred-width;
+    out property <length> content-y: orientation==Orientation.horizontal? root.tabbar-preferred-height: 0;
+    out property <length> content-height: orientation==Orientation.horizontal? root.height - root.tabbar-preferred-height: root.height;
+    out property <length> content-width: orientation==Orientation.horizontal? root.width: root.width - root.tabbar-preferred-width;
+    out property <length> tabbar-x: 0;
+    out property <length> tabbar-y: 0;
+    out property <length> tabbar-height: orientation==Orientation.horizontal? root.tabbar-preferred-height: root.height;
+    out property <length> tabbar-width: orientation==Orientation.horizontal? root.width: root.tabbar-preferred-width;
+
+    preferred-width: root.content-min-width;
+    min-width: max(root.content-min-width, root.tabbar-preferred-width);
+    preferred-height: root.content-min-height + root.tabbar-preferred-height;
+    min-height: root.content-min-height + root.tabbar-preferred-height;
+}
+
+export component TabImpl inherits Rectangle {
+    // The currently focused tab
+    in property <int> current-focused;
+    // The index of this tab
+    in property <int> tab-index;
+    // The total number of tabs
+    in property <int> num-tabs;
+    in property <string> title <=> text.text;
+    in property <bool> enabled: true;
+    out property <bool> has-focus: root.current-focused == root.tab-index;
+    // The currently selected tab
+    in-out property <int> current;
+
+    private property <bool> show-left-border: root.tab-index == 0 || root.is-current;
+    private property <bool> s
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/fluent/tabwidget.slint
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0
+
+import { FluentPalette, FluentFontSettings } from "styling.slint";
+import { FocusBorder } from "components.slint";
+import { TabBarBase } from "../common/tabwidget-base.slint";
+
+export component TabWidgetImpl inherits Rectangle {
+    in property <length> tabbar-preferred-height;
+    in property <length> tabbar-preferred-width;
+    in property <length> content-min-height;
+    in property <length> content-min-width;
+    in property <int> current-index;
+    in property <int> current-focused;
+    in property <Orientation> orientation:Orientation.horizontal;
+    out property <length> content-x: orientation == Orientation.horizontal ? 0 : root.tabbar-preferred-width;
+    out property <length> content-y: orientation == Orientation.horizontal ? root.tabbar-preferred-height : 0;
+    out property <length> content-height:orientation == Orientation.horizontal ? root.height - root.tabbar-preferred-height : root.height;
+    out property <length> content-width: orientation == Orientation.horizontal ? root.width : root.width - root.tabbar-preferred-width;
+    out property <length> tabbar-x: 0;
+    out property <length> tabbar-y: 0;
+    out property <length> tabbar-height: orientation == Orientation.horizontal ? root.tabbar-preferred-height : root.height;
+    out property <length> tabbar-width: orientation == Orientation.horizontal ? root.width : root.tabbar-preferred-width;
+    preferred-width: root.content-min-width;
+    min-width: max(root.content-min-width, root.tabbar-preferred-width);
+    preferred-height: root.content-min-height + root.tabbar-preferred-height;
+    min-height: root.content-min-height + root.tabbar-preferred-height;
+}
+
+export component TabImpl inherits Rectangle {
+    // The currently focused tab
+    in property <int> current-focused;
+    // The index of this tab
+    in property <int> tab-index;
+    // The total number of tabs
+    in property <int> num-tabs;
+    in property <string> title <=> i-text.text;
+    in property <bool> enabled: true;
+    out property <bool> has-focus: root.current-focused == root.tab-index;
+    // The currently selected tab
+    in-out property <int> current;
+    private property <bool> hide-right-border: root.tab-index == root
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/cupertino/tabwidget.slint
+// Copyright © SixtyFPS GmbH <info@slint.dev>
+// SPDX-License-Identifier: GPL-3.0-only OR LicenseRef-Slint-Royalty-free-2.0 OR LicenseRef-Slint-Software-3.0
+
+import { CupertinoPalette, CupertinoFontSettings } from "styling.slint";
+import { FocusBorder } from "components.slint";
+import { TabBarBase } from "../common/tabwidget-base.slint";
+
+export component TabWidgetImpl inherits Rectangle {
+    in property <length> tabbar-preferred-height;
+    in property <length> tabbar-preferred-width;
+    in property <length> content-min-height;
+    in property <length> content-min-width;
+    in property <int> current-index;
+    in property <int> current-focused;
+    in property <Orientation> orientation: Orientation.horizontal;
+    out property <length> content-x: orientation==Orientation.horizontal? 0: root.tabbar-preferred-width;
+    out property <length> content-y: orientation==Orientation.horizontal? root.tabbar-preferred-height: 0;
+    out property <length> content-height: orientation==Orientation.horizontal? root.height - root.tabbar-preferred-height: root.height;
+    out property <length> content-width: orientation==Orientation.horizontal? root.width: root.width - root.tabbar-preferred-width;
+    out property <length> tabbar-x: 0;
+    out property <length> tabbar-y: 0;
+    out property <length> tabbar-height: orientation==Orientation.horizontal? root.tabbar-preferred-height: root.height;
+    out property <length> tabbar-width: orientation==Orientation.horizontal? root.width: root.tabbar-preferred-width;
+
+    preferred-width: root.content-min-width;
+    min-width: max(root.content-min-width, root.tabbar-preferred-width);
+    preferred-height: root.content-min-height + root.tabbar-preferred-height;
+    min-height: root.content-min-height + root.tabbar-preferred-height;
+}
+
+export component TabImpl inherits Rectangle {
+    // The currently focused tab
+    in property <int> current-focused;
+    // The index of this tab
+    in property <int> tab-index;
+    // The total number of tabs
+    in property <int> num-tabs;
+    in property <string> title <=> i-text.text;
+    in property <bool> enabled: true;
+    out property <bool> has-focus: root.current-focused == root.tab-index;
+    // The currently selected tab
+    in-out property <int> current;
+
+    private property <bool> hide-right-border: root.tab-index == root.num-tabs - 1 || tab
+root target matches 0

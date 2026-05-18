@@ -1,0 +1,18 @@
+{
+  "id": "efa1621a-9b4e-4230-8445-44d8b407fffa",
+  "runtime": "bash",
+  "purpose": "final verification cargo clippy after rust-version fix",
+  "script_chars": 41,
+  "started_at": "2026-05-18T07:14:08.567Z",
+  "finished_at": "2026-05-18T07:14:43.893Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 35326,
+  "stdout_bytes": 0,
+  "stderr_bytes": 812,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\efa1621a-9b4e-4230-8445-44d8b407fffa.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\efa1621a-9b4e-4230-8445-44d8b407fffa.stderr"
+}

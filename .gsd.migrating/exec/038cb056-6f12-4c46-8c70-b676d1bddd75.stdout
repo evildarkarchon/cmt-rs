@@ -1,0 +1,242 @@
+src/services/f4se.rs:797:            PlatformErrorKind, PlatformOperation, PlatformResult, filesystem::FileMetadata,
+src/services/f4se.rs:812:    struct FakeFilesystem {
+src/services/f4se.rs:861:        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+src/services/f4se.rs:873:        fn permission_denied(path: &Path, operation: PlatformOperation) -> PlatformError {
+src/services/f4se.rs:890:    impl Filesystem for FakeFilesystem {
+src/services/f4se.rs:892:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/f4se.rs:910:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/f4se.rs:913:                    PlatformOperation::ReadFile,
+src/services/f4se.rs:919:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/f4se.rs:927:                    PlatformOperation::ReadFile,
+src/services/f4se.rs:935:            match self.node(path, PlatformOperation::ReadDirectory)? {
+src/services/f4se.rs:946:                    PlatformOperation::ReadDirectory,
+src/services/f4se.rs:949:                    PlatformOperation::ReadDirectory,
+src/services/f4se.rs:958:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/platform/mod.rs:24:pub enum PlatformOperation {
+src/platform/mod.rs:51:impl PlatformOperation {
+src/platform/mod.rs:82:impl fmt::Display for PlatformOperation {
+src/platform/mod.rs:84:        formatter.write_str(self.label())
+src/platform/mod.rs:123:    pub operation: PlatformOperation,
+src/platform/mod.rs:135:        operation: PlatformOperation,
+src/platform/mod.rs:150:    pub fn unsupported(operation: PlatformOperation, target: impl Into<String>) -> Self {
+src/platform/mod.rs:161:        operation: PlatformOperation,
+src/platform/mod.rs:186:        operation: PlatformOperation,
+src/platform/mod.rs:201:        operation: PlatformOperation,
+src/platform/mod.rs:236:        write!(
+src/platform/mod.rs:260:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:9:use crate::platform::{PlatformError, PlatformErrorKind, PlatformOperation};
+src/platform/desktop.rs:15:    pub operation: PlatformOperation,
+src/platform/desktop.rs:26:    pub fn success(operation: PlatformOperation, target: impl Into<String>) -> Self {
+src/platform/desktop.rs:120:        PlatformOperation::OpenUrl,
+src/platform/desktop.rs:128:        PlatformOperation::OpenPath,
+src/platform/desktop.rs:136:        PlatformOperation::LaunchTool,
+src/platform/desktop.rs:143:    hand_to_windows_shell(PlatformOperation::OpenUrl, url)
+src/platform/desktop.rs:148:    hand_to_windows_shell(PlatformOperation::OpenPath, &path.display().to_string())
+src/platform/desktop.rs:152:fn hand_to_windows_shell(operation: PlatformOperation, target: &str) -> DesktopActionResult {
+src/platform/desktop.rs:179:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:183:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:198:        failures: BTreeMap<(PlatformOperation, String), PlatformErrorKind>,
+src/platform/desktop.rs:204:            operation: PlatformOperation,
+src/platform/desktop.rs:212:        fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResult {
+src/platform/desktop.rs:228:            self.run(PlatformOperation::OpenUrl, url.to_owned())
+src/platform/desktop.rs:232:            self.run(PlatformOperation::OpenPath, path.display().to_string())
+src/platform/desktop.rs:237:                PlatformOperation::LaunchTool,
+src/platform/desktop.rs:250:        assert_eq!(result.operation, PlatformOperation::OpenUrl);
+src/platform/desktop.rs:259:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:267:        assert_eq!(result.operation, PlatformOperation::LaunchTool);
+src/services/update.rs:821:        platform::{PlatformError, PlatformErrorKind, PlatformOperation},
+src/services/update.rs:889:        failures: BTreeMap<(PlatformOperation, String), PlatformErrorKind>,
+src/services/update.rs:895:            operation: PlatformOperation,
+src/services/update.rs:903:        fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResult {
+src/services/update.rs:919:            self.run(PlatformOperation::OpenUrl, url.to_owned())
+src/services/update.rs:923:            self.run(PlatformOperation::OpenPath, path.display().to_string())
+src/services/update.rs:928:                PlatformOperation::LaunchTool,
+src/services/update.rs:1141:                PlatformOperation::OpenUrl,
+src/services/update.rs:1146:                PlatformOperation::OpenPath,
+src/platform/settings_store.rs:173:    /// invalid values, remove unknown keys on resave, and return diagnostics for
+src/platform/settings_store.rs:228:    /// write fails.
+src/platform/settings_store.rs:233:        fs::write(&self.paths.settings_path, json)
+src/platform/settings_store.rs:285:            fs::write(&asset_path, format!("\n{wire_value}\n"))
+src/platform/settings_store.rs:286:                .expect("test fixture should write download-source.txt");
+src/platform/settings_store.rs:317:        fs::write(&settings_path, "{ not json").expect("test fixture should write malformed JSON");
+src/platform/settings_store.rs:335:    fn settings_repair_partial_json_preserves_valid_fields_and_removes_unknown_keys() {
+src/platform/settings_store.rs:337:        fs::write(
+src/platform/settings_store.rs:347:        .expect("test fixture should write partial JSON");
+src/platform/settings_store.rs:408:            .expect("directory at settings path should block file write");
+src/services/discovery.rs:24:        PlatformError, PlatformOperation,
+src/services/discovery.rs:175:        formatter.write_str(&self.user_message())
+src/services/discovery.rs:381:                        PlatformOperation::ReadFile,
+src/services/discovery.rs:737:        let overwrite_directory = resolve_mo2_path(
+src/services/discovery.rs:738:            values.settings.get("overwrite_directory"),
+src/services/discovery.rs:740:            "%BASE_DIR%/overwrite",
+src/services/discovery.rs:750:            || path_is_empty(&overwrite_directory)
+src/services/discovery.rs:756:                Some(overwrite_directory),
+src/services/discovery.rs:765:            overwrite_directory,
+src/services/discovery.rs:1198:            | "overwrite_directory"
+src/services/discovery.rs:1346:    struct FakeFilesystem {
+src/services/discovery.rs:1371:            operation: PlatformOperation,
+src/services/discovery.rs:1384:    impl Filesystem for FakeFilesystem {
+src/services/discovery.rs:1386:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/discovery.rs:1399:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/discovery.rs:1402:                    PlatformOperation::ReadFile,
+src/services/discovery.rs:1413:                    PlatformOperation::ReadFile,
+src/services/discovery.rs:1424:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/services/discovery.rs:1432:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/services/discovery.rs:1455:                    PlatformOperation::ReadRegistry,
+src/services/discovery.rs:1591:             overwrite_directory=%BASE_DIR%/overwrite\n\
+src/services/discovery.rs:1800:                       overwrite_directory=C:/Overwrites\n\
+src/services/discovery.rs:1836:        assert_eq!(context.overwrite_directory(), Path::new("C:/Overwrites"));
+src/platform/process.rs:11:    platform::{PlatformError, PlatformOperation, PlatformResult},
+src/platform/process.rs:141:        PlatformOperation::ListProcesses,
+src/platform/process.rs:149:        PlatformOperation::ReadVersionMetadata,
+src/platform/process.rs:157:        PlatformOperation::ReadSystemMetadata,
+src/platform/process.rs:244:            PlatformOperation::ReadVersionMetadata,
+src/platform/process.rs:283:    use crate::platform::{PlatformErrorKind, PlatformOperation};
+src/platform/process.rs:365:                PlatformOperation::ReadSystemMetadata,
+src/platform/process.rs:377:        assert_eq!(error.operation, PlatformOperation::ReadSystemMetadata);
+src/platform/registry.rs:9:use crate::platform::{PlatformError, PlatformOperation, PlatformResult};
+src/platform/registry.rs:32:        formatter.write_str(self.as_windows_prefix())
+src/platform/registry.rs:98:        PlatformOperation::ReadRegistry,
+src/platform/registry.rs:117:                PlatformOperation::ReadRegistry,
+src/platform/registry.rs:129:            PlatformOperation::ReadRegistry,
+src/platform/registry.rs:152:    use crate::platform::{PlatformErrorKind, PlatformOperation};
+src/platform/registry.rs:173:                    PlatformOperation::ReadRegistry,
+src/platform/registry.rs:224:        assert_eq!(error.operation, PlatformOperation::ReadRegistry);
+src/platform/registry.rs:243:        assert_eq!(error.operation, PlatformOperation::ReadRegistry);
+src/platform/filesystem.rs:15:use crate::platform::{PlatformError, PlatformOperation, PlatformResult};
+src/platform/filesystem.rs:151:impl Filesystem for RealFilesystem {
+src/platform/filesystem.rs:160:                    PlatformOperation::ReadMetadata,
+src/platform/filesystem.rs:170:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:180:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:191:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:202:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:213:                PlatformOperation::ReadDirectory,
+src/platform/filesystem.rs:222:                    PlatformOperation::ReadDirectory,
+src/platform/filesystem.rs:230:                    PlatformOperation::ReadMetadata,
+src/platform/filesystem.rs:268:        PlatformError::from_io(PlatformOperation::WalkDirectory, target, io_error)
+src/platform/filesystem.rs:270:        PlatformError::command_failed(PlatformOperation::WalkDirectory, target, error.to_string())
+src/platform/filesystem.rs:278:    use crate::platform::{PlatformErrorKind, PlatformOperation};
+src/platform/filesystem.rs:290:    struct FakeFilesystem {
+src/platform/filesystem.rs:311:        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+src/platform/filesystem.rs:333:    impl Filesystem for FakeFilesystem {
+src/platform/filesystem.rs:335:            let node = self.node(path, PlatformOperation::ReadMetadata)?;
+src/platform/filesystem.rs:350:            match self.node(path, PlatformOperation::ReadFile)? {
+src/platform/filesystem.rs:353:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:365:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:373:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/platform/filesystem.rs:389:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/platform/filesystem.rs:453:        assert_eq!(error.operation, PlatformOperation::ReadMetadata);
+src/platform/filesystem.rs:471:        assert_eq!(error.operation, PlatformOperation::ReadFile);
+src/domain/tools.rs:370:            "Module editor and conflict detector for Bethesda games.\nFO4Edit/SSEEdit are xEdit, renamed to auto-set a game mode.",
+src/domain/tools.rs:634:                    "Module editor and conflict detector for Bethesda games.\nFO4Edit/SSEEdit are xEdit, renamed to auto-set a game mode.",
+src/services/overview_collector.rs:6://! mutating user files, launching discovered binaries, or depending on Slint.
+src/services/overview_collector.rs:1491:            PlatformOperation, PlatformResult,
+src/services/overview_collector.rs:1507:    struct FakeFilesystem {
+src/services/overview_collector.rs:1552:        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+src/services/overview_collector.rs:1564:        fn permission_denied(path: &Path, operation: PlatformOperation) -> PlatformError {
+src/services/overview_collector.rs:1577:    impl Filesystem for FakeFilesystem {
+src/services/overview_collector.rs:1579:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/overview_collector.rs:1597:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:1600:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:1606:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:1615:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:1618:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:1624:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:1630:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:1633:                        PlatformOperation::ReadFile,
+src/services/overview_collector.rs:1639:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:1645:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:1651:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/services/overview_collector.rs:1661:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/services/overview_collector.rs:1697:                    PlatformOperation::ReadVersionMetadata,
+src/services/tools.rs:12:        PlatformErrorKind, PlatformOperation,
+src/services/tools.rs:90:    pub operation: PlatformOperation,
+src/services/tools.rs:184:        operation: PlatformOperation,
+src/services/tools.rs:271:        operation: PlatformOperation,
+src/services/tools.rs:458:            operation = PlatformOperation::OpenUrl.label(),
+src/services/tools.rs:491:                    operation = PlatformOperation::OpenUrl.label(),
+src/services/tools.rs:520:                    operation = PlatformOperation::CopyToClipboard.label(),
+src/services/tools.rs:701:        calls: Arc<Mutex<Vec<(PlatformOperation, String)>>>,
+src/services/tools.rs:702:        failures: Arc<Mutex<BTreeMap<(PlatformOperation, String), crate::platform::PlatformError>>>,
+src/services/tools.rs:708:            operation: PlatformOperation,
+src/services/tools.rs:719:        fn calls(&self) -> Vec<(PlatformOperation, String)> {
+src/services/tools.rs:726:        fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResult {
+src/services/tools.rs:747:            self.run(PlatformOperation::OpenUrl, url.to_owned())
+src/services/tools.rs:751:            self.run(PlatformOperation::OpenPath, path.display().to_string())
+src/services/tools.rs:756:                PlatformOperation::LaunchTool,
+src/services/tools.rs:823:                PlatformOperation::OpenUrl,
+src/services/tools.rs:833:            PlatformOperation::OpenUrl,
+src/services/tools.rs:836:                PlatformOperation::OpenUrl,
+src/services/tools.rs:848:                operation: PlatformOperation::OpenUrl,
+src/services/tools.rs:882:                PlatformOperation::CopyToClipboard,
+src/services/tools.rs:894:                operation: PlatformOperation::CopyToClipboard,
+src/services/tools.rs:907:            PlatformError::unsupported(PlatformOperation::CopyToClipboard, "system clipboard"),
+src/services/tools.rs:916:                operation: PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:4://! clipboard writes behind a tiny fakeable trait and returns typed results with
+src/platform/clipboard.rs:7:use crate::platform::{PlatformError, PlatformErrorKind, PlatformOperation};
+src/platform/clipboard.rs:12:/// Result value for a clipboard write request.
+src/platform/clipboard.rs:16:    pub operation: PlatformOperation,
+src/platform/clipboard.rs:29:            operation: PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:32:            safe_message: PlatformOperation::CopyToClipboard
+src/platform/clipboard.rs:50:    /// Returns true when the clipboard write succeeded.
+src/platform/clipboard.rs:55:    /// Returns the typed failure kind when the clipboard write failed.
+src/platform/clipboard.rs:79:    /// The adapter could not write the text and classified why.
+src/platform/clipboard.rs:110:                PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:123:                PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:133:            PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:147:            PlatformOperation::CopyToClipboard,
+src/platform/clipboard.rs:153:        assert_eq!(result.operation, PlatformOperation::CopyToClipboard);
+src/services/overview.rs:56:const LIGHT_MODULE_LIMIT_SOLUTION: &str = "Some plugins will need to be removed or manually merged.\nWarning: Do not use old/outdated tools like zMerge with Fallout 4 unless\nyou understand their issues and how to fix the merged plugins afterward.";
+src/services/overview.rs:1090:        platform::{PlatformError, PlatformErrorKind, PlatformOperation},
+src/services/overview.rs:1141:                    PlatformOperation::ListProcesses,
+src/services/overview.rs:1148:                PlatformOperation::ReadSystemMetadata,
+src/domain/mod_manager.rs:44:        formatter.write_str(self.display_name())
+src/domain/mod_manager.rs:153:    /// MO2 overwrite directory.
+src/domain/mod_manager.rs:154:    pub overwrite_directory: PathBuf,
+src/domain/mod_manager.rs:166:        overwrite_directory: impl Into<PathBuf>,
+src/domain/mod_manager.rs:174:            overwrite_directory: overwrite_directory.into(),
+src/domain/mod_manager.rs:186:            overwrite_directory: base_directory.join("overwrite"),
+src/domain/mod_manager.rs:313:    /// Returns the MO2 overwrite directory.
+src/domain/mod_manager.rs:314:    pub fn overwrite_directory(&self) -> &Path {
+src/domain/mod_manager.rs:315:        &self.directories.overwrite_directory
+src/domain/mod_manager.rs:418:        overwrite_directory: Option<impl Into<PathBuf>>,
+src/domain/mod_manager.rs:425:                overwrite_directory: overwrite_directory.map(Into::into),
+src/domain/mod_manager.rs:477:                overwrite_directory,
+src/domain/mod_manager.rs:479:                "Missing MO2 settings\nmods: {}\nprofiles: {}\nprofile: {}\noverwrite: {}",
+src/domain/mod_manager.rs:483:                display_optional_path(overwrite_directory.as_deref())
+src/domain/mod_manager.rs:497:        formatter.write_str(&self.user_message())
+src/domain/mod_manager.rs:527:        /// Optional overwrite directory.
+src/domain/mod_manager.rs:528:        overwrite_directory: Option<PathBuf>,
+src/domain/mod_manager.rs:575:            "C:/MO2Overwrite",
+src/domain/mod_manager.rs:598:        assert_eq!(context.overwrite_directory(), Path::new("C:/MO2Overwrite"));
+src/domain/mod_manager.rs:623:            context.overwrite_directory(),
+src/domain/mod_manager.rs:624:            Path::new("C:/Modding/MO2/overwrite")
+src/domain/mod_manager.rs:698:            Some("C:/MO2Overwrite"),
+src/domain/mod_manager.rs:704:            "Missing MO2 settings\nmods: C:/MO2Mods\nprofiles: None\nprofile: Default\noverwrite: C:/MO2Overwrite"
+src/domain/discovery.rs:57:        write!(formatter, "{}.{}.{}", self.major, self.minor, self.patch)
+src/domain/discovery.rs:101:        formatter.write_str(self.as_reference_str())
+src/domain/discovery.rs:476:        formatter.write_str(&self.user_message())
+src/domain/scanner.rs:45:/// S07 read-only status for write-capable Auto-Fix behavior deferred to a later slice.
+src/domain/scanner.rs:86:/// Reference Auto-Fix button label for future write-capable scanner actions.
+src/services/scanner.rs:139:/// service permission to refresh those systems or mutate settings.
+src/services/scanner.rs:897:            || path_is_empty(context.overwrite_directory())
+src/services/scanner.rs:980:            context.overwrite_directory(),
+src/services/scanner.rs:984:            stage_paths.push(context.overwrite_directory().to_path_buf());
+src/services/scanner.rs:1767:            crate::platform::PlatformOperation::ReadDirectory
+src/services/scanner.rs:1768:            | crate::platform::PlatformOperation::WalkDirectory => {
+src/services/scanner.rs:1963:        platform::{PlatformError, PlatformOperation, PlatformResult, filesystem::FileMetadata},
+src/services/scanner.rs:1977:    struct FakeFilesystem {
+src/services/scanner.rs:2031:        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+src/services/scanner.rs:2042:        fn permission_denied(path: &Path, operation: PlatformOperation) -> PlatformError {
+src/services/scanner.rs:2055:    impl Filesystem for FakeFilesystem {
+src/services/scanner.rs:2057:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/scanner.rs:2075:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/scanner.rs:2078:                    PlatformOperation::ReadFile,
+src/services/scanner.rs:2084:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/scanner.rs:2092:                    PlatformOperation::ReadFile,
+src/services/scanner.rs:2101:            match self.node(path, PlatformOperation::ReadDirectory)? {
+src/services/scanner.rs:2106:                        PlatformOperation::ReadDirectory,
+src/services/scanner.rs:2111:                        PlatformOperation::ReadDirectory,
+src/services/scanner.rs:2166:            "MO2/overwrite",
+src/services/scanner.rs:2223:            .with_dir("MO2/overwrite");
+src/services/scanner.rs:2601:            .with_dir("MO2/overwrite");

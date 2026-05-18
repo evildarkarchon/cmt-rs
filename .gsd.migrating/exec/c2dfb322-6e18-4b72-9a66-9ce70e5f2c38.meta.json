@@ -1,0 +1,18 @@
+{
+  "id": "c2dfb322-6e18-4b72-9a66-9ce70e5f2c38",
+  "runtime": "bash",
+  "purpose": "inventory project structure relevant to S08",
+  "script_chars": 112,
+  "started_at": "2026-05-18T07:39:28.872Z",
+  "finished_at": "2026-05-18T07:39:29.017Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 145,
+  "stdout_bytes": 960,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c2dfb322-6e18-4b72-9a66-9ce70e5f2c38.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c2dfb322-6e18-4b72-9a66-9ce70e5f2c38.stderr"
+}

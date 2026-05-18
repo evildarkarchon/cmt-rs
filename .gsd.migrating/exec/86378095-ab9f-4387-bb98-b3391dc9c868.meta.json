@@ -1,0 +1,18 @@
+{
+  "id": "86378095-ab9f-4387-bb98-b3391dc9c868",
+  "runtime": "bash",
+  "purpose": "inspect Slint parser grammar for property changed callback syntax",
+  "script_chars": 546,
+  "started_at": "2026-05-18T04:23:57.128Z",
+  "finished_at": "2026-05-18T04:23:57.272Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 144,
+  "stdout_bytes": 8943,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\86378095-ab9f-4387-bb98-b3391dc9c868.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\86378095-ab9f-4387-bb98-b3391dc9c868.stderr"
+}

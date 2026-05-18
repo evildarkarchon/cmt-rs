@@ -1,0 +1,18 @@
+{
+  "id": "9455eada-ddfe-47ea-b485-4a08d0c1a142",
+  "runtime": "bash",
+  "purpose": "format changed Rust files",
+  "script_chars": 17,
+  "started_at": "2026-05-18T08:10:21.414Z",
+  "finished_at": "2026-05-18T08:10:22.117Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 703,
+  "stdout_bytes": 2422,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9455eada-ddfe-47ea-b485-4a08d0c1a142.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9455eada-ddfe-47ea-b485-4a08d0c1a142.stderr"
+}

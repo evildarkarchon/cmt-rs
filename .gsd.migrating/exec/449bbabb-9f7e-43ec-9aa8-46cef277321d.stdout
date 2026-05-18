@@ -1,0 +1,69 @@
+CMT/src/game_info.py:29:from enums import CSIDL, InstallType, Language
+CMT/src/game_info.py:48:	def __init__(self, install_type_sv: StringVar, game_path_sv: StringVar) -> None:
+CMT/src/game_info.py:49:		self._install_type_sv = install_type_sv
+CMT/src/game_info.py:50:		self._game_path_sv = game_path_sv
+CMT/src/game_info.py:52:		self.install_type = InstallType.Unknown
+CMT/src/game_info.py:53:		self._game_path: Path
+CMT/src/game_info.py:66:		self.file_info: dict[str, FileInfo] = {}
+CMT/src/game_info.py:114:		self.install_type = InstallType.Unknown
+CMT/src/game_info.py:115:		self.file_info.clear()
+CMT/src/game_info.py:141:	def game_path(self) -> Path:
+CMT/src/game_info.py:142:		return self._game_path
+CMT/src/game_info.py:144:	@game_path.setter
+CMT/src/game_info.py:145:	def game_path(self, value: Path) -> None:
+CMT/src/game_info.py:146:		self._game_path = value
+CMT/src/game_info.py:147:		self._game_path_sv.set(str(value))
+CMT/src/game_info.py:167:	def install_type(self) -> InstallType:
+CMT/src/game_info.py:168:		return self._install_type
+CMT/src/game_info.py:171:	def install_type(self, value: InstallType) -> None:
+CMT/src/game_info.py:172:		self._install_type = value
+CMT/src/game_info.py:173:		self._install_type_sv.set(str(value))
+CMT/src/game_info.py:203:				if not self.manager.game_path:
+CMT/src/game_info.py:213:			if self.manager.game_path:
+CMT/src/game_info.py:214:				self.game_path = self.manager.game_path
+CMT/src/game_info.py:218:			self.game_path = Path.cwd()
+CMT/src/game_info.py:230:		game_path = registry_path
+CMT/src/game_info.py:232:		if not game_path:
+CMT/src/game_info.py:245:			game_path = filedialog.askopenfilename(
+CMT/src/game_info.py:250:			if not game_path:
+CMT/src/game_info.py:258:		game_path_as_path = Path(game_path)
+CMT/src/game_info.py:259:		if is_file(game_path_as_path):
+CMT/src/game_info.py:260:			game_path_as_path = game_path_as_path.parent
+CMT/src/game_info.py:262:		if not is_fo4_dir(game_path_as_path):
+CMT/src/game_info.py:275:		self.game_path = game_path_as_path
+CMT/src/game_info.py:278:		return self._install_type in {InstallType.OG, InstallType.DG}
+CMT/src/game_info.py:281:		return self._install_type == InstallType.NG
+CMT/src/game_info.py:284:		return self._install_type in {InstallType.OG, InstallType.DG, InstallType.NG}
+CMT/src/game_info.py:287:		return self._install_type == InstallType.AE
+CMT/src/game_info.py:290:		return self._install_type in {InstallType.NG, InstallType.AE}
+CMT/src/game_info.py:293:		return self._install_type == InstallType.DG
+CMT/src/tabs/_overview.py:164:			textvariable=self.cmc.game_path_sv,
+CMT/src/tabs/_overview.py:170:		label_path.bind("<Button-1>", lambda _: os.startfile(self.cmc.game.game_path))
+CMT/src/tabs/_overview.py:215:		file_names = "\n".join([f.rsplit(".", 1)[0] + ":" for f in self.cmc.game.file_info])
+CMT/src/tabs/_overview.py:216:		rows = len(self.cmc.game.file_info)
+CMT/src/tabs/_overview.py:245:		for i, file_name in enumerate(self.cmc.game.file_info.keys()):
+CMT/src/tabs/_overview.py:246:			file_path = self.cmc.game.file_info[file_name]["File"] or Path(file_name)
+CMT/src/tabs/_overview.py:248:			match self.cmc.game.file_info[file_name]["InstallType"]:
+CMT/src/tabs/_overview.py:252:				case InstallType.OG:
+CMT/src/tabs/_overview.py:268:				case InstallType.NotFound:
+CMT/src/tabs/_overview.py:299:			install_type = self.cmc.game.file_info[file_name]["InstallType"]
+CMT/src/tabs/_overview.py:309:				version = ver_to_str(self.cmc.game.file_info[file_name]["Version"] or "Not Found")
+CMT/src/tabs/_overview.py:605:	def get_file_info(self, file_name: str, file_path: Path) -> FileInfo:
+CMT/src/tabs/_overview.py:606:		file_path = self.cmc.game.game_path / file_name
+CMT/src/tabs/_overview.py:615:				"InstallType": InstallType.NotFound,
+CMT/src/tabs/_overview.py:623:			install_type = BASE_FILES[file_name].get(version_string) or BASE_FILES[file_name].get(file_hash)
+CMT/src/tabs/_overview.py:626:			install_type = BASE_FILES[file_name].get(file_hash)
+CMT/src/tabs/_overview.py:628:		if install_type == InstallType.NGAE and self.cmc.game.install_type in {InstallType.NG, InstallType.AE}:
+CMT/src/tabs/_overview.py:636:			"InstallType": install_type or InstallType.Unknown,
+CMT/src/tabs/_overview.py:653:		for file_name in BASE_FILES:
+CMT/src/tabs/_overview.py:655:			file_path = self.cmc.game.game_path / file_name
+CMT/src/tabs/_overview.py:656:			file_info = self.get_file_info(file_name, file_path)
+CMT/src/tabs/_overview.py:657:			self.cmc.game.file_info[file_path.name] = file_info
+CMT/src/tabs/_overview.py:660:				self.cmc.game.install_type = file_info["InstallType"]
+CMT/src/tabs/_overview.py:662:				if self.cmc.game.install_type == InstallType.Unknown:
+CMT/src/tabs/_overview.py:667:							f"{file_info['VersionString'] or file_info['Hash']} is an unknown version.\nPossible causes:\n1. The game is an old version and should be updated.\n2. The exe file may be corrupted.\n3. The game is a new version and the Toolkit needs to be updated.",
+CMT/src/tabs/_overview.py:672:				if self.cmc.game.data_path and file_info["VersionString"]:
+CMT/src/tabs/_overview.py:673:					address_library_name = f"version-{file_info['VersionString'].replace('.', '-')}.bin"
+CMT/src/tabs/_overview.py:697:							self.cmc.game.install_type = InstallType.DG
+CMT/src/tabs/_overview.py:759:		if self.cmc.game.install_type == InstallType.AE:
+CMT/src/tabs/_overview.py:873:		ccc_path = self.cmc.game.game_path / "Fallout4.ccc"

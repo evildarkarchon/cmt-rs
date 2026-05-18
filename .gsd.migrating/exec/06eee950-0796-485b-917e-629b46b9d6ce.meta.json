@@ -1,0 +1,18 @@
+{
+  "id": "06eee950-0796-485b-917e-629b46b9d6ce",
+  "runtime": "bash",
+  "purpose": "final rerun cargo test after scanner warning cleanup",
+  "script_chars": 10,
+  "started_at": "2026-05-18T06:17:13.072Z",
+  "finished_at": "2026-05-18T06:17:35.653Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 22581,
+  "stdout_bytes": 26402,
+  "stderr_bytes": 418,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\06eee950-0796-485b-917e-629b46b9d6ce.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\06eee950-0796-485b-917e-629b46b9d6ce.stderr"
+}

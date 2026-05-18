@@ -1,0 +1,103 @@
+namedreference.rs 67     /// return true if we know that this property is changed by other means than its own binding
+expression_tree.rs 1280             // is used and the model is changed. CF issue #5249
+expression_tree.rs 1589                         "The property must be known at compile time and cannot be changed at runtime"
+object_tree.rs 421     /// This component actually inherits PopupWindow (although that has been changed to a Window by the lower_popups pass)
+object_tree.rs 543     /// for builtin properties that must be known at compile time and cannot be changed at runtime
+object_tree.rs 785     /// Currently contains also the callbacks. FIXME: should that be changed?
+object_tree.rs 937             write!(f, "changed {name} => ")?;
+object_tree.rs 1591         for ch in node.PropertyChangedCallback() {
+object_tree.rs 2039     /// returns true if the binding was changed
+typeloader.rs 24     /// A dependency of this file has changed, so we need to re-analyze it.
+typeloader.rs 25     /// The file contents have not changed, so we can keep the parsed CST around.
+parser.rs 341                      *RepeatedElement, *PropertyAnimation, *PropertyChangedCallback,
+parser.rs 358         /// `changed xxx => {...}`  where `xxx` is the DeclaredIdentifier
+parser.rs 359         PropertyChangedCallback-> [ DeclaredIdentifier, ?CodeBlock, ?Expression ],
+passes/lower_states.rs 151                     "The property is not changed as part of this transition".into(),
+passes/lower_states.rs 167         // We check earlier that the property is in the set of changed properties, so a binding bust have been assigned
+passes/focus_handling.rs 58         // Phase 4: All calls to `.focus()` may need to be changed with `focus-forward` resolved or changed from the built-in
+passes/inlining.rs 662         // on the top level of a component. This could be changed in the future.
+passes/default_geometry.rs 385 /// Return true if it was changed
+passes/move_declarations.rs 80         // Also move the changed callback
+passes/resolving.rs 73             SyntaxKind::PropertyChangedCallback => {
+passes/resolving.rs 74                 let node = syntax_nodes::PropertyChangedCallback::from(node.clone());
+parser/element.rs 53 /// changed foo => {}
+parser/element.rs 91                 SyntaxKind::Identifier if p.peek().as_str() == "changed" => {
+parser/element.rs 92                     parse_changed_callback(&mut *p);
+parser/element.rs 116                     if p.peek().as_str() == "changed" {
+parser/element.rs 118                         parse_changed_callback(&mut *p);
+parser/element.rs 484 /// ```test,PropertyChangedCallback
+parser/element.rs 485 /// changed the-property => { x = y; }
+parser/element.rs 486 /// changed foo => debug(13);
+parser/element.rs 487 /// changed xyz => { foo() };
+parser/element.rs 489 fn parse_changed_callback(p: &mut impl Parser) {
+parser/element.rs 490     debug_assert_eq!(p.peek().as_str(), "changed");
+parser/element.rs 491     let mut p = p.start_node(SyntaxKind::PropertyChangedCallback);
+parser/element.rs 492     p.expect(SyntaxKind::Identifier); // changed
+llr/item_tree.rs 130     // maps property to its changed callback
+llr/pretty_print.rs 98                 "changed {} => {};",
+llr/pretty_print.rs 195                 "changed {} => {};",
+generator/cpp.rs 906         fileaccess::write_file_if_changed(cpp_file_name, cpp_file.to_string().as_bytes())?;
+generator/python/diff.rs 14     pub fn changed_globals(&self, other: &Self) -> Option<PyComponentsDifference> {
+generator/python/diff.rs 18     pub fn changed_components(&self, other: &Self) -> Option<PyComponentsDifference> {
+generator/python/diff.rs 22     pub fn changed_structs_or_enums(&self, other: &Self) -> Option<PyStructsOrEnumsDifference> {
+generator/python/diff.rs 30     pub changed_components: Vec<(SmolStr, ComponentDifference)>,
+generator/python/diff.rs 60         let changed_components = orig_components
+generator/python/diff.rs 73             || !changed_components.is_empty()
+generator/python/diff.rs 78                 changed_components,
+generator/python/diff.rs 87             || self.changed_components.iter().any(|(_, change)| change.incompatible_changes())
+generator/python/diff.rs 103     pub type_changed_properties: Vec<TypeChange>,
+generator/python/diff.rs 136         let type_changed_properties = orig_props
+generator/python/diff.rs 164             type_changed_properties,
+generator/python/diff.rs 174             || !self.type_changed_properties.is_empty()
+generator/python/diff.rs 181             || !self.type_changed_properties.is_empty()
+generator/python/diff.rs 189     pub changed_structs: Vec<(SmolStr, StructDifference)>,
+generator/python/diff.rs 192     pub changed_enums: Vec<(SmolStr, EnumDifference)>,
+generator/python/diff.rs 257         let changed_structs = orig_structs
+generator/python/diff.rs 268         let changed_enums = orig_enums
+generator/python/diff.rs 281             || !changed_structs.is_empty()
+generator/python/diff.rs 284             || !changed_enums.is_empty()
+generator/python/diff.rs 289                 changed_structs,
+generator/python/diff.rs 292                 changed_enums,
+generator/python/diff.rs 302             || self.changed_structs.iter().any(|(_, c)| c.incompatible_changes())
+generator/python/diff.rs 303             || self.changed_enums.iter().any(|(_, c)| c.incompatible_changes())
+generator/python/diff.rs 311     pub type_changed_fields: Vec<TypeChange>,
+generator/python/diff.rs 343         let type_changed_fields = orig_fields
+generator/python/diff.rs 371             type_changed_fields,
+generator/python/diff.rs 381             || !self.type_changed_fields.is_empty()
+generator/python/diff.rs 389             || !self.type_changed_fields.is_empty()
+generator/python/diff.rs 448                 name: SmolStr::new_static("ChangedGlobal"),
+generator/python/diff.rs 463                 aliases: vec![SmolStr::new_static("ChangedGlobalAlias")],
+generator/python/diff.rs 485                 name: SmolStr::new_static("ChangedGlobal"),
+generator/python/diff.rs 514     assert!(old.changed_globals(&old).is_none());
+generator/python/diff.rs 516     let changed = old.changed_globals(&new);
+generator/python/diff.rs 517     assert!(changed.is_some());
+generator/python/diff.rs 518     let changed = changed.unwrap();
+generator/python/diff.rs 520     assert_eq!(changed.added_components, vec![SmolStr::new_static("NewGlobal")]);
+generator/python/diff.rs 521     assert_eq!(changed.removed_components, vec![SmolStr::new_static("ToBeRemoved")]);
+generator/python/diff.rs 532         type_changed_properties: vec![TypeChange {
+generator/python/diff.rs 538         removed_aliases: vec![SmolStr::new_static("ChangedGlobalAlias")],
+generator/python/diff.rs 542         changed.changed_components,
+generator/python/diff.rs 543         vec![(SmolStr::new_static("ChangedGlobal"), expected_glob_change)]
+generator/python/diff.rs 560                 name: SmolStr::new_static("StructWithChangedFields"),
+generator/python/diff.rs 567                         name: SmolStr::new_static("unchanged_field"),
+generator/python/diff.rs 602                 name: SmolStr::new_static("ChangedEnum"),
+generator/python/diff.rs 613                 aliases: vec![SmolStr::new_static("ChangedEnumRemovedAlias")],
+generator/python/diff.rs 644                 name: SmolStr::new_static("StructWithChangedFields"),
+generator/python/diff.rs 651                         name: SmolStr::new_static("unchanged_field"),
+generator/python/diff.rs 695                 name: SmolStr::new_static("ChangedEnum"),
+generator/python/diff.rs 706                 aliases: vec![SmolStr::new_static("ChangedEnumAddedAlias")],
+generator/python/diff.rs 726     assert!(old.changed_structs_or_enums(&old).is_none());
+generator/python/diff.rs 728     let changed = old.changed_structs_or_enums(&new);
+generator/python/diff.rs 729     assert!(changed.is_some());
+generator/python/diff.rs 730     let changed = changed.unwrap();
+generator/python/diff.rs 732     assert_eq!(changed.added_structs, vec![SmolStr::new_static("AddedStruct")]);
+generator/python/diff.rs 734         changed.removed_structs,
+generator/python/diff.rs 739         changed.added_enums,
+generator/python/diff.rs 742     assert_eq!(changed.removed_enums, vec![SmolStr::new_static("RemovedEnum")]);
+generator/python/diff.rs 753         type_changed_fields: vec![TypeChange {
+generator/python/diff.rs 763         changed.changed_structs,
+generator/python/diff.rs 764         vec![(SmolStr::new_static("StructWithChangedFields"), expected_struct_change)]
+generator/python/diff.rs 770         added_aliases: vec![SmolStr::new_static("ChangedEnumAddedAlias")],
+generator/python/diff.rs 771         removed_aliases: vec![SmolStr::new_static("ChangedEnumRemovedAlias")],
+generator/python/diff.rs 775         changed.changed_enums,
+generator/python/diff.rs 776         vec![(SmolStr::new_static("ChangedEnum"), expected_enum_change)]

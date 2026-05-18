@@ -1,0 +1,18 @@
+{
+  "id": "e382155b-7268-41af-bf9c-d741761b9a2b",
+  "runtime": "bash",
+  "purpose": "Locate source contract constants and helper functions in main.rs tests",
+  "script_chars": 140,
+  "started_at": "2026-05-18T09:11:37.161Z",
+  "finished_at": "2026-05-18T09:11:37.258Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 97,
+  "stdout_bytes": 4097,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e382155b-7268-41af-bf9c-d741761b9a2b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e382155b-7268-41af-bf9c-d741761b9a2b.stderr"
+}

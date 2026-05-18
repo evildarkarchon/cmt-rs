@@ -1,0 +1,12 @@
+error: unexpected closing delimiter: `}`
+    --> /mnt/j/cmt-rs/src/services/autofix.rs:1554:5
+     |
+1037 | mod scanner_autofix_service {
+     |                             - this opening brace...
+...
+1553 | }
+     | - ...matches this closing brace
+1554 |     }
+     |     ^ unexpected closing delimiter
+
+Error writing files: failed to resolve mod `autofix`: cannot parse /mnt/j/cmt-rs/src/services/autofix.rs

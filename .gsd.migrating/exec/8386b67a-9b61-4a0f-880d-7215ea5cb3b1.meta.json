@@ -1,0 +1,18 @@
+{
+  "id": "8386b67a-9b61-4a0f-880d-7215ea5cb3b1",
+  "runtime": "bash",
+  "purpose": "Extract vcdiff-decoder unit test fixtures/API examples",
+  "script_chars": 458,
+  "started_at": "2026-05-18T10:42:54.151Z",
+  "finished_at": "2026-05-18T10:42:54.249Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 98,
+  "stdout_bytes": 32073,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8386b67a-9b61-4a0f-880d-7215ea5cb3b1.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8386b67a-9b61-4a0f-880d-7215ea5cb3b1.stderr"
+}

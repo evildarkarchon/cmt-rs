@@ -1,0 +1,33 @@
+17: mod_manager::{
+41: pub struct DiscoveryRequest {
+52: pub fn new(current_working_directory: impl Into<PathBuf>) -> Self {
+67: pub fn with_local_appdata(mut self, local_appdata: impl Into<PathBuf>) -> Self {
+75: pub struct DiscoveryReport {
+79: pub mod_manager: Result<Option<DiscoveredModManager>, ModManagerDiscoveryError>,
+99: pub fn display_name(&self) -> &'static str {
+107: pub fn executable_path(&self) -> &Path {
+115: pub fn version(&self) -> SemanticVersion {
+148: pub fn user_message(&self) -> String {
+328: pub struct DiscoveryService<'a, F, R, P>
+355: pub fn discover(&self, request: &DiscoveryRequest) -> DiscoveryReport {
+367: let mod_manager = self.discover_mod_manager(request, &mut manager_steps);
+368: let manager_game_path = match &mod_manager {
+388: mod_manager,
+408: mod_manager,
+415: fn discover_mod_manager(
+543: fn discover_mod_organizer(
+863: fn discover_game(
+1049: has_f4se_plugins_path = installation.f4se_plugins_path.is_some(),
+1096: fn installation_for_game_path(&self, game_path: PathBuf) -> Fallout4Installation {
+1099: let f4se_plugins_path = data_path
+1103: Fallout4Installation::with_optional_paths(game_path, data_path, f4se_plugins_path)
+1636: .mod_manager
+1765: assert_eq!(installation.f4se_plugins_path, None);
+1769: fn valid_game_directory_can_return_data_without_f4se_plugins() {
+1788: assert_eq!(installation.f4se_plugins_path, None);
+1825: report.mod_manager.expect("MO2 should parse")
+1914: let manager_error = report.mod_manager.expect_err("MO2 error should surface");
+1952: .mod_manager
+1986: let manager_error = report.mod_manager.expect_err("missing profile should fail");
+2016: .mod_manager
+2044: let Some(manager) = report.mod_manager.expect("Vortex should be detected") else {

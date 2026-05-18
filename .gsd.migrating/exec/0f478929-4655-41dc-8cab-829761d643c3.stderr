@@ -1,0 +1,29 @@
+    Checking cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: the `Err`-variant returned from this function is very large
+   --> src/services/autofix.rs:840:6
+    |
+840 | ) ->...xRejection> {
+    |     ...^^^^^^^^^^^ the `Err`-variant is at least 160 bytes
+    |
+    = help: try reducing the size of `domain::autofix::AutoFixRejection`, for example by boxing large elements or replacing it with `Box<domain::autofix::AutoFixRejection>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+    = note: `#[warn(clippy::result_large_err)]` on by default
+
+warning: this function has too many arguments (8/7)
+    --> src/services/scanner.rs:1118:5
+     |
+1118 | /     fn scan_data_tree<P>(
+1119 | |         &self,
+1120 | |         data_path: &Path,
+1121 | |         request: &ScannerScanRequest<'_>,
+...    |
+1127 | |     ) where
+1128 | |         P: FnMut(&ScannerProgressEvent),
+     | |________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+     = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: `cmt-rs` (bin "cmt-rs") generated 2 warnings
+warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings (2 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 28.85s

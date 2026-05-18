@@ -1,0 +1,18 @@
+{
+  "id": "b8aa420f-4096-40eb-ac50-d6af4ba5d4b9",
+  "runtime": "bash",
+  "purpose": "search Slint examples for Timer placement and running bindings",
+  "script_chars": 561,
+  "started_at": "2026-05-18T04:24:22.136Z",
+  "finished_at": "2026-05-18T04:24:22.458Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 322,
+  "stdout_bytes": 3937,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b8aa420f-4096-40eb-ac50-d6af4ba5d4b9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b8aa420f-4096-40eb-ac50-d6af4ba5d4b9.stderr"
+}

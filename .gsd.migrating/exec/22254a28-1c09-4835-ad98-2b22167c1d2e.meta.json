@@ -1,0 +1,18 @@
+{
+  "id": "22254a28-1c09-4835-ad98-2b22167c1d2e",
+  "runtime": "python",
+  "purpose": "S07 scanner relevant file inventory and symbol summary",
+  "script_chars": 745,
+  "started_at": "2026-05-18T04:52:59.917Z",
+  "finished_at": "2026-05-18T04:53:00.034Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 117,
+  "stdout_bytes": 965,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\22254a28-1c09-4835-ad98-2b22167c1d2e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\22254a28-1c09-4835-ad98-2b22167c1d2e.stderr"
+}

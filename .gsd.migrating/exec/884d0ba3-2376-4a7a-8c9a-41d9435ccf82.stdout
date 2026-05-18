@@ -1,0 +1,21 @@
+pelite #exe #dll #mui #bin #pe
+Lightweight, memory-safe, zero-allocation library for reading and navigating PE binaries.
+version: 0.10.0
+license: MIT
+rust-version: unknown
+documentation: https://docs.rs/pelite/
+repository: https://github.com/CasualX/pelite
+crates.io: https://crates.io/crates/pelite/0.10.0
+features:
+ +default          = [mmap, derive_pod]
+  derive_pod       = [dataview/derive_pod]
+  libc             = [dep:libc]
+  mmap             = [std, libc, winapi]
+  std              = [no-std-compat/std]
+  winapi           = [dep:winapi]
+  data-encoding    = [dep:data-encoding]
+  hashbrown        = [dep:hashbrown]
+  resources_nostd  = [hashbrown]
+  serde            = [dep:serde]
+  unsafe_alignment = []
+  unstable         = []

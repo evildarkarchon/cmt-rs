@@ -1,0 +1,18 @@
+{
+  "id": "012d5454-6690-45b9-ab0d-78a9dd9954d7",
+  "runtime": "bash",
+  "purpose": "T05 S06 quality gate: git status --short CMT",
+  "script_chars": 22,
+  "started_at": "2026-05-18T04:45:20.061Z",
+  "finished_at": "2026-05-18T04:45:20.645Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 584,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\012d5454-6690-45b9-ab0d-78a9dd9954d7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\012d5454-6690-45b9-ab0d-78a9dd9954d7.stderr"
+}

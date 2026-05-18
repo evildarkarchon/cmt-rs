@@ -1,0 +1,18 @@
+{
+  "id": "d3d9ff42-c6bb-4a18-8c32-d940050429e7",
+  "runtime": "bash",
+  "purpose": "format after clippy guard cleanup",
+  "script_chars": 9,
+  "started_at": "2026-05-18T04:02:42.885Z",
+  "finished_at": "2026-05-18T04:02:43.355Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 470,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d3d9ff42-c6bb-4a18-8c32-d940050429e7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d3d9ff42-c6bb-4a18-8c32-d940050429e7.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "40a104e4-2370-4370-ad6c-e36d980d794b",
+  "runtime": "bash",
+  "purpose": "list target build out files for Slint generated modules",
+  "script_chars": 109,
+  "started_at": "2026-05-18T04:21:45.699Z",
+  "finished_at": "2026-05-18T04:21:48.364Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 2665,
+  "stdout_bytes": 85618,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\40a104e4-2370-4370-ad6c-e36d980d794b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\40a104e4-2370-4370-ad6c-e36d980d794b.stderr"
+}

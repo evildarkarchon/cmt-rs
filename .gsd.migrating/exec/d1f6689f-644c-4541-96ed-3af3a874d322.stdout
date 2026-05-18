@@ -1,0 +1,304 @@
+## struct FakeFilesystem @ 290
+struct FakeFilesystem {
+        nodes: BTreeMap<PathBuf, FakeNode>,
+    }
+
+    impl FakeFilesystem {
+        fn with_file(mut self, path: &str, bytes: impl Into<Vec<u8>>) -> Self {
+            self.nodes
+                .insert(PathBuf::from(path), FakeNode::File(bytes.into()));
+            self
+        }
+
+        fn with_dir(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Directory);
+            self
+        }
+
+        fn with_denied(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Denied);
+            self
+        }
+
+        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+            match self.nodes.get(path) {
+                Some(FakeNode::Denied) => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::PermissionDenied,
+                    format!(
+                        "{} target could not be accessed because permission was denied.",
+                        operation.label()
+                    ),
+                )),
+                Some(node) => Ok(node),
+                None => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    format!("{} target was not found.", operation.label()),
+                )),
+            }
+        }
+    }
+
+    impl Filesystem for FakeFilesystem {
+        fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+            let node = self.node(path, PlatformOperation::ReadMetadata)?;
+            let file_type = match node {
+                FakeNode::File(bytes) => {
+                    return Ok(FileMetadata {
+                        file_type: FileType::File,
+                        len: bytes.len() as u64,
+                    });
+                }
+                FakeNode::Directory => FileType::Directory,
+                FakeNode::Denied => unreachable!("denied nodes return before classification"),
+            };
+            Ok(FileMetadata { file_type, len: 0 })
+        }
+
+       
+
+## impl FakeFilesystem @ 294
+impl FakeFilesystem {
+        fn with_file(mut self, path: &str, bytes: impl Into<Vec<u8>>) -> Self {
+            self.nodes
+                .insert(PathBuf::from(path), FakeNode::File(bytes.into()));
+            self
+        }
+
+        fn with_dir(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Directory);
+            self
+        }
+
+        fn with_denied(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Denied);
+            self
+        }
+
+        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+            match self.nodes.get(path) {
+                Some(FakeNode::Denied) => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::PermissionDenied,
+                    format!(
+                        "{} target could not be accessed because permission was denied.",
+                        operation.label()
+                    ),
+                )),
+                Some(node) => Ok(node),
+                None => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    format!("{} target was not found.", operation.label()),
+                )),
+            }
+        }
+    }
+
+    impl Filesystem for FakeFilesystem {
+        fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+            let node = self.node(path, PlatformOperation::ReadMetadata)?;
+            let file_type = match node {
+                FakeNode::File(bytes) => {
+                    return Ok(FileMetadata {
+                        file_type: FileType::File,
+                        len: bytes.len() as u64,
+                    });
+                }
+                FakeNode::Directory => FileType::Directory,
+                FakeNode::Denied => unreachable!("denied nodes return before classification"),
+            };
+            Ok(FileMetadata { file_type, len: 0 })
+        }
+
+        fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+            mat
+
+## fn with_file @ 295
+fn with_file(mut self, path: &str, bytes: impl Into<Vec<u8>>) -> Self {
+            self.nodes
+                .insert(PathBuf::from(path), FakeNode::File(bytes.into()));
+            self
+        }
+
+        fn with_dir(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Directory);
+            self
+        }
+
+        fn with_denied(mut self, path: &str) -> Self {
+            self.nodes.insert(PathBuf::from(path), FakeNode::Denied);
+            self
+        }
+
+        fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+            match self.nodes.get(path) {
+                Some(FakeNode::Denied) => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::PermissionDenied,
+                    format!(
+                        "{} target could not be accessed because permission was denied.",
+                        operation.label()
+                    ),
+                )),
+                Some(node) => Ok(node),
+                None => Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    format!("{} target was not found.", operation.label()),
+                )),
+            }
+        }
+    }
+
+    impl Filesystem for FakeFilesystem {
+        fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+            let node = self.node(path, PlatformOperation::ReadMetadata)?;
+            let file_type = match node {
+                FakeNode::File(bytes) => {
+                    return Ok(FileMetadata {
+                        file_type: FileType::File,
+                        len: bytes.len() as u64,
+                    });
+                }
+                FakeNode::Directory => FileType::Directory,
+                FakeNode::Denied => unreachable!("denied nodes return before classification"),
+            };
+            Ok(FileMetadata { file_type, len: 0 })
+        }
+
+        fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+            match self.node(path, PlatformOpe
+
+## fn add_file @ missing
+## fn read_dir @ 134
+fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+
+    /// Recursively lists a directory tree in deterministic path order.
+    fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+}
+
+/// Production filesystem adapter backed by `std::fs` and deterministic `walkdir` traversal.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RealFilesystem;
+
+impl RealFilesystem {
+    /// Creates the production filesystem adapter without touching the filesystem.
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl Filesystem for RealFilesystem {
+    fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+        fs::metadata(path)
+            .map(|metadata| FileMetadata {
+                file_type: FileType::from_std(metadata.file_type()),
+                len: metadata.len(),
+            })
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::ReadMetadata,
+                    path.display().to_string(),
+                    &error,
+                )
+            })
+    }
+
+    fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+        fs::read(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::ReadFile,
+                path.display().to_string(),
+                &error,
+            )
+        })
+    }
+
+    fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+        let mut file = fs::File::open(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::ReadFile,
+                path.display().to_string(),
+                &error,
+            )
+        })?;
+        let mut bytes = Vec::with_capacity(max_len);
+        file.by_ref()
+            .take(max_len as u64)
+            .read_to_end(&mut bytes)
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    &error,
+
+## fn read_bytes @ 117
+fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>>;
+
+    /// Reads at most `max_len` bytes from the start of a file.
+    ///
+    /// Real adapters should override this to avoid full-file reads for parser
+    /// probes. The default keeps existing fakes small while preserving the same
+    /// error behavior as [`Filesystem::read_bytes`].
+    fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+        let mut bytes = self.read_bytes(path)?;
+        bytes.truncate(max_len);
+        Ok(bytes)
+    }
+
+    /// Reads a whole UTF-8 text file.
+    fn read_to_string(&self, path: &Path) -> PlatformResult<String>;
+
+    /// Lists direct children of a directory in deterministic path order.
+    fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+
+    /// Recursively lists a directory tree in deterministic path order.
+    fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+}
+
+/// Production filesystem adapter backed by `std::fs` and deterministic `walkdir` traversal.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct RealFilesystem;
+
+impl RealFilesystem {
+    /// Creates the production filesystem adapter without touching the filesystem.
+    pub const fn new() -> Self {
+        Self
+    }
+}
+
+impl Filesystem for RealFilesystem {
+    fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+        fs::metadata(path)
+            .map(|metadata| FileMetadata {
+                file_type: FileType::from_std(metadata.file_type()),
+                len: metadata.len(),
+            })
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::ReadMetadata,
+                    path.display().to_string(),
+                    &error,
+                )
+            })
+    }
+
+    fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+        fs::read(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::ReadFile,
+                path.display().to_string(),
+                &error,
+            )
+        })
+    }
+
+

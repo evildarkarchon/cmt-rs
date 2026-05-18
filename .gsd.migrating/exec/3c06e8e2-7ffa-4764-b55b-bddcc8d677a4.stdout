@@ -1,0 +1,80 @@
+## src/domain/discovery.rs
+178: /// General BA2 archive (`GNRL`).
+180: /// DirectX 10 texture BA2 archive (`DX10`).
+197: /// BA2 version classes used by the archive overview and patcher workflows.
+211: /// Converts the typed archive version into the numeric value in the BA2 header.
+551: "C:/Games/Fallout 4/Data/Fallout4 - Textures.ba2",
+## src/services/overview_collector.rs
+32: const BA2_HEADER_LEN: usize = 12;
+35: const NG_STARTUP_BA2_CRC: &str = "A5808F5F";
+238: /// Classified BA2 records in deterministic path order.
+259: /// BA2 header classification.
+591: let startup_path = data_path.join("Fallout4 - Startup.ba2");
+595: let payload = bytes.get(BA2_HEADER_LEN..).unwrap_or(&[]);
+596: if crc32_upper(payload) == NG_STARTUP_BA2_CRC {
+610: "Fallout4 - Startup.ba2 is not a regular file.",
+616: "Fallout4 - Startup.ba2 was not found for downgrade detection.",
+946: let suffixes = ba2_suffixes(&installation.ini_files);
+957: for suffix in &suffixes {
+958: let archive_name = format!("{stem} - {suffix}.ba2");
+968: "Fallout4 - Nvflex.ba2",
+971: "Nvidia Flex is enabled but Fallout4 - Nvflex.ba2 was not found.",
+978: "Fallout4 - TexturesPatch.ba2",
+981: "Anniversary Edition requires Fallout4 - TexturesPatch.ba2, but it was not found.",
+1036: let header = match self.filesystem.read_prefix(path, BA2_HEADER_LEN) {
+1048: if header.len() != BA2_HEADER_LEN {
+1053: "Archive header is shorter than the BA2 header length.",
+1365: fn ba2_suffixes(ini_files: &Fallout4IniFiles) -> Vec<String> {
+1371: let mut suffixes = vec![
+1377: suffixes.push(format!("voices_{language}"));
+1379: suffixes
+1431: extension_eq(path, "ba2")
+1787: fn ba2(version: u32, format: &[u8; 4]) -> Vec<u8> {
+1814: assert_eq!(crc32_upper(&[0x40, 0x5a, 0x64, 0x4c]), NG_STARTUP_BA2_CRC);
+1817: .with_file("C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2", {
+1818: let mut bytes = ba2(8, b"GNRL");
+1819: bytes.truncate(BA2_HEADER_LEN);
+1900: fn overview_collector_reads_bounded_ba2_headers_and_classifies_versions_formats_and_errors() {
+1910: "Old.ba2, Seven.ba2, Eight.ba2, Unknown.ba2, Short.ba2, BadMagic.ba2, Locked.ba2"
+1914: .with_file("C:/Games/Fallout 4/Data/Old.ba2", ba2(1, b"GNRL"))
+1915: .with_file("C:/Games/Fallout 4/Data/Seven.ba2", ba2(7, b"DX10"))
+1916: .with_file("C:/Games/Fallout 4/Data/Eight.ba2", ba2(8, b"GNRL"))
+1917: .with_file("C:/Games/Fallout 4/Data/Unknown.ba2", ba2(42, b"GNRL"))
+1918: .with_file("C:/Games/Fallout 4/Data/Short.ba2", b"BTDX".to_vec())
+1919: .with_file("C:/Games/Fallout 4/Data/BadMagic.ba2", {
+1920: let mut bytes = ba2(8, b"GNRL");
+1924: .with_unreadable_file("C:/Games/Fallout 4/Data/Locked.ba2");
+1945: assert_eq!(versions["Old.ba2"], ArchiveVersion::OldGen);
+1946: assert_eq!(versions["Seven.ba2"], ArchiveVersion::NextGen7);
+1947: assert_eq!(versions["Eight.ba2"], ArchiveVersion::NextGen8);
+1948: assert_eq!(versions["Unknown.ba2"], ArchiveVersion::Unknown(42));
+1953: .any(|record| record.path.ends_with("Locked.ba2")
+1961: .filter(|(_, len)| *len == BA2_HEADER_LEN)
+1969: .any(|path| path.extension().is_some_and(|extension| extension == "ba2"))
+2053: " Fallout4 - Startup.ba2, MissingFromIni.ba2 ".to_owned(),
+2084: "C:/Games/Fallout 4/Data/PluginB - voices_fr.ba2",
+2085: ba2(8, b"DX10"),
+2088: "C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2",
+2089: ba2(8, b"GNRL"),
+2092: "C:/Games/Fallout 4/Data/Fallout4 - Nvflex.ba2",
+2093: ba2(1, b"GNRL"),
+2115: .any(|record| record.path.ends_with("PluginB - voices_fr.ba2") && record.enabled)
+2121: .any(|record| record.path.ends_with("Fallout4 - Nvflex.ba2") && record.enabled)
+2127: .is_some_and(|path| path.ends_with("MissingFromIni.ba2"))
+## src/domain/overview.rs
+42: pub const ARCHIVE_PANEL_TITLE: &str = "Archives (BA2)";
+56: /// User-facing archive-version row label for v1 BA2 files.
+58: /// User-facing archive-version row label for v7/v8 BA2 files.
+95: /// Reference General/GNRL BA2 limit used for Overview warning colors.
+97: /// Reference Texture/DX10 BA2 limit used for Overview warning colors.
+717: /// Enabled General/GNRL BA2 count.
+719: /// Enabled Texture/DX10 BA2 count.
+721: /// Unreadable or invalid enabled BA2 count.
+723: /// v1 BA2 count.
+725: /// v7/v8 BA2 count.
+1508: assert_eq!(snapshot.archives.title, "Archives (BA2)");
+1565: "C:/Games/Fallout 4/Data/Fallout4 - Textures.ba2",
+1699: "C:/Games/Fallout 4/Data/Broken.ba2",
+1700: Some(PathBuf::from("Broken.ba2")),
+1711: Some(Path::new("C:/Games/Fallout 4/Data/Broken.ba2"))
+1715: Some(Path::new("Broken.ba2"))

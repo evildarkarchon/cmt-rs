@@ -1,0 +1,14 @@
+
+running 9 tests
+test domain::f4se::tests::f4se_domain_icon_mapping_matches_reference ... ok
+test domain::f4se::tests::f4se_domain_current_game_mapping_is_target_specific ... ok
+test domain::f4se::tests::f4se_domain_ambiguous_ngae_rendering_uses_warning_icons ... ok
+test domain::f4se::tests::f4se_domain_non_f4se_rendering_matches_reference ... ok
+test domain::f4se::tests::f4se_domain_unknown_game_target_warns_without_hiding_facts ... ok
+test domain::f4se::tests::f4se_domain_reference_strings_are_locked ... ok
+test domain::f4se::tests::f4se_domain_f4se_without_version_export_is_confirmed_unsupported_for_ngae ... ok
+test domain::f4se::tests::f4se_domain_scan_snapshot_models_loading_and_safe_errors ... ok
+test domain::f4se::tests::f4se_domain_inspection_failures_render_safe_unknown_cells ... ok
+
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 174 filtered out; finished in 0.01s
+

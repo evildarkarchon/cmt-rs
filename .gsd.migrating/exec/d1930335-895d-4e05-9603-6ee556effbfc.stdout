@@ -1,0 +1,260 @@
+src/main.rs:23:    scanner_controller::{ScannerController, ScannerControllerPhase},
+src/main.rs:39:    scanner::{
+src/main.rs:41:        ScannerActionKind, ScannerCategoryKind, ScannerCategoryProjection, ScannerFileList,
+src/main.rs:42:        ScannerResult, ScannerResultGroup,
+src/main.rs:77:    AboutActionWorkerPayload, BlockingWorkerResult, SlintEventLoopSink, ToolsActionWorkerPayload,
+src/main.rs:78:    WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+src/main.rs:130:struct ScannerCategoryToggleProjection {
+src/main.rs:141:struct ScannerUiProjection {
+src/main.rs:142:    categories: ScannerCategoryToggleProjection,
+src/main.rs:150:    result_rows: Vec<ScannerResultUiRow>,
+src/main.rs:167:    file_list_rows: Vec<ScannerFileListUiRow>,
+src/main.rs:182:    let scanner_controller = Arc::new(Mutex::new(ScannerController::new(
+src/main.rs:185:            .current_scanner_settings()
+src/main.rs:196:    apply_current_scanner_state(&app, &scanner_controller);
+src/main.rs:715:    if let Err(error) = worker_runtime.spawn_blocking_task(task, f4se_sink, move |_context| {
+src/main.rs:964:    if let Err(error) = worker_runtime.spawn_blocking_task(task, tools_sink, move |_context| {
+src/main.rs:1027:    if let Err(error) = worker_runtime.spawn_blocking_task(task, about_sink, move |_context| {
+src/main.rs:1048:    Ok(WorkerTaskOutcome::Completed(WorkerPayload::ToolsAction(
+src/main.rs:1049:        ToolsActionWorkerPayload::action_completed(feedback),
+src/main.rs:1056:    Ok(WorkerTaskOutcome::Completed(WorkerPayload::AboutAction(
+src/main.rs:1057:        AboutActionWorkerPayload::action_completed(feedback),
+src/main.rs:1157:    if let Err(error) = worker_runtime.spawn_blocking_task(
+src/main.rs:1180:        WorkerTaskOutcome::Completed(WorkerPayload::Overview(
+src/main.rs:1181:            workers::OverviewWorkerPayload::refresh_completed(refresh_id, snapshot),
+src/main.rs:1330:            WorkerPayload::Overview(workers::OverviewWorkerPayload::update_check_completed(
+src/main.rs:1387:    if let Err(error) = worker_runtime.spawn_blocking_task(task, overview_sink, move |_context| {
+src/main.rs:1493:    let WorkerPayload::Error(failure) = &event.payload else {
+src/main.rs:1508:    let WorkerPayload::Error(failure) = &event.payload else {
+src/main.rs:1584:fn with_scanner_controller_mut<T>(
+src/main.rs:1585:    controller: &Arc<Mutex<ScannerController>>,
+src/main.rs:1586:    action: impl FnOnce(&mut ScannerController) -> T,
+src/main.rs:1592:                event = "s07-scanner-controller-lock-poisoned",
+src/main.rs:1594:                "Scanner controller state is unavailable"
+src/main.rs:1662:fn apply_current_scanner_state(app: &MainWindow, controller: &Arc<Mutex<ScannerController>>) {
+src/main.rs:1664:        with_scanner_controller_mut(controller, |controller| project_scanner_state(controller))
+src/main.rs:1668:    apply_scanner_projection(app, projection);
+src/main.rs:1738:fn project_scanner_state(controller: &ScannerController) -> ScannerUiProjection {
+src/main.rs:1739:    let categories = scanner_category_toggles(controller.category_projection());
+src/main.rs:1740:    let detail = project_scanner_detail(controller.selected_detail());
+src/main.rs:1743:    ScannerUiProjection {
+src/main.rs:1747:        busy: controller.phase() == ScannerControllerPhase::Scanning,
+src/main.rs:1752:        result_rows: format_scanner_result_rows(controller.groups(), controller.results()),
+src/main.rs:1784:            .map(format_scanner_file_list_rows)
+src/main.rs:1789:fn scanner_category_toggles(
+src/main.rs:1790:    categories: Vec<ScannerCategoryProjection>,
+src/main.rs:1791:) -> ScannerCategoryToggleProjection {
+src/main.rs:1792:    let mut projection = ScannerCategoryToggleProjection {
+src/main.rs:1806:            ScannerCategoryKind::OverviewIssues => projection.overview_issues = category.enabled,
+src/main.rs:1807:            ScannerCategoryKind::Errors => projection.errors = category.enabled,
+src/main.rs:1808:            ScannerCategoryKind::WrongFormat => projection.wrong_file_formats = category.enabled,
+src/main.rs:1809:            ScannerCategoryKind::LoosePrevis => projection.loose_previs = category.enabled,
+src/main.rs:1810:            ScannerCategoryKind::JunkFiles => projection.junk_files = category.enabled,
+src/main.rs:1811:            ScannerCategoryKind::ProblemOverrides => {
+src/main.rs:1814:            ScannerCategoryKind::RaceSubgraphs => projection.race_subgraphs = category.enabled,
+src/main.rs:1822:struct ScannerDetailProjection {
+src/main.rs:1834:fn project_scanner_detail(
+src/main.rs:1835:    detail: Option<&app::scanner_controller::ScannerSelectedDetail>,
+src/main.rs:1836:) -> ScannerDetailProjection {
+src/main.rs:1838:        return ScannerDetailProjection {
+src/main.rs:1851:    ScannerDetailProjection {
+src/main.rs:1853:        mod_name: scanner_detail_value(&detail.records, DETAIL_LABEL_MOD),
+src/main.rs:1854:        problem: scanner_detail_value(&detail.records, DETAIL_LABEL_PROBLEM),
+src/main.rs:1855:        summary: scanner_detail_value(&detail.records, DETAIL_LABEL_SUMMARY),
+src/main.rs:1856:        solution: scanner_detail_value(&detail.records, DETAIL_LABEL_SOLUTION),
+src/main.rs:1857:        open_path_enabled: scanner_detail_has_enabled_action(
+src/main.rs:1859:            ScannerActionKind::OpenLocation,
+src/main.rs:1861:        open_url_enabled: scanner_detail_has_enabled_action(
+src/main.rs:1863:            ScannerActionKind::OpenSolutionUrl,
+src/main.rs:1865:        copy_url_enabled: scanner_detail_has_enabled_action(
+src/main.rs:1867:            ScannerActionKind::CopySolutionUrl,
+src/main.rs:1869:        file_list_enabled: scanner_detail_has_enabled_action(
+src/main.rs:1871:            ScannerActionKind::ShowFileList,
+src/main.rs:1876:fn scanner_detail_value(records: &[domain::scanner::ScannerDetailRecord], label: &str) -> String {
+src/main.rs:1884:fn scanner_detail_has_enabled_action(
+src/main.rs:1885:    detail: &app::scanner_controller::ScannerSelectedDetail,
+src/main.rs:1886:    action: ScannerActionKind,
+src/main.rs:1894:fn format_scanner_result_rows(
+src/main.rs:1895:    groups: &[ScannerResultGroup],
+src/main.rs:1896:    flat_results: &[ScannerResult],
+src/main.rs:1897:) -> Vec<ScannerResultUiRow> {
+src/main.rs:1902:        rows.push(ScannerResultUiRow {
+src/main.rs:1912:                scanner_flat_result_index(result, flat_results, &mut used_flat_indices);
+src/main.rs:1913:            rows.push(ScannerResultUiRow {
+src/main.rs:1931:fn scanner_flat_result_index(
+src/main.rs:1932:    result: &ScannerResult,
+src/main.rs:1933:    flat_results: &[ScannerResult],
+src/main.rs:1953:fn format_scanner_file_list_rows(file_list: &ScannerFileList) -> Vec<ScannerFileListUiRow> {
+src/main.rs:1957:        .map(|entry| ScannerFileListUiRow {
+src/main.rs:1964:fn apply_scanner_projection(app: &MainWindow, projection: ScannerUiProjection) {
+src/main.rs:1965:    app.set_scanner_overview_issues_enabled(projection.categories.overview_issues);
+src/main.rs:1966:    app.set_scanner_errors_enabled(projection.categories.errors);
+src/main.rs:1967:    app.set_scanner_wrong_file_formats_enabled(projection.categories.wrong_file_formats);
+src/main.rs:1968:    app.set_scanner_loose_previs_enabled(projection.categories.loose_previs);
+src/main.rs:1969:    app.set_scanner_junk_files_enabled(projection.categories.junk_files);
+src/main.rs:1970:    app.set_scanner_problem_overrides_enabled(projection.categories.problem_overrides);
+src/main.rs:1971:    app.set_scanner_race_subgraphs_enabled(projection.categories.race_subgraphs);
+src/main.rs:1972:    app.set_scanner_settings_read_only(projection.categories.read_only);
+src/main.rs:1973:    app.set_scanner_scan_button_text(projection.scan_button_text.as_str().into());
+src/main.rs:1974:    app.set_scanner_scan_button_enabled(projection.scan_button_enabled);
+src/main.rs:1975:    app.set_scanner_busy(projection.busy);
+src/main.rs:1976:    app.set_scanner_status_text(projection.status_text.as_str().into());
+src/main.rs:1977:    app.set_scanner_progress_text(projection.progress_text.as_str().into());
+src/main.rs:1978:    app.set_scanner_progress_percent(projection.progress_percent);
+src/main.rs:1979:    app.set_scanner_result_count_text(projection.result_count_text.as_str().into());
+src/main.rs:1980:    app.set_scanner_result_rows(model_from_vec(projection.result_rows));
+src/main.rs:1981:    app.set_scanner_show_mod_column(projection.show_mod_column);
+src/main.rs:1982:    app.set_scanner_detail_visible(projection.detail_visible);
+src/main.rs:1983:    app.set_scanner_detail_mod(projection.detail_mod.as_str().into());
+src/main.rs:1984:    app.set_scanner_detail_problem(projection.detail_problem.as_str().into());
+src/main.rs:1985:    app.set_scanner_detail_summary(projection.detail_summary.as_str().into());
+src/main.rs:1986:    app.set_scanner_detail_solution(projection.detail_solution.as_str().into());
+src/main.rs:1987:    app.set_scanner_action_feedback(projection.action_feedback.as_str().into());
+src/main.rs:1988:    app.set_scanner_open_path_enabled(projection.open_path_enabled);
+src/main.rs:1989:    app.set_scanner_open_url_enabled(projection.open_url_enabled);
+src/main.rs:1990:    app.set_scanner_copy_url_enabled(projection.copy_url_enabled);
+src/main.rs:1991:    app.set_scanner_file_list_enabled(projection.file_list_enabled);
+src/main.rs:1992:    app.set_scanner_file_list_visible(projection.file_list_visible);
+src/main.rs:1993:    app.set_scanner_file_list_title(projection.file_list_title.as_str().into());
+src/main.rs:1994:    app.set_scanner_file_list_description(projection.file_list_description.as_str().into());
+src/main.rs:1995:    app.set_scanner_file_list_first_column(projection.file_list_first_column.as_str().into());
+src/main.rs:1996:    app.set_scanner_file_list_second_column(projection.file_list_second_column.as_str().into());
+src/main.rs:1997:    app.set_scanner_file_list_rows(model_from_vec(projection.file_list_rows));
+src/main.rs:2265:            "Open Scanner details in a later port slice.",
+src/main.rs:2390:        scanner::{
+src/main.rs:2394:            SCANNING_BUTTON_LABEL, ScannerExtraData, ScannerFileList, ScannerFileListEntry,
+src/main.rs:2395:            ScannerProblemType, ScannerResult, ScannerScanSnapshot,
+src/main.rs:2408:    const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
+src/main.rs:2420:            "ui/scanner_tab.slint",
+src/main.rs:2421:            "ScannerTab",
+src/main.rs:2422:            "Scanner",
+src/main.rs:2504:            ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"]
+src/main.rs:2661:                "title: \"Scanner\"",
+src/main.rs:2670:            ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"]
+src/main.rs:2774:            WorkerPayload::Generic(workers::WorkerMessage::new("Other complete.")),
+src/main.rs:2819:    fn s07_scanner_slint_contract_replaces_placeholder_with_read_only_surface() {
+src/main.rs:2820:        assert!(SCANNER_SLINT.contains("export struct ScannerResultUiRow"));
+src/main.rs:2821:        assert!(SCANNER_SLINT.contains("export struct ScannerFileListUiRow"));
+src/main.rs:2823:        assert!(!SCANNER_SLINT.contains("Scanner behavior is reserved for a later port phase."));
+src/main.rs:2836:                "text: root.scanner-busy ? \"Scanning...\" : root.scanner-scan-button-text",
+src/main.rs:2838:                "text: \"Scanner\"",
+src/main.rs:2839:                "text: root.scanner-result-count-text",
+src/main.rs:2840:                "ScannerResultHeader {",
+src/main.rs:2841:                "for row in root.scanner-result-rows",
+src/main.rs:2858:                "component ScannerResultHeader",
+src/main.rs:2882:                "Scanner Slint structs should expose field {field:?}"
+src/main.rs:2898:                "ScannerTab should expose callback {callback:?}"
+src/main.rs:2905:                "Scanner UI must not expose deferred write action marker {prohibited:?}"
+src/main.rs:2926:    fn s07_scanner_slint_contract_main_window_forwards_properties_models_and_callbacks() {
+src/main.rs:2930:                "import { ScannerTab, ScannerResultUiRow, ScannerFileListUiRow }",
+src/main.rs:2931:                "in-out property <bool> scanner-overview-issues-enabled",
+src/main.rs:2932:                "in-out property <bool> scanner-errors-enabled",
+src/main.rs:2933:                "in-out property <bool> scanner-wrong-file-formats-enabled",
+src/main.rs:2934:                "in-out property <bool> scanner-loose-previs-enabled",
+src/main.rs:2935:                "in-out property <bool> scanner-junk-files-enabled",
+src/main.rs:2936:                "in-out property <bool> scanner-problem-overrides-enabled",
+src/main.rs:2937:                "in-out property <bool> scanner-race-subgraphs-enabled",
+src/main.rs:2938:                "in-out property <bool> scanner-settings-read-only",
+src/main.rs:2939:                "in-out property <string> scanner-scan-button-text",
+src/main.rs:2940:                "in-out property <bool> scanner-scan-button-enabled",
+src/main.rs:2941:                "in-out property <bool> scanner-busy",
+src/main.rs:2942:                "in-out property <string> scanner-status-text",
+src/main.rs:2943:                "in-out property <string> scanner-progress-text",
+src/main.rs:2944:                "in-out property <float> scanner-progress-percent",
+src/main.rs:2945:                "in-out property <string> scanner-result-count-text",
+src/main.rs:2946:                "in-out property <[ScannerResultUiRow]> scanner-result-rows",
+src/main.rs:2947:                "in-out property <bool> scanner-show-mod-column",
+src/main.rs:2948:                "in-out property <bool> scanner-detail-visible",
+src/main.rs:2949:                "in-out property <[ScannerFileListUiRow]> scanner-file-list-rows",
+src/main.rs:2950:                "callback scanner-category-toggled(string, bool)",
+src/main.rs:2951:                "callback scanner-scan-requested()",
+src/main.rs:2952:                "callback scanner-result-selected(int)",
+src/main.rs:2953:                "callback scanner-copy-details-requested()",
+src/main.rs:2954:                "callback scanner-file-list-requested()",
+src/main.rs:2955:                "callback scanner-open-path-requested()",
+src/main.rs:2956:                "callback scanner-open-url-requested()",
+src/main.rs:2957:                "callback scanner-copy-url-requested()",
+src/main.rs:2964:                "title: \"Scanner\"",
+src/main.rs:2965:                "ScannerTab {",
+src/main.rs:2966:                "scanner-overview-issues-enabled <=> root.scanner-overview-issues-enabled",
+src/main.rs:2967:                "scanner-errors-enabled <=> root.scanner-errors-enabled",
+src/main.rs:2968:                "scanner-wrong-file-formats-enabled <=> root.scanner-wrong-file-formats-enabled",
+src/main.rs:2969:                "scanner-loose-previs-enabled <=> root.scanner-loose-previs-enabled",
+src/main.rs:2970:                "scanner-junk-files-enabled <=> root.scanner-junk-files-enabled",
+src/main.rs:2971:                "scanner-problem-overrides-enabled <=> root.scanner-problem-overrides-enabled",
+src/main.rs:2972:                "scanner-race-subgraphs-enabled <=> root.scanner-race-subgraphs-enabled",
+src/main.rs:2973:                "scanner-result-rows <=> root.scanner-result-rows",
+src/main.rs:2974:                "scanner-file-list-rows <=> root.scanner-file-list-rows",
+src/main.rs:2975:                "root.scanner-category-toggled(id, enabled)",
+src/main.rs:2976:                "root.scanner-scan-requested()",
+src/main.rs:2977:                "root.scanner-result-selected(index)",
+src/main.rs:2978:                "root.scanner-copy-details-requested()",
+src/main.rs:2979:                "root.scanner-file-list-requested()",
+src/main.rs:2980:                "root.scanner-open-path-requested()",
+src/main.rs:2981:                "root.scanner-open-url-requested()",
+src/main.rs:2982:                "root.scanner-copy-url-requested()",
+src/main.rs:2988:    fn s07_scanner_slint_contract_runtime_projection_uses_controller_snapshot() {
+src/main.rs:2989:        let mut controller = ScannerController::new(Default::default());
+src/main.rs:2990:        let idle = project_scanner_state(&controller);
+src/main.rs:3013:            .expect("enabled scanner categories should allow scan requests");
+src/main.rs:3014:        let result = ScannerResult::with_path(
+src/main.rs:3015:            ScannerProblemType::UnexpectedFormat,
+src/main.rs:3022:        .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/cmt")])
+src/main.rs:3023:        .with_file_list(ScannerFileList::generic(vec![ScannerFileListEntry::new(
+src/main.rs:3027:        let snapshot = ScannerScanSnapshot::from_results(
+src/main.rs:3030:            "Scanner scan complete.",
+src/main.rs:3035:        let selected = project_scanner_state(&controller);
+src/main.rs:3073:        let file_list = project_scanner_state(&controller);
+src/main.rs:3381:            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+src/main.rs:3412:            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(
+src/main.rs:3425:            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(about_success)),
+src/main.rs:3438:            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+ui/main.slint:4:import { ScannerTab, ScannerResultUiRow, ScannerFileListUiRow } from "scanner_tab.slint";
+ui/main.slint:38:    in-out property <bool> scanner-overview-issues-enabled: true;
+ui/main.slint:39:    in-out property <bool> scanner-errors-enabled: true;
+ui/main.slint:40:    in-out property <bool> scanner-wrong-file-formats-enabled: true;
+ui/main.slint:41:    in-out property <bool> scanner-loose-previs-enabled: true;
+ui/main.slint:42:    in-out property <bool> scanner-junk-files-enabled: true;
+ui/main.slint:43:    in-out property <bool> scanner-problem-overrides-enabled: true;
+ui/main.slint:44:    in-out property <bool> scanner-race-subgraphs-enabled: true;
+ui/main.slint:45:    in-out property <bool> scanner-settings-read-only: true;
+ui/main.slint:46:    in-out property <string> scanner-scan-button-text: "Scan Game";
+ui/main.slint:47:    in-out property <bool> scanner-scan-button-enabled: true;
+ui/main.slint:48:    in-out property <bool> scanner-busy: false;
+ui/main.slint:49:    in-out property <string> scanner-status-text: "";
+ui/main.slint:50:    in-out property <string> scanner-progress-text: "";
+ui/main.slint:51:    in-out property <float> scanner-progress-percent: 0;
+ui/main.slint:52:    in-out property <string> scanner-result-count-text: "0 Results ~ Select an item for details";
+ui/main.slint:53:    in-out property <[ScannerResultUiRow]> scanner-result-rows;
+ui/main.slint:54:    in-out property <bool> scanner-show-mod-column: false;
+ui/main.slint:55:    in-out property <bool> scanner-detail-visible: false;
+ui/main.slint:56:    in-out property <string> scanner-detail-mod: "";
+ui/main.slint:57:    in-out property <string> scanner-detail-problem: "";
+ui/main.slint:58:    in-out property <string> scanner-detail-summary: "";
+ui/main.slint:59:    in-out property <string> scanner-detail-solution: "";
+ui/main.slint:60:    in-out property <string> scanner-action-feedback: "";
+ui/main.slint:61:    in-out property <bool> scanner-open-path-enabled: false;
+ui/main.slint:62:    in-out property <bool> scanner-open-url-enabled: false;
+ui/main.slint:63:    in-out property <bool> scanner-copy-url-enabled: false;
+ui/main.slint:64:    in-out property <bool> scanner-file-list-enabled: false;
+ui/main.slint:65:    in-out property <bool> scanner-file-list-visible: false;
+ui/main.slint:66:    in-out property <string> scanner-file-list-title: "Files";
+ui/main.slint:67:    in-out property <string> scanner-file-list-description: "";
+ui/main.slint:68:    in-out property <string> scanner-file-list-first-column: "Value";
+ui/main.slint:69:    in-out property <string> scanner-file-list-second-column: "File";
+ui/main.slint:70:    in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
+ui/main.slint:91:    callback scanner-category-toggled(string, bool);
+ui/main.slint:92:    callback scanner-scan-requested();
+ui/main.slint:93:    callback scanner-result-selected(int);
+ui/main.slint:94:    callback scanner-copy-details-requested();
+ui/main.slint:95:    callback scanner-file-list-requested();
+ui/main.slint:96:    callback scanner-open-path-requested();
+ui/main.slint:97:    callback scanner-open-url-requested();
+ui/main.slint:98:    callback scanner-copy-url-requested();
+ui/main.slint:177:            title: "Scanner";
+ui/main.slint:178:            ScannerTab {
+ui/main.slint:179:                scanner-overview-issues-enabled <=> root.scanner-overview-issues-enabled;
+ui/main.slint:180:                scanner-errors-enabled <=> root.scanner-errors-enabled;
+ui/main.slint:181:                scanner-wrong-file-formats-enabled <=> root.scanner-wrong-file-formats-enabled;
+ui/main.slint:182:                scanner-loose-previs-enabled <=> root.scanner-loose-previs-enabled;
+ui/main.slint:183:                scanner-junk-files-enabled <=> root.scanner-junk-files-enabled;

@@ -1,0 +1,6 @@
+224 let scanner_sink = bind_scanner_worker_sink(&app, Arc::clone(&scanner_controller));
+508 fn bind_scanner_worker_sink(
+570 fn bind_scanner_callbacks(
+1392 fn request_scanner_scan(
+1772 execute_scanner_action_payload(execution)
+1838 fn execute_scanner_action_payload(execution: ScannerActionExecution) -> BlockingWorkerResult {

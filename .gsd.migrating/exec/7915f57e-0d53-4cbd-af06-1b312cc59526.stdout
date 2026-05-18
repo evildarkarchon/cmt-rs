@@ -1,0 +1,116 @@
+## struct DiscoveryReport
+70:     }
+71: }
+72: 
+73: /// Full discovery report, including partial failures that later UI code can show safely.
+74: #[derive(Debug, Clone, PartialEq, Eq)]
+75: pub struct DiscoveryReport {
+76:     /// Fallout 4 installation state, or a recoverable reference-compatible error.
+77:     pub game: Result<Fallout4Installation, DiscoveryError>,
+78:     /// Detected/parsed mod-manager state, or a manager-specific typed error.
+79:     pub mod_manager: Result<Option<DiscoveredModManager>, ModManagerDiscoveryError>,
+80:     /// Fakeable PC specs/system metadata for the Overview tab.
+81:     pub system_metadata: Result<SystemMetadata, PlatformError>,
+82:     /// Ordered Fallout 4 path attempts in the locked reference order.
+83:     pub attempts: Vec<DiscoveryAttempt>,
+84:     /// Ordered manager-discovery steps, useful for debugging MO2 portable/instance selection.
+85:     pub manager_steps: Vec<ModManagerDiscoveryStep>,
+86: }
+87: 
+88: /// Supported manager discovery results.
+89: #[derive(Debug, Clone, PartialEq, Eq)]
+90: pub enum DiscoveredModManager {
+91:     /// Parsed Mod Organizer 2 configuration and executable identity.
+92:     ModOrganizer(Box<Mo2Configuration>),
+93:     /// Identity-only Vortex context. No staging/config parsing is performed.
+94:     Vortex(VortexContext),
+95: }
+96: 
+97: impl DiscoveredModManager {
+98:     /// Returns the exact reference display name for the detected manager.
+99:     pub fn display_name(&self) -> &'static str {
+100:         match self {
+101:             Self::ModOrganizer(configuration) => configuration.context.manager.display_name(),
+102:             Self::Vortex(context) => context.manager.display_name(),
+103:         }
+104:     }
+105: 
+106:     /// Returns the executable path that identified the manager.
+107:     pub fn executable_path(&self) -> &Path {
+108:         match self {
+109:             Self::ModOrganizer(configuration) => &configuration.context.manager.executable_path,
+110:             Self::Vortex(context) => &context.manager.executable_path,
+111:         }
+112:     }
+113: 
+114:     /// Returns the parsed/fallback manager executable version.
+115:     pub fn version(&self) -> SemanticVersion {
+116:         match self {
+117:             Self::ModOrganizer(configuration) => configuration.context.manager.version,
+118:             Self::Vortex(context) => context.manager.version,
+119:         }
+120:     }
+121: 
+122:     fn manager_game_path(&self) -> Option<PathBuf> {
+123:         match self {
+124:             Self::ModOrganizer(configuration) => configuration.context.game_path.clone(),
+125:             Self::Vortex(_) => None,
+## enum DiscoveredModManager
+85:     pub manager_steps: Vec<ModManagerDiscoveryStep>,
+86: }
+87: 
+88: /// Supported manager discovery results.
+89: #[derive(Debug, Clone, PartialEq, Eq)]
+90: pub enum DiscoveredModManager {
+91:     /// Parsed Mod Organizer 2 configuration and executable identity.
+92:     ModOrganizer(Box<Mo2Configuration>),
+93:     /// Identity-only Vortex context. No staging/config parsing is performed.
+94:     Vortex(VortexContext),
+95: }
+96: 
+97: impl DiscoveredModManager {
+98:     /// Returns the exact reference display name for the detected manager.
+99:     pub fn display_name(&self) -> &'static str {
+100:         match self {
+101:             Self::ModOrganizer(configuration) => configuration.context.manager.display_name(),
+102:             Self::Vortex(context) => context.manager.display_name(),
+103:         }
+104:     }
+105: 
+106:     /// Returns the executable path that identified the manager.
+107:     pub fn executable_path(&self) -> &Path {
+108:         match self {
+109:             Self::ModOrganizer(configuration) => &configuration.context.manager.executable_path,
+110:             Self::Vortex(context) => &context.manager.executable_path,
+111:         }
+112:     }
+113: 
+114:     /// Returns the parsed/fallback manager executable version.
+115:     pub fn version(&self) -> SemanticVersion {
+116:         match self {
+117:             Self::ModOrganizer(configuration) => configuration.context.manager.version,
+118:             Self::Vortex(context) => context.manager.version,
+119:         }
+120:     }
+121: 
+122:     fn manager_game_path(&self) -> Option<PathBuf> {
+123:         match self {
+124:             Self::ModOrganizer(configuration) => configuration.context.game_path.clone(),
+125:             Self::Vortex(_) => None,
+126:         }
+127:     }
+128: }
+129: 
+130: /// Manager-specific discovery failures.
+131: #[derive(Debug, Clone, PartialEq, Eq)]
+132: pub enum ModManagerDiscoveryError {
+133:     /// Process-table inspection failed before a manager could be classified.
+134:     ProcessInspection(PlatformError),
+135:     /// A matching manager process did not expose an executable path.
+136:     MissingExecutablePath {
+137:         /// Manager kind inferred from the process name.
+138:         kind: ModManagerKind,
+139:         /// Process id that matched the manager executable name.
+140:         pid: u32,
+## impl DiscoveryReport
+## pub struct GameDiscoveryResult

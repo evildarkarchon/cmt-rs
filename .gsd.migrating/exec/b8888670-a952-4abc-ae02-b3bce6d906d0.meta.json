@@ -1,0 +1,18 @@
+{
+  "id": "b8888670-a952-4abc-ae02-b3bce6d906d0",
+  "runtime": "python",
+  "purpose": "overview problem feed struct and helpers summary",
+  "script_chars": 426,
+  "started_at": "2026-05-18T04:54:34.780Z",
+  "finished_at": "2026-05-18T04:54:34.880Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 100,
+  "stdout_bytes": 14715,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b8888670-a952-4abc-ae02-b3bce6d906d0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b8888670-a952-4abc-ae02-b3bce6d906d0.stderr"
+}

@@ -1,0 +1,90 @@
+src/workers/events.rs:18:        autofix::AutoFixCompletion,
+src/workers/events.rs:431:        completion: Box<AutoFixCompletion>,
+src/workers/events.rs:450:    pub fn auto_fix_completed(completion: AutoFixCompletion) -> Self {
+src/workers/events.rs:474:    pub fn auto_fix_completion(&self) -> Option<&AutoFixCompletion> {
+src/workers/events.rs:902:            AutoFixCompletion, AutoFixOperationKey, AutoFixResultDetail, AutoFixRevalidationPlan,
+src/workers/events.rs:907:        let completion = AutoFixCompletion {
+src/app/tools_controller.rs:116:                    rejection_kind = ?kind,
+src/app/tools_controller.rs:119:                    "Tools action rejection applied as safe error"
+src/services/tools.rs:95:/// Fail-closed rejection category before a platform adapter is called.
+src/services/tools.rs:137:    /// Safe success/failure/rejection outcome.
+src/services/tools.rs:162:    /// Creates a fail-closed Tools rejection.
+src/services/tools.rs:224:    /// Safe success/failure/rejection outcome.
+src/services/tools.rs:249:    /// Creates a fail-closed About rejection.
+src/app/about_controller.rs:143:                    rejection_kind = ?kind,
+src/app/about_controller.rs:146:                    "About action rejection applied as safe error"
+src/domain/mod.rs:45:        assert_type::<crate::domain::autofix::AutoFixCompletion>();
+src/app/scanner_controller.rs:15:            AutoFixButtonState, AutoFixCompletion, AutoFixOperationKey, AutoFixResultDetail,
+src/app/scanner_controller.rs:877:    pub fn auto_fix_completed(&mut self, completion: AutoFixCompletion) -> ScannerTransitionResult {
+src/app/scanner_controller.rs:1425:pub fn scanner_auto_fix_completed_payload(completion: AutoFixCompletion) -> WorkerPayload {
+src/app/scanner_controller.rs:1496:                AutoFixCompletion, AutoFixResultDetail, AutoFixRevalidationPlan, AutoFixStatus,
+src/app/scanner_controller.rs:1991:        let completion = AutoFixCompletion {
+src/app/scanner_controller.rs:2052:        let completion = AutoFixCompletion {
+src/app/scanner_controller.rs:2116:        let stale_completion = AutoFixCompletion {
+src/app/scanner_controller.rs:2141:        let stale_new_scan = AutoFixCompletion {
+src/domain/autofix.rs:230:    /// Detailed result body shown after completion or rejection.
+src/domain/autofix.rs:320:pub struct AutoFixRequest {
+src/domain/autofix.rs:337:pub struct AutoFixCompletion {
+src/domain/autofix.rs:396:    /// Machine-readable rejection reason.
+src/domain/autofix.rs:398:    /// User-safe rejection text.
+src/domain/autofix.rs:402:    /// Button state the UI should show after the rejection.
+src/services/autofix.rs:14:            AutoFixCompletion, AutoFixConfirmation, AutoFixOperationKey, AutoFixPlanPreview,
+src/services/autofix.rs:74:pub enum AutoFixServiceResult {
+src/services/autofix.rs:76:    Completed(AutoFixCompletion),
+src/services/autofix.rs:430:            Err(rejection) => return rejected_plan(rejection),
+src/services/autofix.rs:501:    ) -> AutoFixServiceResult {
+src/services/autofix.rs:538:            Err(rejection) => return rejected_execution(rejection),
+src/services/autofix.rs:587:        if let Err(rejection) = validate_target(
+src/services/autofix.rs:595:            return rejected_execution(rejection);
+src/services/autofix.rs:597:        if let Err(rejection) =
+src/services/autofix.rs:600:            return rejected_execution(rejection);
+src/services/autofix.rs:602:        if let Err(rejection) = validate_confirmation(
+src/services/autofix.rs:609:            return rejected_execution(rejection);
+src/services/autofix.rs:650:                let completion = AutoFixCompletion {
+src/services/autofix.rs:671:                AutoFixServiceResult::Completed(completion)
+src/services/autofix.rs:674:                let completion = AutoFixCompletion {
+src/services/autofix.rs:695:                AutoFixServiceResult::Completed(completion)
+src/services/autofix.rs:700:    // Keep the owned domain rejection shape intact for callers/tests; this private path is not hot.
+src/services/autofix.rs:767:// Keep owned rejection diagnostics available without changing the public service payload shape.
+src/services/autofix.rs:882:// Keep owned rejection diagnostics available without changing the public service payload shape.
+src/services/autofix.rs:983:// Centralizes context-rich rejection construction for observability and tests.
+src/services/autofix.rs:995:    let mut rejection = AutoFixRejection::new(reason, safe_message);
+src/services/autofix.rs:996:    rejection.scan_id = scan_id;
+src/services/autofix.rs:997:    rejection.result_index = result_index;
+src/services/autofix.rs:998:    rejection.operation_key = operation_key;
+src/services/autofix.rs:999:    rejection.selection_identity = selection_identity;
+src/services/autofix.rs:1000:    rejection.observed_identity = observed_identity;
+src/services/autofix.rs:1001:    rejection.diagnostic = diagnostic;
+src/services/autofix.rs:1002:    rejection
+src/services/autofix.rs:1005:fn rejected_plan(rejection: AutoFixRejection) -> AutoFixPlanResult {
+src/services/autofix.rs:1006:    log_rejection(&rejection);
+src/services/autofix.rs:1007:    AutoFixPlanResult::Rejected(rejection)
+src/services/autofix.rs:1010:fn rejected_execution(rejection: AutoFixRejection) -> AutoFixServiceResult {
+src/services/autofix.rs:1011:    log_rejection(&rejection);
+src/services/autofix.rs:1012:    AutoFixServiceResult::Rejected(rejection)
+src/services/autofix.rs:1015:fn log_rejection(rejection: &AutoFixRejection) {
+src/services/autofix.rs:1016:    let operation_id = rejection
+src/services/autofix.rs:1022:        scan_id = ?rejection.scan_id,
+src/services/autofix.rs:1023:        result_index = ?rejection.result_index,
+src/services/autofix.rs:1025:        rejection_reason = ?rejection.reason,
+src/services/autofix.rs:1026:        safe_message = %rejection.safe_message,
+src/services/autofix.rs:1029:    if matches!(rejection.reason, AutoFixRejectionReason::StaleSelection) {
+src/services/autofix.rs:1032:            scan_id = ?rejection.scan_id,
+src/services/autofix.rs:1033:            result_index = ?rejection.result_index,
+src/services/autofix.rs:1273:    fn request_from_preview(preview: AutoFixPlanPreview) -> AutoFixRequest {
+src/services/autofix.rs:1274:        AutoFixRequest {
+src/services/autofix.rs:1309:        let AutoFixPlanResult::Rejected(rejection) =
+src/services/autofix.rs:1315:            rejection.reason,
+src/services/autofix.rs:1318:        assert_eq!(rejection.scan_id, Some(42));
+src/services/autofix.rs:1319:        assert_eq!(rejection.result_index, Some(0));
+src/services/autofix.rs:1321:            rejection.operation_key,
+src/services/autofix.rs:1324:        assert_eq!(rejection.safe_message, SAFE_UNAVAILABLE);
+src/services/autofix.rs:1405:        let AutoFixServiceResult::Completed(success) =
+src/services/autofix.rs:1431:        let AutoFixServiceResult::Completed(failure) =
+src/services/autofix.rs:1434:            panic!("operation failures are completed payloads, not pre-mutation rejections");
+src/services/autofix.rs:1495:        let AutoFixServiceResult::Rejected(required) =
+src/services/autofix.rs:1508:        let AutoFixServiceResult::Rejected(declined) =
+src/services/autofix.rs:1541:        let AutoFixServiceResult::Rejected(rejection) =
+src/services/autofix.rs:1546:        assert_eq!(rejection.reason, AutoFixRejectionReason::ValidationFailed);
+src/services/autofix.rs:1547:        assert_eq!(rejection.safe_message, SAFE_VALIDATION_FAILED);
+src/services/autofix.rs:1549:            rejection

@@ -1,0 +1,4 @@
+183:impl OverviewCollectionEnvironment {
+185:    pub fn new() -> Self {
+190:    pub fn with_local_appdata(mut self, path: impl Into<PathBuf>) -> Self {
+1749:        OverviewCollectionEnvironment::new().with_local_appdata("C:/Users/Example/AppData/Local")

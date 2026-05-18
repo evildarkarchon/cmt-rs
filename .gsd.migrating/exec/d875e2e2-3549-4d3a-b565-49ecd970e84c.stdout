@@ -1,0 +1,216 @@
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-artifact-paths.js
+80: case "complete-slice": {
+137: case "complete-slice":
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-dashboard.js
+56: case "complete-slice": return "completing";
+77: case "complete-slice": return "COMPLETE";
+104: case "complete-slice": return "reassess roadmap";
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-direct-dispatch.js
+115: case "complete-slice":
+117: const isSlice = normalized === "complete-slice" || (normalized === "complete" && state.phase === "summarizing");
+122: ctx.ui.notify("Cannot dispatch complete-slice: no active slice.", "warning");
+125: unitType = "complete-slice";
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-dispatch.js
+275: name: "summarizing → complete-slice",
+285: unitType: "complete-slice",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-post-unit.js
+182: "replan-slice", "complete-slice", "run-uat",
+222: else if (unitType === "complete-slice") {
+660: if (s.currentUnit.type === "complete-slice") {
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-prompts.js
+902: * plan-milestone, complete-slice, complete-milestone, validate-milestone,
+1408: const incompleteSlices = slices.filter(s => s.status !== "complete");
+1411: if (incompleteSlices.length === 0)
+2101: // #4782 phase 3: complete-slice migrated through composer. Manifest
+2155: const composed = await composeInlinedContext("complete-slice", resolveArtifact);
+2186: const inlinedContext = prependContextModeToBlock("complete-slice", base, capPreamble(`## Inlined Context (preloaded — do not re-read these files)\n\n${finalBody}`));
+2191: // Gates owned by complete-slice (e.g. Q8). Pull from the DB so the
+2194: // after the assistant calls gsd_complete_slice.
+2195: const csPending = getPendingGatesForTurn(mid, sid, "complete-slice");
+2196: // coverage check: every pending row must be owned by complete-slice.
+2198: assertGateCoverage(csPending, "complete-slice", { requireAll: false });
+2199: const gatesToClose = renderGatesToCloseBlock(getGatesForTurn("complete-slice"), { pending: new Set(csPending.map((g) => g.gate_id)), allowOmit: true });
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-recovery.js
+570: * complete-slice requires both SUMMARY and UAT files — verifying only
+834: // complete-slice: DB status is authoritative for whether the slice is done.
+836: if (unitType === "complete-slice") {
+954: if (unitType === "complete-slice" && mid && sid) {
+962: appendEvent(base, { cmd: "complete-slice", params: { milestoneId: mid, sliceId: sid }, ts, actor: "system", trigger_reason: "blocker-placeholder-recovery" });
+1024: case "complete-slice": {
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-start.js
+979: // auto-mode starts but every gsd_task_complete / gsd_slice_complete
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto-verification.js
+92: const incompleteSliceCount = await countIncompleteSlices(s.basePath, mid);
+96: if (incompleteSliceCount > 0) {
+97: await persistMilestoneValidationGate("pass", "none", `remediation slices present (${incompleteSliceCount}); validation can continue`, "", mid);
+112: async function countIncompleteSlices(basePath, milestoneId) {
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/commands-handlers.js
+331: complete-slice - Slice completion (unit-id: M001/S01)
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/commands-logs.js
+34: // unitType is lowercase-with-hyphens (e.g., "execute-task", "complete-slice")
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/commands-maintenance.js
+297: nextType = "complete-slice";
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/complexity-classifier.js
+14: // complete-slice can carry large inlined context; avoid routing it to the
+16: "complete-slice": "standard",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/config-overlay.js
+39: ["completion", "complete-slice"],
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/dashboard-overlay.js
+33: case "complete-slice": return "Complete";
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/delegation-policy.js
+29: //   complete-milestone, complete-slice, discuss-milestone, discuss-project,
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/dispatch-guard.js
+15: "complete-slice",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/doctor.js
+298: // dispatch lifecycle (complete-slice, complete-milestone units), not to
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/forensics.js
+470: * Most unit types are a single segment ("execute-task", "complete-slice", …)
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/gate-registry.js
+89: ownerTurn: "complete-slice",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/gsd-db.js
+1958: * gate-evaluate) from Q8 (owned by complete-slice) even though both are
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/guided-flow.js
+2211: await dispatchWorkflow(pi, await buildCompleteSlicePrompt(milestoneId, milestoneTitle, sliceId, sliceTitle, basePath), "gsd-run", ctx, "complete-slice", { basePath });
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/memory-extractor.js
+14: 'complete-slice',
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/metrics.js
+43: case "complete-slice":
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/model-router.js
+148: "complete-slice": { instruction: 0.8, speed: 0.7 },
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/parallel-monitor-overlay.js
+215: "complete-slice": "DONE",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/preferences-models.js
+74: case "complete-slice":
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/preferences-types.js
+124: "execute-task", "reactive-execute", "gate-evaluate", "complete-slice", "replan-slice", "reassess-roadmap",
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/prompt-validation.js
+104: * Validate a SUMMARY.md produced by the complete-slice turn. Requires
+105: * an H2 heading for every gate owned by complete-slice (e.g. Q8 →
+110: return validateGateSections(content, "complete-slice");
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/state.js
+624: // owned by `complete-slice`, so it must NOT block the evaluating-gates
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/tool-contract.js
+49: return /^(execute-task|reactive-execute|complete-slice|validate-milestone|complete-milestone|run-uat|gate-evaluate)$/.test(unitType);
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/unit-context-manifest.js
+119: "complete-slice",
+290: "complete-slice": {
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/unit-ownership.js
+5: // complete-task and complete-slice enforce ownership when claims exist.
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/workflow-mcp.js
+13: "gsd_complete_slice",
+38: "gsd_slice_complete",
+268: case "complete-slice":
+269: return ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice"];
+296: case "complete-slice":
+297: return ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice"];
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/workflow-reconcile.js
+15: * Replay a complete_slice event with task validation.
+19: * During API overload or partial execution, a complete_slice event could
+33: process.stderr.write(`[gsd] reconcile: skipping complete_slice replay for ${sliceId} — ` +
+96: case "complete_slice": {
+208: case "complete_slice":
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/working-output-messages.js
+13: case "complete-slice":
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/write-intercept.js
+89: - To complete a slice: call gsd_slice_complete(milestone_id, slice_id, summary, uat_result)
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto/turn-epoch.js
+9: * writes. DB-level guards (complete-task/complete-slice) block double
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/auto/workflow-kernel.js
+251: || unitType === "complete-slice") {
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/bootstrap/db-tools.js
+702: // ─── gsd_slice_complete (gsd_complete_slice alias) ─────────────────────
+708: name: "gsd_slice_complete",
+714: "Use gsd_slice_complete (or gsd_complete_slice) when all tasks in a slice are finished and the slice needs to be recorded.",
+782: registerAlias(pi, sliceCompleteTool, "gsd_complete_slice", "gsd_slice_complete");
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/bootstrap/register-hooks.js
+127: "complete-slice": ["gsd_slice_complete", "gsd_task_reopen", "gsd_replan_slice", "gsd_decision_save", "gsd_requirement_update", "subagent"],
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/commands/handlers/ops.js
+144: complete-slice - Slice completion (unit-id: M001/S01)
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/docs/preferences-reference.md
+279: **Known unit types for `before`/`after`:** `research-milestone`, `plan-milestone`, `research-slice`, `plan-slice`, `execute-task`, `complete-slice`, `replan-slice`, `reassess-roadm
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/prompts/complete-slice.md
+26: 4. Complete the slice only when every required verification check passes. If verification fails or the fix requires source changes, do **not** edit source files in this unit and do
+32: 10. Prepare `gsd_slice_complete` content with camelCase fields `milestoneId`, `sliceId`, `sliceTitle`, `oneLiner`, `narrative`, `verification`, and `uatContent`.
+35: 13. When verification passes, call `gsd_slice_complete`. The DB-backed tool is the canonical write path. Do **not** manually write `{{sliceSummaryPath}}`. Do **not** manually write
+43: **You MUST call `gsd_slice_complete` with summary and UAT content before finishing only after verification passes.**
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/prompts/reassess-roadmap.md
+11: A slice just completed. The **complete-slice agent** verified the work and wrote a slice summary. You decide whether the remaining roadmap still makes sense given what was actually
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/tools/complete-milestone.js
+108: const incompleteSlices = slices.filter(s => !isClosedStatus(s.status));
+109: if (incompleteSlices.length > 0) {
+110: const incompleteIds = incompleteSlices.map(s => `${s.id} (status: ${s.status})`).join(", ");
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/tools/complete-slice.js
+2: * complete-slice handler — the core operation behind gsd_slice_complete.
+26: * Map a complete-slice-owned gate id to the CompleteSliceParams field
+28: * the gates declared in gate-registry.ts under ownerTurn "complete-slice".
+185: * Handle the complete_slice operation end-to-end.
+230: if (isStaleWrite("complete-slice")) {
+298: logWarning("tool", `complete_slice — could not find roadmap for ${params.milestoneId}, skipping checkbox toggle`);
+303: logWarning("projection", `complete_slice projection write failed for ${params.milestoneId}/${params.sliceId}; DB completion remains committed`, { error: renderErr.message });
+305: // ── Close gates owned by complete-slice (Q8) ───────────────────────────
+311: const pendingGates = getPendingGatesForTurn(params.milestoneId, params.sliceId, "complete-slice");
+313: const ownedDefs = new Map(getGatesForTurn("complete-slice").map((g) => [g.id, g]));
+319: // adding a new complete-slice gate is a single place change.
+336: logWarning("tool", `complete-slice gate close warning for ${params.milestoneId}/${params.sliceId}: ${gateErr.message}`);
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/tools/validate-milestone.js
+78: // ── DB write first — matches complete-task/complete-slice pattern ───
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/tools/workflow-tool-executors.js
+13: import { handleCompleteSlice } from "./complete-slice.js";
+401: details: { operation: "complete_slice", error: "db_unavailable" },
+454: details: { operation: "complete_slice", error: result.error },
+461: operation: "complete_slice",
+471: logError("tool", `complete_slice tool failed: ${msg}`, { tool: "gsd_slice_complete", error: String(err) });
+474: details: { operation: "complete_slice", error: msg },
+
+## /mnt/c/Users/evild/AppData/Roaming/npm/node_modules/gsd-pi/dist/resources/extensions/gsd/uok/plan-v2.js
+115: id: `complete-slice:${mid}:${sid}`,
+119: unitType: "complete-slice",

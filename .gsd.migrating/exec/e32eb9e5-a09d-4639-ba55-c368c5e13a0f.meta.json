@@ -1,0 +1,18 @@
+{
+  "id": "e32eb9e5-a09d-4639-ba55-c368c5e13a0f",
+  "runtime": "bash",
+  "purpose": "final verification cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-18T07:12:35.023Z",
+  "finished_at": "2026-05-18T07:12:43.789Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8766,
+  "stdout_bytes": 27333,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e32eb9e5-a09d-4639-ba55-c368c5e13a0f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e32eb9e5-a09d-4639-ba55-c368c5e13a0f.stderr"
+}

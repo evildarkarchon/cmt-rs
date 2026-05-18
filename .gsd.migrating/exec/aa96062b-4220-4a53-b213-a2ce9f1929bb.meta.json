@@ -1,0 +1,18 @@
+{
+  "id": "aa96062b-4220-4a53-b213-a2ce9f1929bb",
+  "runtime": "bash",
+  "purpose": "cargo check after scanner slint surface",
+  "script_chars": 11,
+  "started_at": "2026-05-18T06:39:27.671Z",
+  "finished_at": "2026-05-18T06:39:50.494Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 22823,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\aa96062b-4220-4a53-b213-a2ce9f1929bb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\aa96062b-4220-4a53-b213-a2ce9f1929bb.stderr"
+}

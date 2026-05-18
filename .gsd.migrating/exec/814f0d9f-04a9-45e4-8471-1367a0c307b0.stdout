@@ -1,0 +1,15 @@
+
+running 10 tests
+test app::downgrader_controller::tests::downgrader_controller_option_changes_invalidate_plan_and_reject_malformed_values ... ok
+test app::downgrader_controller::tests::downgrader_controller_safe_failure_payload_uses_safe_text_without_diagnostic ... ok
+test app::downgrader_controller::tests::downgrader_controller_close_is_blocked_while_running ... ok
+test app::downgrader_controller::tests::downgrader_controller_open_requests_status_and_loading_state ... ok
+test app::downgrader_controller::tests::downgrader_task_id_parsing_and_payload_helpers_are_stable ... ok
+test app::downgrader_controller::tests::downgrader_controller_stale_status_plan_and_run_events_are_ignored ... ok
+test app::downgrader_controller::tests::downgrader_controller_first_patch_click_plans_and_second_click_runs ... ok
+test app::downgrader_controller::tests::downgrader_controller_worker_failure_recovers_with_safe_error_and_allows_close ... ok
+test app::downgrader_controller::tests::downgrader_controller_completion_reenables_patch_and_queues_status_refresh ... ok
+test app::downgrader_controller::tests::downgrader_controller_status_loaded_default_target_through_recording_sink ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 310 filtered out; finished in 0.01s
+

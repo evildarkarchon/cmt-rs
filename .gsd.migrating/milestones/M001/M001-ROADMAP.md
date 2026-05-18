@@ -27,16 +27,16 @@
 - [x] **S05: S05** `risk:medium` `depends:[]`
   > After this: User can open Tools and About, see reference groupings/attribution, launch static links or utility entry points, and receive visible failure feedback.
 
-- [ ] **S06: F4SE Diagnostics** `risk:medium` `depends:[S05]`
+- [x] **S06: S06** `risk:medium` `depends:[]`
   > After this: User can inspect F4SE plugin DLL compatibility in a reference-shaped table without blocking the UI.
 
-- [ ] **S07: Scanner Read Only Results** `risk:medium` `depends:[S06]`
+- [x] **S07: S07** `risk:medium` `depends:[]`
   > After this: User can run Scanner, see progress, grouped read-only results, details, and copy/open actions while the UI remains responsive.
 
-- [ ] **S08: Scanner Auto Fix Actions** `risk:medium` `depends:[S07]`
+- [x] **S08: S08** `risk:medium` `depends:[]`
   > After this: User sees supported auto-fix actions on Scanner results and receives Fixed or Fix Failed feedback without blocking the UI.
 
-- [ ] **S09: Downgrade Manager Workflow** `risk:medium` `depends:[S08]`
+- [ ] **S09: S09** `risk:medium` `depends:[]`
   > After this: User can open and run Downgrade Manager from Overview or Tools with backup and delta cleanup preferences respected and visible status/errors.
 
 - [ ] **S10: Archive Patcher Workflow** `risk:medium` `depends:[S09]`

@@ -1,0 +1,7 @@
+550:            progress.push(ScannerProgressEvent::new(
+575:                progress.push(ScannerProgressEvent::new(
+590:                progress.push(ScannerProgressEvent::new(
+602:                        progress.push(ScannerProgressEvent::new(
+671:        progress.push(ScannerProgressEvent::new(
+717:        progress.push(ScannerProgressEvent::new(
+1146:            progress.push(ScannerProgressEvent::folder(

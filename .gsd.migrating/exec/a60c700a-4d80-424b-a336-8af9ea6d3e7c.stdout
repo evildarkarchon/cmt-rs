@@ -1,0 +1,25 @@
+86:    update::{OverviewLinkService, RealUpdateCheckClient, UpdateCheckService},
+217:    let runtime_handle = tokio_runtime.handle().clone();
+279:        runtime_handle.clone(),
+282:    request_overview_refresh(
+288:        runtime_handle,
+801:    runtime_handle: tokio::runtime::Handle,
+808:        let runtime_handle = runtime_handle.clone();
+812:                request_overview_refresh(
+818:                    runtime_handle.clone(),
+1005:    if let Err(error) = worker_runtime.spawn_blocking_task(task, f4se_sink, move |_context| {
+1254:    if let Err(error) = worker_runtime.spawn_blocking_task(task, tools_sink, move |_context| {
+1317:    if let Err(error) = worker_runtime.spawn_blocking_task(task, about_sink, move |_context| {
+1449:    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |context| {
+1808:    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |_context| {
+1985:    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |_context| {
+2157:fn request_overview_refresh(
+2163:    runtime_handle: tokio::runtime::Handle,
+2180:    if let Err(error) = worker_runtime.spawn_blocking_task(
+2198:    schedule_overview_update_check(request, overview_sink, runtime_handle);
+2319:    runtime_handle: tokio::runtime::Handle,
+2334:    runtime_handle.spawn(async move {
+2337:                let service = UpdateCheckService::new(client);
+2410:    if let Err(error) = worker_runtime.spawn_blocking_task(task, overview_sink, move |_context| {
+4646:            .spawn_blocking_task(task, sink.clone(), move |_context| {
+4765:        let spawn_error = match WorkerRuntime::new().spawn_blocking_task(

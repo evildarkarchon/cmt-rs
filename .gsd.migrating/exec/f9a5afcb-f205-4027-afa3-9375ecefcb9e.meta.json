@@ -1,0 +1,18 @@
+{
+  "id": "f9a5afcb-f205-4027-afa3-9375ecefcb9e",
+  "runtime": "bash",
+  "purpose": "locate TAB_COMPONENTS uses",
+  "script_chars": 55,
+  "started_at": "2026-05-18T07:10:30.427Z",
+  "finished_at": "2026-05-18T07:10:30.605Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 178,
+  "stdout_bytes": 214,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f9a5afcb-f205-4027-afa3-9375ecefcb9e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f9a5afcb-f205-4027-afa3-9375ecefcb9e.stderr"
+}

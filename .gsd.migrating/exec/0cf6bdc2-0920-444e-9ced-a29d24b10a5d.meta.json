@@ -1,0 +1,18 @@
+{
+  "id": "0cf6bdc2-0920-444e-9ced-a29d24b10a5d",
+  "runtime": "bash",
+  "purpose": "inspect generated MainWindow public methods",
+  "script_chars": 394,
+  "started_at": "2026-05-18T04:23:31.857Z",
+  "finished_at": "2026-05-18T04:23:32.011Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 154,
+  "stdout_bytes": 892,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0cf6bdc2-0920-444e-9ced-a29d24b10a5d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0cf6bdc2-0920-444e-9ced-a29d24b10a5d.stderr"
+}

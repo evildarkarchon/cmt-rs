@@ -1,0 +1,18 @@
+{
+  "id": "d8f1bcf4-0ba5-48bf-8cdc-18b3db53ec28",
+  "runtime": "bash",
+  "purpose": "full cargo test regression gate after Auto-Fix controller lifecycle changes",
+  "script_chars": 10,
+  "started_at": "2026-05-18T09:08:49.188Z",
+  "finished_at": "2026-05-18T09:08:57.805Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8617,
+  "stdout_bytes": 29791,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d8f1bcf4-0ba5-48bf-8cdc-18b3db53ec28.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d8f1bcf4-0ba5-48bf-8cdc-18b3db53ec28.stderr"
+}

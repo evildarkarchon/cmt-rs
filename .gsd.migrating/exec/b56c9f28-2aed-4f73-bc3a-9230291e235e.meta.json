@@ -1,0 +1,18 @@
+{
+  "id": "b56c9f28-2aed-4f73-bc3a-9230291e235e",
+  "runtime": "bash",
+  "purpose": "apply cargo fmt after fmt check differences",
+  "script_chars": 9,
+  "started_at": "2026-05-18T05:51:38.099Z",
+  "finished_at": "2026-05-18T05:51:38.626Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 527,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b56c9f28-2aed-4f73-bc3a-9230291e235e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b56c9f28-2aed-4f73-bc3a-9230291e235e.stderr"
+}

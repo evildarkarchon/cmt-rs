@@ -1,0 +1,18 @@
+{
+  "id": "fd3dbd3f-7090-4609-b8fb-09c35d170d36",
+  "runtime": "bash",
+  "purpose": "format downgrader domain contract",
+  "script_chars": 9,
+  "started_at": "2026-05-18T10:17:46.985Z",
+  "finished_at": "2026-05-18T10:17:47.557Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 572,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fd3dbd3f-7090-4609-b8fb-09c35d170d36.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fd3dbd3f-7090-4609-b8fb-09c35d170d36.stderr"
+}

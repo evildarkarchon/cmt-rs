@@ -1,0 +1,261 @@
+## struct ModuleRecord
+296: 
+297: /// Single plugin/module record carried by scanner and overview workflows.
+298: #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+299: pub struct ModuleRecord {
+300:     /// Module path as discovered by a platform/scanner adapter.
+301:     pub path: PathBuf,
+302:     /// Full or light module classification.
+303:     pub kind: ModuleKind,
+304:     /// Parsed HEDR/header version.
+305:     pub header_version: ModuleHeaderVersion,
+306:     /// Whether plugin enablement parsing found this module active.
+307:     pub enabled: bool,
+308:     /// Whether the scanner could read enough bytes to classify the module.
+309:     pub readable: bool,
+310: }
+311: 
+312: impl ModuleRecord {
+313:     /// Creates a readable module record with explicit enablement state.
+314:     pub fn new(
+315:         path: impl Into<PathBuf>,
+316:         kind: ModuleKind,
+317:         header_version: ModuleHeaderVersion,
+318:         enabled: bool,
+319:     ) -> Self {
+320:         Self {
+321:             path: path.into(),
+322:             kind,
+323:             header_version,
+324:             enabled,
+325:             readable: true,
+326:         }
+327:     }
+328: 
+329:     /// Creates an unreadable module record while preserving its path.
+330:     pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+331:         Self {
+332:             path: path.into(),
+333:             kind: ModuleKind::Full,
+334:             header_version: ModuleHeaderVersion::Unknown(String::new()),
+335:             enabled: false,
+336:             readable: false,
+337:         }
+338:     }
+339: }
+340: 
+341: /// Parsed key/value contents for a single Fallout 4 INI file.
+342: #[derive(Debug, Default, Clone, PartialEq, Eq)]
+343: pub struct IniDocument {
+344:     /// Optional source path used for diagnostics and later reload operations.
+345:     pub source_path: Option<PathBuf>,
+346:     /// Lowercase section names mapped to lowercase setting keys and raw values.
+347:     pub sections: BTreeMap<String, BTreeMap<String, String>>,
+348: }
+349: 
+350: impl IniDocument {
+351:     /// Creates an empty INI document with an optional source path.
+352:     pub fn new(source_path: Option<impl Into<PathBuf>>) -> Self {
+353:         Self {
+354:             source_path: source_path.map(Into::into),
+355:             sections: BTreeMap::new(),
+356:         }
+357:     }
+358: 
+359:     /// Returns a setting value by already-normalized section and key names.
+## struct ArchiveRecord
+221: 
+222: /// Single archive record carried by scanner and overview workflows.
+223: #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+224: pub struct ArchiveRecord {
+225:     /// Archive path as discovered by a platform/scanner adapter.
+226:     pub path: PathBuf,
+227:     /// Parsed archive format marker.
+228:     pub format: ArchiveFormat,
+229:     /// Parsed archive version.
+230:     pub version: ArchiveVersion,
+231:     /// Whether later enablement parsing found this archive active.
+232:     pub enabled: bool,
+233:     /// Whether the scanner could read enough bytes to classify the archive.
+234:     pub readable: bool,
+235: }
+236: 
+237: impl ArchiveRecord {
+238:     /// Creates a readable archive record with an explicit enabled state.
+239:     pub fn new(
+240:         path: impl Into<PathBuf>,
+241:         format: ArchiveFormat,
+242:         version: ArchiveVersion,
+243:         enabled: bool,
+244:     ) -> Self {
+245:         Self {
+246:             path: path.into(),
+247:             format,
+248:             version,
+249:             enabled,
+250:             readable: true,
+251:         }
+252:     }
+253: 
+254:     /// Creates an unreadable archive record while preserving its path.
+255:     pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+256:         Self {
+257:             path: path.into(),
+258:             format: ArchiveFormat::Unknown(String::new()),
+259:             version: ArchiveVersion::Unknown(0),
+260:             enabled: false,
+261:             readable: false,
+262:         }
+263:     }
+264: }
+265: 
+266: /// Module/header classes used for ESP/ESM/ESL overview state.
+267: #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+268: pub enum ModuleHeaderVersion {
+269:     /// Reference-supported HEDR v0.95.
+270:     Version095,
+271:     /// Reference-supported HEDR v1.00.
+272:     Version100,
+273:     /// Any unsupported header value retained as text for diagnostics.
+274:     Unknown(String),
+275: }
+276: 
+277: impl ModuleHeaderVersion {
+278:     /// Returns the reference display text for known module header versions.
+279:     pub const fn as_reference_str(&self) -> Option<&'static str> {
+280:         match self {
+281:             Self::Version095 => Some("0.95"),
+282:             Self::Version100 => Some("1.00"),
+283:             Self::Unknown(_) => None,
+284:         }
+## struct Fallout4Installation
+109: /// while Data or Data/F4SE/Plugins are absent, producing recoverable tab-level
+110: /// loading messages instead of invalidating the installation itself.
+111: #[derive(Debug, Clone, PartialEq, Eq)]
+112: pub struct Fallout4Installation {
+113:     /// Directory containing `Fallout4.exe`.
+114:     pub game_path: PathBuf,
+115:     /// Optional `Data` directory if a platform adapter has confirmed one.
+116:     pub data_path: Option<PathBuf>,
+117:     /// Optional `Data/F4SE/Plugins` directory if confirmed.
+118:     pub f4se_plugins_path: Option<PathBuf>,
+119:     /// Binary classification state for the current install.
+120:     pub install_type: Fallout4InstallType,
+121:     /// Archive records observed by later scanner/overview workflows.
+122:     pub archives: Vec<ArchiveRecord>,
+123:     /// Plugin/module records observed by later scanner/overview workflows.
+124:     pub modules: Vec<ModuleRecord>,
+125:     /// Parsed Fallout 4 INI state from the user profile.
+126:     pub ini_files: Fallout4IniFiles,
+127: }
+128: 
+129: impl Fallout4Installation {
+130:     /// Creates an installation with only the required game path.
+131:     ///
+132:     /// This constructor performs no existence checks and intentionally does not
+133:     /// infer `Data` or `F4SE` paths, preserving the Phase 3 contract that those
+134:     /// derived paths are optional facts supplied by discovery adapters.
+135:     pub fn new(game_path: impl Into<PathBuf>) -> Self {
+136:         Self {
+137:             game_path: game_path.into(),
+138:             data_path: None,
+139:             f4se_plugins_path: None,
+140:             install_type: Fallout4InstallType::Unknown,
+141:             archives: Vec::new(),
+142:             modules: Vec::new(),
+143:             ini_files: Fallout4IniFiles::default(),
+144:         }
+145:     }
+146: 
+147:     /// Creates an installation with optional derived paths supplied by an adapter.
+148:     pub fn with_optional_paths(
+149:         game_path: impl Into<PathBuf>,
+150:         data_path: Option<impl Into<PathBuf>>,
+151:         f4se_plugins_path: Option<impl Into<PathBuf>>,
+152:     ) -> Self {
+153:         let mut installation = Self::new(game_path);
+154:         installation.data_path = data_path.map(Into::into);
+155:         installation.f4se_plugins_path = f4se_plugins_path.map(Into::into);
+156:         installation
+157:     }
+158: 
+159:     /// Returns the reference game identifier for this installation contract.
+160:     pub const fn game_id(&self) -> &'static str {
+161:         FALLOUT4_GAME_ID
+162:     }
+163: 
+164:     /// Returns whether an adapter has confirmed a Data directory.
+165:     pub const fn has_data_path(&self) -> bool {
+166:         self.data_path.is_some()
+167:     }
+168: 
+169:     /// Returns whether an adapter has confirmed a Data/F4SE/Plugins directory.
+170:     pub const fn has_f4se_plugins_path(&self) -> bool {
+171:         self.f4se_plugins_path.is_some()
+172:     }
+## enum ArchiveFormat
+174: 
+175: /// Archive file format magic recognized by the reference scanner.
+176: #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+177: pub enum ArchiveFormat {
+178:     /// General BA2 archive (`GNRL`).
+179:     General,
+180:     /// DirectX 10 texture BA2 archive (`DX10`).
+181:     DirectX10,
+182:     /// Any other archive format marker retained for diagnostics.
+183:     Unknown(String),
+184: }
+185: 
+186: impl ArchiveFormat {
+187:     /// Returns the reference byte marker text when the format is known.
+188:     pub const fn as_reference_magic(&self) -> Option<&'static str> {
+189:         match self {
+190:             Self::General => Some("GNRL"),
+191:             Self::DirectX10 => Some("DX10"),
+192:             Self::Unknown(_) => None,
+193:         }
+194:     }
+195: }
+196: 
+197: /// BA2 version classes used by the archive overview and patcher workflows.
+198: #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+199: pub enum ArchiveVersion {
+200:     /// v1, required by Old-Gen Fallout 4 and accepted by all versions.
+201:     OldGen,
+202:     /// v7, initial Next-Gen archive version.
+203:     NextGen7,
+204:     /// v8, current Next-Gen archive version.
+205:     NextGen8,
+206:     /// Any other version byte retained for diagnostics.
+207:     Unknown(u32),
+208: }
+209: 
+210: impl ArchiveVersion {
+211:     /// Converts the typed archive version into the numeric value in the BA2 header.
+212:     pub const fn as_header_value(self) -> u32 {
+213:         match self {
+214:             Self::OldGen => 1,
+215:             Self::NextGen7 => 7,
+216:             Self::NextGen8 => 8,
+217:             Self::Unknown(value) => value,
+218:         }
+219:     }
+220: }
+221: 
+222: /// Single archive record carried by scanner and overview workflows.
+223: #[derive(Debug, Clone, PartialEq, Eq, Hash)]
+224: pub struct ArchiveRecord {
+225:     /// Archive path as discovered by a platform/scanner adapter.
+226:     pub path: PathBuf,
+227:     /// Parsed archive format marker.
+228:     pub format: ArchiveFormat,
+229:     /// Parsed archive version.
+230:     pub version: ArchiveVersion,
+231:     /// Whether later enablement parsing found this archive active.
+232:     pub enabled: bool,
+233:     /// Whether the scanner could read enough bytes to classify the archive.
+234:     pub readable: bool,
+235: }
+236: 
+237: impl ArchiveRecord {
+## struct ModuleHeaderVersion

@@ -1,0 +1,18 @@
+{
+  "id": "96cb2fbf-de46-42ce-88d4-e82325e2008a",
+  "runtime": "bash",
+  "purpose": "S08 reference input path check",
+  "script_chars": 181,
+  "started_at": "2026-05-18T07:54:00.162Z",
+  "finished_at": "2026-05-18T07:54:00.299Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 137,
+  "stdout_bytes": 45,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\96cb2fbf-de46-42ce-88d4-e82325e2008a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\96cb2fbf-de46-42ce-88d4-e82325e2008a.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "8debb12a-b728-4f01-be3d-2ac2694d4e00",
+  "runtime": "bash",
+  "purpose": "final cargo clippy all targets all features after scanner controller",
+  "script_chars": 41,
+  "started_at": "2026-05-18T06:13:53.458Z",
+  "finished_at": "2026-05-18T06:14:39.971Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 46513,
+  "stdout_bytes": 0,
+  "stderr_bytes": 2034,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8debb12a-b728-4f01-be3d-2ac2694d4e00.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8debb12a-b728-4f01-be3d-2ac2694d4e00.stderr"
+}

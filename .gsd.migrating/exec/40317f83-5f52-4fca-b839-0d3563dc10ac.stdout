@@ -1,0 +1,68 @@
+501:    /// URL extra data from reference `extra_data` or Overview links.
+506:        url: String,
+508:    /// Non-URL extra text from reference `extra_data`.
+521:    pub fn url(url: impl Into<String>) -> Self {
+524:            url: url.into(),
+529:    pub fn labeled_url(label: impl Into<String>, url: impl Into<String>) -> Self {
+532:            url: url.into(),
+552:            Self::Url { url, .. } => url.clone(),
+559:    pub fn url_value(&self) -> Option<&str> {
+561:            Self::Url { url, .. } => Some(url.as_str()),
+637:pub enum ScannerActionKind {
+652:impl ScannerActionKind {
+658:            Self::OpenSolutionUrl => "open-solution-url",
+659:            Self::CopySolutionUrl => "copy-solution-url",
+670:            "open-solution-url" => Some(Self::OpenSolutionUrl),
+671:            "copy-solution-url" => Some(Self::CopySolutionUrl),
+696:pub struct ScannerActionDescriptor {
+737:pub struct ScannerActionFeedback {
+750:impl ScannerActionFeedback {
+803:    pub absolute_path: Option<PathBuf>,
+811:    pub extra_data: Vec<ScannerExtraData>,
+831:            absolute_path: None,
+835:            extra_data: Vec::new(),
+844:        absolute_path: impl Into<PathBuf>,
+849:        let absolute_path = absolute_path.into();
+855:            .unwrap_or_else(|| path_leaf_display(&absolute_path));
+860:            absolute_path: Some(absolute_path),
+864:            extra_data: Vec::new(),
+877:    pub fn with_extra_data(mut self, extra_data: Vec<ScannerExtraData>) -> Self {
+878:        self.extra_data = extra_data;
+900:        if !self.extra_data.is_empty() {
+902:                .extra_data
+938:    pub fn copy_details_text(&self, include_mod: bool) -> String {
+950:    pub fn read_only_actions(&self) -> Vec<ScannerActionDescriptor> {
+957:        if let Some(path) = &self.absolute_path {
+965:        if let Some(url) = self.primary_solution_url() {
+969:                ScannerActionTarget::Url(url.to_owned()),
+974:                ScannerActionTarget::Url(url.to_owned()),
+1007:    pub fn primary_solution_url(&self) -> Option<&str> {
+1008:        self.extra_data.iter().find_map(ScannerExtraData::url_value)
+1135:    result.extra_data = overview_extra_data(problem);
+1147:fn overview_extra_data(problem: &OverviewProblem) -> Vec<ScannerExtraData> {
+1148:    let mut extra_data = Vec::with_capacity(problem.links.len() + problem.details.len());
+1151:            Some(label) => extra_data.push(ScannerExtraData::labeled_url(label, &link.url)),
+1152:            None => extra_data.push(ScannerExtraData::url(&link.url)),
+1156:        extra_data.push(ScannerExtraData::detail(&detail.name, &detail.value));
+1158:    extra_data
+1379:    fn scanner_domain_overview_problem_mapping_preserves_urls_details_and_pathless_limits() {
+1395:        assert_eq!(mapped.absolute_path, None);
+1399:            mapped.extra_data,
+1401:                ScannerExtraData::labeled_url(
+1412:                .read_only_actions()
+1425:        assert_eq!(mapped_no_path.absolute_path, None);
+1428:                .read_only_actions()
+1435:    fn scanner_domain_copy_details_text_handles_mod_and_missing_solution() {
+1446:            result.copy_details_text(true),
+1450:            result.copy_details_text(false),
+1462:            missing_solution.copy_details_text(true),
+1468:    fn scanner_domain_extra_data_and_custom_problem_labels_are_preserved() {
+1476:        let non_url = ScannerResult::simple(
+1482:        .with_extra_data(vec![ScannerExtraData::text("Extra non-URL context")]);
+1484:            non_url.solution_text(),
+1488:            !non_url
+1489:                .read_only_actions()
+1494:        let with_url = ScannerResult::simple(
+1500:        .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/mod")])
+1506:        let actions = with_url.read_only_actions();
+1529:            with_url

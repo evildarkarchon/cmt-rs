@@ -1,0 +1,15 @@
+CMT/src/tabs/_overview.py:686:								SolutionType.DownloadMod,
+CMT/src/tabs/_overview.py:706:								SolutionType.VerifyFiles,
+CMT/src/tabs/_overview.py:755:						SolutionType.VerifyFiles,
+CMT/src/tabs/_overview.py:769:						SolutionType.VerifyFiles,
+CMT/src/tabs/_overview.py:866:					SolutionType.VerifyFiles,
+CMT/src/tabs/_overview.py:884:					SolutionType.VerifyFiles,
+CMT/src/tabs/_scanner.py:435:							SolutionType.DeleteOrIgnoreFolder,
+CMT/src/tabs/_scanner.py:453:							SolutionType.ArchiveFolder,
+CMT/src/tabs/_scanner.py:480:									SolutionType.ArchiveFolder,
+CMT/src/tabs/_scanner.py:494:									SolutionType.ArchiveFolder,
+CMT/src/tabs/_scanner.py:518:							SolutionType.DeleteOrIgnoreFile,
+CMT/src/tabs/_scanner.py:554:								solution = SolutionType.DeleteOrIgnoreFile
+CMT/src/tabs/_scanner.py:557:								solution = SolutionType.ConvertDeleteOrIgnoreFile
+CMT/src/tabs/_scanner.py:560:							solution = SolutionType.UnknownFormat
+CMT/src/tabs/_scanner.py:589:									SolutionType.RenameArchive,

@@ -1,0 +1,18 @@
+{
+  "id": "b70d7a37-e41a-457f-968c-91d357d287e7",
+  "runtime": "bash",
+  "purpose": "S06 inspect Slint tabwidget-base current API",
+  "script_chars": 293,
+  "started_at": "2026-05-18T03:16:28.603Z",
+  "finished_at": "2026-05-18T03:16:28.740Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 137,
+  "stdout_bytes": 1178,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b70d7a37-e41a-457f-968c-91d357d287e7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b70d7a37-e41a-457f-968c-91d357d287e7.stderr"
+}

@@ -1,0 +1,24 @@
+PATTERN  changed =>
+PATTERN changed =>
+PATTERN changed(
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/builtins.slint 386 callback cursor_position_changed(position: Point);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/builtins.slint 673 callback changed(value: float);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/qt/tableview.slint 13 callback current-row-changed(current-row: int);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/qt/tableview.slint 41 current-row-changed(current-row);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/qt/slider.slint 34 root.changed(root.value);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/material/tableview.slint 138 callback current-row-changed(current-row: int);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/material/tableview.slint 146 current-row-changed(current-row);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/listview.slint 15 callback current-item-changed(current-item: int);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/listview.slint 27 current-item-changed(current-item);
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/textedit-base.slint 129 cursor-position-changed(cpos) => {
+PATTERN => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/interfaces/interfaces.slint 24 invert(b) => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/interfaces/interface_invalid_content.slint 22 init => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/focus_wrong_args.slint 11 clicked => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/initial_focus_non_input.slint 11 trigger_focus_change => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/initial_focus_non_input.slint 22 trigger_focus_change_2 => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/initial_focus_non_input.slint 30 activate_focus_scope => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/initial_focus_non_input.slint 42 key-pressed => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/focus/focus_not_called.slint 29 clicked => {
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/analysis/binding_loop_function.slint 26 aa() => { return self.a; }
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/analysis/binding_loop_layout2.slint 58 set_wrap => { w.woo = TextWrap.word-wrap; }

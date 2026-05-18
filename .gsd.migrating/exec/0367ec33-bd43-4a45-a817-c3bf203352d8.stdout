@@ -1,0 +1,19 @@
+## src/pe64/file.rs
+14:pub struct PeFile<'a> {
+37:	pub fn from_bytes<T: AsRef<[u8]> + ?Sized>(image: &'a T) -> Result<PeFile<'a>> {
+105:	assert!(match PeFile::from_bytes(&[]) { Err(crate::Error::Bounds) => true, _ => false });
+
+## src/pe64/mod.rs
+26:Take a byte slice of the entire file contents and construct it with [`PeFile::from_bytes`](struct.PeFile.html#method.from_bytes).
+39:		let file = PeFile::from_bytes(&map)?;
+56:Take a byte slice of the entire image and construct it with [`PeView::from_bytes`](struct.PeView.html#method.from_bytes).
+72:		let view = PeView::from_bytes(&image)?;
+
+## src/pe64/exports.rs
+123:	pub fn by(&self) -> Result<By<'a, P>> {
+236:	pub fn name_linear<S: AsRef<[u8]> + ?Sized>(&self, name: &S) -> Result<Export<'a>> {
+393:		self.rva_to_va(self.get_export(name)?.symbol().ok_or(Error::Null)?)
+
+## examples/readme.rs
+17:	let file = PeFile::from_bytes(image)?;
+

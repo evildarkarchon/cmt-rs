@@ -1,0 +1,19 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: this function has too many arguments (8/7)
+    --> src/services/scanner.rs:1118:5
+     |
+1118 | /     fn scan_data_tree<P>(
+1119 | |         &self,
+1120 | |         data_path: &Path,
+1121 | |         request: &ScannerScanRequest<'_>,
+...    |
+1127 | |     ) where
+1128 | |         P: FnMut(&ScannerProgressEvent),
+     | |________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+     = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: `cmt-rs` (bin "cmt-rs") generated 1 warning
+warning: `cmt-rs` (bin "cmt-rs" test) generated 1 warning (1 duplicate)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 38.43s

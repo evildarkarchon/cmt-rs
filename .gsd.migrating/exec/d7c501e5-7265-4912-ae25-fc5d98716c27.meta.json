@@ -1,0 +1,18 @@
+{
+  "id": "d7c501e5-7265-4912-ae25-fc5d98716c27",
+  "runtime": "bash",
+  "purpose": "format check after clippy cleanup",
+  "script_chars": 17,
+  "started_at": "2026-05-18T08:34:58.168Z",
+  "finished_at": "2026-05-18T08:34:58.574Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 406,
+  "stdout_bytes": 0,
+  "stderr_bytes": 6519,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d7c501e5-7265-4912-ae25-fc5d98716c27.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d7c501e5-7265-4912-ae25-fc5d98716c27.stderr"
+}

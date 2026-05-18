@@ -1,0 +1,60 @@
+===== RUN cargo test scanner_domain =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.52s
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 250 filtered out; finished in 0.00s
+===== RESULT command='cargo test scanner_domain' exit=0 durationMs=601 =====
+===== RUN cargo test scanner_scan_service =====
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.46s
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-55d910fa2f5a5578.exe)
+
+running 15 tests
+test services::scanner::scanner_scan_service::scanner_scan_service_all_toggles_off_does_not_touch_filesystem ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_missing_data_returns_safe_visible_row_and_no_traversal ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_malformed_modlist_surfaces_safe_error_without_panic ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_non_english_ini_suffix_allows_language_voice_archive ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_errors_toggle_gates_scanner_generated_error_rows ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_missing_mo2_modlist_is_error_row_and_data_scan_continues ... FAILED
+test services::scanner::scanner_scan_service::scanner_scan_service_detects_reference_rule_categories_and_stable_group_order ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_race_subgraph_threshold_counts_enabled_readable_modules_only ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides ... FAILED
+test services::scanner::scanner_scan_service::scanner_scan_service_unexpected_format_replacement_absent_and_archive_enabled_cases ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_vortex_scans_data_only_without_mod_attribution ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_overview_handoff_can_use_mo2_file_index_for_overview_placeholder_mod ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_unreadable_child_directory_reports_error_and_continues_siblings ... FAILED
+test services::scanner::scanner_scan_service::scanner_scan_service_zero_results_complete_with_empty_groups ... ok
+test services::scanner::scanner_scan_service::scanner_scan_service_public_context_accepts_mod_manager_kind_imports ... ok
+
+failures:
+
+---- services::scanner::scanner_scan_service::scanner_scan_service_missing_mo2_modlist_is_error_row_and_data_scan_continues stdout ----
+
+thread 'services::scanner::scanner_scan_service::scanner_scan_service_missing_mo2_modlist_is_error_row_and_data_scan_continues' (66444) panicked at src\services\scanner.rs:2415:9:
+assertion failed: output.results.iter().any(|result|
+        result.detail_path == "Textures/missing.png")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+---- services::scanner::scanner_scan_service::scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides stdout ----
+
+thread 'services::scanner::scanner_scan_service::scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides' (8380) panicked at src\services\scanner.rs:2241:9:
+assertion `left == right` failed
+  left: "Scripts\\actor.pex"
+ right: "Scripts/actor.pex"
+
+---- services::scanner::scanner_scan_service::scanner_scan_service_unreadable_child_directory_reports_error_and_continues_siblings stdout ----
+
+thread 'services::scanner::scanner_scan_service::scanner_scan_service_unreadable_child_directory_reports_error_and_continues_siblings' (74224) panicked at src\services\scanner.rs:2358:9:
+assertion failed: output.results.iter().any(|result| result.detail_path == "Textures/ok.png")
+
+
+failures:
+    services::scanner::scanner_scan_service::scanner_scan_service_missing_mo2_modlist_is_error_row_and_data_scan_continues
+    services::scanner::scanner_scan_service::scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides
+    services::scanner::scanner_scan_service::scanner_scan_service_unreadable_child_directory_reports_error_and_continues_siblings
+
+test result: FAILED. 12 passed; 3 failed; 0 ignored; 0 measured; 242 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `--bin cmt-rs`
+
+===== RESULT command='cargo test scanner_scan_service' exit=101 durationMs=534 =====
+===== SUMMARY =====
+1|cargo test scanner_domain|0|601
+2|cargo test scanner_scan_service|101|534

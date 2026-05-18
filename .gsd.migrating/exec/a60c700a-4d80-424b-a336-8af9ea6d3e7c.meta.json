@@ -1,0 +1,18 @@
+{
+  "id": "a60c700a-4d80-424b-a336-8af9ea6d3e7c",
+  "runtime": "bash",
+  "purpose": "S09 inspect overview update worker scheduling pattern",
+  "script_chars": 142,
+  "started_at": "2026-05-18T09:54:54.518Z",
+  "finished_at": "2026-05-18T09:54:54.800Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 282,
+  "stdout_bytes": 1690,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a60c700a-4d80-424b-a336-8af9ea6d3e7c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a60c700a-4d80-424b-a336-8af9ea6d3e7c.stderr"
+}

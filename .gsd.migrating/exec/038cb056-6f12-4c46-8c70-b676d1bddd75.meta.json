@@ -1,0 +1,18 @@
+{
+  "id": "038cb056-6f12-4c46-8c70-b676d1bddd75",
+  "runtime": "bash",
+  "purpose": "find fake filesystem test utilities and write-capable seams",
+  "script_chars": 138,
+  "started_at": "2026-05-18T07:39:11.913Z",
+  "finished_at": "2026-05-18T07:39:12.061Z",
+  "exit_code": 2,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 148,
+  "stdout_bytes": 21641,
+  "stderr_bytes": 50,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\038cb056-6f12-4c46-8c70-b676d1bddd75.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\038cb056-6f12-4c46-8c70-b676d1bddd75.stderr"
+}

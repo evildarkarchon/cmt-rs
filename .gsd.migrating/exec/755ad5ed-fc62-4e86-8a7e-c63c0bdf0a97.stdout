@@ -1,0 +1,4 @@
+1102:impl ScannerScanSnapshot {
+1104:    pub fn empty(scan_id: u64, status_text: impl Into<String>) -> Self {
+1109:    pub fn from_results(
+1119:    pub fn from_grouped(

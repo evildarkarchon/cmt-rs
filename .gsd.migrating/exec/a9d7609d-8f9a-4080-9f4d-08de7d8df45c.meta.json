@@ -1,0 +1,18 @@
+{
+  "id": "a9d7609d-8f9a-4080-9f4d-08de7d8df45c",
+  "runtime": "bash",
+  "purpose": "Run targeted S08 Slint contract tests",
+  "script_chars": 45,
+  "started_at": "2026-05-18T09:34:47.404Z",
+  "finished_at": "2026-05-18T09:35:38.617Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 51213,
+  "stdout_bytes": 325,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a9d7609d-8f9a-4080-9f4d-08de7d8df45c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a9d7609d-8f9a-4080-9f4d-08de7d8df45c.stderr"
+}

@@ -1,0 +1,19 @@
+
+running 2 tests
+test tests::s06_f4se_slint_contract_main_window_forwards_properties_and_lazy_activation ... ok
+test tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend ... FAILED
+
+failures:
+
+---- tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend stdout ----
+
+thread 'tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend' (122119) panicked at src/main.rs:2275:9:
+assertion failed: F4SE_SLINT.contains(&slint_assignment("text", F4SE_LOADING_TEXT))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend
+
+test result: FAILED. 1 passed; 1 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.01s
+

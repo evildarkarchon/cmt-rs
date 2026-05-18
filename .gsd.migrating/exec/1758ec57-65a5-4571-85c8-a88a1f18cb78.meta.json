@@ -1,0 +1,18 @@
+{
+  "id": "1758ec57-65a5-4571-85c8-a88a1f18cb78",
+  "runtime": "bash",
+  "purpose": "Run full cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-18T09:38:37.090Z",
+  "finished_at": "2026-05-18T09:39:21.315Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 44225,
+  "stdout_bytes": 30418,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1758ec57-65a5-4571-85c8-a88a1f18cb78.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1758ec57-65a5-4571-85c8-a88a1f18cb78.stderr"
+}

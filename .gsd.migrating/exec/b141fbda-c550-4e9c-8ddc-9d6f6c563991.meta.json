@@ -1,0 +1,18 @@
+{
+  "id": "b141fbda-c550-4e9c-8ddc-9d6f6c563991",
+  "runtime": "bash",
+  "purpose": "sanity cargo check for Auto-Fix controller changes",
+  "script_chars": 11,
+  "started_at": "2026-05-18T09:07:14.625Z",
+  "finished_at": "2026-05-18T09:07:36.330Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 21705,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b141fbda-c550-4e9c-8ddc-9d6f6c563991.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b141fbda-c550-4e9c-8ddc-9d6f6c563991.stderr"
+}

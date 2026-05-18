@@ -1,0 +1,18 @@
+{
+  "id": "a6e0303e-d5f6-489f-98e3-632aec251893",
+  "runtime": "bash",
+  "purpose": "apply rustfmt after legacy source test adjustment",
+  "script_chars": 9,
+  "started_at": "2026-05-18T11:59:22.140Z",
+  "finished_at": "2026-05-18T11:59:22.755Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 615,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a6e0303e-d5f6-489f-98e3-632aec251893.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a6e0303e-d5f6-489f-98e3-632aec251893.stderr"
+}

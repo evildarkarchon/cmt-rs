@@ -1,0 +1,6 @@
+1183 fn path_leaf_display(path: &Path) -> String {
+1194 fn leaf_name(value: &str) -> Option<&str> {
+svc 1878 fn split_extension_lower(file_lower: &str) -> Option<(String, String)> {
+svc 1889 fn relative_starts_with(relative_path: &Path, expected_slash_path: &str) -> bool {
+svc 1928 fn path_key(path: &Path) -> String {
+svc 1936 fn display_file_name(path: &Path) -> String {

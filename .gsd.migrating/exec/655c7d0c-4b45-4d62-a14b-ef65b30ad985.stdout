@@ -1,0 +1,266 @@
+## fn schedule_overview_action
+1302: fn schedule_overview_action(
+1303:     app: &MainWindow,
+1304:     overview_controller: &Arc<Mutex<OverviewController>>,
+1305:     worker_runtime: WorkerRuntime,
+1306:     overview_sink: SlintEventLoopSink,
+1307:     action_kind: OverviewDeferredActionKind,
+1308:     unavailable_message: &'static str,
+1309:     action_lookup: impl FnOnce(&OverviewController) -> Option<OverviewDeferredAction>,
+1310: ) {
+1311:     let action =
+1312:         with_overview_controller_mut(overview_controller, |controller| action_lookup(controller))
+1313:             .flatten();
+1314: 
+1315:     let Some(action) = action else {
+1316:         apply_action_error(
+1317:             app,
+1318:             overview_controller,
+1319:             action_kind,
+1320:             unavailable_message.to_owned(),
+1321:         );
+1322:         return;
+1323:     };
+1324: 
+1325:     tracing::info!(
+1326:         event = "overview-desktop-action-schedule",
+1327:         action = ?action.kind,
+1328:         target = action_target_label(&action).as_str(),
+1329:         "Scheduling Overview desktop action"
+1330:     );
+1331: 
+1332:     let task = overview_desktop_task(action.kind);
+1333:     if let Err(error) = worker_runtime.spawn_blocking_task(task, overview_sink, move |_context| {
+1334:         execute_overview_action_payload(action)
+1335:     }) {
+1336:         tracing::error!(
+1337:             event = "overview-desktop-action-spawn-failed",
+1338:             action = ?action_kind,
+1339:             error = %error,
+1340:             "Overview desktop action worker could not be scheduled"
+1341:         );
+1342:         apply_action_error(
+1343:             app,
+1344:             overview_controller,
+1345:             action_kind,
+1346:             "Desktop action could not be started.".to_owned(),
+1347:         );
+1348:     }
+1349: }
+1350: 
+1351: fn execute_overview_action_payload(action: OverviewDeferredAction) -> BlockingWorkerResult {
+1352:     let action_kind = action.kind;
+1353:     let service = OverviewLinkService::new(RealDesktopActions::new());
+1354:     let feedback = service.execute(&action);
+1355:     let (action, error) = action_error_from_feedback(feedback);
+1356:     debug_assert_eq!(action, action_kind);
+1357:     Ok(WorkerTaskOutcome::Completed(
+1358:         overview_desktop_action_payload(action, error),
+1359:     ))
+1360: }
+1361: 
+1362: fn action_error_from_feedback(
+1363:     feedback: OverviewDesktopActionFeedback,
+1364: ) -> (OverviewDeferredActionKind, Option<OverviewActionError>) {
+1365:     match feedback.outcome {
+1366:         OverviewDesktopActionOutcome::Succeeded => (feedback.action, None),
+1367:         OverviewDesktopActionOutcome::Failed { safe_message } => (
+1368:             feedback.action,
+1369:             Some(OverviewActionError::new(feedback.action, safe_message)),
+1370:         ),
+1371:     }
+1372: }
+1373: 
+1374: fn apply_action_error(
+1375:     app: &MainWindow,
+1376:     overview_controller: &Arc<Mutex<OverviewController>>,
+1377:     action: OverviewDeferredActionKind,
+1378:     message: String,
+1379: ) {
+1380:     with_overview_controller_mut(overview_controller, |controller| {
+1381:         controller
+1382:             .desktop_action_completed(action, Some(unavailable_action_error(action, message)));
+1383:     });
+1384:     apply_current_overview_snapshot(app, overview_controller);
+1385: }
+1386: 
+1387: fn apply_tools_feedback(
+1388:     app: &MainWindow,
+1389:     controller: &Arc<Mutex<ToolsController>>,
+1390:     feedback: ToolsActionFeedback,
+1391: ) {
+1392:     with_tools_controller_mut(controller, |controller| {
+1393:         controller.handle_feedback(feedback);
+1394:     });
+1395:     apply_current_tools_state(app, controller);
+1396: }
+1397: 
+1398: fn apply_about_feedback(
+1399:     app: &MainWindow,
+1400:     controller: &Arc<Mutex<AboutController>>,
+1401:     feedback: AboutActionFeedback,
+1402: ) {
+1403:     with_about_controller_mut(controller, |controller| {
+1404:         controller.handle_feedback(feedback);
+1405:     });
+1406:     apply_current_about_state(app, controller);
+1407: }
+1408: 
+1409: fn handle_f4se_worker_event(
+1410:     controller: &mut F4seController,
+1411:     event: WorkerEvent,
+1412: ) -> F4seTransitionResult {
+1413:     controller.handle_worker_event(event)
+1414: }
+1415: 
+1416: fn handle_tools_worker_event(
+1417:     controller: &mut ToolsController,
+1418:     event: WorkerEvent,
+1419: ) -> ToolsTransitionResult {
+1420:     if let Some(feedback) = tools_worker_failure_feedback_from_event(&event) {
+1421:         return controller.handle_feedback(feedback);
+1422:     }
+1423: 
+1424:     controller.handle_worker_event(event)
+1425: }
+1426: 
+1427: fn handle_about_worker_event(
+1428:     controller: &mut AboutController,
+1429:     event: WorkerEvent,
+1430: ) -> AboutTransitionResult {
+1431:     if let Some(feedback) = about_worker_failure_feedback_from_event(&event) {
+
+## fn build_overview_desktop_action_payload
+## fn apply_overview_projection
+## fn model_from_vec
+1795: fn model_from_vec<T: Clone + 'static>(rows: Vec<T>) -> ModelRc<T> {
+1796:     ModelRc::new(VecModel::from(rows))
+1797: }
+1798: 
+1799: fn refresh_message(refresh: &OverviewRefreshState) -> String {
+1800:     refresh
+1801:         .message
+1802:         .clone()
+1803:         .unwrap_or_else(|| match refresh.phase {
+1804:             domain::overview::OverviewRefreshPhase::Idle => {
+1805:                 "Overview has not been refreshed.".to_owned()
+1806:             }
+1807:             domain::overview::OverviewRefreshPhase::Loading => "Refreshing Overview...".to_owned(),
+1808:             domain::overview::OverviewRefreshPhase::Ready => "Overview refreshed.".to_owned(),
+1809:             domain::overview::OverviewRefreshPhase::Partial => {
+1810:                 "Overview refreshed with recoverable issues.".to_owned()
+1811:             }
+1812:             domain::overview::OverviewRefreshPhase::Error => "Overview refresh failed.".to_owned(),
+1813:         })
+1814: }
+1815: 
+1816: fn format_top_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1817:     snapshot
+1818:         .top
+1819:         .rows()
+1820:         .into_iter()
+1821:         .map(format_top_row)
+1822:         .collect()
+1823: }
+1824: 
+1825: fn format_top_row(row: OverviewTopStatusRow) -> OverviewUiRow {
+1826:     overview_ui_row(row.label, row.value, "", row.severity)
+1827: }
+1828: 
+1829: fn format_binary_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1830:     let mut rows = snapshot
+1831:         .binaries
+1832:         .rows
+1833:         .iter()
+1834:         .map(format_binary_row)
+1835:         .collect::<Vec<_>>();
+1836: 
+1837:     if rows.is_empty() {
+1838:         rows.push(overview_ui_row(
+1839:             "Binaries",
+1840:             "No binary facts collected yet.",
+1841:             "",
+1842:             StatusSeverity::Unknown,
+1843:         ));
+1844:     }
+1845: 
+1846:     rows.push(overview_ui_row(
+1847:         "Address Library",
+1848:         snapshot.binaries.address_library.display_text(),
+1849:         "",
+1850:         snapshot.binaries.address_library.severity(),
+1851:     ));
+1852:     rows
+1853: }
+1854: 
+1855: fn format_binary_row(row: &BinaryStatusRow) -> OverviewUiRow {
+1856:     overview_ui_row(
+1857:         row.label.as_str(),
+1858:         row.install_type.to_string(),
+1859:         binary_detail(row),
+1860:         row.severity,
+1861:     )
+1862: }
+1863: 
+1864: fn binary_detail(row: &BinaryStatusRow) -> String {
+1865:     let mut parts = Vec::new();
+1866:     if let Some(version) = row.version.as_deref().filter(|value| !value.is_empty()) {
+1867:         parts.push(format!("Version: {version}"));
+1868:     }
+1869:     if let Some(hash) = row.hash.as_deref().filter(|value| !value.is_empty()) {
+1870:         parts.push(format!("CRC32: {hash}"));
+1871:     }
+1872:     parts.join(" · ")
+1873: }
+1874: 
+1875: fn format_count_panel_rows(rows: &[OverviewCountRow]) -> Vec<OverviewUiRow> {
+1876:     if rows.is_empty() {
+1877:         return vec![overview_ui_row(
+1878:             "Counts",
+1879:             "No facts collected yet.",
+1880:             "",
+1881:             StatusSeverity::Unknown,
+1882:         )];
+1883:     }
+1884: 
+1885:     rows.iter()
+1886:         .map(|row| {
+1887:             overview_ui_row(
+1888:                 row.label,
+1889:                 row.value.to_string(),
+1890:                 row.limit
+1891:                     .map(|limit| format!("Limit: {limit}"))
+1892:                     .unwrap_or_default(),
+1893:                 row.severity,
+1894:             )
+1895:         })
+1896:         .collect()
+1897: }
+1898: 
+1899: fn format_problem_summary(snapshot: &OverviewSnapshot) -> String {
+1900:     format!("Problems: {}", snapshot.problems.len())
+1901: }
+1902: 
+1903: fn format_problem_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1904:     if snapshot.problems.is_empty() {
+1905:         return vec![overview_ui_row(
+1906:             "Problems",
+1907:             "0",
+1908:             "No problems detected.",
+1909:             StatusSeverity::Good,
+1910:         )];
+1911:     }
+1912: 
+1913:     let mut rows = snapshot
+1914:         .problems
+1915:         .iter()
+1916:         .take(5)
+1917:         .map(format_problem_row)
+1918:         .collect::<Vec<_>>();
+1919:     if snapshot.problems.len() > 5 {
+1920:         rows.push(overview_ui_row(
+1921:             "More",
+1922:             format!("+{} more", snapshot.problems.len() - 5),
+1923:             "Open Scanner details in a later port slice.",
+1924:             StatusSeverity::Info,
+

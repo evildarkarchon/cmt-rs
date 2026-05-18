@@ -1,0 +1,11 @@
+
+running 6 tests
+test services::downgrader::tests::downgrader_executor_vcdiff_applier_fixture_decodes_source_patch ... ok
+test services::downgrader::tests::downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups ... ok
+test services::downgrader::tests::downgrader_executor_preserves_source_backup_after_download_or_apply_failures ... ok
+test services::downgrader::tests::downgrader_executor_deletes_invalid_backups_downloads_applies_and_cleans_deltas ... ok
+test services::downgrader::tests::downgrader_executor_logs_permission_failures_and_continues_safely ... ok
+test services::downgrader::tests::downgrader_executor_reuses_existing_patch_and_does_not_download_for_skipped_rows ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 303 filtered out; finished in 0.02s
+

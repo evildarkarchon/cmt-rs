@@ -1,0 +1,18 @@
+{
+  "id": "672ab3f9-f761-4a08-a13f-58cdd66f55fc",
+  "runtime": "python",
+  "purpose": "final S07 closeout verification after Windows path normalization fixes",
+  "script_chars": 1514,
+  "started_at": "2026-05-18T07:28:54.364Z",
+  "finished_at": "2026-05-18T07:29:21.296Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 26932,
+  "stdout_bytes": 3995,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\672ab3f9-f761-4a08-a13f-58cdd66f55fc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\672ab3f9-f761-4a08-a13f-58cdd66f55fc.stderr"
+}

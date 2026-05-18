@@ -1,0 +1,18 @@
+{
+  "id": "c6370aea-e9ec-4478-b7e0-912c190eeb12",
+  "runtime": "bash",
+  "purpose": "S07 closeout verification: targeted scanner filters and full cargo gates",
+  "script_chars": 726,
+  "started_at": "2026-05-18T07:18:45.147Z",
+  "finished_at": "2026-05-18T07:18:45.243Z",
+  "exit_code": 2,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 96,
+  "stdout_bytes": 48,
+  "stderr_bytes": 107,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c6370aea-e9ec-4478-b7e0-912c190eeb12.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c6370aea-e9ec-4478-b7e0-912c190eeb12.stderr"
+}

@@ -1,12 +1,12 @@
 {
-  "compiledAt": "2026-05-18T02:13:11.265Z",
+  "compiledAt": "2026-05-18T11:41:53.323Z",
   "milestoneId": "M001",
   "pipeline": {
     "clarifyRoundLimit": 3,
     "researchSynthesized": true,
     "draftContextIncluded": false,
     "finalizedContextIncluded": true,
-    "sourcePhase": "summarizing"
+    "sourcePhase": "executing"
   },
   "nodes": [
     {
@@ -473,6 +473,405 @@
         "unitType": "complete-slice",
         "unitId": "M001.S05",
         "title": "S05",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S06:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/f4se.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S06.T01",
+        "title": "Added a Slint-free F4SE domain contract that locks reference strings, icons, row classifications, scan snapshots, and current-game warning behavior.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S06:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S06:T01"
+      ],
+      "writes": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "src/services/f4se.rs",
+        "src/services/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S06.T02",
+        "title": "Added a fakeable F4SE DLL scan service and Pelite-based fail-closed PE export inspector.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S06:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S06:T02"
+      ],
+      "writes": [
+        "src/app/f4se_controller.rs",
+        "src/app/mod.rs",
+        "src/workers/events.rs",
+        "src/workers/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S06.T03",
+        "title": "Added a Slint-free F4SE controller and owned worker payloads for lazy, stale-safe DLL scan handoff.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S06:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S06:T03"
+      ],
+      "writes": [
+        "ui/f4se_tab.slint",
+        "ui/main.slint",
+        "src/main.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S06.T04",
+        "title": "Wired the F4SE Slint tab to lazy background scanning with UI-visible status, rows, legend, safe errors, and focused source/runtime tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S06:T05",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S06:T04"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S06.T05",
+        "title": "Verified S06 with full cargo quality gates and confirmed the reference `CMT/` tree remained unmodified.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S06",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S06:T05"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S06",
+        "title": "S06",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S07:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/scanner.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S07.T01",
+        "title": "Added a pure Scanner domain contract for reference labels, settings projection, result grouping/details/actions, Overview handoff, and copy-details rendering.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S07:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S07:T01"
+      ],
+      "writes": [
+        "src/services/scanner.rs",
+        "src/services/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S07.T02",
+        "title": "Added a read-only, adapter-backed Scanner scan service with MO2 attribution, Vortex Data-only handling, reference rule classification, safe diagnostics, progress metadata, and fake-filesystem coverage.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S07:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S07:T02"
+      ],
+      "writes": [
+        "src/app/scanner_controller.rs",
+        "src/app/mod.rs",
+        "src/app/settings_controller.rs",
+        "src/workers/events.rs",
+        "src/workers/mod.rs",
+        "src/domain/scanner.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S07.T03",
+        "title": "Added the Slint-free Scanner controller, scanner worker payloads, and save-on-scan-start scanner settings persistence.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S07:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S07:T03"
+      ],
+      "writes": [
+        "ui/scanner_tab.slint",
+        "ui/main.slint",
+        "src/main.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S07.T04",
+        "title": "Replaced the Scanner placeholder with a reference-shaped read-only Slint surface and MainWindow API/projection tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S07:T05",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S07:T04"
+      ],
+      "writes": [
+        "src/main.rs",
+        "src/services/scanner.rs",
+        "Cargo.toml"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S07.T05",
+        "title": "Wired the Scanner tab to the real blocking scan runtime, progress events, safe read-only actions, and final verification gates.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S07",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S07:T05"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S07",
+        "title": "S07",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S08:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/autofix.rs",
+        "src/domain/mod.rs",
+        "src/domain/scanner.rs",
+        "src/services/scanner.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S08.T01",
+        "title": "Added a fail-closed Scanner Auto-Fix domain contract with typed solution keys, deterministic selection identities, and scanner-owned typed solution preservation.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S08:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S08:T01"
+      ],
+      "writes": [
+        "src/services/autofix.rs",
+        "src/services/mod.rs",
+        "src/domain/autofix.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S08.T02",
+        "title": "Added a fail-closed Scanner Auto-Fix service with an empty production registry and fake-backed registry lifecycle tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S08:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S08:T02"
+      ],
+      "writes": [
+        "src/app/scanner_controller.rs",
+        "src/workers/events.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S08.T03",
+        "title": "Wired Scanner Auto-Fix lifecycle state through the pure controller and owned worker payloads with fail-closed selection, request, completion, and worker-failure handling.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S08:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S08:T03"
+      ],
+      "writes": [
+        "ui/scanner_tab.slint",
+        "ui/main.slint",
+        "src/main.rs",
+        "src/app/scanner_controller.rs",
+        "src/services/autofix.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S08.T04",
+        "title": "Exposed gated Scanner Auto-Fix UI wiring and production-empty runtime scheduling with fake-backed lifecycle tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S08",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S08:T04"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S08",
+        "title": "S08",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/downgrader.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T01",
+        "title": "Added a pure downgrader domain contract with reference labels, CRC maps, backup/patch helpers, and typed row payloads.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S09:T01"
+      ],
+      "writes": [
+        "src/services/downgrader.rs",
+        "src/services/mod.rs",
+        "src/domain/downgrader.rs",
+        "src/domain/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T02",
+        "title": "Added a read-only DowngraderService that builds CRC status snapshots and inline preview plans without mutation.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S09:T02"
+      ],
+      "writes": [
+        "src/platform/mod.rs",
+        "src/platform/filesystem.rs",
+        "src/services/downgrader.rs",
+        "Cargo.toml",
+        "Cargo.lock"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T03",
+        "title": "Added the Downgrader confirmed executor with write, download, and VCDIFF apply seams plus failure-path tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S09:T03"
+      ],
+      "writes": [
+        "src/app/downgrader_controller.rs",
+        "src/app/mod.rs",
+        "src/workers/events.rs",
+        "src/workers/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T04",
+        "title": "Added a Slint-free Downgrader modal controller with owned worker payloads and stale-safe lifecycle tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T05",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S09:T04"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T05",
+        "title": "Create Slint modal source contract",
+        "status": "pending"
+      }
+    },
+    {
+      "id": "execute-task:M001:S09:T06",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S09:T05"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S09.T06",
+        "title": "Wire runtime entrypoints and closeout checks",
+        "status": "pending"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S09",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S09:T06"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S09",
+        "title": "S09",
         "status": "pending"
       }
     }

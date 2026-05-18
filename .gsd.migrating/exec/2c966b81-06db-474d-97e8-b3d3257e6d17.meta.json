@@ -1,0 +1,18 @@
+{
+  "id": "2c966b81-06db-474d-97e8-b3d3257e6d17",
+  "runtime": "bash",
+  "purpose": "apply rustfmt after downgrader controller changes",
+  "script_chars": 9,
+  "started_at": "2026-05-18T11:32:11.148Z",
+  "finished_at": "2026-05-18T11:32:11.781Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 633,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\2c966b81-06db-474d-97e8-b3d3257e6d17.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\2c966b81-06db-474d-97e8-b3d3257e6d17.stderr"
+}

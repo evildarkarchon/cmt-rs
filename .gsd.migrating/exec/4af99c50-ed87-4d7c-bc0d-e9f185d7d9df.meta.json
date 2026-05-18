@@ -1,0 +1,18 @@
+{
+  "id": "4af99c50-ed87-4d7c-bc0d-e9f185d7d9df",
+  "runtime": "bash",
+  "purpose": "rerun f4se_scan_service tests after import cleanup",
+  "script_chars": 28,
+  "started_at": "2026-05-18T04:00:30.530Z",
+  "finished_at": "2026-05-18T04:01:03.674Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 33144,
+  "stdout_bytes": 1104,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4af99c50-ed87-4d7c-bc0d-e9f185d7d9df.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4af99c50-ed87-4d7c-bc0d-e9f185d7d9df.stderr"
+}

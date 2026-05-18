@@ -1,0 +1,562 @@
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:185:
+     }
+ 
+     /// Adds Overview problems for optional scanner handoff.
+[31m-    pub const fn with_overview_problems(mut self, overview_problems: &'a [OverviewProblem]) -> Self {
+(B[m[32m+    pub const fn with_overview_problems(
+(B[m[32m+        mut self,
+(B[m[32m+        overview_problems: &'a [OverviewProblem],
+(B[m[32m+    ) -> Self {
+(B[m         self.overview_problems = overview_problems;
+         self
+     }
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:209:
+     }
+ 
+     fn effective_data_path(&self) -> Option<&Path> {
+[31m-        self.data_path
+(B[m[31m-            .as_deref()
+(B[m[31m-            .or_else(|| self.installation.and_then(|installation| installation.data_path.as_deref()))
+(B[m[32m+        self.data_path.as_deref().or_else(|| {
+(B[m[32m+            self.installation
+(B[m[32m+                .and_then(|installation| installation.data_path.as_deref())
+(B[m[32m+        })
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:489:
+             scan_id = request.scan_id,
+             has_data_path = request.effective_data_path().is_some(),
+             overview_problem_count = request.overview_problems.len(),
+[31m-            enabled_module_count = request.enabled_modules.iter().filter(|module| module.enabled).count(),
+(B[m[31m-            enabled_archive_count = request.enabled_archives.iter().filter(|archive| archive.enabled).count(),
+(B[m[32m+            enabled_module_count = request
+(B[m[32m+                .enabled_modules
+(B[m[32m+                .iter()
+(B[m[32m+                .filter(|module| module.enabled)
+(B[m[32m+                .count(),
+(B[m[32m+            enabled_archive_count = request
+(B[m[32m+                .enabled_archives
+(B[m[32m+                .iter()
+(B[m[32m+                .filter(|archive| archive.enabled)
+(B[m[32m+                .count(),
+(B[m         );
+         let _guard = span.enter();
+         info!(event = "scanner-scan-request", "Scanner scan requested");
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:544:
+                     DATA_FOLDER_NOT_FOUND_SUMMARY,
+                     PROGRESS_COMPLETE_PERCENT,
+                 ));
+[31m-                return finalize_output(
+(B[m[31m-                    request.scan_id,
+(B[m[31m-                    results,
+(B[m[31m-                    status,
+(B[m[31m-                    progress,
+(B[m[31m-                    diagnostics,
+(B[m[31m-                );
+(B[m[32m+                return finalize_output(request.scan_id, results, status, progress, diagnostics);
+(B[m             };
+ 
+             if !self.validate_data_path(data_path, &request, &mut results, &mut diagnostics) {
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:565:
+                     DATA_FOLDER_NOT_FOUND_SUMMARY,
+                     PROGRESS_COMPLETE_PERCENT,
+                 ));
+[31m-                return finalize_output(
+(B[m[31m-                    request.scan_id,
+(B[m[31m-                    results,
+(B[m[31m-                    status,
+(B[m[31m-                    progress,
+(B[m[31m-                    diagnostics,
+(B[m[31m-                );
+(B[m[32m+                return finalize_output(request.scan_id, results, status, progress, diagnostics);
+(B[m             }
+ 
+             if let Some(manager) = request.mod_manager {
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:607:
+                 }
+             }
+ 
+[31m-            self.append_overview_results(&request, Some(&mod_index), &mut results, &mut diagnostics);
+(B[m[32m+            self.append_overview_results(
+(B[m[32m+                &request,
+(B[m[32m+                Some(&mod_index),
+(B[m[32m+                &mut results,
+(B[m[32m+                &mut diagnostics,
+(B[m[32m+            );
+(B[m             self.scan_data_tree(
+                 data_path,
+                 &request,
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:626:
+             self.append_overview_results(&request, None, &mut results, &mut diagnostics);
+         }
+ 
+[31m-        let status = if diagnostics.errors.iter().any(|error| {
+(B[m[31m-            !matches!(error.kind, ScannerScanDiagnosticKind::Skipped)
+(B[m[31m-        }) {
+(B[m[32m+        let status = if diagnostics
+(B[m[32m+            .errors
+(B[m[32m+            .iter()
+(B[m[32m+            .any(|error| !matches!(error.kind, ScannerScanDiagnosticKind::Skipped))
+(B[m[32m+        {
+(B[m             ScannerScanStatus::new(
+                 ScannerScanStatusKind::CompletedWithRecoverableIssues,
+                 "Scanner completed with recoverable issues.",
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:694:
+ 
+         let mut entries = Vec::new();
+         let mut total = 0usize;
+[31m-        for module in request.enabled_modules.iter().filter(|module| module.enabled) {
+(B[m[32m+        for module in request
+(B[m[32m+            .enabled_modules
+(B[m[32m+            .iter()
+(B[m[32m+            .filter(|module| module.enabled)
+(B[m[32m+        {
+(B[m             match self.filesystem.read_bytes(&module.path) {
+                 Ok(bytes) => {
+                     let count = count_subsequence(&bytes, SADD_BYTES);
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:919:
+ 
+         for mod_path in &stage_paths {
+             let mod_name = display_file_name(mod_path);
+[31m-            self.index_mod_directory(mod_path, mod_path, Path::new(""), &mod_name, &rules, index, diagnostics);
+(B[m[32m+            self.index_mod_directory(
+(B[m[32m+                mod_path,
+(B[m[32m+                mod_path,
+(B[m[32m+                Path::new(""),
+(B[m[32m+                &mod_name,
+(B[m[32m+                &rules,
+(B[m[32m+                index,
+(B[m[32m+                diagnostics,
+(B[m[32m+            );
+(B[m         }
+ 
+         diagnostics.indexed_mod_count = stage_paths.len();
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1007:
+             }
+             let file_relative = relative_path.join(&file_name);
+             let indexed = ModIndexedPath::new(mod_name, file.path.clone());
+[31m-            index.files.insert(path_key(&file_relative), indexed.clone());
+(B[m[32m+            index
+(B[m[32m+                .files
+(B[m[32m+                .insert(path_key(&file_relative), indexed.clone());
+(B[m             if relative_path.as_os_str().is_empty() {
+                 if has_extension_name(&file_name, &["esp", "esl", "esm"]) {
+                     index.modules.insert(file_lower.clone(), indexed.clone());
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1048:
+         progress: &mut Vec<ScannerProgressEvent>,
+     ) {
+         let rules = match request.mod_manager {
+[31m-            Some(ModManagerContext::ModOrganizer(context)) => ScanSkipRules::for_manager(Some(context)),
+(B[m[32m+            Some(ModManagerContext::ModOrganizer(context)) => {
+(B[m[32m+                ScanSkipRules::for_manager(Some(context))
+(B[m[32m+            }
+(B[m             _ => ScanSkipRules::for_manager(None),
+         };
+         let archive_suffixes = request
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1190:
+                     Some(current_path.to_path_buf()),
+                     &error,
+                 );
+[31m-                self.add_read_error_row(request, results, current_path, relative_path, error.user_message());
+(B[m[32m+                self.add_read_error_row(
+(B[m[32m+                    request,
+(B[m[32m+                    results,
+(B[m[32m+                    current_path,
+(B[m[32m+                    relative_path,
+(B[m[32m+                    error.user_message(),
+(B[m[32m+                );
+(B[m                 return;
+             }
+         };
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1356:
+                 && !ARCHIVE_NAME_WHITELIST.contains(&file_lower.as_str())
+                 && !enabled_archives.contains(&path_key(&file.path))
+             {
+[31m-                let (base_name, suffix_valid) = archive_name_suffix_valid(&stem_lower, archive_suffixes);
+(B[m[32m+                let (base_name, suffix_valid) =
+(B[m[32m+                    archive_name_suffix_valid(&stem_lower, archive_suffixes);
+(B[m                 if !suffix_valid {
+                     results.push(
+                         path_result(
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1384:
+         let disallowed_by_whitelist = data_root_whitelist(data_root_lower)
+             .and_then(|whitelist| whitelist)
+             .is_some_and(|whitelist| !whitelist.contains(&file_ext));
+[31m-        let misplaced_dll = file_ext == "dll" && !relative_starts_with(relative_path, "f4se/plugins");
+(B[m[32m+        let misplaced_dll =
+(B[m[32m+            file_ext == "dll" && !relative_starts_with(relative_path, "f4se/plugins");
+(B[m         disallowed_by_whitelist || misplaced_dll
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1547:
+                     file_suffixes.push(suffix);
+                 }
+             }
+[31m-            directories.extend(context.skip_rules.directories.iter().map(|dir| dir.to_ascii_lowercase()));
+(B[m[32m+            directories.extend(
+(B[m[32m+                context
+(B[m[32m+                    .skip_rules
+(B[m[32m+                    .directories
+(B[m[32m+                    .iter()
+(B[m[32m+                    .map(|dir| dir.to_ascii_lowercase()),
+(B[m[32m+            );
+(B[m         }
+         Self {
+             file_suffixes,
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1638:
+ ) -> ScannerResult {
+     match absolute_path {
+         Some(path) => ScannerResult::with_path(problem_type, path, relative_path, summary, None),
+[31m-        None => ScannerResult::simple(problem_type, relative_path.display().to_string(), summary, None),
+(B[m[32m+        None => ScannerResult::simple(
+(B[m[32m+            problem_type,
+(B[m[32m+            relative_path.display().to_string(),
+(B[m[32m+            summary,
+(B[m[32m+            None,
+(B[m[32m+        ),
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1702:
+         "f4se" => Some(None),
+         "materials" => Some(Some(&["bgem", "bgsm", "txt"])),
+         "meshes" => Some(Some(&[
+[31m-            "bto", "btr", "hko", "hkx", "hkx_back", "hkx_backup", "lst", "max", "nif",
+(B[m[31m-            "obj", "sclp", "ssf", "tri", "txt", "xml",
+(B[m[32m+            "bto",
+(B[m[32m+            "btr",
+(B[m[32m+            "hko",
+(B[m[32m+            "hkx",
+(B[m[32m+            "hkx_back",
+(B[m[32m+            "hkx_backup",
+(B[m[32m+            "lst",
+(B[m[32m+            "max",
+(B[m[32m+            "nif",
+(B[m[32m+            "obj",
+(B[m[32m+            "sclp",
+(B[m[32m+            "ssf",
+(B[m[32m+            "tri",
+(B[m[32m+            "txt",
+(B[m[32m+            "xml",
+(B[m         ])),
+         "music" => Some(Some(&["wav", "xwm"])),
+         "textures" => Some(Some(&["dds"])),
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1738:
+     match stem_lower.rsplit_once(" - ") {
+         Some((base, suffix)) => (
+             base.to_owned(),
+[31m-            suffixes.iter().any(|valid| valid.eq_ignore_ascii_case(suffix)),
+(B[m[32m+            suffixes
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|valid| valid.eq_ignore_ascii_case(suffix)),
+(B[m         ),
+         None => (stem_lower.to_owned(), false),
+     }
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1770:
+ }
+ 
+ fn default_ba2_suffixes() -> Vec<String> {
+[31m-    vec!["main".to_owned(), "textures".to_owned(), "voices_en".to_owned()]
+(B[m[32m+    vec![
+(B[m[32m+        "main".to_owned(),
+(B[m[32m+        "textures".to_owned(),
+(B[m[32m+        "voices_en".to_owned(),
+(B[m[32m+    ]
+(B[m }
+ 
+ fn ba2_suffixes(ini_files: &Fallout4IniFiles) -> Vec<String> {
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1820:
+                 ModuleKind, SemanticVersion,
+             },
+             mod_manager::{
+[31m-                DetectedModManager, ModManagerKind, ModOrganizerDirectories,
+(B[m[31m-                ModOrganizerSkipRules, VortexContext,
+(B[m[32m+                DetectedModManager, ModManagerKind, ModOrganizerDirectories, ModOrganizerSkipRules,
+(B[m[32m+                VortexContext,
+(B[m             },
+             overview::{OverviewProblem, OverviewProblemSource, OverviewProblemType},
+         },
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:1945:
+                     PlatformErrorKind::InvalidInput,
+                     "File read target is invalid.",
+                 )),
+[31m-                FakeNode::UnreadableFile => Err(Self::permission_denied(
+(B[m[31m-                    path,
+(B[m[31m-                    PlatformOperation::ReadFile,
+(B[m[31m-                )),
+(B[m[32m+                FakeNode::UnreadableFile => {
+(B[m[32m+                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+(B[m[32m+                }
+(B[m             }
+         }
+ 
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2079:
+     fn scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides() {
+         let fs = FakeFilesystem::default()
+             .with_file("Game/Data/Scripts/actor.pex", b"script")
+[31m-            .with_text("MO2/profiles/Default/modlist.txt", "+HighPriority\n+LowPriority\n")
+(B[m[32m+            .with_text(
+(B[m[32m+                "MO2/profiles/Default/modlist.txt",
+(B[m[32m+                "+HighPriority\n+LowPriority\n",
+(B[m[32m+            )
+(B[m             .with_file("MO2/mods/LowPriority/Scripts/actor.pex", b"low")
+             .with_file("MO2/mods/HighPriority/Scripts/actor.pex", b"high")
+             .with_file("MO2/mods/HighPriority/Scripts/ignored.mohidden", b"hidden")
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2102:
+         let result = result_by_type(&output, ScannerProblemType::F4seScriptOverride);
+         assert_eq!(result.mod_display_name(), "HighPriority");
+         assert_eq!(result.detail_path, "Scripts/actor.pex");
+[31m-        assert_eq!(result.absolute_path.as_deref(), Some(Path::new("MO2/mods/HighPriority/Scripts/actor.pex")));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            result.absolute_path.as_deref(),
+(B[m[32m+            Some(Path::new("MO2/mods/HighPriority/Scripts/actor.pex"))
+(B[m[32m+        );
+(B[m         assert_eq!(output.diagnostics.indexed_mod_count, 3);
+         assert_eq!(output.diagnostics.indexed_file_count, 1);
+[31m-        assert!(fs.read_dirs.borrow().iter().any(|path| path == Path::new("Game/Data")));
+(B[m[32m+        assert!(
+(B[m[32m+            fs.read_dirs
+(B[m[32m+                .borrow()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|path| path == Path::new("Game/Data"))
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2164:
+         assert!(labels.contains(&"Loose AnimTextData"));
+         assert!(labels.contains(&"Unexpected Format"));
+         assert!(labels.contains(&"Invalid Archive Name"));
+[31m-        assert!(
+(B[m[31m-            output
+(B[m[31m-                .results
+(B[m[31m-                .iter()
+(B[m[31m-                .any(|result| result.summary.contains("expected format was found (sign.dds)"))
+(B[m[31m-        );
+(B[m[31m-        assert!(
+(B[m[31m-            output
+(B[m[31m-                .results
+(B[m[31m-                .iter()
+(B[m[31m-                .any(|result| result.summary.contains("expected format was NOT found (wav, xwm)"))
+(B[m[31m-        );
+(B[m[32m+        assert!(output.results.iter().any(|result| {
+(B[m[32m+            result
+(B[m[32m+                .summary
+(B[m[32m+                .contains("expected format was found (sign.dds)")
+(B[m[32m+        }));
+(B[m[32m+        assert!(output.results.iter().any(|result| {
+(B[m[32m+            result
+(B[m[32m+                .summary
+(B[m[32m+                .contains("expected format was NOT found (wav, xwm)")
+(B[m[32m+        }));
+(B[m         assert_eq!(
+             output
+                 .groups
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2190:
+                 "Invalid Archive Name",
+             ]
+         );
+[31m-        assert!(!output.results.iter().any(|result| result.detail_path.contains("UnknownRoot")));
+(B[m[32m+        assert!(
+(B[m[32m+            !output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| result.detail_path.contains("UnknownRoot"))
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2207:
+ 
+         let output = service_scan(&fs, &settings, request);
+ 
+[31m-        assert!(output.results.iter().any(|result| result.detail_path == "Textures/ok.png"));
+(B[m[31m-        assert!(output.results.iter().any(|result| result.detail_path == "Textures/Denied"));
+(B[m[32m+        assert!(
+(B[m[32m+            output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| result.detail_path == "Textures/ok.png")
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| result.detail_path == "Textures/Denied")
+(B[m[32m+        );
+(B[m         assert!(output.diagnostics.errors.iter().any(|diagnostic| {
+             diagnostic.kind == ScannerScanDiagnosticKind::UnreadableDirectory
+                 && diagnostic.path.as_deref() == Some(Path::new("Game/Data/Textures/Denied"))
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2229:
+         assert_eq!(output.status.safe_message, DATA_FOLDER_NOT_FOUND_SUMMARY);
+         assert_eq!(output.diagnostics.traversed_folder_count, 0);
+         assert_eq!(output.results.len(), 1);
+[31m-        assert_eq!(output.results[0].problem_type, ScannerProblemType::FileNotFound);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            output.results[0].problem_type,
+(B[m[32m+            ScannerProblemType::FileNotFound
+(B[m[32m+        );
+(B[m         assert_eq!(output.results[0].detail_path, "Data");
+         assert!(fs.read_dirs.borrow().is_empty());
+     }
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2251:
+             result.problem_type == ScannerProblemType::FileNotFound
+                 && result.summary.contains("modlist.txt")
+         }));
+[31m-        assert!(output.results.iter().any(|result| result.detail_path == "Textures/missing.png"));
+(B[m[31m-        assert_eq!(output.status.kind, ScannerScanStatusKind::CompletedWithRecoverableIssues);
+(B[m[31m-        assert!(output.diagnostics.errors.iter().any(|diagnostic| {
+(B[m[31m-            diagnostic.kind == ScannerScanDiagnosticKind::MissingMo2Modlist
+(B[m[31m-        }));
+(B[m[32m+        assert!(
+(B[m[32m+            output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| result.detail_path == "Textures/missing.png")
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            output.status.kind,
+(B[m[32m+            ScannerScanStatusKind::CompletedWithRecoverableIssues
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            output.diagnostics.errors.iter().any(|diagnostic| {
+(B[m[32m+                diagnostic.kind == ScannerScanDiagnosticKind::MissingMo2Modlist
+(B[m[32m+            })
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2338:
+ 
+         let output = service.scan(request);
+ 
+[31m-        assert_eq!(output.status.kind, ScannerScanStatusKind::NoEnabledCategories);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            output.status.kind,
+(B[m[32m+            ScannerScanStatusKind::NoEnabledCategories
+(B[m[32m+        );
+(B[m         assert!(output.results.is_empty());
+         assert!(fs.read_dirs.borrow().is_empty());
+         assert!(fs.read_files.borrow().is_empty());
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2365:
+             problem_overrides: false,
+             race_subgraphs: false,
+         };
+[31m-        let request = ScannerScanRequest::new(16, &settings).with_enabled_archives(&enabled_archives);
+(B[m[32m+        let request =
+(B[m[32m+            ScannerScanRequest::new(16, &settings).with_enabled_archives(&enabled_archives);
+(B[m 
+         let output = service_scan(&fs, &settings, request);
+ 
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2372:
+         assert!(output.results.iter().any(|result| {
+             result.problem_type == ScannerProblemType::UnexpectedFormat
+[31m-                && result.summary.contains("expected format was NOT found (dds)")
+(B[m[32m+                && result
+(B[m[32m+                    .summary
+(B[m[32m+                    .contains("expected format was NOT found (dds)")
+(B[m         }));
+         assert!(output.results.iter().any(|result| {
+             result.problem_type == ScannerProblemType::InvalidArchiveName
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2398:
+ 
+         let output = service_scan(&fs, &settings, request);
+ 
+[31m-        assert_eq!(output.status.kind, ScannerScanStatusKind::CompletedWithRecoverableIssues);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            output.status.kind,
+(B[m[32m+            ScannerScanStatusKind::CompletedWithRecoverableIssues
+(B[m[32m+        );
+(B[m         assert!(output.results.iter().any(|result| {
+             result.problem_type == ScannerProblemType::FileNotFound
+                 && result.summary == "File read returned data that could not be understood."
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2405:
+         }));
+[31m-        assert!(output.diagnostics.errors.iter().any(|diagnostic| {
+(B[m[31m-            diagnostic.kind == ScannerScanDiagnosticKind::InvalidInput
+(B[m[31m-        }));
+(B[m[32m+        assert!(
+(B[m[32m+            output
+(B[m[32m+                .diagnostics
+(B[m[32m+                .errors
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|diagnostic| { diagnostic.kind == ScannerScanDiagnosticKind::InvalidInput })
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2448:
+             .find(|result| result.summary == "Overview supplied scanner problem.")
+             .expect("overview result should be present");
+         assert_eq!(result.mod_display_name(), "AudioFix");
+[31m-        assert_eq!(result.absolute_path.as_deref(), Some(Path::new("MO2/mods/AudioFix/Sound/problem.mp3")));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            result.absolute_path.as_deref(),
+(B[m[32m+            Some(Path::new("MO2/mods/AudioFix/Sound/problem.mp3"))
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2455:
+     fn scanner_scan_service_non_english_ini_suffix_allows_language_voice_archive() {
+         let fs = FakeFilesystem::default().with_file("Game/Data/MyMod - Voices_fr.ba2", b"archive");
+[31m-        let mut installation = Fallout4Installation::with_optional_paths(
+(B[m[31m-            "Game",
+(B[m[31m-            Some("Game/Data"),
+(B[m[31m-            None::<PathBuf>,
+(B[m[31m-        );
+(B[m[32m+        let mut installation =
+(B[m[32m+            Fallout4Installation::with_optional_paths("Game", Some("Game/Data"), None::<PathBuf>);
+(B[m         installation
+             .ini_files
+             .fallout4
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2480:
+ 
+         let output = service.scan(request);
+ 
+[31m-        assert!(!output.results.iter().any(|result| {
+(B[m[31m-            result.problem_type == ScannerProblemType::InvalidArchiveName
+(B[m[31m-        }));
+(B[m[32m+        assert!(
+(B[m[32m+            !output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| { result.problem_type == ScannerProblemType::InvalidArchiveName })
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2502:
+ 
+         let output = service_scan(&fs, &settings, request);
+ 
+[31m-        assert!(output.results.iter().any(|result| {
+(B[m[31m-            result.problem_type == ScannerProblemType::UnexpectedFormat
+(B[m[31m-        }));
+(B[m[31m-        assert!(!output.results.iter().any(|result| {
+(B[m[31m-            result.problem_type == ScannerProblemType::FileNotFound
+(B[m[31m-        }));
+(B[m[31m-        assert!(output.diagnostics.errors.iter().any(|diagnostic| {
+(B[m[31m-            diagnostic.kind == ScannerScanDiagnosticKind::MissingMo2Modlist
+(B[m[31m-        }));
+(B[m[32m+        assert!(
+(B[m[32m+            output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| { result.problem_type == ScannerProblemType::UnexpectedFormat })
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            !output
+(B[m[32m+                .results
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|result| { result.problem_type == ScannerProblemType::FileNotFound })
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            output.diagnostics.errors.iter().any(|diagnostic| {
+(B[m[32m+                diagnostic.kind == ScannerScanDiagnosticKind::MissingMo2Modlist
+(B[m[32m+            })
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]

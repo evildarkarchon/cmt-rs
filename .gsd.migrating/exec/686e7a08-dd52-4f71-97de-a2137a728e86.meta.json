@@ -1,0 +1,18 @@
+{
+  "id": "686e7a08-dd52-4f71-97de-a2137a728e86",
+  "runtime": "python",
+  "purpose": "Replace oversized restore helper with concise implementation",
+  "script_chars": 2088,
+  "started_at": "2026-05-18T10:52:19.821Z",
+  "finished_at": "2026-05-18T10:52:19.927Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 106,
+  "stdout_bytes": 25,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\686e7a08-dd52-4f71-97de-a2137a728e86.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\686e7a08-dd52-4f71-97de-a2137a728e86.stderr"
+}

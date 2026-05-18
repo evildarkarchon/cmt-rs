@@ -1,0 +1,145 @@
+
+## src/services/overview.rs
+71:     pub binaries: &'a [OverviewBinaryFact],
+95:         let effective_install_type = effective_install_type(installation, input.binaries);
+103:             effective_install_type,
+115:         append_archive_problems(input.archives, effective_install_type, &mut problems);
+129:             effective_install_type,
+148: pub struct OverviewBinaryFact {
+149:     /// Reference file name or relative path, such as `Fallout4.exe`.
+154:     pub install_type: Fallout4InstallType,
+161: impl OverviewBinaryFact {
+163:     pub fn new(file_name: impl Into<String>, install_type: Fallout4InstallType) -> Self {
+167:             install_type,
+418: fn effective_install_type(
+420:     binaries: &[OverviewBinaryFact],
+424:         .find(|fact| basename_eq(&fact.file_name, "Fallout4.exe"))
+425:         .map(|fact| fact.install_type)
+426:         .or_else(|| installation.map(|installation| installation.install_type))
+497:     facts: &[OverviewBinaryFact],
+498:     install_type: Fallout4InstallType,
+505:         let severity = binary_severity(fact, install_type);
+506:         let mut row = BinaryStatusRow::new(binary_label(&fact.file_name), fact.install_type)
+511:         append_binary_problem(fact, install_type, severity, problems);
+527: fn binary_severity(fact: &OverviewBinaryFact, install_type: Fallout4InstallType) -> StatusSeverity {
+528:     if is_compatible_binary_install_type(fact.install_type, install_type) {
+532:     if fact.install_type == Fallout4InstallType::NotFound
+533:         && is_optional_missing_binary(&fact.file_name, install_type)
+538:     match fact.install_type {
+551:     fact: &OverviewBinaryFact,
+552:     install_type: Fallout4InstallType,
+556:     if !severity.is_problem() && fact.install_type != Fallout4InstallType::Unknown {
+560:     if basename_eq(&fact.file_name, "Fallout4.exe")
+561:         && fact.install_type == Fallout4InstallType::Unknown
+571:             "Fallout4.exe",
+581:     if fact.install_type == Fallout4InstallType::NotFound
+582:         && is_optional_missing_binary(&fact.file_name, install_type)
+587:     let problem = if fact.install_type == Fallout4InstallType::NotFound {
+592:     let summary = if fact.install_type == Fallout4InstallType::NotFound {
+609: fn is_compatible_binary_install_type(
+622: fn is_optional_missing_binary(file_name: &str, install_type: Fallout4InstallType) -> bool {
+627:                 install_type,
+720:     install_type: Fallout4InstallType,
+756:                 if archive_version_mismatches_game(record.version, install_type) =>
+790:     install_type: Fallout4InstallType,
+794:             install_type,
+1104:         binaries: &'a [OverviewBinaryFact],
+1158:     fn installation(install_type: Fallout4InstallType) -> Fallout4Installation {
+1164:         installation.install_type = install_type;
+1168:     fn installation_without_data(install_type: Fallout4InstallType) -> Fallout4Installation {
+1174:         installation.install_type = install_type;
+1238:             OverviewBinaryFact::new("Fallout4.exe", Fallout4InstallType::OldGen)
+1239:                 .with_path("C:/Games/Fallout 4/Fallout4.exe")
+1241:             OverviewBinaryFact::new("steam_api64.dll", Fallout4InstallType::OldGen),
+1320:             OverviewBinaryFact::new("Fallout4.exe", Fallout4InstallType::NextGen),
+1321:             OverviewBinaryFact::missing("f4se_steam_loader.dll"),
+1367:         let binaries = vec![OverviewBinaryFact::new(
+1368:             "Fallout4.exe",
+1412:         let binaries = vec![OverviewBinaryFact::new(
+1413:             "Fallout4.exe",
+1453:         let binaries = vec![OverviewBinaryFact::new(
+1454:             "Fallout4.exe",
+1508:             OverviewBinaryFact::new("Fallout4.exe", Fallout4InstallType::Unknown)
+1595:         let binaries = vec![OverviewBinaryFact::new(
+1596:             "Fallout4.exe",
+1640:         let binaries = vec![OverviewBinaryFact::new(
+1641:             "Fallout4.exe",
+1700:         let binaries = vec![OverviewBinaryFact::new(
+1701:             "Fallout4.exe",
+1737:         let binaries = vec![OverviewBinaryFact::new(
+1738:             "Fallout4.exe",
+1770:         let binaries = vec![OverviewBinaryFact::new(
+1771:             "Fallout4.exe",
+1890:         let binaries = vec![OverviewBinaryFact::new(
+1891:             "Fallout4.exe",
+
+## src/services/overview_collector.rs
+27:         OverviewAddressLibraryFact, OverviewBinaryFact, OverviewEnablementFacts,
+59: const BASE_FILES: &[BaseFileDefinition] = &[
+60:     BaseFileDefinition {
+61:         relative_path: "Fallout4.exe",
+76:     BaseFileDefinition {
+88:     BaseFileDefinition {
+96:     BaseFileDefinition {
+107:     BaseFileDefinition {
+114:     BaseFileDefinition {
+123:     BaseFileDefinition {
+134: struct BaseFileDefinition {
+143:     install_type: Fallout4InstallType,
+147:     const fn version(token: &'static str, install_type: Fallout4InstallType) -> Self {
+151:             install_type,
+155:     const fn hash(token: &'static str, install_type: Fallout4InstallType) -> Self {
+159:             install_type,
+237:     pub binaries: Vec<OverviewBinaryFact>,
+410:         let detected_install_type = detected_install_type_from_binaries(&binaries);
+416:             detected_install_type,
+465:     ) -> Vec<OverviewBinaryFact> {
+473:             if path_basename_eq(definition.relative_path, "Fallout4.exe") {
+475:                 detected_game_type = fact.install_type;
+476:             } else if fact.install_type == Fallout4InstallType::NextGenAnniversary
+482:                 fact.install_type = detected_game_type;
+493:         definition: &BaseFileDefinition,
+496:     ) -> OverviewBinaryFact {
+506:                 return OverviewBinaryFact::missing(definition.relative_path);
+509:                 return OverviewBinaryFact::missing(definition.relative_path)
+518:                 return OverviewBinaryFact::new(
+528:             && let Some(install_type) =
+529:                 lookup_install_type(definition, BinaryClassificationSource::Version, version)
+531:             return OverviewBinaryFact::new(definition.relative_path, install_type)
+547:         let install_type = hash
+550:                 lookup_install_type(definition, BinaryClassificationSource::Hash, hash)
+554:         OverviewBinaryFact::new(definition.relative_path, install_type)
+581:         fallout4_fact: &mut OverviewBinaryFact,
+584:         if fallout4_fact.install_type != Fallout4InstallType::OldGen {
+597:                         fallout4_fact.install_type = Fallout4InstallType::DownGrade;
+688:         install_type: Fallout4InstallType,
+693:             self.collect_address_library(installation, install_type, diagnostics);
+710:             install_type,
+726:         _install_type: Fallout4InstallType,
+734:         let fallout4_path = join_relative_path(&installation.game_path, "Fallout4.exe");
+923:         install_type: Fallout4InstallType,
+975:         if install_type == Fallout4InstallType::Anniversary {
+1263: fn lookup_install_type(
+1264:     definition: &BaseFileDefinition,
+1274:         .map(|classification| classification.install_type)
+1284: fn detected_install_type_from_binaries(binaries: &[OverviewBinaryFact]) -> Fallout4InstallType {
+1287:         .find(|fact| path_basename_eq(&fact.file_name, "Fallout4.exe"))
+1288:         .map(|fact| fact.install_type)
+1292: fn normalize_binary_order(binaries: &mut [OverviewBinaryFact]) {
+1767:             .with_file("C:/Games/Fallout 4/Fallout4.exe", b"fallout4".to_vec())
+1805:     fn row<'a>(facts: &'a [OverviewBinaryFact], name: &str) -> &'a OverviewBinaryFact {
+1828:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.163.0")
+1835:             row(&facts.binaries, "Fallout4.exe").install_type,
+1839:             row(&facts.binaries, "Fallout4Launcher.exe").install_type,
+1843:             row(&facts.binaries, "steam_api64.dll").install_type,
+1847:             row(&facts.binaries, "f4se_loader.exe").install_type,
+1851:             row(&facts.binaries, "CreationKit.exe").install_type,
+1864:         missing_data_installation.install_type = Fallout4InstallType::Unknown;
+1867:             .with_file("C:/Games/Fallout 4/Fallout4.exe", b"fallout4".to_vec());
+1869:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+1926:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+1996:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+2096:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+2138:             .with_file("C:/Games/Fallout 4/Fallout4.exe", b"fallout4".to_vec())
+2148:             .with_raw_version("C:/Games/Fallout 4/Fallout4.exe", "1.10.984.0");
+2180:             row(&facts.binaries, "Fallout4Launcher.exe").install_type,

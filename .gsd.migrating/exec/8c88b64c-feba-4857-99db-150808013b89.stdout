@@ -1,0 +1,72 @@
+75: enum AboutCallbackKind {
+80: impl AboutCallbackKind {
+90: struct ToolsUiProjection {
+96: struct AboutUiProjection {
+106: fn main() -> Result<(), Box<dyn std::error::Error>> {
+164: fn load_settings_controller() -> SettingsController<FileAssetResolver> {
+171: fn bind_settings_callbacks(
+202: fn bind_tools_worker_sink(
+249: fn bind_about_worker_sink(
+296: fn bind_tools_callbacks(
+320: fn bind_about_callbacks(
+398: fn bind_overview_worker_sink(
+425: fn bind_overview_callbacks(
+547: fn request_tools_action(
+606: fn request_about_action(
+670: fn build_tools_action_payload(action_id: String) -> BlockingWorkerResult {
+678: fn build_about_action_payload(action_id: String) -> BlockingWorkerResult {
+686: fn tools_action_worker_task(action_id: &str) -> WorkerTask {
+694: fn about_action_worker_task(action_id: &str) -> WorkerTask {
+702: fn tools_spawn_failed_feedback(
+716: fn about_spawn_failed_feedback(
+730: fn about_action_matches_callback(
+741: fn about_callback_mismatch_feedback(
+759: fn request_overview_refresh(
+803: fn build_overview_refresh_payload(refresh_id: u64, settings: AppSettings) -> BlockingWorkerResult {
+811: fn build_overview_snapshot(settings: AppSettings) -> Result<OverviewSnapshot, WorkerFailure> {
+904: fn current_working_directory() -> PathBuf {
+918: fn schedule_overview_update_check(
+964: fn update_failure_banner(update_source: UpdateSource, summary: &str) -> UpdateBannerState {
+972: fn update_providers(update_source: UpdateSource) -> Vec<UpdateProvider> {
+981: fn schedule_overview_action(
+1030: fn execute_overview_action_payload(action: OverviewDeferredAction) -> BlockingWorkerResult {
+1041: fn action_error_from_feedback(
+1053: fn apply_action_error(
+1066: fn apply_tools_feedback(
+1077: fn apply_about_feedback(
+1088: fn handle_tools_worker_event(
+1099: fn handle_about_worker_event(
+1110: fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+1125: fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+1140: fn tools_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+1144: fn about_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+1148: fn emit_worker_event_or_log<S>(sink: &S, event: WorkerEvent)
+1168: fn with_overview_controller_mut<T>(
+1185: fn with_tools_controller_mut<T>(
+1202: fn with_about_controller_mut<T>(
+1219: fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+1228: fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+1237: fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
+1251: fn project_about_state(state: &AboutState) -> AboutUiProjection {
+1271: fn about_copy_projection(state: &AboutState, link_id: AboutLinkId) -> (String, bool) {
+1288: fn apply_tools_projection(app: &MainWindow, projection: &ToolsUiProjection) {
+1293: fn apply_about_projection(app: &MainWindow, projection: &AboutUiProjection) {
+1303: fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<OverviewController>>) {
+1312: fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
+1374: fn model_from_vec<T: Clone + 'static>(rows: Vec<T>) -> ModelRc<T> {
+1378: fn refresh_message(refresh: &OverviewRefreshState) -> String {
+1395: fn format_top_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1404: fn format_top_row(row: OverviewTopStatusRow) -> OverviewUiRow {
+1408: fn format_binary_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1434: fn format_binary_row(row: &BinaryStatusRow) -> OverviewUiRow {
+1443: fn binary_detail(row: &BinaryStatusRow) -> String {
+1454: fn format_count_panel_rows(rows: &[OverviewCountRow]) -> Vec<OverviewUiRow> {
+1478: fn format_problem_summary(snapshot: &OverviewSnapshot) -> String {
+1482: fn format_problem_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1509: fn format_problem_row(problem: &OverviewProblem) -> OverviewUiRow {
+1518: fn overview_ui_row(
+1532: fn severity_label(severity: StatusSeverity) -> &'static str {
+1543: fn deferred_action_label(
+1555: fn deferred_action_status(
+1578: fn apply_update_banner(app: &MainWindow, update_banner: &UpdateBannerState) {
+1595: fn update_release_label(

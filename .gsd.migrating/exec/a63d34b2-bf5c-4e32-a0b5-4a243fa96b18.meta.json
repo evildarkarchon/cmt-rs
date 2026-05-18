@@ -1,0 +1,18 @@
+{
+  "id": "a63d34b2-bf5c-4e32-a0b5-4a243fa96b18",
+  "runtime": "bash",
+  "purpose": "retry final verification cargo clippy after manifest check",
+  "script_chars": 41,
+  "started_at": "2026-05-18T07:13:42.880Z",
+  "finished_at": "2026-05-18T07:13:43.072Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 192,
+  "stdout_bytes": 0,
+  "stderr_bytes": 177,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a63d34b2-bf5c-4e32-a0b5-4a243fa96b18.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a63d34b2-bf5c-4e32-a0b5-4a243fa96b18.stderr"
+}

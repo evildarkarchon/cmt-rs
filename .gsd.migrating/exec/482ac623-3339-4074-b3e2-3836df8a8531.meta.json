@@ -1,0 +1,18 @@
+{
+  "id": "482ac623-3339-4074-b3e2-3836df8a8531",
+  "runtime": "bash",
+  "purpose": "final cargo check for S09 downgrader Slint contract",
+  "script_chars": 11,
+  "started_at": "2026-05-18T11:56:14.130Z",
+  "finished_at": "2026-05-18T11:56:30.941Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16811,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\482ac623-3339-4074-b3e2-3836df8a8531.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\482ac623-3339-4074-b3e2-3836df8a8531.stderr"
+}

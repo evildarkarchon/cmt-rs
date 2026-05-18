@@ -1,0 +1,18 @@
+{
+  "id": "1d5e45d1-a7d0-4646-aa05-878daff393dc",
+  "runtime": "bash",
+  "purpose": "list S08 task summary files",
+  "script_chars": 97,
+  "started_at": "2026-05-18T09:42:19.064Z",
+  "finished_at": "2026-05-18T09:42:19.152Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 88,
+  "stdout_bytes": 212,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1d5e45d1-a7d0-4646-aa05-878daff393dc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1d5e45d1-a7d0-4646-aa05-878daff393dc.stderr"
+}

@@ -1,0 +1,58 @@
+30:            scanner_folder_progress_text, scanner_result_from_overview_problem,
+142:    /// Monotonic scan id assigned by the caller; copied into progress and diagnostics.
+222:/// A scanner progress phase safe to expose in logs or worker events.
+253:/// One safe progress event emitted during a scan.
+255:pub struct ScannerProgressEvent {
+258:    /// Phase that emitted this progress event.
+260:    /// Safe user-facing progress text.
+262:    /// Percent completion in the same 0-100 range as the reference progress bar.
+272:impl ScannerProgressEvent {
+305:            safe_message: scanner_folder_progress_text(folder_index, folder_total, &folder),
+379:pub struct ScannerScanDiagnostics {
+467:    pub progress: Vec<ScannerProgressEvent>,
+474:pub struct ScannerScanService<'a, F: Filesystem + ?Sized> {
+478:impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
+490:    pub fn scan(&self, request: ScannerScanRequest<'_>) -> ScannerScanOutput {
+511:        let mut progress = vec![ScannerProgressEvent::new(
+528:            progress.push(ScannerProgressEvent::new(
+534:            return finalize_output(request.scan_id, Vec::new(), status, progress, diagnostics);
+542:            self.scan_race_subgraphs(&request, &mut results, &mut diagnostics, &mut progress);
+553:                progress.push(ScannerProgressEvent::new(
+559:                return finalize_output(request.scan_id, results, status, progress, diagnostics);
+568:                progress.push(ScannerProgressEvent::new(
+574:                return finalize_output(request.scan_id, results, status, progress, diagnostics);
+580:                        progress.push(ScannerProgressEvent::new(
+622:                &mut progress,
+649:        progress.push(ScannerProgressEvent::new(
+656:        finalize_output(request.scan_id, results, status, progress, diagnostics)
+688:    fn scan_race_subgraphs(
+693:        progress: &mut Vec<ScannerProgressEvent>,
+695:        progress.push(ScannerProgressEvent::new(
+1062:    fn scan_data_tree(
+1069:        progress: &mut Vec<ScannerProgressEvent>,
+1124:            progress.push(ScannerProgressEvent::folder(
+1131:                event = "scanner-data-root-progress",
+1194:    fn scan_data_directory(
+1305:    fn scan_data_file(
+1610:    progress: Vec<ScannerProgressEvent>,
+1632:        progress,
+1670:fn scanner_error_row(
+2073:        let service = ScannerScanService::new(fs);
+2139:    fn scanner_scan_service_mo2_attribution_uses_modlist_order_and_reports_f4se_overrides() {
+2183:    fn scanner_scan_service_vortex_scans_data_only_without_mod_attribution() {
+2210:    fn scanner_scan_service_detects_reference_rule_categories_and_stable_group_order() {
+2271:    fn scanner_scan_service_unreadable_child_directory_reports_error_and_continues_siblings() {
+2304:    fn scanner_scan_service_missing_data_returns_safe_visible_row_and_no_traversal() {
+2308:        let service = ScannerScanService::new(&fs);
+2325:    fn scanner_scan_service_missing_mo2_modlist_is_error_row_and_data_scan_continues() {
+2359:    fn scanner_scan_service_race_subgraph_threshold_counts_enabled_readable_modules_only() {
+2412:    fn scanner_scan_service_zero_results_complete_with_empty_groups() {
+2430:    fn scanner_scan_service_all_toggles_off_does_not_touch_filesystem() {
+2434:        let service = ScannerScanService::new(&fs);
+2448:    fn scanner_scan_service_unexpected_format_replacement_absent_and_archive_enabled_cases() {
+2490:    fn scanner_scan_service_malformed_modlist_surfaces_safe_error_without_panic() {
+2522:    fn scanner_scan_service_overview_handoff_can_use_mo2_file_index_for_overview_placeholder_mod() {
+2568:    fn scanner_scan_service_non_english_ini_suffix_allows_language_voice_archive() {
+2589:        let service = ScannerScanService::new(&fs);
+2602:    fn scanner_scan_service_errors_toggle_gates_scanner_generated_error_rows() {
+2638:    fn scanner_scan_service_public_context_accepts_mod_manager_kind_imports() {

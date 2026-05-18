@@ -1,0 +1,248 @@
+## fn apply_overview_projection
+## fn project_overview_snapshot
+## fn with_overview_controller_mut
+1496: fn with_overview_controller_mut<T>(
+1497:     controller: &Arc<Mutex<OverviewController>>,
+1498:     action: impl FnOnce(&mut OverviewController) -> T,
+1499: ) -> Option<T> {
+1500:     match controller.lock() {
+1501:         Ok(mut controller) => Some(action(&mut controller)),
+1502:         Err(error) => {
+1503:             tracing::error!(
+1504:                 event = "overview-controller-lock-poisoned",
+1505:                 diagnostic = %error,
+1506:                 "Overview controller state is unavailable"
+1507:             );
+1508:             None
+1509:         }
+1510:     }
+1511: }
+1512: 
+1513: fn with_f4se_controller_mut<T>(
+1514:     controller: &Arc<Mutex<F4seController>>,
+1515:     action: impl FnOnce(&mut F4seController) -> T,
+1516: ) -> Option<T> {
+1517:     match controller.lock() {
+1518:         Ok(mut controller) => Some(action(&mut controller)),
+1519:         Err(error) => {
+1520:             tracing::error!(
+1521:                 event = "s06-f4se-controller-lock-poisoned",
+1522:                 diagnostic = %error,
+1523:                 "F4SE controller state is unavailable"
+1524:             );
+1525:             None
+1526:         }
+1527:     }
+1528: }
+1529: 
+1530: fn with_tools_controller_mut<T>(
+1531:     controller: &Arc<Mutex<ToolsController>>,
+1532:     action: impl FnOnce(&mut ToolsController) -> T,
+1533: ) -> Option<T> {
+1534:     match controller.lock() {
+1535:         Ok(mut controller) => Some(action(&mut controller)),
+1536:         Err(error) => {
+1537:             tracing::error!(
+1538:                 event = "s05-tools-controller-lock-poisoned",
+1539:                 diagnostic = %error,
+1540:                 "Tools controller state is unavailable"
+1541:             );
+1542:             None
+1543:         }
+1544:     }
+1545: }
+1546: 
+1547: fn with_about_controller_mut<T>(
+1548:     controller: &Arc<Mutex<AboutController>>,
+1549:     action: impl FnOnce(&mut AboutController) -> T,
+1550: ) -> Option<T> {
+1551:     match controller.lock() {
+1552:         Ok(mut controller) => Some(action(&mut controller)),
+1553:         Err(error) => {
+1554:             tracing::error!(
+1555:                 event = "s05-about-controller-lock-poisoned",
+1556:                 diagnostic = %error,
+1557:                 "About controller state is unavailable"
+1558:             );
+1559:             None
+1560:         }
+1561:     }
+1562: }
+1563: 
+1564: fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+1565:     let Some(projection) = with_tools_controller_mut(controller, |controller| {
+1566:         project_tools_state(controller.state())
+1567:     }) else {
+1568:         return;
+1569:     };
+1570:     apply_tools_projection(app, &projection);
+1571: }
+1572: 
+1573: fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+1574:     let Some(projection) = with_about_controller_mut(controller, |controller| {
+1575:         project_about_state(controller.state())
+
+## fn with_f4se_controller_mut
+1513: fn with_f4se_controller_mut<T>(
+1514:     controller: &Arc<Mutex<F4seController>>,
+1515:     action: impl FnOnce(&mut F4seController) -> T,
+1516: ) -> Option<T> {
+1517:     match controller.lock() {
+1518:         Ok(mut controller) => Some(action(&mut controller)),
+1519:         Err(error) => {
+1520:             tracing::error!(
+1521:                 event = "s06-f4se-controller-lock-poisoned",
+1522:                 diagnostic = %error,
+1523:                 "F4SE controller state is unavailable"
+1524:             );
+1525:             None
+1526:         }
+1527:     }
+1528: }
+1529: 
+1530: fn with_tools_controller_mut<T>(
+1531:     controller: &Arc<Mutex<ToolsController>>,
+1532:     action: impl FnOnce(&mut ToolsController) -> T,
+1533: ) -> Option<T> {
+1534:     match controller.lock() {
+1535:         Ok(mut controller) => Some(action(&mut controller)),
+1536:         Err(error) => {
+1537:             tracing::error!(
+1538:                 event = "s05-tools-controller-lock-poisoned",
+1539:                 diagnostic = %error,
+1540:                 "Tools controller state is unavailable"
+1541:             );
+1542:             None
+1543:         }
+1544:     }
+1545: }
+1546: 
+1547: fn with_about_controller_mut<T>(
+1548:     controller: &Arc<Mutex<AboutController>>,
+1549:     action: impl FnOnce(&mut AboutController) -> T,
+1550: ) -> Option<T> {
+1551:     match controller.lock() {
+1552:         Ok(mut controller) => Some(action(&mut controller)),
+1553:         Err(error) => {
+1554:             tracing::error!(
+1555:                 event = "s05-about-controller-lock-poisoned",
+1556:                 diagnostic = %error,
+1557:                 "About controller state is unavailable"
+1558:             );
+1559:             None
+1560:         }
+1561:     }
+1562: }
+1563: 
+1564: fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+1565:     let Some(projection) = with_tools_controller_mut(controller, |controller| {
+1566:         project_tools_state(controller.state())
+1567:     }) else {
+1568:         return;
+1569:     };
+1570:     apply_tools_projection(app, &projection);
+1571: }
+1572: 
+1573: fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+1574:     let Some(projection) = with_about_controller_mut(controller, |controller| {
+1575:         project_about_state(controller.state())
+1576:     }) else {
+1577:         return;
+1578:     };
+1579:     apply_about_projection(app, &projection);
+1580: }
+1581: 
+1582: fn apply_current_f4se_snapshot(app: &MainWindow, controller: &Arc<Mutex<F4seController>>) {
+1583:     let Some(projection) = with_f4se_controller_mut(controller, |controller| {
+1584:         project_f4se_snapshot(controller.snapshot())
+1585:     }) else {
+1586:         return;
+1587:     };
+1588:     apply_f4se_projection(app, projection);
+1589: }
+1590: 
+1591: fn project_f4se_snapshot(snapshot: &F4seScanSnapshot) -> F4seUiProjection {
+1592:     F4seUiProjection {
+
+## fn apply_current_overview_snapshot
+1724: fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<OverviewController>>) {
+1725:     let Some(snapshot) =
+1726:         with_overview_controller_mut(controller, |controller| controller.snapshot().clone())
+1727:     else {
+1728:         return;
+1729:     };
+1730:     apply_overview_snapshot(app, &snapshot);
+1731: }
+1732: 
+1733: fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
+1734:     app.set_overview_refresh_message(refresh_message(&snapshot.refresh).into());
+1735:     app.set_overview_refresh_busy(snapshot.refresh.is_busy());
+1736:     app.set_overview_top_rows(model_from_vec(format_top_rows(snapshot)));
+1737:     app.set_overview_binary_rows(model_from_vec(format_binary_rows(snapshot)));
+1738:     app.set_overview_archive_rows(model_from_vec(format_count_panel_rows(
+1739:         &snapshot.archives.rows,
+1740:     )));
+1741:     app.set_overview_module_rows(model_from_vec(format_count_panel_rows(
+1742:         &snapshot.modules.rows,
+1743:     )));
+1744:     app.set_overview_problems_summary(format_problem_summary(snapshot).into());
+1745:     app.set_overview_problem_rows(model_from_vec(format_problem_rows(snapshot)));
+1746:     app.set_overview_game_path_enabled(matches!(
+1747:         snapshot.top.game_path,
+1748:         domain::overview::OverviewGamePathStatus::Found(_)
+1749:     ));
+1750:     app.set_overview_downgrade_label(
+1751:         deferred_action_label(
+1752:             &snapshot.binaries.actions,
+1753:             OverviewDeferredActionKind::OpenDowngradeManager,
+1754:             ACTION_DOWNGRADE_MANAGER_LABEL,
+1755:         )
+1756:         .into(),
+1757:     );
+1758:     app.set_overview_downgrade_enabled(false);
+1759:     app.set_overview_downgrade_status(
+1760:         deferred_action_status(
+1761:             &snapshot.binaries.actions,
+1762:             OverviewDeferredActionKind::OpenDowngradeManager,
+1763:             "Downgrade Manager",
+1764:         )
+1765:         .into(),
+1766:     );
+1767:     app.set_overview_archive_patcher_label(
+1768:         deferred_action_label(
+1769:             &snapshot.archives.actions,
+1770:             OverviewDeferredActionKind::OpenArchivePatcher,
+1771:             ACTION_ARCHIVE_PATCHER_LABEL,
+1772:         )
+1773:         .into(),
+1774:     );
+1775:     app.set_overview_archive_patcher_enabled(false);
+1776:     app.set_overview_archive_patcher_status(
+1777:         deferred_action_status(
+1778:             &snapshot.archives.actions,
+1779:             OverviewDeferredActionKind::OpenArchivePatcher,
+1780:             "Archive Patcher",
+1781:         )
+1782:         .into(),
+1783:     );
+1784:     app.set_overview_last_action_error(
+1785:         snapshot
+1786:             .last_action_error
+1787:             .as_ref()
+1788:             .map(|error| error.summary.as_str())
+1789:             .unwrap_or("")
+1790:             .into(),
+1791:     );
+1792:     apply_update_banner(app, &snapshot.update_banner);
+1793: }
+1794: 
+1795: fn model_from_vec<T: Clone + 'static>(rows: Vec<T>) -> ModelRc<T> {
+1796:     ModelRc::new(VecModel::from(rows))
+1797: }
+1798: 
+1799: fn refresh_message(refresh: &OverviewRefreshState) -> String {
+1800:     refresh
+1801:         .message
+1802:         .clone()
+1803:         .unwrap_or_else(|| match refresh.phase {
+

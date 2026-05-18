@@ -1,0 +1,18 @@
+{
+  "id": "43339a33-8865-4f99-a8b8-cf74a55d5ebe",
+  "runtime": "bash",
+  "purpose": "clippy after local downgrader warning fixes",
+  "script_chars": 41,
+  "started_at": "2026-05-18T11:39:32.697Z",
+  "finished_at": "2026-05-18T11:39:55.904Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 23207,
+  "stdout_bytes": 0,
+  "stderr_bytes": 968,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\43339a33-8865-4f99-a8b8-cf74a55d5ebe.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\43339a33-8865-4f99-a8b8-cf74a55d5ebe.stderr"
+}

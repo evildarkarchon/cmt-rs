@@ -1,0 +1,12 @@
+
+running 7 tests
+test domain::scanner::scanner_domain::scanner_domain_result_count_and_progress_text_include_zero ... ok
+test domain::scanner::scanner_domain::scanner_domain_default_category_projection_from_scanner_settings ... ok
+test domain::scanner::scanner_domain::scanner_domain_grouping_is_deterministic_and_empty_sets_are_stable ... ok
+test domain::scanner::scanner_domain::scanner_domain_label_order_matches_reference_inputs ... ok
+test domain::scanner::scanner_domain::scanner_domain_overview_problem_mapping_preserves_urls_details_and_pathless_limits ... ok
+test domain::scanner::scanner_domain::scanner_domain_extra_data_and_custom_problem_labels_are_preserved ... ok
+test domain::scanner::scanner_domain::scanner_domain_copy_details_text_handles_mod_and_missing_solution ... ok
+
+test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 214 filtered out; finished in 0.01s
+

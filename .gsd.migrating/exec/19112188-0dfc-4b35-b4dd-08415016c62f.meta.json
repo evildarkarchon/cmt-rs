@@ -1,0 +1,18 @@
+{
+  "id": "19112188-0dfc-4b35-b4dd-08415016c62f",
+  "runtime": "bash",
+  "purpose": "locate gsd_slice_complete implementation in installed package",
+  "script_chars": 666,
+  "started_at": "2026-05-18T07:23:11.160Z",
+  "finished_at": "2026-05-18T07:23:14.284Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 3124,
+  "stdout_bytes": 123,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\19112188-0dfc-4b35-b4dd-08415016c62f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\19112188-0dfc-4b35-b4dd-08415016c62f.stderr"
+}

@@ -1,0 +1,13 @@
+
+running 8 tests
+test domain::autofix::scanner_autofix_domain::scanner_autofix_domain_labels_match_reference_lifecycle ... ok
+test domain::autofix::scanner_autofix_domain::scanner_autofix_domain_operation_ids_are_typed_and_round_trip ... ok
+test domain::autofix::scanner_autofix_domain::scanner_autofix_domain_selection_identity_is_owned_and_deterministic ... ok
+test domain::scanner::scanner_domain::scanner_autofix_domain_string_only_solutions_are_not_eligible_by_matching ... ok
+test domain::scanner::scanner_domain::scanner_autofix_domain_typed_solution_identity_drives_operation_key ... ok
+test domain::scanner::scanner_domain::scanner_autofix_domain_selection_identity_is_stable_and_changes_with_facts ... ok
+test domain::scanner::scanner_domain::scanner_autofix_domain_old_deferred_read_only_action_is_absent ... ok
+test services::scanner::scanner_scan_service::scanner_autofix_domain_scan_service_preserves_typed_keys_without_string_matching ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 261 filtered out; finished in 0.01s
+

@@ -1,0 +1,22 @@
+707:     ) -> Result<ResolvedSelection<'snapshot>, AutoFixRejection> {
+709:             return Err(reject(
+724:             return Err(reject(
+741:             return Err(reject(
+772: ) -> Result<(), AutoFixRejection> {
+775:             return Err(reject(
+787:             return Err(reject(
+799:             return Err(reject(
+817:         return Err(reject(
+836: ) -> Result<(), AutoFixRejection> {
+838:         return Err(reject(
+850:         return Err(reject(
+864:         return Err(reject(
+884: ) -> Result<(), AutoFixRejection> {
+886:         return Err(reject(
+901:         return Err(reject(
+913:         return Err(reject(
+925:         return Err(reject(
+939:         return Err(reject(
+977: fn reject(
+997: fn rejected_plan(rejection: AutoFixRejection) -> AutoFixPlanResult {
+1002: fn rejected_execution(rejection: AutoFixRejection) -> AutoFixServiceResult {

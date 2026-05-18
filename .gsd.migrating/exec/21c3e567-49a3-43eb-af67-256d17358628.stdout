@@ -1,0 +1,17 @@
+OverviewIssues 2
+   if scan_settings[ScanSetting.OverviewIssues] and self.cmc.overview_problems:
+   if scan_settings[ScanSetting.OverviewIssues] and self.cmc.overview_problems and scan_settings.mod_files:
+Errors 0
+WrongFormat 1
+   if scan_settings[ScanSetting.WrongFormat]:
+LoosePrevis 2
+   if scan_settings[ScanSetting.LoosePrevis] and data_root_lower == "vis":
+   if scan_settings[ScanSetting.LoosePrevis] and folder_lower == "precombined":
+JunkFiles 2
+   if scan_settings[ScanSetting.JunkFiles] and data_root_lower == "fomod":
+   if scan_settings[ScanSetting.JunkFiles] and (file_lower in JUNK_FILES or file_lower.endswith(JUNK_FILE_SUFFIXES)):
+ProblemOverrides 2
+   if scan_settings[ScanSetting.ProblemOverrides] and folder_lower == "animtextdata":
+   if mod_name_file and scan_settings[ScanSetting.ProblemOverrides] and file_lower in F4SE_CRC:
+RaceSubgraphs 1
+   if scan_settings[ScanSetting.RaceSubgraphs]:

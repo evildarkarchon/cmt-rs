@@ -1,0 +1,774 @@
+
+== src/workers/events.rs ==
+29: pub struct WorkerTaskId(String);
+31: impl WorkerTaskId {
+33: pub fn new(id: impl Into<String>) -> Self {
+38: pub fn as_str(&self) -> &str {
+43: impl From<&str> for WorkerTaskId {
+44: fn from(value: &str) -> Self {
+49: impl From<String> for WorkerTaskId {
+50: fn from(value: String) -> Self {
+55: impl fmt::Display for WorkerTaskId {
+56: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+63: pub enum WorkerTaskKind {
+84: impl WorkerTaskKind {
+86: pub const fn label(self) -> &'static str {
+101: impl fmt::Display for WorkerTaskKind {
+102: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+109: pub struct WorkerTask {
+118: impl WorkerTask {
+120: pub fn new(id: impl Into<WorkerTaskId>, kind: WorkerTaskKind) -> Self {
+129: pub fn with_label(mut self, label: impl Into<String>) -> Self {
+137: pub enum WorkerTaskStatus {
+156: impl WorkerTaskStatus {
+158: pub const fn label(self) -> &'static str {
+172: pub const fn is_terminal(self) -> bool {
+177: impl fmt::Display for WorkerTaskStatus {
+178: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+185: pub struct WorkerEvent {
+194: impl WorkerEvent {
+196: pub fn new(task: WorkerTask, status: WorkerTaskStatus, payload: WorkerPayload) -> Self {
+205: pub fn running(task: WorkerTask) -> Self {
+210: pub fn progress(task: WorkerTask, progress: WorkerProgress) -> Self {
+219: pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+224: pub fn failed(task: WorkerTask, failure: WorkerFailure) -> Self {
+233: pub fn cancellation_requested(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+242: pub fn cancellation_acknowledged(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+251: pub fn cancelled(task: WorkerTask, cancellation: WorkerCancellation) -> Self {
+262: pub struct WorkerProgress {
+271: impl WorkerProgress {
+273: pub fn new() -> Self {
+278: pub fn with_message(mut self, message: impl Into<String>) -> Self {
+284: pub const fn with_counts(mut self, current: Option<u64>, total: Option<u64>) -> Self {
+291: pub const fn is_empty(&self) -> bool {
+298: pub struct WorkerMessage {
+303: impl WorkerMessage {
+305: pub fn new(safe_message: impl Into<String>) -> Self {
+314: pub struct WorkerFailure {
+321: impl WorkerFailure {
+323: pub fn new(safe_message: impl Into<String>) -> Self {
+331: pub fn with_diagnostic(mut self, diagnostic: impl Into<String>) -> Self {
+337: pub fn safe_message(&self) -> &str {
+342: pub fn diagnostic(&self) -> Option<&str> {
+349: pub struct WorkerCancellation {
+354: impl WorkerCancellation {
+356: pub fn new(message: Option<String>) -> Self {
+361: pub fn empty() -> Self {
+366: pub fn with_message(message: impl Into<String>) -> Self {
+375: pub enum WorkerPayload {
+406: pub enum OverviewWorkerPayload {
+430: impl OverviewWorkerPayload {
+432: pub fn refresh_completed(refresh_id: u64, snapshot: OverviewSnapshot) -> Self {
+440: pub fn update_check_completed(refresh_id: u64, update_banner: UpdateBannerState) -> Self {
+448: pub fn desktop_action_completed(
+458: pub struct ToolsActionWorkerPayload {
+463: impl ToolsActionWorkerPayload {
+465: pub fn action_completed(feedback: ToolsActionFeedback) -> Self {
+472: pub struct AboutActionWorkerPayload {
+477: impl AboutActionWorkerPayload {
+479: pub fn action_completed(feedback: AboutActionFeedback) -> Self {
+486: pub enum ExternalActionKind {
+497: impl ExternalActionKind {
+499: pub const fn label(self) -> &'static str {
+511: pub enum ExternalActionOutcome {
+520: pub struct ExternalActionPayload {
+522: pub action_kind: ExternalActionKind,
+533: impl ExternalActionPayload {
+535: pub fn succeeded(
+536: action_kind: ExternalActionKind,
+542: action_kind,
+551: pub fn failed(
+552: action_kind: ExternalActionKind,
+559: action_kind,
+568: pub fn from_platform_error(action_kind: ExternalActionKind, error: PlatformError) -> Self {
+571: action_kind,
+580: pub const fn is_success(&self) -> bool {
+585: pub const fn failure_kind(&self) -> Option<PlatformErrorKind> {
+593: impl From<DesktopActionResult> for ExternalActionPayload {
+594: fn from(result: DesktopActionResult) -> Self {
+595: let action_kind = match result.operation {
+610: action_kind,
+621: pub struct CancellationToken {
+625: impl CancellationToken {
+627: pub fn new() -> Self {
+632: pub fn request_cancellation(&self) {
+637: pub fn is_cancellation_requested(&self) -> bool {
+647: fn task_kinds_cover_required_background_categories() {
+675: fn event_envelope_carries_task_status_and_typed_payload() {
+690: fn overview_payload_carries_owned_snapshot_and_update_state() {
+725: fn progress_supports_optional_text_and_counts_without_percentage_requirements() {
+739: fn cancellation_request_acknowledgement_and_final_cancelled_are_distinct_events() {
+741: let requested = WorkerEvent::cancellation_requested(
+745: let acknowledged = WorkerEvent::cancellation_acknowledged(
+763: fn s05_actions_worker_payload_round_trips_tools_and_about_feedback() {
+782: action_id: AboutActionId::CopyGithub,
+789: WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+795: WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(
+813: fn desktop_action_results_flow_through_external_action_payloads() {
+818: assert_eq!(success_payload.action_kind, ExternalActionKind::Desktop);
+831: assert_eq!(failure_payload.action_kind, ExternalActionKind::Tool);
+
+== src/workers/mod.rs ==
+33: pub enum WorkerTaskOutcome {
+46: pub struct WorkerRuntime;
+48: impl WorkerRuntime {
+50: pub const fn new() -> Self {
+55: pub fn spawn_blocking_task<S, F>(
+166: pub enum WorkerSpawnError {
+174: impl fmt::Display for WorkerSpawnError {
+175: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+185: impl std::error::Error for WorkerSpawnError {}
+189: pub struct WorkerTaskContext<S>
+202: fn new(task: WorkerTask, sink: S, cancellation: CancellationToken) -> Self {
+211: pub fn task(&self) -> &WorkerTask {
+216: pub fn cancellation_token(&self) -> CancellationToken {
+221: pub fn is_cancellation_requested(&self) -> bool {
+222: self.cancellation.is_cancellation_requested()
+226: pub fn emit_payload(
+236: pub fn emit_progress(&self, progress: WorkerProgress) -> WorkerHandoffResult {
+242: pub fn acknowledge_cancellation(
+246: self.sink.emit(WorkerEvent::cancellation_acknowledged(
+254: pub struct WorkerTaskHandle<S>
+269: pub fn task(&self) -> &WorkerTask {
+274: pub fn request_cancellation(&self, cancellation: WorkerCancellation) -> WorkerHandoffResult {
+276: self.sink.emit(WorkerEvent::cancellation_requested(
+283: pub fn cancellation_token(&self) -> CancellationToken {
+293: fn emit_or_log<S>(sink: &S, event: WorkerEvent)
+314: fn panic_payload_message(payload: &(dyn std::any::Any + Send)) -> Option<String> {
+392: async fn cancellation_request_acknowledgement_and_final_cancelled_flow_through_facade() {
+399: while !context.is_cancellation_requested() {
+458: fn spawning_without_tokio_runtime_returns_typed_error() {
+
+== src/workers/handoff.rs ==
+20: pub enum WorkerHandoffErrorKind {
+27: impl WorkerHandoffErrorKind {
+29: pub const fn label(self) -> &'static str {
+39: pub struct WorkerHandoffError {
+48: impl WorkerHandoffError {
+50: pub fn new(kind: WorkerHandoffErrorKind, safe_message: impl Into<String>) -> Self {
+59: pub fn with_diagnostic(mut self, diagnostic: impl Into<String>) -> Self {
+64: fn recording_poisoned(diagnostic: impl Into<String>) -> Self {
+72: fn slint_event_loop(diagnostic: impl Into<String>) -> Self {
+81: impl fmt::Display for WorkerHandoffError {
+82: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+87: impl std::error::Error for WorkerHandoffError {}
+90: pub trait WorkerEventSink: Clone + Send + Sync + 'static {
+92: fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult;
+97: pub struct RecordingEventSink {
+101: impl RecordingEventSink {
+103: pub fn new() -> Self {
+108: pub fn events(&self) -> WorkerHandoffResult<Vec<WorkerEvent>> {
+116: pub fn len(&self) -> WorkerHandoffResult<usize> {
+124: pub fn is_empty(&self) -> WorkerHandoffResult<bool> {
+129: impl WorkerEventSink for RecordingEventSink {
+130: fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {
+144: pub struct SlintEventLoopSink {
+148: impl SlintEventLoopSink {
+150: pub fn new(handler: impl Fn(WorkerEvent) + Send + Sync + 'static) -> Self {
+157: impl fmt::Debug for SlintEventLoopSink {
+158: fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+166: impl WorkerEventSink for SlintEventLoopSink {
+167: fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {
+181: fn assert_sink<T: WorkerEventSink>() {}
+184: fn recording_sink_stores_owned_events() {
+200: fn slint_event_loop_sink_is_constructible_without_a_window() {
+
+== src/app/overview_controller.rs ==
+25: pub const OVERVIEW_REFRESH_TASK_PREFIX: &str = "overview-refresh";
+27: pub const OVERVIEW_UPDATE_TASK_PREFIX: &str = "overview-update";
+29: pub const OVERVIEW_DESKTOP_TASK_PREFIX: &str = "overview-desktop";
+36: pub enum OverviewTransitionResult {
+45: impl OverviewTransitionResult {
+47: pub const fn is_applied(self) -> bool {
+54: pub struct OverviewRefreshRequest {
+61: impl OverviewRefreshRequest {
+63: pub const fn should_check_updates(self) -> bool {
+68: pub fn refresh_task(self) -> WorkerTask {
+73: pub fn update_task(self) -> WorkerTask {
+80: pub struct OverviewController {
+87: impl Default for OverviewController {
+88: fn default() -> Self {
+93: impl OverviewController {
+95: pub fn new() -> Self {
+105: pub fn snapshot(&self) -> &OverviewSnapshot {
+110: pub fn last_safe_action_error(&self) -> Option<&OverviewActionError> {
+111: self.snapshot.last_action_error.as_ref()
+115: pub fn initial_loading(&mut self, update_source: UpdateSource) -> OverviewRefreshRequest {
+120: pub fn request_refresh(&mut self, update_source: UpdateSource) -> OverviewRefreshRequest {
+126: let last_action_error = self.snapshot.last_action_error.clone();
+129: self.snapshot.last_action_error = last_action_error;
+145: pub fn refresh_completed(
+160: snapshot.last_action_error = self.snapshot.last_action_error.clone();
+181: pub fn refresh_failed(
+203: let last_action_error = self.snapshot.last_action_error.clone();
+207: self.snapshot.last_action_error = last_action_error;
+212: pub fn refresh_spawn_failed(
+223: pub fn update_check_completed(
+254: pub fn desktop_action_completed(
+266: self.snapshot.last_action_error = Some(error);
+273: self.snapshot.last_action_error = None;
+279: pub fn handle_worker_event(&mut self, event: WorkerEvent) -> OverviewTransitionResult {
+296: pub fn game_path_action(&self) -> Option<OverviewDeferredAction> {
+308: pub fn update_provider_action(
+325: fn handle_overview_payload(
+339: self.desktop_action_completed(action, error)
+344: fn is_latest_refresh(&self, refresh_id: OverviewRefreshId) -> bool {
+350: pub fn overview_refresh_task(refresh_id: OverviewRefreshId) -> WorkerTask {
+359: pub fn overview_update_task(refresh_id: OverviewRefreshId) -> WorkerTask {
+368: pub fn overview_desktop_task(action: OverviewDeferredActionKind) -> WorkerTask {
+370: format!("{OVERVIEW_DESKTOP_TASK_PREFIX}-{}", action_label(action)),
+377: pub fn overview_desktop_action_payload(
+381: WorkerPayload::Overview(OverviewWorkerPayload::desktop_action_completed(
+387: pub fn unavailable_action_error(
+395: pub fn action_target_label(action: &OverviewDeferredAction) -> String {
+403: fn initial_update_banner(update_source: UpdateSource) -> UpdateBannerState {
+413: fn refresh_id_from_task_id(task_id: &WorkerTaskId) -> Option<OverviewRefreshId> {
+421: fn action_label(action: OverviewDeferredActionKind) -> &'static str {
+444: fn ready_snapshot(message: &str) -> OverviewSnapshot {
+452: fn overview_controller_initial_loading_sets_busy_snapshot_and_update_check_request() {
+472: fn overview_controller_refresh_success_applies_latest_snapshot() {
+490: fn overview_controller_refresh_failure_maps_to_safe_error_snapshot() {
+511: fn overview_controller_update_source_none_skips_update_work() {
+524: fn overview_controller_ignores_stale_refresh_when_second_request_is_newer() {
+541: fn overview_controller_update_completed_before_refresh_is_applied_after_refresh() {
+565: fn overview_controller_desktop_action_success_clears_last_safe_error() {
+567: controller.desktop_action_completed(
+576: controller.desktop_action_completed(OverviewDeferredActionKind::OpenGamePath, None);
+579: assert_eq!(controller.last_safe_action_error(), None);
+583: fn overview_controller_desktop_action_failure_updates_last_safe_error() {
+586: let result = controller.desktop_action_completed(
+597: .last_safe_action_error()
+604: fn overview_controller_spawn_failure_maps_to_safe_refresh_error() {
+627: fn overview_controller_worker_panic_failure_event_maps_to_safe_refresh_error() {
+649: fn overview_controller_worker_overview_payload_applies_refresh() {
+670: fn overview_controller_game_path_action_is_available_only_after_path_discovery() {
+690: fn overview_controller_update_provider_action_tracks_visible_banner() {
+
+== src/services/overview_collector.rs ==
+146: impl BaseFileClassification {
+176: pub struct OverviewCollectionEnvironment {
+183: impl OverviewCollectionEnvironment {
+185: pub fn new() -> Self {
+190: pub fn with_local_appdata(mut self, path: impl Into<PathBuf>) -> Self {
+196: pub fn with_plugins_txt(mut self, path: impl Into<PathBuf>) -> Self {
+202: pub fn plugins_txt_path(&self) -> Option<PathBuf> {
+213: pub struct OverviewCollectionRequest<'a> {
+222: pub const fn new(
+235: pub struct OverviewCollectedFacts {
+250: pub enum OverviewCollectionPhase {
+265: impl OverviewCollectionPhase {
+267: pub const fn as_str(self) -> &'static str {
+281: pub enum OverviewCollectionDiagnosticKind {
+296: pub struct OverviewCollectionPhaseSummary {
+305: pub struct OverviewCollectionErrorDetail {
+318: pub struct OverviewCollectionDiagnostics {
+339: impl OverviewCollectionDiagnostics {
+340: fn record_phase(&mut self, phase: OverviewCollectionPhase, item_count: usize) {
+345: fn record_error(
+368: fn record_platform_error(
+381: pub struct OverviewCollector<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> {
+388: pub const fn new(filesystem: &'a F, process: &'a P) -> Self {
+400: pub fn collect(&self, request: OverviewCollectionRequest<'_>) -> OverviewCollectedFacts {
+461: fn collect_binaries(
+491: fn collect_binary(
+526: let version = self.read_version_string(path, diagnostics);
+533: .with_version_metadata(Some(version.to_owned()), None::<String>);
+556: .with_version_metadata(version, hash)
+559: fn read_version_string(
+565: Ok(Some(metadata)) => version_string(metadata),
+578: fn apply_downgrade_detection(
+626: fn collect_data_index(
+683: fn collect_enablement(
+723: fn collect_address_library(
+735: let Some(version) = self.read_version_string(&fallout4_path, diagnostics) else {
+779: fn collect_fallout4_ccc(
+841: fn collect_plugins_txt(
+855: enable_all_modules_on_plugins_fallback(data_index, collection);
+883: enable_all_modules_on_plugins_fallback(data_index, collection);
+895: enable_all_modules_on_plugins_fallback(data_index, collection);
+905: enable_all_modules_on_plugins_fallback(data_index, collection);
+914: enable_all_modules_on_plugins_fallback(data_index, collection);
+919: fn collect_ini_enabled_archives(
+986: fn add_hardcoded_archive(
+1006: fn collect_archives(
+1030: fn collect_archive(
+1106: fn collect_modules(
+1126: fn collect_module(
+1173: let kind = if flags & MODULE_LIGHT_FLAG != 0 || extension_eq(path, "esl") {
+1219: impl DataIndex {
+1220: fn new(root: PathBuf, entries: Vec<DirectoryEntry>) -> Self {
+1245: fn resolve_relative(&self, relative: &str) -> Option<PathBuf> {
+1249: fn resolve_sibling(&self, path: &Path, sibling_file_name: &str) -> Option<PathBuf> {
+1263: fn lookup_install_type(
+1277: fn version_string(metadata: VersionMetadata) -> Option<String> {
+1284: fn detected_install_type_from_binaries(binaries: &[OverviewBinaryFact]) -> Fallout4InstallType {
+1292: fn normalize_binary_order(binaries: &mut [OverviewBinaryFact]) {
+1313: fn diagnostic_kind_from_platform_error(error: &PlatformError) -> OverviewCollectionDiagnosticKind {
+1327: fn crc32_upper(bytes: &[u8]) -> String {
+1333: fn clean_enablement_line(line: &str) -> &str {
+1337: fn enable_all_modules_on_plugins_fallback(
+1349: fn ini_archive_names(ini_files: &Fallout4IniFiles) -> Vec<String> {
+1365: fn ba2_suffixes(ini_files: &Fallout4IniFiles) -> Vec<String> {
+1382: fn ini_value<'a>(
+1390: fn unreadable_archive(path: &Path, enabled: bool) -> ArchiveRecord {
+1400: fn unreadable_module(path: &Path, enabled: bool) -> ModuleRecord {
+1410: fn format_hedr_version(bytes: [u8; 4]) -> String {
+1422: fn bytes_to_hex(bytes: [u8; 4]) -> String {
+1430: fn is_archive_path(path: &Path) -> bool {
+1431: extension_eq(path, "ba2")
+1434: fn is_module_path(path: &Path) -> bool {
+1437: .any(|extension| extension_eq(path, extension))
+1440: fn extension_eq(path: &Path, expected: &str) -> bool {
+1446: fn path_basename_eq(path: &str, expected: &str) -> bool {
+1452: fn join_relative_path(base: &Path, relative_path: &str) -> PathBuf {
+1463: fn path_key(path: &Path) -> String {
+1467: fn relative_key(root: &Path, path: &Path) -> Option<String> {
+1473: fn normalize_relative_text(text: &str) -> String {
+1480: fn path_to_slash_string(path: &Path) -> String {
+1513: impl FakeFilesystem {
+1514: fn with_dir(mut self, path: impl Into<PathBuf>) -> Self {
+1519: fn with_file(mut self, path: impl Into<PathBuf>, bytes: impl Into<Vec<u8>>) -> Self {
+1526: fn with_text(self, path: impl Into<PathBuf>, text: impl Into<String>) -> Self {
+1530: fn with_unreadable_file(mut self, path: impl Into<PathBuf>) -> Self {
+1537: fn ensure_parent_dirs(&mut self, path: &Path) {
+1552: fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+1564: fn permission_denied(path: &Path, operation: PlatformOperation) -> PlatformError {
+1577: impl Filesystem for FakeFilesystem {
+1578: fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+1595: fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+1606: Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+1611: fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+1624: Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+1629: fn read_to_string(&self, path: &Path) -> PlatformResult<String> {
+1645: Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+1650: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+1660: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+1671: impl FakeNode {
+1672: fn file_type(&self) -> FileType {
+1685: impl FakeProcessInspector {
+1686: fn with_raw_version(mut self, path: impl Into<PathBuf>, raw: &str) -> Self {
+1688: .insert(path.into(), Ok(Some(raw_version_metadata(raw))));
+1692: fn with_version_error(mut self, path: impl Into<PathBuf>) -> Self {
+1707: impl ProcessInspector for FakeProcessInspector {
+1708: fn list_processes(&self) -> PlatformResult<Vec<ProcessInfo>> {
+1712: fn file_version(&self, path: &Path) -> PlatformResult<Option<VersionMetadata>> {
+1716: fn system_metadata(&self) -> PlatformResult<SystemMetadata> {
+1728: fn raw_version_metadata(raw: &str) -> VersionMetadata {
+1740: fn installation() -> Fallout4Installation {
+1748: fn environment() -> OverviewCollectionEnvironment {
+1752: fn collect(
+1762: fn base_fs() -> FakeFilesystem {
+1787: fn ba2(version: u32, format: &[u8; 4]) -> Vec<u8> {
+1796: fn module(flags: u32, hedr: [u8; 4]) -> Vec<u8> {
+1805: fn row<'a>(facts: &'a [OverviewBinaryFact], name: &str) -> &'a OverviewBinaryFact {
+1813: fn overview_collector_classifies_binary_versions_crc_fallback_unknown_and_missing_base_files() {
+1862: fn overview_collector_reports_missing_base_data_and_address_library_without_panics() {
+1900: fn overview_collector_reads_bounded_ba2_headers_and_classifies_versions_formats_and_errors() {
+1974: fn overview_collector_reads_bounded_module_headers_and_classifies_light_full_hedr_and_unreadable()
+2043: fn overview_collector_parses_enablement_files_ini_archives_and_plugins_fallback() {
+2133: fn overview_collector_marks_missing_ccc_and_non_utf8_plugins_without_modal_fallback_failure() {
+2169: fn overview_collector_records_version_adapter_failures_and_keeps_crc_fallback_testable() {
+2175: .with_version_error("C:/Games/Fallout 4/Fallout4Launcher.exe");
+
+== src/platform/filesystem.rs ==
+19: pub enum FileType {
+30: impl FileType {
+31: fn from_std(file_type: fs::FileType) -> Self {
+46: pub struct FileMetadata {
+53: impl FileMetadata {
+55: pub const fn is_file(&self) -> bool {
+60: pub const fn is_dir(&self) -> bool {
+67: pub struct DirectoryEntry {
+74: impl DirectoryEntry {
+76: pub fn new(path: impl Into<PathBuf>, file_type: FileType) -> Self {
+85: pub trait Filesystem {
+87: fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata>;
+90: fn exists(&self, path: &Path) -> PlatformResult<bool> {
+99: fn is_file(&self, path: &Path) -> PlatformResult<bool> {
+108: fn is_dir(&self, path: &Path) -> PlatformResult<bool> {
+117: fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>>;
+124: fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+131: fn read_to_string(&self, path: &Path) -> PlatformResult<String>;
+134: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+137: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+142: pub struct RealFilesystem;
+144: impl RealFilesystem {
+146: pub const fn new() -> Self {
+151: impl Filesystem for RealFilesystem {
+152: fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+167: fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+177: fn read_prefix(&self, path: &Path, max_len: usize) -> PlatformResult<Vec<u8>> {
+199: fn read_to_string(&self, path: &Path) -> PlatformResult<String> {
+209: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+245: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+265: fn walkdir_error(root: &Path, error: walkdir::Error) -> PlatformError {
+294: impl FakeFilesystem {
+295: fn with_file(mut self, path: &str, bytes: impl Into<Vec<u8>>) -> Self {
+301: fn with_dir(mut self, path: &str) -> Self {
+306: fn with_denied(mut self, path: &str) -> Self {
+311: fn node(&self, path: &Path, operation: PlatformOperation) -> PlatformResult<&FakeNode> {
+333: impl Filesystem for FakeFilesystem {
+334: fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+349: fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
+362: fn read_to_string(&self, path: &Path) -> PlatformResult<String> {
+372: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+388: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+405: fn collect_files(fs: &dyn Filesystem, root: &Path) -> PlatformResult<BTreeSet<PathBuf>> {
+415: fn fake_filesystem_drives_scan_style_directory_inputs() {
+444: fn fake_filesystem_surfaces_typed_failure_without_real_paths() {
+462: fn real_filesystem_missing_file_maps_to_typed_not_found() {
+
+== src/main.rs ==
+17: OverviewController, action_target_label, overview_desktop_action_payload,
+18: overview_desktop_task, unavailable_action_error,
+56: ToolsActionKind, ToolsActionService, about_action_for_id, tools_action_for_id,
+80: impl AboutCallbackKind {
+91: last_action_error: String,
+97: last_action_error: String,
+106: fn main() -> Result<(), Box<dyn std::error::Error>> {
+121: app.set_update_source(settings_controller.borrow().visible_update_source().into());
+122: app.set_log_level(settings_controller.borrow().visible_log_level().into());
+164: fn load_settings_controller() -> SettingsController<FileAssetResolver> {
+171: fn bind_settings_callbacks(
+175: app.on_update_source_selected({
+184: app.set_update_source(visible_value.into());
+189: app.on_log_level_selected({
+196: app.set_log_level(visible_value.into());
+202: fn bind_tools_worker_sink(
+249: fn bind_about_worker_sink(
+296: fn bind_tools_callbacks(
+302: app.on_tool_action_requested({
+306: move |action_id| {
+313: action_id.to_string(),
+320: fn bind_about_callbacks(
+326: app.on_about_open_requested({
+331: move |action_id| {
+338: action_id.to_string(),
+345: app.on_about_copy_requested({
+350: move |action_id| {
+357: action_id.to_string(),
+364: app.on_about_copy_label_reset_requested({
+368: move |action_id| {
+369: let action_id = action_id.to_string();
+373: action_id,
+380: controller.reset_copy_label(&action_id)
+390: action_id,
+398: fn bind_overview_worker_sink(
+425: fn bind_overview_callbacks(
+433: app.on_overview_refresh_requested({
+454: app.on_overview_open_game_path_requested({
+474: app.on_overview_open_nexus_update_requested({
+494: app.on_overview_open_github_update_requested({
+514: app.on_overview_open_downgrade_manager_requested({
+520: apply_action_error(
+530: app.on_overview_open_archive_patcher_requested({
+536: apply_action_error(
+547: fn request_tools_action(
+552: action_id: String,
+554: let action = match tools_action_for_id(&action_id) {
+558: action_id.as_str(),
+570: action_id = feedback.action_id.as_str(),
+582: action_id = action_id.as_str(),
+587: let task = tools_action_worker_task(&action_id);
+588: let worker_action_id = action_id.clone();
+590: build_tools_action_payload(worker_action_id)
+594: action_id = action_id.as_str(),
+601: tools_spawn_failed_feedback(&action_id, Some(action), error),
+606: fn request_about_action(
+611: action_id: String,
+612: callback_kind: AboutCallbackKind,
+614: let action = match about_action_for_id(&action_id) {
+615: Ok(action) if about_action_matches_callback(action, callback_kind) => action,
+617: let feedback = about_callback_mismatch_feedback(&action_id, action, callback_kind);
+620: action_id = action_id.as_str(),
+621: callback_kind = callback_kind.label(),
+622: action_kind = if action.is_copy() { "copy" } else { "open" },
+631: action_id = feedback.action_id.as_str(),
+632: callback_kind = callback_kind.label(),
+644: action_id = action_id.as_str(),
+645: callback_kind = callback_kind.label(),
+650: let task = about_action_worker_task(&action_id);
+651: let worker_action_id = action_id.clone();
+653: build_about_action_payload(worker_action_id)
+657: action_id = action_id.as_str(),
+658: callback_kind = callback_kind.label(),
+665: about_spawn_failed_feedback(&action_id, Some(action), error),
+670: fn build_tools_action_payload(action_id: String) -> BlockingWorkerResult {
+672: let feedback = service.execute_tools_action(&action_id);
+674: ToolsActionWorkerPayload::action_completed(feedback),
+678: fn build_about_action_payload(action_id: String) -> BlockingWorkerResult {
+680: let feedback = service.execute_about_action(&action_id);
+682: AboutActionWorkerPayload::action_completed(feedback),
+686: fn tools_action_worker_task(action_id: &str) -> WorkerTask {
+688: format!("{TOOLS_WORKER_TASK_PREFIX}{action_id}"),
+691: .with_label(format!("Tools action {action_id}"))
+694: fn about_action_worker_task(action_id: &str) -> WorkerTask {
+696: format!("{ABOUT_WORKER_TASK_PREFIX}{action_id}"),
+699: .with_label(format!("About action {action_id}"))
+702: fn tools_spawn_failed_feedback(
+703: action_id: &str,
+708: action_id,
+716: fn about_spawn_failed_feedback(
+717: action_id: &str,
+722: action_id,
+730: fn about_action_matches_callback(
+732: callback_kind: AboutCallbackKind,
+741: fn about_callback_mismatch_feedback(
+742: action_id: &str,
+744: callback_kind: AboutCallbackKind,
+747: action_id,
+753: callback_kind.label(),
+759: fn request_overview_refresh(
+803: fn build_overview_refresh_payload(refresh_id: u64, settings: AppSettings) -> BlockingWorkerResult {
+811: fn build_overview_snapshot(settings: AppSettings) -> Result<OverviewSnapshot, WorkerFailure> {
+851: let mut collection_environment = OverviewCollectionEnvironment::new();
+853: collection_environment = collection_environment.with_local_appdata(path);
+861: &collection_environment,
+904: fn current_working_directory() -> PathBuf {
+918: fn schedule_overview_update_check(
+964: fn update_failure_banner(update_source: UpdateSource, summary: &str) -> UpdateBannerState {
+972: fn update_providers(update_source: UpdateSource) -> Vec<UpdateProvider> {
+981: fn schedule_overview_action(
+986: action_kind: OverviewDeferredActionKind,
+988: action_lookup: impl FnOnce(&OverviewController) -> Option<OverviewDeferredAction>,
+991: with_overview_controller_mut(overview_controller, |controller| action_lookup(controller))
+995: apply_action_error(
+998: action_kind,
+1007: target = action_target_label(&action).as_str(),
+1013: execute_overview_action_payload(action)
+1017: action = ?action_kind,
+1021: apply_action_error(
+1024: action_kind,
+1030: fn execute_overview_action_payload(action: OverviewDeferredAction) -> BlockingWorkerResult {
+1031: let action_kind = action.kind;
+1034: let (action, error) = action_error_from_feedback(feedback);
+1035: debug_assert_eq!(action, action_kind);
+1037: overview_desktop_action_payload(action, error),
+1041: fn action_error_from_feedback(
+1053: fn apply_action_error(
+1061: .desktop_action_completed(action, Some(unavailable_action_error(action, message)));
+1066: fn apply_tools_feedback(
+1077: fn apply_about_feedback(
+1088: fn handle_tools_worker_event(
+1099: fn handle_about_worker_event(
+1110: fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+1114: let action_id = tools_action_id_from_task(&event.task)?;
+1117: action_id,
+1118: tools_action_for_id(action_id).ok(),
+1125: fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+1129: let action_id = about_action_id_from_task(&event.task)?;
+1132: action_id,
+1133: about_action_for_id(action_id).ok(),
+1140: fn tools_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+1144: fn about_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+1148: fn emit_worker_event_or_log<S>(sink: &S, event: WorkerEvent)
+1168: fn with_overview_controller_mut<T>(
+1185: fn with_tools_controller_mut<T>(
+1202: fn with_about_controller_mut<T>(
+1219: fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+1228: fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+1237: fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
+1239: last_action_error: state
+1251: fn project_about_state(state: &AboutState) -> AboutUiProjection {
+1257: last_action_error: state
+1271: fn about_copy_projection(state: &AboutState, link_id: AboutLinkId) -> (String, bool) {
+1283: .map(|link| link.copy_button_label)
+1288: fn apply_tools_projection(app: &MainWindow, projection: &ToolsUiProjection) {
+1289: app.set_tools_last_action_error(projection.last_action_error.as_str().into());
+1290: app.set_tools_disabled_utility_status(projection.disabled_utility_status.as_str().into());
+1293: fn apply_about_projection(app: &MainWindow, projection: &AboutUiProjection) {
+1294: app.set_about_last_action_error(projection.last_action_error.as_str().into());
+1295: app.set_about_nexus_copy_label(projection.nexus_copy_label.as_str().into());
+1296: app.set_about_nexus_copy_enabled(projection.nexus_copy_enabled);
+1297: app.set_about_discord_copy_label(projection.discord_copy_label.as_str().into());
+1298: app.set_about_discord_copy_enabled(projection.discord_copy_enabled);
+1299: app.set_about_github_copy_label(projection.github_copy_label.as_str().into());
+1300: app.set_about_github_copy_enabled(projection.github_copy_enabled);
+1303: fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<OverviewController>>) {
+1312: fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
+1313: app.set_overview_refresh_message(refresh_message(&snapshot.refresh).into());
+1314: app.set_overview_refresh_busy(snapshot.refresh.is_busy());
+1315: app.set_overview_top_rows(model_from_vec(format_top_rows(snapshot)));
+1316: app.set_overview_binary_rows(model_from_vec(format_binary_rows(snapshot)));
+1317: app.set_overview_archive_rows(model_from_vec(format_count_panel_rows(
+1320: app.set_overview_module_rows(model_from_vec(format_count_panel_rows(
+1323: app.set_overview_problems_summary(format_problem_summary(snapshot).into());
+1324: app.set_overview_problem_rows(model_from_vec(format_problem_rows(snapshot)));
+1325: app.set_overview_game_path_enabled(matches!(
+1329: app.set_overview_downgrade_label(
+1330: deferred_action_label(
+1337: app.set_overview_downgrade_enabled(false);
+1338: app.set_overview_downgrade_status(
+1339: deferred_action_status(
+1346: app.set_overview_archive_patcher_label(
+1347: deferred_action_label(
+1354: app.set_overview_archive_patcher_enabled(false);
+1355: app.set_overview_archive_patcher_status(
+1356: deferred_action_status(
+1363: app.set_overview_last_action_error(
+1365: .last_action_error
+1374: fn model_from_vec<T: Clone + 'static>(rows: Vec<T>) -> ModelRc<T> {
+1378: fn refresh_message(refresh: &OverviewRefreshState) -> String {
+1395: fn format_top_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1404: fn format_top_row(row: OverviewTopStatusRow) -> OverviewUiRow {
+1408: fn format_binary_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1434: fn format_binary_row(row: &BinaryStatusRow) -> OverviewUiRow {
+1443: fn binary_detail(row: &BinaryStatusRow) -> String {
+1454: fn format_count_panel_rows(rows: &[OverviewCountRow]) -> Vec<OverviewUiRow> {
+1478: fn format_problem_summary(snapshot: &OverviewSnapshot) -> String {
+1482: fn format_problem_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+1509: fn format_problem_row(problem: &OverviewProblem) -> OverviewUiRow {
+1518: fn overview_ui_row(
+1532: fn severity_label(severity: StatusSeverity) -> &'static str {
+1543: fn deferred_action_label(
+1555: fn deferred_action_status(
+1578: fn apply_update_banner(app: &MainWindow, update_banner: &UpdateBannerState) {
+1579: app.set_overview_update_heading(update_banner.heading().unwrap_or("").into());
+1585: app.set_overview_nexus_update_enabled(
+1588: app.set_overview_github_update_enabled(
+1591: app.set_overview_nexus_update_label(nexus_label.into());
+1592: app.set_overview_github_update_label(github_label.into());
+1595: fn update_release_label(
+1664: fn slint_string_property_values(source: &str, property: &str) -> Vec<String> {
+1676: fn assert_source_contains_in_order(source: &str, expected: &[&str]) {
+1687: fn assert_source_contains_strings_in_order(source: &str, expected: &[String]) {
+1698: fn slint_string_literal(value: &str) -> String {
+1705: fn slint_assignment(property: &str, value: &str) -> String {
+1709: fn slint_image_reference(resource_path: &str) -> String {
+1713: fn assert_no_direct_urls_or_reference_tree(source_name: &str, source: &str) {
+1729: fn shell_tab_labels_match_reference_order() {
+1737: fn shell_tab_labels_count_is_reference_count() {
+1742: fn shell_contract_main_slint_title_and_tabs_match_rust_contract() {
+1760: fn shell_contract_inert_tab_components_are_static_placeholders() {
+1810: fn s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups() {
+1844: assert!(TOOLS_SLINT.contains("root.tool-action-requested(action_id)"));
+1849: fn s05_slint_contract_about_tab_replaces_placeholder_with_reference_assets_and_copy_state() {
+1887: link.open_action_id.as_str()
+1891: link.copy_action_id.as_str()
+1893: assert!(ABOUT_SLINT.contains(&slint_assignment("open-label", link.open_button_label)));
+1896: link.copy_action_id.as_str()
+1902: assert!(ABOUT_SLINT.contains("root.about-open-requested(action_id)"));
+1903: assert!(ABOUT_SLINT.contains("root.about-copy-requested(action_id)"));
+1908: fn s05_slint_contract_main_window_forwards_tools_and_about_properties_and_callbacks() {
+1933: "root.tool-action-requested(action_id)",
+1942: "root.about-open-requested(action_id)",
+1943: "root.about-copy-requested(action_id)",
+1944: "root.about-copy-label-reset-requested(action_id)",
+1951: fn s05_runtime_wiring_tools_projection_uses_initial_status_and_safe_errors() {
+1956: assert_eq!(initial.last_action_error, "");
+1974: failed.last_action_error,
+1981: assert!(!failed.last_action_error.contains("raw OS"));
+1985: fn s05_runtime_wiring_about_projection_tracks_copy_success_and_reset() {
+1992: action_id: AboutActionId::CopyDiscord,
+2007: controller.reset_copy_label(AboutActionId::CopyDiscord.as_str()),
+2017: fn s05_runtime_wiring_callback_id_mapping_fails_closed_before_workers() {
+2018: let tools_unknown = tools_action_for_id("tools.open_arbitrary_url")
+2029: let tools_deferred = tools_action_for_id(ToolActionId::DowngradeManager.as_str())
+2036: let open_action = about_action_for_id(AboutActionId::OpenGithub.as_str())
+2038: assert!(about_action_matches_callback(
+2042: assert!(!about_action_matches_callback(
+2047: let copy_action = about_action_for_id(AboutActionId::CopyGithub.as_str())
+2063: fn s05_runtime_wiring_spawn_failure_feedback_maps_to_safe_errors() {
+2085: about_action_for_id(AboutActionId::CopyNexus.as_str()).ok(),
+2098: fn s05_runtime_wiring_worker_payloads_apply_and_unrelated_payloads_are_ignored() {
+2101: tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+2102: WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+2119: project_tools_state(tools.state()).last_action_error,
+2127: action_id: AboutActionId::CopyGithub,
+2132: about_action_worker_task(AboutActionId::CopyGithub.as_str()),
+2133: WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(
+2145: about_action_worker_task(AboutActionId::CopyGithub.as_str()),
+2146: WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(about_success)),
+2158: tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+2159: WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+2175: fn s05_runtime_wiring_worker_failure_payloads_map_by_surface_task_prefix() {
+2178: tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+2187: project_tools_state(tools.state()).last_action_error,
+2193: about_action_worker_task(AboutActionId::OpenNexus.as_str()),
+2202: project_about_state(about.state()).last_action_error,
+2218: fn s05_runtime_wiring_non_windows_real_desktop_actions_fail_safely() {
+2234: fn overview_tab_exposes_refresh_action_status_panels_and_safe_error_state() {
+2271: fn overview_projection_rows_lock_reference_order_and_deferred_status() {
+2305: deferred_action_label(
+2313: deferred_action_label(
+2321: deferred_action_status(
+2336: fn settings_tab_labels_are_exact_and_in_display_order() {
+2343: let option_labels = slint_string_property_values(SETTINGS_SLINT, "text");
+2345: option_labels.iter().map(String::as_str).collect::<Vec<_>>(),
+2361: fn settings_tab_update_channel_labels() {
+2386: fn settings_tab_log_level_labels() {
+2411: fn settings_tab_uses_dark_mode_palette() {
+2418: fn main_window_forwards_settings_and_overview_tab_api() {
+2466: fn shell_contract_boundary_markers_construct_as_no_ops() {
+
+== ui/main.slint ==
+1: import { TabWidget } from "std-widgets.slint";
+2: import { OverviewTab, OverviewUiRow } from "overview_tab.slint";
+3: import { F4seTab } from "f4se_tab.slint";
+4: import { ScannerTab } from "scanner_tab.slint";
+5: import { ToolsTab } from "tools_tab.slint";
+6: import { SettingsTab } from "settings_tab.slint";
+7: import { AboutTab } from "about_tab.slint";
+9: export component MainWindow inherits Window {
+10: in-out property <string> update-source: "nexus";
+11: in-out property <string> log-level: "info";
+12: in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
+13: in-out property <bool> overview-refresh-busy: false;
+14: in-out property <[OverviewUiRow]> overview-top-rows;
+15: in-out property <[OverviewUiRow]> overview-binary-rows;
+16: in-out property <[OverviewUiRow]> overview-archive-rows;
+17: in-out property <[OverviewUiRow]> overview-module-rows;
+18: in-out property <string> overview-problems-summary: "Problems: 0";
+19: in-out property <[OverviewUiRow]> overview-problem-rows;
+20: in-out property <string> overview-update-heading: "";
+21: in-out property <string> overview-nexus-update-label: "Nexus Mods";
+22: in-out property <bool> overview-nexus-update-enabled: false;
+23: in-out property <string> overview-github-update-label: "GitHub";
+24: in-out property <bool> overview-github-update-enabled: false;
+25: in-out property <bool> overview-game-path-enabled: false;
+26: in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+27: in-out property <bool> overview-downgrade-enabled: false;
+28: in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+29: in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+30: in-out property <bool> overview-archive-patcher-enabled: false;
+31: in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+32: in-out property <string> overview-last-action-error: "";
+33: in-out property <string> tools-last-action-error: "";
+34: in-out property <string> tools-disabled-utility-status: "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
+35: in-out property <string> about-last-action-error: "";
+36: in-out property <string> about-nexus-copy-label: "Copy Link";
+37: in-out property <bool> about-nexus-copy-enabled: true;
+38: in-out property <string> about-discord-copy-label: "Copy Invite";
+39: in-out property <bool> about-discord-copy-enabled: true;
+40: in-out property <string> about-github-copy-label: "Copy Link";
+41: in-out property <bool> about-github-copy-enabled: true;
+42: callback update-source-selected(string);
+43: callback log-level-selected(string);
+44: callback overview-refresh-requested();
+45: callback overview-open-game-path-requested();
+46: callback overview-open-nexus-update-requested();
+47: callback overview-open-github-update-requested();
+48: callback overview-open-downgrade-manager-requested();
+49: callback overview-open-archive-patcher-requested();
+50: callback tool-action-requested(string);
+51: callback about-open-requested(string);
+52: callback about-copy-requested(string);
+53: callback about-copy-label-reset-requested(string);
+60: TabWidget {
+61: Tab {
+106: Tab {
+111: Tab {
+116: Tab {
+121: tool-action-requested(action_id) => {
+122: root.tool-action-requested(action_id);
+127: Tab {
+141: Tab {
+151: about-open-requested(action_id) => {
+152: root.about-open-requested(action_id);
+154: about-copy-requested(action_id) => {
+155: root.about-copy-requested(action_id);
+157: about-copy-label-reset-requested(action_id) => {
+158: root.about-copy-label-reset-requested(action_id);
+
+== ui/f4se_tab.slint ==
+1: export component F4seTab inherits Rectangle {

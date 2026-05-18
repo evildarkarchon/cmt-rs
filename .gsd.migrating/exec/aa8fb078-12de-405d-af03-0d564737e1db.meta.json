@@ -1,0 +1,18 @@
+{
+  "id": "aa8fb078-12de-405d-af03-0d564737e1db",
+  "runtime": "bash",
+  "purpose": "full cargo test after adding scanner autofix service",
+  "script_chars": 10,
+  "started_at": "2026-05-18T08:32:43.356Z",
+  "finished_at": "2026-05-18T08:32:51.851Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8495,
+  "stdout_bytes": 28938,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\aa8fb078-12de-405d-af03-0d564737e1db.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\aa8fb078-12de-405d-af03-0d564737e1db.stderr"
+}

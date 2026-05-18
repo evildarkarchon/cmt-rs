@@ -1,0 +1,8 @@
+6874          # [allow (dead_code)] pub fn get_log_level (& self) -> sp :: SharedString {
+6877          # [allow (dead_code)] pub fn set_log_level (& self , value : sp :: SharedString) {
+6880          # [allow (dead_code)] pub fn invoke_log_level_selected (& self , arg_0 : sp :: SharedString ,) -> () {
+6883          # [allow (dead_code)] pub fn on_log_level_selected (& self , mut f : impl FnMut (sp :: SharedString) -> () + 'static) {
+6886          # [allow (dead_code)] pub fn get_update_source (& self) -> sp :: SharedString {
+6889          # [allow (dead_code)] pub fn set_update_source (& self , value : sp :: SharedString) {
+6892          # [allow (dead_code)] pub fn invoke_update_source_selected (& self , arg_0 : sp :: SharedString ,) -> () {
+6895          # [allow (dead_code)] pub fn on_update_source_selected (& self , mut f : impl FnMut (sp :: SharedString) -> () + 'static) {

@@ -1,0 +1,180 @@
+## bind_f4se_worker_sink lines=45
+fn bind_f4se_worker_sink(
+    app: &MainWindow,
+    controller: Arc<Mutex<F4seController>>,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let Some(app) = app.upgrade() else {
+            tracing::warn!(
+                event = "s06-f4se-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "F4SE worker event arrived after the Slint window was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_f4se_controller_mut(&controller, |controller| {
+            handle_f4se_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        match result {
+            F4seTransitionResult::Applied => apply_current_f4se_snapshot(&app, &controller),
+            F4seTransitionResult::StaleIgnored => tracing::debug!(
+                event = "s06-f4se-worker-stale-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "F4SE worker event was stale and ignored"
+            ),
+            F4seTransitionResult::Ignored => tracing::debug!(
+                event = "s06-f4se-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Ignoring non-F4SE worker event on F4SE sink"
+            ),
+        }
+    })
+}
+## bind_f4se_callbacks lines=18
+fn bind_f4se_callbacks(
+    app: &MainWindow,
+    controller: Arc<Mutex<F4seController>>,
+    worker_runtime: WorkerRuntime,
+    f4se_sink: SlintEventLoopSink,
+) {
+    app.on_f4se_tab_activated({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let f4se_sink = f4se_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_f4se_initial_scan(&app, &controller, worker_runtime, f4se_sink.clone());
+            }
+        }
+    });
+}
+## apply_current_f4se_snapshot lines=8
+fn apply_current_f4se_snapshot(app: &MainWindow, controller: &Arc<Mutex<F4seController>>) {
+    let Some(projection) = with_f4se_controller_mut(controller, |controller| {
+        project_f4se_snapshot(controller.snapshot())
+    }) else {
+        return;
+    };
+    apply_f4se_projection(app, projection);
+}
+## bind_overview_callbacks lines=121
+fn bind_overview_callbacks(
+    app: &MainWindow,
+    overview_controller: Arc<Mutex<OverviewController>>,
+    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+    worker_runtime: WorkerRuntime,
+    overview_sink: SlintEventLoopSink,
+    runtime_handle: tokio::runtime::Handle,
+) {
+    app.on_overview_refresh_requested({
+        let app = app.as_weak();
+        let overview_controller = Arc::clone(&overview_controller);
+        let settings_controller = Rc::clone(&settings_controller);
+        let overview_sink = overview_sink.clone();
+        let runtime_handle = runtime_handle.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_overview_refresh(
+                    &app,
+                    &overview_controller,
+                    &settings_controller,
+                    worker_runtime,
+                    overview_sink.clone(),
+                    runtime_handle.clone(),
+                );
+            }
+        }
+    });
+
+    app.on_overview_open_game_path_requested({
+        let app = app.as_weak();
+        let overview_controller = Arc::clone(&overview_controller);
+        let overview_sink = overview_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                schedule_overview_action(
+                    &app,
+                    &overview_controller,
+                    worker_runtime,
+                    overview_sink.clone(),
+                    OverviewDeferredActionKind::OpenGamePath,
+                    "Game path is not available.",
+                    OverviewController::game_path_action,
+                );
+            }
+        }
+    });
+
+    app.on_overview_open_nexus_update_requested({
+        let app = app.as_weak();
+        let overview_controller = Arc::clone(&overview_controller);
+        let overview_sink = overview_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                schedule_overview_action(
+                    &app,
+                    &overview_controller,
+                    worker_runtime,
+...
+## request_overview_refresh lines=43
+fn request_overview_refresh(
+    app: &MainWindow,
+    overview_controller: &Arc<Mutex<OverviewController>>,
+    settings_controller: &Rc<RefCell<SettingsController<FileAssetResolver>>>,
+    worker_runtime: WorkerRuntime,
+    overview_sink: SlintEventLoopSink,
+    runtime_handle: tokio::runtime::Handle,
+) {
+    let settings = settings_controller.borrow().current_settings().clone();
+    let Some(request) = with_overview_controller_mut(overview_controller, |controller| {
+        controller.request_refresh(settings.update_source)
+    }) else {
+        return;
+    };
+    apply_current_overview_snapshot(app, overview_controller);
+
+    tracing::info!(
+        event = "overview-refresh-schedule",
+        refresh_id = request.refresh_id,
+        update_source = request.update_source.as_wire_value(),
+        "Scheduling Overview refresh worker"
+    );
+
+    if let Err(error) = worker_runtime.spawn_blocking_task(
+        request.refresh_task(),
+        overview_sink.clone(),
+        move |_context| build_overview_refresh_payload(request.refresh_id, settings),
+    ) {
+        tracing::error!(
+            event = "overview-refresh-spawn-failed",
+            refresh_id = request.refresh_id,
+            error = %error,
+            "Overview refresh worker could not be scheduled"
+        );
+        with_overview_controller_mut(overview_controller, |controller| {
+            controller.refresh_spawn_failed(request.refresh_id, error);
+        });
+        apply_current_overview_snapshot(app, overview_controller);
+        return;
+    }
+
+    schedule_overview_update_check(request, overview_sink, runtime_handle);
+}

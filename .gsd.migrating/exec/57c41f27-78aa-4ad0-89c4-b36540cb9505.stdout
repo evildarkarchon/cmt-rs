@@ -1,0 +1,368 @@
+1805:                details_text,
+1806:            })
+1807:    })
+1808:    .flatten()
+1809:}
+1810:
+1811:fn scanner_action_task(action: ScannerActionKind, scan_id: Option<u64>) -> WorkerTask {
+1812:    let scan_label = scan_id
+1813:        .map(|scan_id| scan_id.to_string())
+1814:        .unwrap_or_else(|| "none".to_owned());
+1815:    WorkerTask::new(
+1816:        format!(
+1817:            "{SCANNER_ACTION_TASK_PREFIX}{scan_label}:{}",
+1818:            action.as_id()
+1819:        ),
+1820:        WorkerTaskKind::DesktopAction,
+1821:    )
+1822:    .with_label(action.as_id())
+1823:}
+1824:
+1825:fn scanner_action_from_task_id(
+1826:    task_id: &workers::WorkerTaskId,
+1827:) -> Option<(Option<u64>, ScannerActionKind)> {
+1828:    let rest = task_id.as_str().strip_prefix(SCANNER_ACTION_TASK_PREFIX)?;
+1829:    let (scan_id, action_id) = rest.split_once(':')?;
+1830:    let scan_id = if scan_id == "none" {
+1831:        None
+1832:    } else {
+1833:        Some(scan_id.parse::<u64>().ok()?)
+1834:    };
+1835:    Some((scan_id, ScannerActionKind::from_id(action_id)?))
+1836:}
+1837:
+1838:fn execute_scanner_action_payload(execution: ScannerActionExecution) -> BlockingWorkerResult {
+1839:    let feedback = execute_scanner_action_with_adapters(
+1840:        execution,
+1841:        RealDesktopActions::new(),
+1842:        RealClipboardActions::new(),
+1843:    );
+1844:    Ok(WorkerTaskOutcome::Completed(
+1845:        scanner_action_completed_payload(feedback),
+1846:    ))
+1847:}
+1848:
+1849:fn execute_scanner_action_with_adapters<D, C>(
+1850:    execution: ScannerActionExecution,
+1851:    desktop: D,
+1852:    clipboard: C,
+1853:) -> ScannerActionFeedback
+1854:where
+1855:    D: DesktopActions,
+1856:    C: ClipboardActions,
+1857:{
+1858:    let scan_id = execution.scan_id;
+1859:    let action = execution.descriptor.kind;
+1860:    match (action, execution.descriptor.target) {
+1861:        (ScannerActionKind::CopyDetails, ScannerActionTarget::DetailsText) => {
+1862:            let Some(details_text) = execution.details_text.filter(|text| !text.is_empty()) else {
+1863:                return ScannerActionFeedback::failed(
+1864:                    scan_id,
+1865:                    action,
+1866:                    "Scanner details are not available to copy.",
+1867:                );
+1868:            };
+1869:            scanner_feedback_from_clipboard_result(
+1870:                scan_id,
+1871:                action,
+1872:                clipboard.copy_text(&details_text),
+1873:            )
+1874:        }
+1875:        (ScannerActionKind::OpenLocation, ScannerActionTarget::Path(path)) => {
+1876:            scanner_feedback_from_desktop_result(scan_id, action, desktop.open_path(&path))
+1877:        }
+1878:        (ScannerActionKind::OpenSolutionUrl, ScannerActionTarget::Url(url)) => {
+1879:            scanner_feedback_from_desktop_result(scan_id, action, desktop.open_url(&url))
+1880:        }
+1881:        (ScannerActionKind::CopySolutionUrl, ScannerActionTarget::Url(url)) => {
+1882:            scanner_feedback_from_clipboard_result(scan_id, action, clipboard.copy_text(&url))
+1883:        }
+1884:        _ => ScannerActionFeedback::failed(scan_id, action, SCANNER_ACTION_UNAVAILABLE_MESSAGE),
+1885:    }
+1886:}
+1887:
+1888:fn scanner_feedback_from_desktop_result(
+1889:    scan_id: Option<u64>,
+1890:    action: ScannerActionKind,
+1891:    result: platform::desktop::DesktopActionResult,
+1892:) -> ScannerActionFeedback {
+1893:    let feedback = if result.is_success() {
+1894:        ScannerActionFeedback::succeeded(scan_id, action, result.safe_message())
+1895:    } else {
+---
+2259:}
+2260:
+2261:fn apply_about_feedback(
+2262:    app: &MainWindow,
+2263:    controller: &Arc<Mutex<AboutController>>,
+2264:    feedback: AboutActionFeedback,
+2265:) {
+2266:    with_about_controller_mut(controller, |controller| {
+2267:        controller.handle_feedback(feedback);
+2268:    });
+2269:    apply_current_about_state(app, controller);
+2270:}
+2271:
+2272:fn handle_f4se_worker_event(
+2273:    controller: &mut F4seController,
+2274:    event: WorkerEvent,
+2275:) -> F4seTransitionResult {
+2276:    controller.handle_worker_event(event)
+2277:}
+2278:
+2279:fn handle_scanner_worker_event(
+2280:    controller: &mut ScannerController,
+2281:    event: WorkerEvent,
+2282:) -> ScannerTransitionResult {
+2283:    if let Some(feedback) = scanner_worker_failure_feedback_from_event(&event) {
+2284:        return controller.action_completed(feedback);
+2285:    }
+2286:
+2287:    controller.handle_worker_event(event)
+2288:}
+2289:
+2290:fn handle_tools_worker_event(
+2291:    controller: &mut ToolsController,
+2292:    event: WorkerEvent,
+2293:) -> ToolsTransitionResult {
+2294:    if let Some(feedback) = tools_worker_failure_feedback_from_event(&event) {
+2295:        return controller.handle_feedback(feedback);
+2296:    }
+2297:
+2298:    controller.handle_worker_event(event)
+2299:}
+2300:
+2301:fn handle_about_worker_event(
+2302:    controller: &mut AboutController,
+2303:    event: WorkerEvent,
+2304:) -> AboutTransitionResult {
+2305:    if let Some(feedback) = about_worker_failure_feedback_from_event(&event) {
+2306:        return controller.handle_feedback(feedback);
+2307:    }
+2308:
+2309:    controller.handle_worker_event(event)
+2310:}
+2311:
+2312:fn scanner_worker_failure_feedback_from_event(
+2313:    event: &WorkerEvent,
+2314:) -> Option<ScannerActionFeedback> {
+2315:    let WorkerPayload::Error(failure) = &event.payload else {
+2316:        return None;
+2317:    };
+2318:    let (scan_id, action) = scanner_action_from_task_id(&event.task.id)?;
+2319:
+2320:    Some(
+2321:        ScannerActionFeedback::failed(scan_id, action, failure.safe_message.clone())
+2322:            .with_diagnostic(
+2323:                failure
+2324:                    .diagnostic
+2325:                    .clone()
+2326:                    .unwrap_or_else(|| "scanner action worker failed".to_owned()),
+2327:            ),
+2328:    )
+2329:}
+2330:
+2331:fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+2332:    let WorkerPayload::Error(failure) = &event.payload else {
+2333:        return None;
+2334:    };
+2335:    let action_id = tools_action_id_from_task(&event.task)?;
+2336:
+2337:    Some(ToolsActionFeedback::rejected(
+2338:        action_id,
+2339:        tools_action_for_id(action_id).ok(),
+2340:        ActionRejectionKind::WorkerUnavailable,
+2341:        failure.safe_message.clone(),
+2342:        failure.diagnostic.clone(),
+2343:    ))
+2344:}
+2345:
+2346:fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+2347:    let WorkerPayload::Error(failure) = &event.payload else {
+2348:        return None;
+2349:    };
+---
+2298:    controller.handle_worker_event(event)
+2299:}
+2300:
+2301:fn handle_about_worker_event(
+2302:    controller: &mut AboutController,
+2303:    event: WorkerEvent,
+2304:) -> AboutTransitionResult {
+2305:    if let Some(feedback) = about_worker_failure_feedback_from_event(&event) {
+2306:        return controller.handle_feedback(feedback);
+2307:    }
+2308:
+2309:    controller.handle_worker_event(event)
+2310:}
+2311:
+2312:fn scanner_worker_failure_feedback_from_event(
+2313:    event: &WorkerEvent,
+2314:) -> Option<ScannerActionFeedback> {
+2315:    let WorkerPayload::Error(failure) = &event.payload else {
+2316:        return None;
+2317:    };
+2318:    let (scan_id, action) = scanner_action_from_task_id(&event.task.id)?;
+2319:
+2320:    Some(
+2321:        ScannerActionFeedback::failed(scan_id, action, failure.safe_message.clone())
+2322:            .with_diagnostic(
+2323:                failure
+2324:                    .diagnostic
+2325:                    .clone()
+2326:                    .unwrap_or_else(|| "scanner action worker failed".to_owned()),
+2327:            ),
+2328:    )
+2329:}
+2330:
+2331:fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+2332:    let WorkerPayload::Error(failure) = &event.payload else {
+2333:        return None;
+2334:    };
+2335:    let action_id = tools_action_id_from_task(&event.task)?;
+2336:
+2337:    Some(ToolsActionFeedback::rejected(
+2338:        action_id,
+2339:        tools_action_for_id(action_id).ok(),
+2340:        ActionRejectionKind::WorkerUnavailable,
+2341:        failure.safe_message.clone(),
+2342:        failure.diagnostic.clone(),
+2343:    ))
+2344:}
+2345:
+2346:fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+2347:    let WorkerPayload::Error(failure) = &event.payload else {
+2348:        return None;
+2349:    };
+2350:    let action_id = about_action_id_from_task(&event.task)?;
+2351:
+2352:    Some(AboutActionFeedback::rejected(
+2353:        action_id,
+2354:        about_action_for_id(action_id).ok(),
+2355:        ActionRejectionKind::WorkerUnavailable,
+2356:        failure.safe_message.clone(),
+2357:        failure.diagnostic.clone(),
+2358:    ))
+2359:}
+2360:
+2361:fn tools_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+2362:    task.id.as_str().strip_prefix(TOOLS_WORKER_TASK_PREFIX)
+2363:}
+2364:
+2365:fn about_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+2366:    task.id.as_str().strip_prefix(ABOUT_WORKER_TASK_PREFIX)
+2367:}
+2368:
+2369:fn emit_worker_event_or_log<S>(sink: &S, event: WorkerEvent)
+2370:where
+2371:    S: WorkerEventSink,
+2372:{
+2373:    let task_id = event.task.id.to_string();
+2374:    let task_kind = event.task.kind.label();
+2375:    let status = event.status.label();
+2376:    if let Err(error) = sink.emit(event) {
+2377:        tracing::warn!(
+2378:            event = "overview-worker-handoff-failed",
+2379:            task_id = %task_id,
+2380:            task_kind,
+2381:            status,
+2382:            error = %error,
+2383:            diagnostic = error.diagnostic.as_deref().unwrap_or(""),
+2384:            "Overview worker event could not be handed to the UI"
+2385:        );
+2386:    }
+2387:}
+2388:
+---
+4187:            controller.action_completed(path_feedback);
+4188:        });
+4189:        let projection = with_scanner_controller_mut(&controller, |controller| {
+4190:            project_scanner_state(controller)
+4191:        })
+4192:        .expect("controller should be readable");
+4193:        assert_eq!(projection.action_feedback, "Path open failed.");
+4194:        assert!(!projection.action_feedback.contains("raw path"));
+4195:    }
+4196:
+4197:    #[test]
+4198:    fn s07_scanner_runtime_wiring_action_worker_failure_event_maps_to_safe_feedback() {
+4199:        let mut controller = ScannerController::default();
+4200:        let request = controller.request_scan().expect("scan should start");
+4201:        controller.scan_completed(
+4202:            request.scan_id,
+4203:            ScannerScanSnapshot::empty(request.scan_id, "Scanner scan complete."),
+4204:        );
+4205:        let task = scanner_action_task(ScannerActionKind::OpenLocation, Some(request.scan_id));
+4206:        assert_eq!(
+4207:            scanner_action_from_task_id(&task.id),
+4208:            Some((Some(request.scan_id), ScannerActionKind::OpenLocation))
+4209:        );
+4210:
+4211:        let result = handle_scanner_worker_event(
+4212:            &mut controller,
+4213:            WorkerEvent::failed(
+4214:                task,
+4215:                WorkerFailure::new("Path open failed.").with_diagnostic("raw worker failure"),
+4216:            ),
+4217:        );
+4218:
+4219:        assert_eq!(result, ScannerTransitionResult::Applied);
+4220:        let feedback = controller
+4221:            .last_action_feedback()
+4222:            .expect("failed action feedback should be visible");
+4223:        assert_eq!(feedback.safe_message(), "Path open failed.");
+4224:        assert_eq!(feedback.diagnostic.as_deref(), Some("raw worker failure"));
+4225:        let projection = project_scanner_state(&controller);
+4226:        assert_eq!(projection.action_feedback, "Path open failed.");
+4227:        assert!(!projection.action_feedback.contains("raw worker"));
+4228:    }
+4229:
+4230:    fn scanner_runtime_result() -> ScannerResult {
+4231:        ScannerResult::with_path(
+4232:            ScannerProblemType::UnexpectedFormat,
+4233:            PathBuf::from("C:/Games/Fallout 4/Data/Sound/example.mp3"),
+4234:            PathBuf::from("Sound/example.mp3"),
+4235:            "Format not in whitelist for sound.",
+4236:            Some("This file may need to be converted.".to_owned()),
+4237:        )
+4238:        .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/cmt")])
+4239:        .with_file_list(ScannerFileList::generic(vec![ScannerFileListEntry::new(
+4240:            1,
+4241:            PathBuf::from("Sound/example.mp3"),
+4242:        )]))
+4243:    }
+4244:
+4245:    fn main_test_settings_controller(
+4246:        name: &str,
+4247:        settings: AppSettings,
+4248:    ) -> (
+4249:        Rc<RefCell<SettingsController<crate::platform::settings_store::StaticAssetResolver>>>,
+4250:        PathBuf,
+4251:    ) {
+4252:        let root = unique_main_test_root(name);
+4253:        std::fs::create_dir_all(&root).expect("settings test root should be created");
+4254:        let settings_path = root.join("settings.json");
+4255:        let store = SettingsStore::with_asset_resolver(
+4256:            settings_path.clone(),
+4257:            crate::platform::settings_store::StaticAssetResolver::new(Some("nexus")),
+4258:        );
+4259:        (
+4260:            Rc::new(RefCell::new(SettingsController::from_settings(
+4261:                store, settings,
+4262:            ))),
+4263:            settings_path,
+4264:        )
+4265:    }
+4266:
+4267:    fn unique_main_test_root(name: &str) -> PathBuf {
+4268:        let unique = std::time::SystemTime::now()
+4269:            .duration_since(std::time::UNIX_EPOCH)
+4270:            .expect("test clock should be after Unix epoch")
+4271:            .as_nanos();
+4272:        std::env::temp_dir().join(format!("cmt-rs-main-{name}-{unique}"))
+4273:    }
+4274:
+4275:    #[derive(Debug, Default, Clone, Copy)]
+4276:    struct RuntimeFakeDesktopActions {
+4277:        fail_path: bool,
+---

@@ -1,0 +1,227 @@
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:56:
+ /// Reference scanner Wrong File Formats tooltip.
+ pub const TOOLTIP_SCAN_FORMATS: &str = "Check file types against a whitelist per Data folder.\ne.g. MP3 instead of XWM/WAV in Data/Sound/.";
+ /// Reference scanner Loose Previs tooltip.
+[31m-pub const TOOLTIP_SCAN_PREVIS: &str = "Report loose Data/Vis/ and Data/Meshes/Precombined/ folders.";
+(B[m[32m+pub const TOOLTIP_SCAN_PREVIS: &str =
+(B[m[32m+    "Report loose Data/Vis/ and Data/Meshes/Precombined/ folders.";
+(B[m /// Reference scanner Junk Files tooltip.
+[31m-pub const TOOLTIP_SCAN_JUNK: &str = "Report junk files such as desktop.ini, Thumbs.db,\nand leftover fomod folders.";
+(B[m[32m+pub const TOOLTIP_SCAN_JUNK: &str =
+(B[m[32m+    "Report junk files such as desktop.ini, Thumbs.db,\nand leftover fomod folders.";
+(B[m /// Reference scanner Problem Overrides tooltip.
+ pub const TOOLTIP_SCAN_BAD_OVERRIDES: &str = "Check for overrides that typically cause issues\nsuch as outdated F4SE script files or loose AnimTextData folders.";
+ /// Reference scanner Race Subgraphs tooltip, including the threshold text.
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:289:
+ }
+ 
+ /// Returns the exact reference folder progress text for a top-level Data folder.
+[31m-pub fn scanner_folder_progress_text(current_index: usize, total_folders: usize, folder: &str) -> String {
+(B[m[32m+pub fn scanner_folder_progress_text(
+(B[m[32m+    current_index: usize,
+(B[m[32m+    total_folders: usize,
+(B[m[32m+    folder: &str,
+(B[m[32m+) -> String {
+(B[m     format!(
+         "{PROGRESS_SCANNING_PREFIX} {current_index}/{}: {folder}",
+         total_folders.max(1)
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:434:
+             Self::ArchiveOrDeleteFile => "These files should either be archived or deleted.",
+             Self::ArchiveFolder => "These folders should be packed into BA2 archives.",
+             Self::DeleteFile => "This file should be deleted.",
+[31m-            Self::ConvertDeleteOrIgnoreFile => "This file may need to be converted and relevant files updated for the new name.\nOtherwise it can likely be deleted or ignored.",
+(B[m[32m+            Self::ConvertDeleteOrIgnoreFile => {
+(B[m[32m+                "This file may need to be converted and relevant files updated for the new name.\nOtherwise it can likely be deleted or ignored."
+(B[m[32m+            }
+(B[m             Self::DeleteOrIgnoreFile => "It can either be deleted or ignored.",
+             Self::DeleteOrIgnoreFolder => "It can either be deleted or ignored.",
+[31m-            Self::RenameArchive => "Archives must be named the same as a plugin with an added suffix or added to an INI.",
+(B[m[32m+            Self::RenameArchive => {
+(B[m[32m+                "Archives must be named the same as a plugin with an added suffix or added to an INI."
+(B[m[32m+            }
+(B[m             Self::DownloadMod => "Download the mod here:",
+[31m-            Self::VerifyFiles => "Verify files with Steam or reinstall the game.\nIf you downgraded the game you will need to do so again afterward.",
+(B[m[32m+            Self::VerifyFiles => {
+(B[m[32m+                "Verify files with Steam or reinstall the game.\nIf you downgraded the game you will need to do so again afterward."
+(B[m[32m+            }
+(B[m             Self::UnknownFormat => "If this file type is expected here, please report it.",
+             Self::Custom(text) => text.as_str(),
+         }
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:670:
+ }
+ 
+ impl ScannerActionDescriptor {
+[31m-    fn enabled(
+(B[m[31m-        kind: ScannerActionKind,
+(B[m[31m-        label: &'static str,
+(B[m[31m-        target: ScannerActionTarget,
+(B[m[31m-    ) -> Self {
+(B[m[32m+    fn enabled(kind: ScannerActionKind, label: &'static str, target: ScannerActionTarget) -> Self {
+(B[m         Self {
+             kind,
+             label,
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:882:
+             ));
+         }
+ 
+[31m-        if self.file_list.as_ref().is_some_and(|file_list| !file_list.is_empty()) {
+(B[m[32m+        if self
+(B[m[32m+            .file_list
+(B[m[32m+            .as_ref()
+(B[m[32m+            .is_some_and(|file_list| !file_list.is_empty())
+(B[m[32m+        {
+(B[m             actions.push(ScannerActionDescriptor::enabled(
+                 ScannerActionKind::ShowFileList,
+                 ACTION_FILE_LIST_LABEL,
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1167:
+             "Scanning... 1/1: Data"
+         );
+         assert_eq!(PROGRESS_REFRESHING_OVERVIEW_TEXT, "Refreshing Overview...");
+[31m-        assert_eq!(PROGRESS_BUILDING_MOD_INDEX_TEXT, "Building mod file index...");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            PROGRESS_BUILDING_MOD_INDEX_TEXT,
+(B[m[32m+            "Building mod file index..."
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1180:
+                 "zeta.txt",
+                 None,
+             ),
+[31m-            result(ScannerProblemType::LimitExceeded, "300 General Archives", None),
+(B[m[32m+            result(
+(B[m[32m+                ScannerProblemType::LimitExceeded,
+(B[m[32m+                "300 General Archives",
+(B[m[32m+                None,
+(B[m[32m+            ),
+(B[m             result(ScannerProblemType::JunkFile, "Data/fomod", Some("B Mod")),
+             result(ScannerProblemType::FileNotFound, "plugins.txt", None),
+[31m-            result(ScannerProblemType::JunkFile, "Data/desktop.ini", Some("A Mod")),
+(B[m             result(
+[32m+                ScannerProblemType::JunkFile,
+(B[m[32m+                "Data/desktop.ini",
+(B[m[32m+                Some("A Mod"),
+(B[m[32m+            ),
+(B[m[32m+            result(
+(B[m                 ScannerProblemType::Custom("Alpha Custom".to_owned()),
+                 "alpha.txt",
+                 None,
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1193:
+ 
+         let groups = group_scanner_results(&results);
+         assert_eq!(
+[31m-            groups.iter().map(|group| group.label.as_str()).collect::<Vec<_>>(),
+(B[m[32m+            groups
+(B[m[32m+                .iter()
+(B[m[32m+                .map(|group| group.label.as_str())
+(B[m[32m+                .collect::<Vec<_>>(),
+(B[m             vec![
+                 "Junk File",
+                 "File Not Found",
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1245:
+         );
+         assert!(mapped.solution_text().contains("https://www.nexusmods.com"));
+         assert!(mapped.solution_text().contains("Limit: 256"));
+[31m-        assert!(mapped
+(B[m[31m-            .read_only_actions()
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| action.kind == ScannerActionKind::OpenSolutionUrl));
+(B[m[32m+        assert!(
+(B[m[32m+            mapped
+(B[m[32m+                .read_only_actions()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| action.kind == ScannerActionKind::OpenSolutionUrl)
+(B[m[32m+        );
+(B[m 
+         let no_path = OverviewProblem::pathless(
+             OverviewProblemSource::TopStatus,
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1259:
+         );
+         let mapped_no_path = scanner_result_from_overview_problem(&no_path);
+         assert_eq!(mapped_no_path.absolute_path, None);
+[31m-        assert!(!mapped_no_path
+(B[m[31m-            .read_only_actions()
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| action.kind == ScannerActionKind::OpenLocation));
+(B[m[32m+        assert!(
+(B[m[32m+            !mapped_no_path
+(B[m[32m+                .read_only_actions()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| action.kind == ScannerActionKind::OpenLocation)
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1301:
+     #[test]
+     fn scanner_domain_extra_data_and_custom_problem_labels_are_preserved() {
+         let custom = ScannerProblemType::from_label("Mystery Problem");
+[31m-        assert_eq!(custom, ScannerProblemType::Custom("Mystery Problem".to_owned()));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            custom,
+(B[m[32m+            ScannerProblemType::Custom("Mystery Problem".to_owned())
+(B[m[32m+        );
+(B[m         assert_eq!(custom.label(), "Mystery Problem");
+ 
+         let non_url = ScannerResult::simple(
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1315:
+             non_url.solution_text(),
+             "No solution suggestion.\nExtra non-URL context"
+         );
+[31m-        assert!(!non_url
+(B[m[31m-            .read_only_actions()
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| matches!(action.kind, ScannerActionKind::OpenSolutionUrl)));
+(B[m[32m+        assert!(
+(B[m[32m+            !non_url
+(B[m[32m+                .read_only_actions()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| matches!(action.kind, ScannerActionKind::OpenSolutionUrl))
+(B[m[32m+        );
+(B[m 
+         let with_url = ScannerResult::simple(
+             custom,
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1333:
+         .with_deferred_auto_fix();
+ 
+         let actions = with_url.read_only_actions();
+[31m-        assert!(actions
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| action.kind == ScannerActionKind::OpenSolutionUrl));
+(B[m[31m-        assert!(actions
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| action.kind == ScannerActionKind::CopySolutionUrl));
+(B[m[31m-        assert!(actions
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|action| action.kind == ScannerActionKind::ShowFileList));
+(B[m[32m+        assert!(
+(B[m[32m+            actions
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| action.kind == ScannerActionKind::OpenSolutionUrl)
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            actions
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| action.kind == ScannerActionKind::CopySolutionUrl)
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            actions
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|action| action.kind == ScannerActionKind::ShowFileList)
+(B[m[32m+        );
+(B[m         let deferred = actions
+             .iter()
+             .find(|action| action.kind == ScannerActionKind::AutoFixDeferred)
+Diff in /mnt/j/cmt-rs/src/domain/scanner.rs:1349:
+         assert!(!deferred.enabled);
+         assert_eq!(deferred.status_text, Some(AUTO_FIX_DEFERRED_STATUS));
+         assert_eq!(
+[31m-            with_url.file_list.as_ref().map(|file_list| file_list.title.as_str()),
+(B[m[32m+            with_url
+(B[m[32m+                .file_list
+(B[m[32m+                .as_ref()
+(B[m[32m+                .map(|file_list| file_list.title.as_str()),
+(B[m             Some(RACE_SUBGRAPH_FILE_LIST_TITLE)
+         );
+     }

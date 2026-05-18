@@ -1,0 +1,18 @@
+{
+  "id": "5b76faae-8aea-4b14-addd-fce82d899956",
+  "runtime": "bash",
+  "purpose": "S09 planning: summarize src/ui file inventory",
+  "script_chars": 116,
+  "started_at": "2026-05-18T10:05:07.519Z",
+  "finished_at": "2026-05-18T10:05:07.623Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 104,
+  "stdout_bytes": 1015,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5b76faae-8aea-4b14-addd-fce82d899956.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5b76faae-8aea-4b14-addd-fce82d899956.stderr"
+}

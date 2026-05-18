@@ -1,0 +1,18 @@
+{
+  "id": "d875e2e2-3549-4d3a-b565-49ecd970e84c",
+  "runtime": "bash",
+  "purpose": "summarize installed GSD slice complete tool implementation locations",
+  "script_chars": 723,
+  "started_at": "2026-05-18T07:23:22.647Z",
+  "finished_at": "2026-05-18T07:23:32.099Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9452,
+  "stdout_bytes": 14354,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d875e2e2-3549-4d3a-b565-49ecd970e84c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d875e2e2-3549-4d3a-b565-49ecd970e84c.stderr"
+}

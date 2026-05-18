@@ -1,0 +1,40 @@
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/non_ascii.slint:4:export component Bug { i§n property <string> text: "SLINT"; }
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/non_ascii.slint:9:export component Bug { 👋§äß property <string> text: "SLINT"; }
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/state1.slint:7:    property <int> border;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/signal_arg.slint:8:    property <color> glop_col;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/signal_arg.slint:9:    property <string> blah: "yo";
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/property2.slint:10://               > <error{Missing type. The syntax to declare a property is `property <type> name;`. Only two way bindings can omit the type}
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/property2.slint:12://               > <error{Missing type. The syntax to declare a property is `property <type> name;`. Only two way bindings can omit the type}
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/property2.slint:15:        property <=> ta.pressed;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/parse_error/property2.slint:18://               ><error{Missing type. The syntax to declare a property is `property <type> name;`. Only two way bindings can omit the type}
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:7:    property <int> aa: 45;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:8:    property <{o:[int], c:string}> bb;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:9:    property <int> xx: aa[2];
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:11:    property <int> yy: dontexist[2];
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:13:    //property <int> zz: bb.o[2].aa;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:14:    property <int> ww: bb.c[2];
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/array_index.slint:17:    property <int> uu: bb.o[bb.c];
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/global.slint:18:    property <int> glob;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/global.slint:23:    out property <length> padding: 3px;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/global.slint:43:    property <int> my_lowercase: 45;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding_model.slint:9:    property <[Foo]> model;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/issue_1461.slint:9:    in property <string> text;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/fuzzing/6650.slint:5:    property <[int]> name;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/layout/repeated_in_repeated_row.slint:16:    in property <bool> condition;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/fuzzing/6587.slint:10:  in property <bool in
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/issue_5246_states_function.slint:5:    in property <bool> replaceAll: false;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/issue_5246_states_function.slint:6:    property <bool> replaceable: true;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/issue_5246_states_function.slint:7:    in property <string> name:"";
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/name_reuse.slint:26:    property <Type1> t1: { xxx: 42 };
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/name_reuse.slint:27:    property <Type2> t2: Type2.AAA; //                       >       <error{Cannot access id 'Type2'}
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/name_reuse.slint:43:    property <Type1> t1: Type1.DDD;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/name_reuse.slint:44:    property <Type2> t2: { yyy: 42 };
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/name_reuse.slint:45:    property <Type1> error: Type2.AAA;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/layout/if_in_grid_row.slint:5:    property <bool> condition;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding.slint:6:    property <int> alala <=> alala;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding.slint:8:    property <string> yoyo <=> alala;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding.slint:15:    property <brush> my_color <=> self.background;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding.slint:35:    property <int> dd <=> dd;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding.slint:41:        property <length> loop_on_x <=> x;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/lookup/two_way_binding_infer.slint:24:    property <string> alias_to_background <=> auto_background;
+/home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/imports/error_in_import3.slint:9:        property <int> b: b1;

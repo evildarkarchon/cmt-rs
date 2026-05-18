@@ -1,0 +1,123 @@
+
+## src/domain/discovery.rs
+30: pub struct SemanticVersion {
+39: impl SemanticVersion {
+41:     pub const fn new(major: u64, minor: u64, patch: u64) -> Self {
+50:     pub const fn zero() -> Self {
+55: impl fmt::Display for SemanticVersion {
+63: pub enum Fallout4InstallType {
+83: impl Fallout4InstallType {
+85:     pub const fn as_reference_str(self) -> &'static str {
+99: impl fmt::Display for Fallout4InstallType {
+112: pub struct Fallout4Installation {
+129: impl Fallout4Installation {
+135:     pub fn new(game_path: impl Into<PathBuf>) -> Self {
+148:     pub fn with_optional_paths(
+160:     pub const fn game_id(&self) -> &'static str {
+165:     pub const fn has_data_path(&self) -> bool {
+170:     pub const fn has_f4se_plugins_path(&self) -> bool {
+177: pub enum ArchiveFormat {
+186: impl ArchiveFormat {
+188:     pub const fn as_reference_magic(&self) -> Option<&'static str> {
+199: pub enum ArchiveVersion {
+210: impl ArchiveVersion {
+212:     pub const fn as_header_value(self) -> u32 {
+224: pub struct ArchiveRecord {
+237: impl ArchiveRecord {
+239:     pub fn new(
+255:     pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+268: pub enum ModuleHeaderVersion {
+277: impl ModuleHeaderVersion {
+279:     pub const fn as_reference_str(&self) -> Option<&'static str> {
+290: pub enum ModuleKind {
+299: pub struct ModuleRecord {
+312: impl ModuleRecord {
+314:     pub fn new(
+330:     pub fn unreadable(path: impl Into<PathBuf>) -> Self {
+343: pub struct IniDocument {
+350: impl IniDocument {
+352:     pub fn new(source_path: Option<impl Into<PathBuf>>) -> Self {
+360:     pub fn get(&self, section: &str, key: &str) -> Option<&str> {
+370: pub struct Fallout4IniFiles {
+385: pub struct DiscoveryError {
+392: impl DiscoveryError {
+394:     pub fn fallout4_not_found(diagnostic: impl Into<Option<String>>) -> Self {
+402:     pub fn invalid_registry_path(path: impl Into<PathBuf>) -> Self {
+410:     pub fn environment_folder_missing(path: impl Into<PathBuf>) -> Self {
+418:     pub fn data_folder_not_found() -> Self {
+426:     pub fn f4se_plugins_folder_not_found(mod_manager_detected: bool) -> Self {
+436:     pub fn user_message(&self) -> String {
+460:     pub const fn is_recoverable(&self) -> bool {
+469:     pub const fn requires_manual_file_picker(&self) -> bool {
+474: impl fmt::Display for DiscoveryError {
+480: impl std::error::Error for DiscoveryError {}
+484: pub enum DiscoveryErrorKind {
+
+## src/services/discovery.rs
+41: pub struct DiscoveryRequest {
+50: impl DiscoveryRequest {
+52:     pub fn new(current_working_directory: impl Into<PathBuf>) -> Self {
+61:     pub const fn with_current_process_id(mut self, process_id: u32) -> Self {
+67:     pub fn with_local_appdata(mut self, local_appdata: impl Into<PathBuf>) -> Self {
+75: pub struct DiscoveryReport {
+90: pub enum DiscoveredModManager {
+97: impl DiscoveredModManager {
+99:     pub fn display_name(&self) -> &'static str {
+107:     pub fn executable_path(&self) -> &Path {
+115:     pub fn version(&self) -> SemanticVersion {
+132: pub enum ModManagerDiscoveryError {
+146: impl ModManagerDiscoveryError {
+148:     pub fn user_message(&self) -> String {
+160:     pub const fn blocks_game_discovery(&self) -> bool {
+168:     pub const fn is_recoverable(&self) -> bool {
+173: impl fmt::Display for ModManagerDiscoveryError {
+179: impl std::error::Error for ModManagerDiscoveryError {}
+183: pub enum DiscoverySource {
+194: impl DiscoverySource {
+196:     pub const fn label(self) -> &'static str {
+208: pub enum DiscoveryAttemptOutcome {
+221: pub struct DiscoveryAttempt {
+230: impl DiscoveryAttempt {
+272: pub enum ModManagerDiscoveryStage {
+291: pub enum ModManagerDiscoveryStepOutcome {
+304: pub struct ModManagerDiscoveryStep {
+313: impl ModManagerDiscoveryStep {
+328: pub struct DiscoveryService<'a, F, R, P>
+346:     pub const fn new(filesystem: &'a F, registry: &'a R, process: &'a P) -> Self {
+355:     pub fn discover(&self, request: &DiscoveryRequest) -> DiscoveryReport {
+1350:     impl FakeFilesystem {
+1384:     impl Filesystem for FakeFilesystem {
+1443:     impl FakeRegistry {
+1465:     impl RegistryReader for FakeRegistry {
+1482:     impl Default for FakeProcessInspector {
+1492:     impl FakeProcessInspector {
+1511:     impl ProcessInspector for FakeProcessInspector {
+
+## src/services/overview_collector.rs
+146: impl BaseFileClassification {
+176: pub struct OverviewCollectionEnvironment {
+183: impl OverviewCollectionEnvironment {
+185:     pub fn new() -> Self {
+190:     pub fn with_local_appdata(mut self, path: impl Into<PathBuf>) -> Self {
+196:     pub fn with_plugins_txt(mut self, path: impl Into<PathBuf>) -> Self {
+202:     pub fn plugins_txt_path(&self) -> Option<PathBuf> {
+213: pub struct OverviewCollectionRequest<'a> {
+222:     pub const fn new(
+235: pub struct OverviewCollectedFacts {
+250: pub enum OverviewCollectionPhase {
+265: impl OverviewCollectionPhase {
+267:     pub const fn as_str(self) -> &'static str {
+281: pub enum OverviewCollectionDiagnosticKind {
+296: pub struct OverviewCollectionPhaseSummary {
+305: pub struct OverviewCollectionErrorDetail {
+318: pub struct OverviewCollectionDiagnostics {
+339: impl OverviewCollectionDiagnostics {
+381: pub struct OverviewCollector<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> {
+388:     pub const fn new(filesystem: &'a F, process: &'a P) -> Self {
+400:     pub fn collect(&self, request: OverviewCollectionRequest<'_>) -> OverviewCollectedFacts {
+1219: impl DataIndex {
+1513:     impl FakeFilesystem {
+1577:     impl Filesystem for FakeFilesystem {
+1671:     impl FakeNode {
+1685:     impl FakeProcessInspector {
+1707:     impl ProcessInspector for FakeProcessInspector {

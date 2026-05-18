@@ -1,0 +1,18 @@
+{
+  "id": "e453e418-675c-44f9-83c1-601bd41aaf47",
+  "runtime": "bash",
+  "purpose": "apply rustfmt for f4se domain contract",
+  "script_chars": 9,
+  "started_at": "2026-05-18T03:43:31.856Z",
+  "finished_at": "2026-05-18T03:43:32.302Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 446,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e453e418-675c-44f9-83c1-601bd41aaf47.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e453e418-675c-44f9-83c1-601bd41aaf47.stderr"
+}

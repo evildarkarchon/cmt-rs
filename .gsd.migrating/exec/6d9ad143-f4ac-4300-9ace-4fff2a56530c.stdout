@@ -1,0 +1,390 @@
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:12:
+         discovery::Fallout4Installation,
+         downgrader::{
+             DELETE_PATCHES_CHECKBOX_LABEL, DowngraderExecutionLogRow, DowngraderLogLevel,
+[31m-            DowngraderOptionsSnapshot, DowngraderProgress, DowngraderStatusRow,
+(B[m[31m-            DowngraderTarget, INITIAL_LOG_LINE, KEEP_BACKUPS_CHECKBOX_LABEL,
+(B[m[31m-            TARGET_NEXT_GEN_LABEL, TARGET_OLD_GEN_LABEL,
+(B[m[32m+            DowngraderOptionsSnapshot, DowngraderProgress, DowngraderStatusRow, DowngraderTarget,
+(B[m[32m+            INITIAL_LOG_LINE, KEEP_BACKUPS_CHECKBOX_LABEL, TARGET_NEXT_GEN_LABEL,
+(B[m[32m+            TARGET_OLD_GEN_LABEL,
+(B[m         },
+         settings::DowngraderSettings,
+     },
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:21:
+[31m-    services::downgrader::{DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderStatusSnapshot},
+(B[m[32m+    services::downgrader::{
+(B[m[32m+        DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderStatusSnapshot,
+(B[m[32m+    },
+(B[m     workers::{
+[31m-        DowngraderWorkerPayload, DowngraderWorkerStage, WorkerEvent, WorkerFailure,
+(B[m[31m-        WorkerPayload, WorkerSpawnError, WorkerTask, WorkerTaskId, WorkerTaskKind,
+(B[m[31m-        WorkerTaskStatus,
+(B[m[32m+        DowngraderWorkerPayload, DowngraderWorkerStage, WorkerEvent, WorkerFailure, WorkerPayload,
+(B[m[32m+        WorkerSpawnError, WorkerTask, WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
+(B[m     },
+ };
+ 
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:271:
+             latest_plan_request_id: None,
+             latest_run_request_id: None,
+             installation: None,
+[31m-            options: options_from_settings(&DowngraderSettings::default(), DowngraderTarget::OldGen),
+(B[m[32m+            options: options_from_settings(
+(B[m[32m+                &DowngraderSettings::default(),
+(B[m[32m+                DowngraderTarget::OldGen,
+(B[m[32m+            ),
+(B[m             status: None,
+             plan: None,
+             log_rows: Vec::new(),
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:388:
+             DowngraderControllerPhase::Ready | DowngraderControllerPhase::Completed => {
+                 self.status.is_some()
+             }
+[31m-            DowngraderControllerPhase::PlanReady => self.plan.as_ref().is_some_and(|plan| plan.can_execute),
+(B[m[32m+            DowngraderControllerPhase::PlanReady => {
+(B[m[32m+                self.plan.as_ref().is_some_and(|plan| plan.can_execute)
+(B[m[32m+            }
+(B[m             DowngraderControllerPhase::Closed
+             | DowngraderControllerPhase::LoadingStatus
+             | DowngraderControllerPhase::Planning
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:434:
+         self.pending_status_refresh = None;
+         self.run_log_row_count = 0;
+ 
+[31m-        let request = DowngraderStatusWorkerRequest::new(
+(B[m[31m-            request_id,
+(B[m[31m-            settings_snapshot,
+(B[m[31m-            installation,
+(B[m[31m-        );
+(B[m[32m+        let request =
+(B[m[32m+            DowngraderStatusWorkerRequest::new(request_id, settings_snapshot, installation);
+(B[m         tracing::info!(
+             event = "s09-downgrader-opened",
+             request_id,
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:476:
+         if is_initial_load {
+             self.options.target = default_target;
+             self.phase = DowngraderControllerPhase::Ready;
+[31m-        } else if matches!(self.phase, DowngraderControllerPhase::SafeError) && self.status.is_some() {
+(B[m[32m+        } else if matches!(self.phase, DowngraderControllerPhase::SafeError)
+(B[m[32m+            && self.status.is_some()
+(B[m[32m+        {
+(B[m             self.phase = DowngraderControllerPhase::Ready;
+         }
+ 
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:789:
+         let patched_rows = result
+             .rows
+             .iter()
+[31m-            .filter(|row| matches!(row.outcome, crate::services::downgrader::DowngraderExecutionOutcome::Patched))
+(B[m[32m+            .filter(|row| {
+(B[m[32m+                matches!(
+(B[m[32m+                    row.outcome,
+(B[m[32m+                    crate::services::downgrader::DowngraderExecutionOutcome::Patched
+(B[m[32m+                )
+(B[m[32m+            })
+(B[m             .count();
+         let failed_rows = result
+             .rows
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:796:
+             .iter()
+[31m-            .filter(|row| matches!(row.outcome, crate::services::downgrader::DowngraderExecutionOutcome::Failed))
+(B[m[32m+            .filter(|row| {
+(B[m[32m+                matches!(
+(B[m[32m+                    row.outcome,
+(B[m[32m+                    crate::services::downgrader::DowngraderExecutionOutcome::Failed
+(B[m[32m+                )
+(B[m[32m+            })
+(B[m             .count();
+         if self.run_log_row_count == 0 {
+             self.log_rows.extend(result.log_rows.iter().cloned());
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:844:
+         let status = event.status;
+         match event.payload {
+             WorkerPayload::Downgrader(payload) => {
+[31m-                let Some((stage, task_request_id)) = downgrader_stage_and_request_id(&task.id) else {
+(B[m[32m+                let Some((stage, task_request_id)) = downgrader_stage_and_request_id(&task.id)
+(B[m[32m+                else {
+(B[m                     return DowngraderTransitionResult::Ignored;
+                 };
+                 if task.kind != WorkerTaskKind::Patch
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:918:
+         payload: DowngraderWorkerPayload,
+     ) -> DowngraderTransitionResult {
+         match payload {
+[31m-            DowngraderWorkerPayload::StatusLoaded { request_id, snapshot } => {
+(B[m[31m-                self.status_loaded(request_id, *snapshot)
+(B[m[31m-            }
+(B[m[32m+            DowngraderWorkerPayload::StatusLoaded {
+(B[m[32m+                request_id,
+(B[m[32m+                snapshot,
+(B[m[32m+            } => self.status_loaded(request_id, *snapshot),
+(B[m             DowngraderWorkerPayload::PlanReady { request_id, plan } => {
+                 self.plan_ready(request_id, *plan)
+             }
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1005:
+         self.plan = None;
+         self.active_plan_request_id = None;
+         self.safe_error = None;
+[31m-        if !matches!(self.phase, DowngraderControllerPhase::Closed | DowngraderControllerPhase::Running) {
+(B[m[32m+        if !matches!(
+(B[m[32m+            self.phase,
+(B[m[32m+            DowngraderControllerPhase::Closed | DowngraderControllerPhase::Running
+(B[m[32m+        ) {
+(B[m             self.phase = DowngraderControllerPhase::Ready;
+         }
+         tracing::debug!(
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1015:
+         );
+     }
+ 
+[31m-    fn is_active_request(&self, stage: DowngraderWorkerStage, request_id: DowngraderRequestId) -> bool {
+(B[m[32m+    fn is_active_request(
+(B[m[32m+        &self,
+(B[m[32m+        stage: DowngraderWorkerStage,
+(B[m[32m+        request_id: DowngraderRequestId,
+(B[m[32m+    ) -> bool {
+(B[m         match stage {
+             DowngraderWorkerStage::Status => self.active_status_request_id == Some(request_id),
+             DowngraderWorkerStage::Plan => self.active_plan_request_id == Some(request_id),
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1194:
+ }
+ 
+ fn normalized_ui_value(value: &str) -> String {
+[31m-    value
+(B[m[31m-        .trim()
+(B[m[31m-        .to_ascii_lowercase()
+(B[m[31m-        .replace([' ', '-'], "_")
+(B[m[32m+    value.trim().to_ascii_lowercase().replace([' ', '-'], "_")
+(B[m }
+ 
+ #[cfg(test)]
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1208:
+     use crate::{
+         domain::downgrader::{DowngraderFileGroup, DowngraderInstallStatus},
+         services::downgrader::{
+[31m-            DowngraderExecutionFileResult, DowngraderExecutionOutcome,
+(B[m[31m-            DowngraderPreviewPlanCounts, DowngraderStatusDiagnostic, DowngraderStatusFile,
+(B[m[32m+            DowngraderExecutionFileResult, DowngraderExecutionOutcome, DowngraderPreviewPlanCounts,
+(B[m[32m+            DowngraderStatusDiagnostic, DowngraderStatusFile,
+(B[m         },
+         workers::{RecordingEventSink, WorkerEventSink},
+     };
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1272:
+         request_id: DowngraderRequestId,
+         options: DowngraderOptionsSnapshot,
+     ) -> DowngraderExecutionResult {
+[31m-        let log_row = DowngraderExecutionLogRow::new(DowngraderLogLevel::Good, "Patched Fallout4.exe");
+(B[m[32m+        let log_row =
+(B[m[32m+            DowngraderExecutionLogRow::new(DowngraderLogLevel::Good, "Patched Fallout4.exe");
+(B[m         DowngraderExecutionResult {
+             request_id,
+             game_root: PathBuf::from("Game"),
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1293:
+     fn recorded_event(event: WorkerEvent) -> WorkerEvent {
+         let sink = RecordingEventSink::new();
+         sink.emit(event).expect("event should record");
+[31m-        sink.events().expect("recorded events should read").remove(0)
+(B[m[32m+        sink.events()
+(B[m[32m+            .expect("recorded events should read")
+(B[m[32m+            .remove(0)
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1356:
+             .open(settings(true, true), Some(installation()))
+             .expect("open should request status");
+         assert_eq!(
+[31m-            controller.status_loaded(request.request_id, status_snapshot(1, DowngraderTarget::OldGen)),
+(B[m[32m+            controller.status_loaded(
+(B[m[32m+                request.request_id,
+(B[m[32m+                status_snapshot(1, DowngraderTarget::OldGen)
+(B[m[32m+            ),
+(B[m             DowngraderTransitionResult::Applied
+         );
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1401:
+             status_snapshot(status_request.request_id, DowngraderTarget::OldGen),
+         );
+ 
+[31m-        let first = controller.request_patch_all().expect("first click should plan");
+(B[m[32m+        let first = controller
+(B[m[32m+            .request_patch_all()
+(B[m[32m+            .expect("first click should plan");
+(B[m         let DowngraderPatchWorkerRequest::PreviewPlan(plan_request) = first else {
+             panic!("first click must not request execution");
+         };
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1461:
+             DowngraderPatchWorkerRequest::PreviewPlan(_) => panic!("unexpected plan"),
+         };
+ 
+[31m-        assert_eq!(controller.request_close(), DowngraderTransitionResult::CloseBlocked);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.request_close(),
+(B[m[32m+            DowngraderTransitionResult::CloseBlocked
+(B[m[32m+        );
+(B[m         assert_eq!(controller.phase(), DowngraderControllerPhase::Running);
+[31m-        assert_eq!(controller.active_run_request_id(), Some(run_request.request_id));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.active_run_request_id(),
+(B[m[32m+            Some(run_request.request_id)
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1486:
+             )),
+             DowngraderTransitionResult::StaleIgnored
+         );
+[31m-        assert_eq!(controller.active_status_request_id(), Some(second.request_id));
+(B[m         assert_eq!(
+[31m-            controller.status_loaded(second.request_id, status_snapshot(second.request_id, DowngraderTarget::NextGen)),
+(B[m[32m+            controller.active_status_request_id(),
+(B[m[32m+            Some(second.request_id)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.status_loaded(
+(B[m[32m+                second.request_id,
+(B[m[32m+                status_snapshot(second.request_id, DowngraderTarget::NextGen)
+(B[m[32m+            ),
+(B[m             DowngraderTransitionResult::Applied
+         );
+ 
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1550:
+ 
+         assert_eq!(result, DowngraderTransitionResult::Applied);
+         assert_eq!(controller.phase(), DowngraderControllerPhase::SafeError);
+[31m-        assert_eq!(controller.safe_error(), Some(DOWNGRADER_PLAN_START_FAILED_MESSAGE));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.safe_error(),
+(B[m[32m+            Some(DOWNGRADER_PLAN_START_FAILED_MESSAGE)
+(B[m[32m+        );
+(B[m         assert!(controller.close_enabled());
+         assert_eq!(controller.active_plan_request_id(), None);
+         assert!(!controller.patch_button_enabled());
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1557:
+[31m-        assert!(controller
+(B[m[31m-            .log_rows()
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|row| row.level == DowngraderLogLevel::Bad && row.message == DOWNGRADER_PLAN_START_FAILED_MESSAGE));
+(B[m[31m-        assert_eq!(controller.request_close(), DowngraderTransitionResult::Applied);
+(B[m[32m+        assert!(
+(B[m[32m+            controller
+(B[m[32m+                .log_rows()
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|row| row.level == DowngraderLogLevel::Bad
+(B[m[32m+                    && row.message == DOWNGRADER_PLAN_START_FAILED_MESSAGE)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.request_close(),
+(B[m[32m+            DowngraderTransitionResult::Applied
+(B[m[32m+        );
+(B[m         assert_eq!(controller.phase(), DowngraderControllerPhase::Closed);
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1618:
+             .expect("completion should queue status refresh");
+         assert_eq!(refresh.request_id, 4);
+         assert_eq!(refresh.task.id.as_str(), "s09-downgrader-status:4");
+[31m-        assert_eq!(refresh.settings_snapshot.keep_backups, run_request.options.keep_backups);
+(B[m[31m-        assert_eq!(refresh.settings_snapshot.delete_deltas, run_request.options.delete_deltas);
+(B[m         assert_eq!(
+[32m+            refresh.settings_snapshot.keep_backups,
+(B[m[32m+            run_request.options.keep_backups
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            refresh.settings_snapshot.delete_deltas,
+(B[m[32m+            run_request.options.delete_deltas
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             controller.handle_worker_event(WorkerEvent::completed(
+                 refresh.task,
+                 downgrader_status_loaded_payload(
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1656:
+             DowngraderTransitionResult::Applied
+         );
+         assert_eq!(controller.phase(), DowngraderControllerPhase::SafeError);
+[31m-        assert_eq!(controller.safe_error(), Some("Could not load Downgrader status."));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.safe_error(),
+(B[m[32m+            Some("Could not load Downgrader status.")
+(B[m[32m+        );
+(B[m         assert!(!controller.status_text().contains("raw"));
+         assert!(controller.close_enabled());
+     }
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1668:
+         let run = downgrader_run_task(9);
+ 
+         assert_eq!(downgrader_request_id_from_task_id(&status.id), Some(7));
+[31m-        assert_eq!(downgrader_stage_from_task_id(&status.id), Some(DowngraderWorkerStage::Status));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            downgrader_stage_from_task_id(&status.id),
+(B[m[32m+            Some(DowngraderWorkerStage::Status)
+(B[m[32m+        );
+(B[m         assert_eq!(downgrader_request_id_from_task_id(&plan_task.id), Some(8));
+[31m-        assert_eq!(downgrader_stage_from_task_id(&plan_task.id), Some(DowngraderWorkerStage::Plan));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            downgrader_stage_from_task_id(&plan_task.id),
+(B[m[32m+            Some(DowngraderWorkerStage::Plan)
+(B[m[32m+        );
+(B[m         assert_eq!(downgrader_request_id_from_task_id(&run.id), Some(9));
+[31m-        assert_eq!(downgrader_stage_from_task_id(&run.id), Some(DowngraderWorkerStage::Run));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            downgrader_stage_from_task_id(&run.id),
+(B[m[32m+            Some(DowngraderWorkerStage::Run)
+(B[m[32m+        );
+(B[m 
+         assert!(matches!(
+             downgrader_log_row_payload(
+Diff in /mnt/j/cmt-rs/src/app/downgrader_controller.rs:1681:
+             ),
+             WorkerPayload::Downgrader(DowngraderWorkerPayload::LogRow { request_id: 9, .. })
+         ));
+[31m-        assert_eq!(parse_target_value(TARGET_OLD_GEN_LABEL), Some(DowngraderTarget::OldGen));
+(B[m[31m-        assert_eq!(parse_target_value(TARGET_NEXT_GEN_LABEL), Some(DowngraderTarget::NextGen));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            parse_target_value(TARGET_OLD_GEN_LABEL),
+(B[m[32m+            Some(DowngraderTarget::OldGen)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            parse_target_value(TARGET_NEXT_GEN_LABEL),
+(B[m[32m+            Some(DowngraderTarget::NextGen)
+(B[m[32m+        );
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:1126:
+             counts: DowngraderPreviewPlanCounts::default(),
+             can_execute: true,
+         };
+[31m-        let log_row = DowngraderExecutionLogRow::new(DowngraderLogLevel::Good, "Patched Fallout4.exe");
+(B[m[32m+        let log_row =
+(B[m[32m+            DowngraderExecutionLogRow::new(DowngraderLogLevel::Good, "Patched Fallout4.exe");
+(B[m         let result = DowngraderExecutionResult {
+             request_id: 12,
+             game_root: PathBuf::from("Game"),
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:1142:
+         for event in [
+             WorkerEvent::completed(
+                 WorkerTask::new("s09-downgrader-status:10", WorkerTaskKind::Patch),
+[31m-                WorkerPayload::Downgrader(DowngraderWorkerPayload::status_loaded(10, status.clone())),
+(B[m[32m+                WorkerPayload::Downgrader(DowngraderWorkerPayload::status_loaded(
+(B[m[32m+                    10,
+(B[m[32m+                    status.clone(),
+(B[m[32m+                )),
+(B[m             ),
+             WorkerEvent::completed(
+                 WorkerTask::new("s09-downgrader-plan:11", WorkerTaskKind::Patch),
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:1163:
+             ),
+             WorkerEvent::completed(
+                 task.clone(),
+[31m-                WorkerPayload::Downgrader(DowngraderWorkerPayload::run_completed(12, result.clone())),
+(B[m[32m+                WorkerPayload::Downgrader(DowngraderWorkerPayload::run_completed(
+(B[m[32m+                    12,
+(B[m[32m+                    result.clone(),
+(B[m[32m+                )),
+(B[m             ),
+             WorkerEvent::failed(
+                 WorkerTask::new("s09-downgrader-run:13", WorkerTaskKind::Patch),

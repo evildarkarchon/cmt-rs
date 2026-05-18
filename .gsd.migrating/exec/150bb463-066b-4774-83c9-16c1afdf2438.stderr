@@ -1,0 +1,22 @@
+grep: "": No such file or directory
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+environment: line 9: : No such file or directory
+environment: line 18: [: : integer expression expected
+/bin/bash: line 42: exit: : numeric argument required

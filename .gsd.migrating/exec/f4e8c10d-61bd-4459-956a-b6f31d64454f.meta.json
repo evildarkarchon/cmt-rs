@@ -1,0 +1,18 @@
+{
+  "id": "f4e8c10d-61bd-4459-956a-b6f31d64454f",
+  "runtime": "bash",
+  "purpose": "format after adding F4SE scan service",
+  "script_chars": 9,
+  "started_at": "2026-05-18T03:57:28.614Z",
+  "finished_at": "2026-05-18T03:57:29.142Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 528,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f4e8c10d-61bd-4459-956a-b6f31d64454f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f4e8c10d-61bd-4459-956a-b6f31d64454f.stderr"
+}

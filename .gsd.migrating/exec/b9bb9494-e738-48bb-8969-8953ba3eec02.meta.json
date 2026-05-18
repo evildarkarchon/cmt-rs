@@ -1,0 +1,18 @@
+{
+  "id": "b9bb9494-e738-48bb-8969-8953ba3eec02",
+  "runtime": "bash",
+  "purpose": "full cargo test after f4se domain contract",
+  "script_chars": 10,
+  "started_at": "2026-05-18T03:44:51.586Z",
+  "finished_at": "2026-05-18T03:45:00.062Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8476,
+  "stdout_bytes": 18946,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b9bb9494-e738-48bb-8969-8953ba3eec02.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b9bb9494-e738-48bb-8969-8953ba3eec02.stderr"
+}

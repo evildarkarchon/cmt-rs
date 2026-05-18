@@ -1,0 +1,18 @@
+{
+  "id": "7ba7e88b-e2d7-42b3-bea4-a971d376db50",
+  "runtime": "bash",
+  "purpose": "format after tab component warning test",
+  "script_chars": 9,
+  "started_at": "2026-05-18T07:10:55.249Z",
+  "finished_at": "2026-05-18T07:10:55.862Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 613,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7ba7e88b-e2d7-42b3-bea4-a971d376db50.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7ba7e88b-e2d7-42b3-bea4-a971d376db50.stderr"
+}

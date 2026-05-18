@@ -1,0 +1,18 @@
+{
+  "id": "cd0025da-f888-44be-9ab0-6ed3089715ac",
+  "runtime": "bash",
+  "purpose": "cargo check after f4se domain contract",
+  "script_chars": 11,
+  "started_at": "2026-05-18T03:44:29.474Z",
+  "finished_at": "2026-05-18T03:44:46.194Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16720,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\cd0025da-f888-44be-9ab0-6ed3089715ac.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\cd0025da-f888-44be-9ab0-6ed3089715ac.stderr"
+}

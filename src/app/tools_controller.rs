@@ -10,8 +10,7 @@ use crate::{
 };
 
 /// Default status text shown before a specific deferred utility action is requested.
-pub const TOOLS_DEFAULT_DISABLED_UTILITY_STATUS: &str =
-    "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
+pub const TOOLS_DEFAULT_DISABLED_UTILITY_STATUS: &str = "Archive Patcher is deferred until S10.";
 
 /// Result of applying a Tools controller transition.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

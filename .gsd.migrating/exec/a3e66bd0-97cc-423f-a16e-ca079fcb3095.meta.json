@@ -1,0 +1,18 @@
+{
+  "id": "a3e66bd0-97cc-423f-a16e-ca079fcb3095",
+  "runtime": "bash",
+  "purpose": "search installed Slint examples for property changed callback syntax",
+  "script_chars": 601,
+  "started_at": "2026-05-18T04:20:50.404Z",
+  "finished_at": "2026-05-18T04:20:51.227Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 823,
+  "stdout_bytes": 3272,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a3e66bd0-97cc-423f-a16e-ca079fcb3095.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a3e66bd0-97cc-423f-a16e-ca079fcb3095.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "7b69e99c-8c98-4fb9-a9ca-76f018912da6",
+  "runtime": "bash",
+  "purpose": "T05 S06 quality gate: cargo clippy --all-targets --all-features",
+  "script_chars": 41,
+  "started_at": "2026-05-18T04:44:55.649Z",
+  "finished_at": "2026-05-18T04:45:13.221Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 17572,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7b69e99c-8c98-4fb9-a9ca-76f018912da6.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7b69e99c-8c98-4fb9-a9ca-76f018912da6.stderr"
+}

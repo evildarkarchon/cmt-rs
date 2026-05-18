@@ -1,0 +1,18 @@
+{
+  "id": "40317f83-5f52-4fca-b839-0d3563dc10ac",
+  "runtime": "bash",
+  "purpose": "inspect scanner action domain APIs",
+  "script_chars": 236,
+  "started_at": "2026-05-18T06:42:47.839Z",
+  "finished_at": "2026-05-18T06:42:47.962Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 123,
+  "stdout_bytes": 3814,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\40317f83-5f52-4fca-b839-0d3563dc10ac.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\40317f83-5f52-4fca-b839-0d3563dc10ac.stderr"
+}

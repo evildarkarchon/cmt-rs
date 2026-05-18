@@ -1,0 +1,18 @@
+{
+  "id": "67b6acb7-9fba-4c89-b752-bccb705a8523",
+  "runtime": "bash",
+  "purpose": "full cargo test after scanner autofix cleanup",
+  "script_chars": 10,
+  "started_at": "2026-05-18T08:38:56.469Z",
+  "finished_at": "2026-05-18T08:39:04.871Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8402,
+  "stdout_bytes": 28938,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\67b6acb7-9fba-4c89-b752-bccb705a8523.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\67b6acb7-9fba-4c89-b752-bccb705a8523.stderr"
+}

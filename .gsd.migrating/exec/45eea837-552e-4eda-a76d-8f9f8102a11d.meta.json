@@ -1,0 +1,18 @@
+{
+  "id": "45eea837-552e-4eda-a76d-8f9f8102a11d",
+  "runtime": "bash",
+  "purpose": "locate discovery user-message path formatting",
+  "script_chars": 264,
+  "started_at": "2026-05-18T07:27:21.711Z",
+  "finished_at": "2026-05-18T07:27:21.824Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 2015,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\45eea837-552e-4eda-a76d-8f9f8102a11d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\45eea837-552e-4eda-a76d-8f9f8102a11d.stderr"
+}

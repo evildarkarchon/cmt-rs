@@ -1,0 +1,11 @@
+
+running 6 tests
+test tests::s08_scanner_autofix_runtime_wiring_empty_production_hidden_state_and_tampered_callback_rejected ... ok
+test tests::s08_scanner_autofix_runtime_wiring_fake_projection_shows_button_and_rejects_repeated_fixing_click ... ok
+test tests::s08_scanner_autofix_runtime_wiring_worker_spawn_and_failure_feedback_are_safe ... ok
+test tests::s08_scanner_autofix_runtime_wiring_stale_completion_is_ignored ... ok
+test tests::s08_scanner_autofix_runtime_wiring_fake_worker_failure_shows_safe_inline_results ... ok
+test tests::s08_scanner_autofix_runtime_wiring_fake_worker_success_shows_inline_results ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 281 filtered out; finished in 0.01s
+

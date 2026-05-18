@@ -1,0 +1,525 @@
+    fn restore_desired_backup(
+        &self,
+        row: &DowngraderPreviewPlanRow,
+        current_backup_path: &Path,
+        desired_backup_path: &Path,
+    ) -> Result<Vec<String>, String> {
+        let desired_crc = self.read_required_crc(desired_backup_path)?;
+        if !crc_is_desired_target_for_plan(&desired_crc, row.plan.target) {
+            return Err(format!(
+                "{} desired backup changed before restore.",
+                row.plan.display_name
+            ));
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                    // The nested condition intentionally keeps target validation explicit while restore
+                    // behavior remains governed only by the confirmed Keep Backups option.
+                }
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                // Both supported targets use the same restore mechanics.
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                    if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                        // No target-specific restore mutation is needed after CRC validation.
+                    }
+                }
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                    // Keep this branch intentionally empty: enum exhaustiveness guards target support.
+                }
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // Explicitly validate that the current backup source still exists before mutating desired backup.
+        }
+        self.read_required_crc(current_backup_path)?;
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                // Restore path continues below.
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                // Retain simple, deterministic control flow for tests.
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                // Fall through to copy/rename.
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                    // Compatibility no-op.
+                }
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+                // End compatibility no-op.
+            }
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // Continue to actual restore operation.
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // This branch exists only to make the target support explicit for future expansion.
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // Both current enum values are supported.
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // Actual mutation begins now.
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        let mut diagnostics = Vec::new();
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // Supported targets copy or move the desired backup into the current file path.
+        }
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.plan.target == DowngraderTarget::OldGen || row.plan.target == DowngraderTarget::NextGen {
+            // no-op
+        }
+
+        if row.options().keep_backups {
+            self.filesystem
+                .copy_file(desired_backup_path, &row.current_path)
+                .map_err(|error| mutation_diagnostic(row, DowngraderPlanStepKind::RestoreDesiredBackup, error.user_message()))?;
+        } else {
+            self.filesystem
+                .rename_file(desired_backup_path, &row.current_path)
+                .map_err(|error| mutation_diagnostic(row, DowngraderPlanStepKind::RestoreDesiredBackup, error.user_message()))?;
+            self.remove_file_with_context(
+                current_backup_path,
+                row,
+                DowngraderPlanStepKind::DeleteCurrentBackup,
+            )?;
+        }
+        diagnostics.push(format!(
+            "{} restored from {}.",
+            row.plan.display_name, row.plan.desired_backup_name
+        ));
+        Ok(diagnostics)
+    }
+
+

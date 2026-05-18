@@ -1,0 +1,201 @@
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:197:
+     /// Replaces transient scanner settings with the snapshot Slint should display.
+     pub fn replace_settings(&mut self, settings: ScannerSettings) {
+         self.settings = settings;
+[31m-        if !any_scanner_category_enabled(&self.settings) && self.phase != ScannerControllerPhase::Scanning
+(B[m[32m+        if !any_scanner_category_enabled(&self.settings)
+(B[m[32m+            && self.phase != ScannerControllerPhase::Scanning
+(B[m         {
+             self.status_text = SCANNER_NO_ENABLED_CATEGORIES_MESSAGE.to_owned();
+         }
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:526:
+         );
+         self.scan_failed(
+             scan_id,
+[31m-            WorkerFailure::new(SCANNER_SCAN_START_FAILED_MESSAGE).with_diagnostic(error.to_string()),
+(B[m[32m+            WorkerFailure::new(SCANNER_SCAN_START_FAILED_MESSAGE)
+(B[m[32m+                .with_diagnostic(error.to_string()),
+(B[m         )
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:560:
+     }
+ 
+     /// Returns an enabled selected action for a stable action id, recording safe feedback if absent.
+[31m-    pub fn request_selected_action(
+(B[m[31m-        &mut self,
+(B[m[31m-        action_id: &str,
+(B[m[31m-    ) -> Option<ScannerActionDescriptor> {
+(B[m[32m+    pub fn request_selected_action(&mut self, action_id: &str) -> Option<ScannerActionDescriptor> {
+(B[m         let Some(kind) = ScannerActionKind::from_id(action_id) else {
+             self.last_action_feedback = Some(ScannerActionFeedback::failed(
+                 self.latest_scan_id,
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:780:
+         || settings.race_subgraphs
+ }
+ 
+[31m-fn scanner_setting_mut(
+(B[m[31m-    settings: &mut ScannerSettings,
+(B[m[31m-    category: ScannerCategoryKind,
+(B[m[31m-) -> &mut bool {
+(B[m[32m+fn scanner_setting_mut(settings: &mut ScannerSettings, category: ScannerCategoryKind) -> &mut bool {
+(B[m     match category {
+         ScannerCategoryKind::OverviewIssues => &mut settings.overview_issues,
+         ScannerCategoryKind::Errors => &mut settings.errors,
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:813:
+         )
+     }
+ 
+[31m-    fn completed_snapshot(scan_id: ScannerScanId, results: Vec<ScannerResult>) -> ScannerScanSnapshot {
+(B[m[32m+    fn completed_snapshot(
+(B[m[32m+        scan_id: ScannerScanId,
+(B[m[32m+        results: Vec<ScannerResult>,
+(B[m[32m+    ) -> ScannerScanSnapshot {
+(B[m         ScannerScanSnapshot::from_results(scan_id, results, "Scanner completed.")
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:850:
+         let mut controller = ScannerController::new(settings);
+ 
+         assert!(!controller.scan_button_enabled());
+[31m-        assert_eq!(controller.status_text(), SCANNER_NO_ENABLED_CATEGORIES_MESSAGE);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.status_text(),
+(B[m[32m+            SCANNER_NO_ENABLED_CATEGORIES_MESSAGE
+(B[m[32m+        );
+(B[m         assert!(controller.request_scan().is_none());
+         assert_eq!(controller.next_scan_id(), 1);
+     }
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:881:
+     fn scanner_controller_ignores_stale_progress_completion_and_action_events() {
+         let mut controller = ScannerController::default();
+         let first = controller.request_scan().expect("first scan should start");
+[31m-        controller.scan_completed(first.scan_id, ScannerScanSnapshot::empty(first.scan_id, "Done."));
+(B[m[32m+        controller.scan_completed(
+(B[m[32m+            first.scan_id,
+(B[m[32m+            ScannerScanSnapshot::empty(first.scan_id, "Done."),
+(B[m[32m+        );
+(B[m         let second = controller.request_scan().expect("second scan should start");
+ 
+         let stale_progress = controller.handle_worker_event(WorkerEvent::progress(
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:936:
+             request.scan_id,
+             completed_snapshot(request.scan_id, vec![example_result("desktop.ini")]),
+         );
+[31m-        assert_eq!(controller.select_result(0), ScannerTransitionResult::Applied);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.select_result(0),
+(B[m[32m+            ScannerTransitionResult::Applied
+(B[m[32m+        );
+(B[m         assert!(controller.selected_detail().is_some());
+ 
+         let result = controller.select_result(99);
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:957:
+         );
+         controller.select_result(0);
+ 
+[31m-        assert!(controller.request_selected_action("not-an-action").is_none());
+(B[m[32m+        assert!(
+(B[m[32m+            controller
+(B[m[32m+                .request_selected_action("not-an-action")
+(B[m[32m+                .is_none()
+(B[m[32m+        );
+(B[m         assert_eq!(
+[31m-            controller.last_action_feedback().map(ScannerActionFeedback::safe_message),
+(B[m[32m+            controller
+(B[m[32m+                .last_action_feedback()
+(B[m[32m+                .map(ScannerActionFeedback::safe_message),
+(B[m             Some(SCANNER_ACTION_UNAVAILABLE_MESSAGE)
+         );
+ 
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:968:
+         assert_eq!(result, ScannerTransitionResult::Rejected);
+         assert!(!controller.file_list_visible());
+         assert_eq!(
+[31m-            controller.last_action_feedback().map(ScannerActionFeedback::safe_message),
+(B[m[32m+            controller
+(B[m[32m+                .last_action_feedback()
+(B[m[32m+                .map(ScannerActionFeedback::safe_message),
+(B[m             Some(SCANNER_FILE_LIST_UNAVAILABLE_MESSAGE)
+         );
+     }
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:1012:
+         );
+         assert_eq!(action_result, ScannerTransitionResult::Applied);
+         assert_eq!(
+[31m-            controller.last_action_feedback().map(ScannerActionFeedback::safe_message),
+(B[m[32m+            controller
+(B[m[32m+                .last_action_feedback()
+(B[m[32m+                .map(ScannerActionFeedback::safe_message),
+(B[m             Some("Location could not be opened.")
+         );
+[31m-        assert!(!controller
+(B[m[31m-            .last_action_feedback()
+(B[m[31m-            .expect("feedback should exist")
+(B[m[31m-            .safe_message()
+(B[m[31m-            .contains("raw OS"));
+(B[m[32m+        assert!(
+(B[m[32m+            !controller
+(B[m[32m+                .last_action_feedback()
+(B[m[32m+                .expect("feedback should exist")
+(B[m[32m+                .safe_message()
+(B[m[32m+                .contains("raw OS")
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:1059:
+     fn scanner_controller_scan_task_ids_are_stable_and_duplicate_free() {
+         let mut controller = ScannerController::default();
+         let first = controller.request_scan().expect("first scan should start");
+[31m-        controller.scan_completed(first.scan_id, ScannerScanSnapshot::empty(first.scan_id, "Done."));
+(B[m[32m+        controller.scan_completed(
+(B[m[32m+            first.scan_id,
+(B[m[32m+            ScannerScanSnapshot::empty(first.scan_id, "Done."),
+(B[m[32m+        );
+(B[m         let second = controller.request_scan().expect("second scan should start");
+ 
+         assert_eq!(first.scan_id, 1);
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:1067:
+         assert_ne!(first.task.id, second.task.id);
+         assert_eq!(scanner_scan_id_from_task_id(&first.task.id), Some(1));
+         assert_eq!(scanner_scan_id_from_task_id(&second.task.id), Some(2));
+[31m-        assert_eq!(scanner_scan_id_from_task_id(&WorkerTaskId::new("scan:2")), None);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            scanner_scan_id_from_task_id(&WorkerTaskId::new("scan:2")),
+(B[m[32m+            None
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/scanner_controller.rs:1086:
+ 
+         assert_eq!(action.label, ACTION_COPY_DETAILS_LABEL);
+         assert!(action.enabled);
+[31m-        assert!(controller
+(B[m[31m-            .selected_detail()
+(B[m[31m-            .expect("detail should exist")
+(B[m[31m-            .copy_details_text
+(B[m[31m-            .contains("desktop.ini"));
+(B[m[32m+        assert!(
+(B[m[32m+            controller
+(B[m[32m+                .selected_detail()
+(B[m[32m+                .expect("detail should exist")
+(B[m[32m+                .copy_details_text
+(B[m[32m+                .contains("desktop.ini")
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:859:
+         )
+         .with_diagnostic("raw platform detail kept out of safe text");
+         let action_event = WorkerEvent::completed(
+[31m-            WorkerTask::new("s07-scanner-action:open-location", WorkerTaskKind::DesktopAction),
+(B[m[32m+            WorkerTask::new(
+(B[m[32m+                "s07-scanner-action:open-location",
+(B[m[32m+                WorkerTaskKind::DesktopAction,
+(B[m[32m+            ),
+(B[m             WorkerPayload::Scanner(ScannerWorkerPayload::action_completed(feedback.clone())),
+         );
+ 

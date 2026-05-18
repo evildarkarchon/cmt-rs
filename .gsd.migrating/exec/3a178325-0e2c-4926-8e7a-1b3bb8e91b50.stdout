@@ -1,0 +1,340 @@
+## src/domain/scanner.rs (56032 bytes)
+  struct Scanner: 10
+    211: pub struct ScannerCategoryDescriptor {
+    261: pub struct ScannerCategoryProjection {
+    569: pub struct ScannerFileListEntry {
+    588: pub struct ScannerFileList {
+    628: pub struct ScannerDetailRecord {
+    696: pub struct ScannerActionDescriptor {
+    737: pub struct ScannerActionFeedback {
+    795: pub struct ScannerResult {
+    1014: pub struct ScannerResultGroup {
+    1036: pub struct ScannerScanSnapshot {
+  enum Scanner: 6
+    138: pub enum ScannerCategoryKind {
+    307: pub enum ScannerProblemType {
+    411: pub enum ScannerSolutionKind {
+    500: pub enum ScannerExtraData {
+    637: pub enum ScannerActionKind {
+    681: pub enum ScannerActionTarget {
+  AutoFix: 5
+    649: AutoFixDeferred,
+    661: Self::AutoFixDeferred => "auto-fix",
+    673: "auto-fix" => Some(Self::AutoFixDeferred),
+    725: kind: ScannerActionKind::AutoFixDeferred,
+    1528: .find(|action| action.kind == ScannerActionKind::AutoFixDeferred)
+  AUTO_FIX: 5
+    46: pub const AUTO_FIX_DEFERRED_STATUS: &str = "Auto-Fix is reserved for a later port phase.";
+    87: pub const ACTION_AUTO_FIX_LABEL: &str = "Auto-Fix";
+    726: label: ACTION_AUTO_FIX_LABEL,
+    730: status_text: Some(AUTO_FIX_DEFERRED_STATUS),
+    1531: assert_eq!(deferred.status_text, Some(AUTO_FIX_DEFERRED_STATUS));
+  ScannerAction: 39
+    637: pub enum ScannerActionKind {
+    652: impl ScannerActionKind {
+    681: pub enum ScannerActionTarget {
+    696: pub struct ScannerActionDescriptor {
+    698: pub kind: ScannerActionKind,
+    702: pub target: ScannerActionTarget,
+    711: impl ScannerActionDescriptor {
+    712: fn enabled(kind: ScannerActionKind, label: &'static str, target: ScannerActionTarget) -> Self {
+    725: kind: ScannerActionKind::AutoFixDeferred,
+    727: target: ScannerActionTarget::Deferred,
+    737: pub struct ScannerActionFeedback {
+    741: pub action: ScannerActionKind,
+  Scan: 175
+    1: //! Pure Scanner-tab domain contract.
+    3: //! The reference Tkinter Scanner tab lives in `CMT/src/tabs/_scanner.py` and
+    5: //! `SimpleProblemInfo`. This module freezes the Scanner labels, settings
+    15: use crate::domain::{overview::OverviewProblem, settings::ScannerSettings};
+    18: pub const SCANNER_TAB_TITLE: &str = "Scanner";
+    20: pub const SCAN_SETTINGS_GROUP_LABEL: &str = "Scan Settings";
+    22: pub const SCAN_BUTTON_LABEL: &str = "Scan Game";
+    24: pub const SCANNING_BUTTON_LABEL: &str = "Scanning...";
+    36: pub const PROGRESS_SCANNING_PREFIX: &str = "Scanning...";
+    136: /// Scanner category identifiers matching `CMT/src/scan_settings.py::ScanSetting`.
+    138: pub enum ScannerCategoryKind {
+    155: impl ScannerCategoryKind {
+  fix: 14
+    29: /// Reference result-count suffix.
+    35: /// Reference progress prefix while walking top-level Data folders.
+    449: "Archives must be named the same as a plugin with an added suffix or added to an INI."
+    661: Self::AutoFixDeferred => "auto-fix",
+    673: "auto-fix" => Some(Self::AutoFixDeferred),
+    723: fn deferred_auto_fix() -> Self {
+    815: pub auto_fix_deferred: bool,
+    837: auto_fix_deferred: false,
+    866: auto_fix_deferred: false,
+    889: pub const fn with_deferred_auto_fix(mut self) -> Self {
+    890: self.auto_fix_deferred = true;
+    990: if self.auto_fix_deferred {
+
+## src/services/scanner.rs (97196 bytes)
+  struct Scanner: 7
+    141: pub struct ScannerScanRequest<'a> {
+    255: pub struct ScannerProgressEvent {
+    329: pub struct ScannerScanStatus {
+    366: pub struct ScannerScanDiagnostic {
+    379: pub struct ScannerScanDiagnostics {
+    457: pub struct ScannerScanOutput {
+    474: pub struct ScannerScanService<'a, F: Filesystem + ?Sized> {
+  enum Scanner: 3
+    224: pub enum ScannerScanPhase {
+    316: pub enum ScannerScanStatusKind {
+    347: pub enum ScannerScanDiagnosticKind {
+  Scan: 283
+    1: //! Adapter-backed Scanner read-only scan service.
+    3: //! The reference Scanner tab performs a read-only filesystem walk over `Data`,
+    27: PROGRESS_REFRESHING_OVERVIEW_TEXT, RACE_SUBGRAPH_THRESHOLD, ScannerExtraData,
+    28: ScannerFileList, ScannerFileListEntry, ScannerProblemType, ScannerResult,
+    29: ScannerResultGroup, ScannerSolutionKind, group_scanner_results,
+    32: settings::ScannerSettings,
+    141: pub struct ScannerScanRequest<'a> {
+    145: pub settings: &'a ScannerSettings,
+    160: impl<'a> ScannerScanRequest<'a> {
+    162: pub const fn new(scan_id: u64, settings: &'a ScannerSettings) -> Self {
+    224: pub enum ScannerScanPhase {
+    239: impl ScannerScanPhase {
+  callback: 1
+    498: /// and diagnostics; the callback exists for UI/runtime wiring that needs to
+  fix: 39
+    146: /// Optional discovered installation, used for Data fallback and INI archive suffixes.
+    148: /// Optional Data path override supplied by discovery or a test fixture.
+    396: /// Number of Data files considered after skip-suffix filtering.
+    968: let Some(mod_name) = line.strip_prefix('+') else {
+    1136: let archive_suffixes = request
+    1138: .map(|installation| ba2_suffixes(&installation.ini_files))
+    1139: .unwrap_or_else(default_ba2_suffixes);
+    1173: &archive_suffixes,
+    1247: &archive_suffixes,
+    1265: archive_suffixes: &[String],
+    1342: archive_suffixes,
+    1358: archive_suffixes,
+
+## src/app/scanner_controller.rs (43516 bytes)
+  struct Scanner: 3
+    78: pub struct ScannerScanWorkerRequest {
+    100: pub struct ScannerSelectedDetail {
+    137: pub struct ScannerController {
+  enum Scanner: 2
+    44: pub enum ScannerControllerPhase {
+    58: pub enum ScannerTransitionResult {
+  ScannerAction: 24
+    14: ScannerActionDescriptor, ScannerActionFeedback, ScannerActionKind, ScannerCategoryKind,
+    110: pub actions: Vec<ScannerActionDescriptor>,
+    127: fn action(&self, kind: ScannerActionKind) -> Option<ScannerActionDescriptor> {
+    154: last_action_feedback: Option<ScannerActionFeedback>,
+    298: pub fn last_action_feedback(&self) -> Option<&ScannerActionFeedback> {
+    565: pub fn request_selected_action(&mut self, action_id: &str) -> Option<ScannerActionDescriptor> {
+    566: let Some(kind) = ScannerActionKind::from_id(action_id) else {
+    567: self.last_action_feedback = Some(ScannerActionFeedback::failed(
+    569: ScannerActionKind::CopyDetails,
+    585: self.last_action_feedback = Some(ScannerActionFeedback::failed(
+    609: self.last_action_feedback = Some(ScannerActionFeedback::failed(
+    611: ScannerActionKind::ShowFileList,
+  WorkerEvent: 6
+    22: ScannerWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerProgress,
+    674: pub fn handle_worker_event(&mut self, event: WorkerEvent) -> ScannerTransitionResult {
+    893: let stale_progress = controller.handle_worker_event(WorkerEvent::progress(
+    897: let stale_completion = controller.handle_worker_event(WorkerEvent::completed(
+    1050: let progress = WorkerEvent::progress(
+    1056: let completion = WorkerEvent::completed(
+  Scan: 242
+    1: //! Slint-free Scanner-tab controller and worker-payload reducer.
+    14: ScannerActionDescriptor, ScannerActionFeedback, ScannerActionKind, ScannerCategoryKind,
+    15: ScannerCategoryProjection, ScannerDetailRecord, ScannerFileList, ScannerResult,
+    16: ScannerResultGroup, ScannerScanSnapshot, scanner_category_projection,
+    19: settings::ScannerSettings,
+    22: ScannerWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerProgress,
+    27: /// Stable prefix for S07 Scanner scan worker task identifiers.
+    29: /// Safe status shown when a Scanner worker cannot be scheduled.
+    30: pub const SCANNER_SCAN_START_FAILED_MESSAGE: &str = "Scanner scan could not be started.";
+    34: pub const SCANNER_ACTION_UNAVAILABLE_MESSAGE: &str = "Scanner action is not available.";
+    39: /// Monotonic identity assigned to each Scanner scan request.
+    40: pub type ScannerScanId = u64;
+  fix: 2
+    27: /// Stable prefix for S07 Scanner scan worker task identifiers.
+    767: .strip_prefix(SCANNER_SCAN_TASK_PREFIX)
+
+## src/workers/events.rs (33335 bytes)
+  enum Scanner: 1
+    414: pub enum ScannerWorkerPayload {
+  ScannerAction: 6
+    22: scanner::{ScannerActionFeedback, ScannerScanSnapshot},
+    425: feedback: ScannerActionFeedback,
+    439: pub fn action_completed(feedback: ScannerActionFeedback) -> Self {
+    837: ScannerActionFeedback, ScannerActionKind, ScannerScanSnapshot,
+    855: let feedback = ScannerActionFeedback::failed(
+    857: ScannerActionKind::OpenLocation,
+  WorkerEvent: 13
+    189: pub struct WorkerEvent {
+    198: impl WorkerEvent {
+    770: let event = WorkerEvent::completed(
+    785: let refresh = WorkerEvent::completed(
+    792: let update = WorkerEvent::completed(
+    820: let event = WorkerEvent::completed(
+    842: let event = WorkerEvent::completed(
+    861: let action_event = WorkerEvent::completed(
+    894: let requested = WorkerEvent::cancellation_requested(
+    898: let acknowledged = WorkerEvent::cancellation_acknowledged(
+    902: let cancelled = WorkerEvent::cancelled(task, WorkerCancellation::with_message("Stopped."));
+    940: let tools_event = WorkerEvent::completed(
+  Scan: 50
+    18: f4se::F4seScanSnapshot,
+    22: scanner::{ScannerActionFeedback, ScannerScanSnapshot},
+    72: /// Scanner traversal, parsing, or classification work.
+    73: Scan,
+    94: Self::Scan => "scan",
+    386: /// Scanner-specific status or result text.
+    387: Scan(WorkerMessage),
+    388: /// Scanner-specific snapshot or read-only action payload.
+    389: Scanner(ScannerWorkerPayload),
+    412: /// Scanner-specific worker payloads that must cross the UI handoff boundary intact.
+    414: pub enum ScannerWorkerPayload {
+    415: /// A full Scanner scan produced a render-ready snapshot.
+
+## src/workers/mod.rs (17084 bytes)
+  WorkerEvent: 18
+    20: ToolsActionWorkerPayload, WorkerCancellation, WorkerEvent, WorkerFailure, WorkerMessage,
+    24: RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,
+    62: S: WorkerEventSink,
+    96: emit_or_log(&worker_sink, WorkerEvent::running(worker_task.clone()));
+    107: emit_or_log(&worker_sink, WorkerEvent::completed(worker_task, payload));
+    119: WorkerEvent::cancelled(worker_task, cancellation),
+    132: emit_or_log(&worker_sink, WorkerEvent::failed(worker_task, failure));
+    150: emit_or_log(&worker_sink, WorkerEvent::failed(worker_task, failure));
+    191: S: WorkerEventSink,
+    200: S: WorkerEventSink,
+    232: .emit(WorkerEvent::new(self.task.clone(), status, payload))
+    238: .emit(WorkerEvent::progress(self.task.clone(), progress))
+  Scan: 7
+    3: //! Scan, patch, download, discovery, and subprocess orchestration should enter
+    19: ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload, ScannerWorkerPayload,
+    339: let task = WorkerTask::new("scan-data", WorkerTaskKind::Scan);
+    350: .with_message("Scanning Data folder")
+    354: Ok(WorkerTaskOutcome::Completed(WorkerPayload::Scan(
+    355: WorkerMessage::new("Scan complete."),
+    387: Some(WorkerPayload::Scan(_))
+
+## src/main.rs (184133 bytes)
+  struct Scanner: 6
+    105: struct ScannerActionExecution {
+    152: struct ScannerCategoryToggleProjection {
+    163: struct ScannerUiProjection {
+    2661: struct ScannerDetailProjection {
+    3673: assert!(SCANNER_SLINT.contains("export struct ScannerResultUiRow"));
+    3674: assert!(SCANNER_SLINT.contains("export struct ScannerFileListUiRow"));
+  ScannerAction: 44
+    46: PROGRESS_REFRESHING_OVERVIEW_TEXT, ScannerActionDescriptor, ScannerActionFeedback,
+    47: ScannerActionKind, ScannerActionTarget, ScannerCategoryKind, ScannerCategoryProjection,
+    105: struct ScannerActionExecution {
+    107: descriptor: ScannerActionDescriptor,
+    664: ScannerActionKind::CopyDetails,
+    693: ScannerActionKind::OpenLocation,
+    711: ScannerActionKind::OpenSolutionUrl,
+    729: ScannerActionKind::CopySolutionUrl,
+    1753: action: ScannerActionKind,
+    1782: let feedback = ScannerActionFeedback::failed(scan_id, action, SCANNER_ACTION_START_ERROR)
+    1793: action: ScannerActionKind,
+    1794: ) -> Option<ScannerActionExecution> {
+  WorkerEvent: 29
+    85: WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+    1487: S: WorkerEventSink,
+    1631: S: WorkerEventSink,
+    1649: S: WorkerEventSink,
+    2118: emit_worker_event_or_log(&overview_sink, WorkerEvent::running(task.clone()));
+    2137: let event = WorkerEvent::completed(
+    2274: event: WorkerEvent,
+    2281: event: WorkerEvent,
+    2292: event: WorkerEvent,
+    2303: event: WorkerEvent,
+    2313: event: &WorkerEvent,
+    2331: fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+  Scan: 242
+    17: F4seController, F4seScanWorkerRequest, F4seTransitionResult, f4se_scan_completed_payload,
+    24: SCANNER_ACTION_UNAVAILABLE_MESSAGE, ScannerController, ScannerControllerPhase,
+    25: ScannerScanWorkerRequest, ScannerTransitionResult, any_scanner_category_enabled,
+    35: f4se::{F4seDllRow, F4seGameTarget, F4seRowSeverity, F4seScanSnapshot, F4seScanStatus},
+    46: PROGRESS_REFRESHING_OVERVIEW_TEXT, ScannerActionDescriptor, ScannerActionFeedback,
+    47: ScannerActionKind, ScannerActionTarget, ScannerCategoryKind, ScannerCategoryProjection,
+    48: ScannerFileList, ScannerResult, ScannerResultGroup, ScannerScanSnapshot,
+    64: F4seScanDiagnosticKind, F4seScanDiagnostics, F4seScanRequest, F4seScanService,
+    75: scanner::{ScannerProgressEvent, ScannerScanOutput, ScannerScanRequest, ScannerScanService},
+    96: const SCANNER_ACTION_START_ERROR: &str = "Scanner action could not be started.";
+    99: struct PreparedScannerScan {
+    100: request: ScannerScanWorkerRequest,
+  callback: 77
+    227: bind_settings_callbacks(&app, Rc::clone(&settings_controller));
+    228: bind_tools_callbacks(
+    234: bind_about_callbacks(
+    240: bind_f4se_callbacks(
+    246: bind_scanner_callbacks(
+    253: bind_overview_callbacks(
+    281: fn bind_settings_callbacks(
+    406: fn bind_tools_callbacks(
+    430: fn bind_about_callbacks(
+    570: fn bind_scanner_callbacks(
+    588: "Scanner category callback id was invalid"
+    763: fn bind_overview_callbacks(
+  fix: 9
+    1828: let rest = task_id.as_str().strip_prefix(SCANNER_ACTION_TASK_PREFIX)?;
+    2362: task.id.as_str().strip_prefix(TOOLS_WORKER_TASK_PREFIX)
+    2366: task.id.as_str().strip_prefix(ABOUT_WORKER_TASK_PREFIX)
+    3276: let prefix = format!("{property}:");
+    3280: .filter_map(|line| line.trim().strip_prefix(&prefix))
+    3281: .filter_map(|value| value.trim().trim_end_matches(';').strip_prefix('"'))
+    3282: .filter_map(|value| value.strip_suffix('"'))
+    3755: for prohibited in ["Auto-Fix", "Fixed!", "Fix Failed", "auto-fix"] {
+    4718: fn s05_runtime_wiring_worker_failure_payloads_map_by_surface_task_prefix() {
+
+## ui/scanner_tab.slint (22129 bytes)
+  struct Scanner: 2
+    3: export struct ScannerResultUiRow {
+    11: export struct ScannerFileListUiRow {
+  Scan: 37
+    3: export struct ScannerResultUiRow {
+    11: export struct ScannerFileListUiRow {
+    16: component ScannerCheckOption inherits Rectangle {
+    78: component ScannerProgressBar inherits Rectangle {
+    97: component ScannerResultHeader inherits Rectangle {
+    133: component ScannerResultRow inherits Rectangle {
+    134: in property <ScannerResultUiRow> entry;
+    182: component ScannerDetailValueRow inherits Rectangle {
+    212: component ScannerFileListPanel inherits Rectangle {
+    217: in property <[ScannerFileListUiRow]> rows;
+    320: component ScannerFeedbackBanner inherits Rectangle {
+    339: export component ScannerTab inherits Rectangle {
+  callback: 10
+    23: callback toggled(string, bool);
+    136: callback result-selected(int);
+    374: callback category-toggled(string, bool);
+    375: callback scan-requested();
+    376: callback result-selected(int);
+    377: callback copy-details-requested();
+    378: callback file-list-requested();
+    379: callback open-path-requested();
+    380: callback open-url-requested();
+    381: callback copy-url-requested();
+
+## ui/main.slint (14955 bytes)
+  Scan: 6
+    4: import { ScannerTab, ScannerResultUiRow, ScannerFileListUiRow } from "scanner_tab.slint";
+    46: in-out property <string> scanner-scan-button-text: "Scan Game";
+    53: in-out property <[ScannerResultUiRow]> scanner-result-rows;
+    70: in-out property <[ScannerFileListUiRow]> scanner-file-list-rows;
+    177: title: "Scanner";
+    178: ScannerTab {
+  callback: 21
+    82: callback update-source-selected(string);
+    83: callback log-level-selected(string);
+    84: callback overview-refresh-requested();
+    85: callback overview-open-game-path-requested();
+    86: callback overview-open-nexus-update-requested();
+    87: callback overview-open-github-update-requested();
+    88: callback overview-open-downgrade-manager-requested();
+    89: callback overview-open-archive-patcher-requested();
+    90: callback f4se-tab-activated();
+    91: callback scanner-category-toggled(string, bool);
+    92: callback scanner-scan-requested();
+    93: callback scanner-result-selected(int);
+

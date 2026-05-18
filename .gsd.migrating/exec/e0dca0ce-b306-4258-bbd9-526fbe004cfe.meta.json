@@ -1,0 +1,18 @@
+{
+  "id": "e0dca0ce-b306-4258-bbd9-526fbe004cfe",
+  "runtime": "bash",
+  "purpose": "rerun originally failing cargo test scanner_scan_service after T03 edits",
+  "script_chars": 46,
+  "started_at": "2026-05-18T06:11:50.911Z",
+  "finished_at": "2026-05-18T06:11:59.295Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8384,
+  "stdout_bytes": 2046,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e0dca0ce-b306-4258-bbd9-526fbe004cfe.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e0dca0ce-b306-4258-bbd9-526fbe004cfe.stderr"
+}

@@ -1,0 +1,66 @@
+3243:    const MAIN_SLINT: &str = include_str!("../ui/main.slint");
+3244:    const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
+3245:    const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
+3246:    const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
+3247:    const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
+3248:    const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
+3249:    const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
+3262:            SCANNER_SLINT,
+3287:    fn assert_source_contains_in_order(source: &str, expected: &[&str]) {
+3298:    fn assert_source_contains_strings_in_order(source: &str, expected: &[String]) {
+3354:        let titles = slint_string_property_values(MAIN_SLINT, "title");
+3435:    fn s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend() {
+3461:        assert_source_contains_in_order(
+3482:    fn s06_f4se_slint_contract_main_window_forwards_properties_and_lazy_activation() {
+3483:        assert_source_contains_in_order(
+3484:            MAIN_SLINT,
+3503:        assert_source_contains_in_order(
+3504:            MAIN_SLINT,
+3520:        assert!(!MAIN_SLINT.contains("f4se-refresh"));
+3672:    fn s07_scanner_slint_contract_replaces_placeholder_with_read_only_surface() {
+3673:        assert!(SCANNER_SLINT.contains("export struct ScannerResultUiRow"));
+3674:        assert!(SCANNER_SLINT.contains("export struct ScannerFileListUiRow"));
+3675:        assert!(SCANNER_SLINT.contains("background: #202020;"));
+3676:        assert!(!SCANNER_SLINT.contains("Scanner behavior is reserved for a later port phase."));
+3678:        assert_source_contains_in_order(
+3679:            SCANNER_SLINT,
+3708:        assert_source_contains_in_order(
+3709:            SCANNER_SLINT,
+3722:        assert_source_contains_strings_in_order(SCANNER_SLINT, &expected_category_assignments);
+3734:                SCANNER_SLINT.contains(field),
+3750:                SCANNER_SLINT.contains(callback),
+3757:                !SCANNER_SLINT.contains(prohibited),
+3761:                !MAIN_SLINT.contains(prohibited),
+3766:        assert!(SCANNER_SLINT.contains(SCAN_BUTTON_LABEL));
+3767:        assert!(SCANNER_SLINT.contains(SCANNING_BUTTON_LABEL));
+3768:        assert!(SCANNER_SLINT.contains(ACTION_COPY_DETAILS_LABEL));
+3769:        assert!(SCANNER_SLINT.contains(ACTION_FILE_LIST_LABEL));
+3770:        assert!(SCANNER_SLINT.contains(ACTION_OPEN_URL_LABEL));
+3771:        assert!(SCANNER_SLINT.contains(ACTION_COPY_URL_LABEL));
+3772:        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_MOD));
+3773:        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_PROBLEM));
+3774:        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_SUMMARY));
+3775:        assert!(SCANNER_SLINT.contains(DETAIL_LABEL_SOLUTION));
+3779:    fn s07_scanner_slint_contract_main_window_forwards_properties_models_and_callbacks() {
+3780:        assert_source_contains_in_order(
+3781:            MAIN_SLINT,
+3814:        assert_source_contains_in_order(
+3815:            MAIN_SLINT,
+3841:    fn s07_scanner_slint_contract_runtime_projection_uses_controller_snapshot() {
+4353:    fn s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups() {
+4370:        assert_source_contains_strings_in_order(TOOLS_SLINT, &expected);
+4372:        assert_source_contains_in_order(
+4392:    fn s05_slint_contract_about_tab_replaces_placeholder_with_reference_assets_and_copy_state() {
+4451:    fn s05_slint_contract_main_window_forwards_tools_and_about_properties_and_callbacks() {
+4452:        assert_source_contains_in_order(
+4453:            MAIN_SLINT,
+4470:        assert_source_contains_in_order(
+4471:            MAIN_SLINT,
+4490:        assert_no_direct_urls_or_reference_tree("ui/main.slint", MAIN_SLINT);
+4778:        assert_source_contains_in_order(
+4905:        assert_source_contains_in_order(
+4930:        assert_source_contains_in_order(
+4962:        assert_source_contains_in_order(
+4963:            MAIN_SLINT,
+4985:        assert_source_contains_in_order(
+4986:            MAIN_SLINT,

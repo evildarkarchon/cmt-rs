@@ -1,0 +1,18 @@
+{
+  "id": "fa5d4ab9-f988-4ea5-9564-2fd5f174dca3",
+  "runtime": "bash",
+  "purpose": "run S06 F4SE runtime wiring tests",
+  "script_chars": 34,
+  "started_at": "2026-05-18T04:41:16.635Z",
+  "finished_at": "2026-05-18T04:41:25.162Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8527,
+  "stdout_bytes": 551,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fa5d4ab9-f988-4ea5-9564-2fd5f174dca3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fa5d4ab9-f988-4ea5-9564-2fd5f174dca3.stderr"
+}

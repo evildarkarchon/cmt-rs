@@ -1,0 +1,18 @@
+{
+  "id": "9addc07c-6560-4669-a81b-c09a0252f05c",
+  "runtime": "bash",
+  "purpose": "compile after initial F4SE Slint/runtime wiring to catch API and Slint syntax issues",
+  "script_chars": 11,
+  "started_at": "2026-05-18T04:34:42.223Z",
+  "finished_at": "2026-05-18T04:34:51.331Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9108,
+  "stdout_bytes": 0,
+  "stderr_bytes": 543,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9addc07c-6560-4669-a81b-c09a0252f05c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9addc07c-6560-4669-a81b-c09a0252f05c.stderr"
+}

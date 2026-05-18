@@ -1,0 +1,18 @@
+{
+  "id": "96268224-3aa1-4b46-8675-19fff1763b9b",
+  "runtime": "bash",
+  "purpose": "run S09 downgrader Slint contract tests",
+  "script_chars": 40,
+  "started_at": "2026-05-18T11:53:45.608Z",
+  "finished_at": "2026-05-18T11:54:33.309Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 47701,
+  "stdout_bytes": 900,
+  "stderr_bytes": 245,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\96268224-3aa1-4b46-8675-19fff1763b9b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\96268224-3aa1-4b46-8675-19fff1763b9b.stderr"
+}

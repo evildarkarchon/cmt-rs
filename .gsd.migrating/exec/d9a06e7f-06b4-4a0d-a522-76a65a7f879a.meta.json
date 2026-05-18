@@ -1,0 +1,18 @@
+{
+  "id": "d9a06e7f-06b4-4a0d-a522-76a65a7f879a",
+  "runtime": "bash",
+  "purpose": "search generated MainWindow API for on/set/get/current index",
+  "script_chars": 421,
+  "started_at": "2026-05-18T04:22:49.194Z",
+  "finished_at": "2026-05-18T04:22:49.314Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 120,
+  "stdout_bytes": 4369,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d9a06e7f-06b4-4a0d-a522-76a65a7f879a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d9a06e7f-06b4-4a0d-a522-76a65a7f879a.stderr"
+}

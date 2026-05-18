@@ -1,0 +1,18 @@
+{
+  "id": "74a34f6e-9f9d-43c1-98a9-cf8a4b8bef2a",
+  "runtime": "bash",
+  "purpose": "re-run downgrader controller targeted tests after rustfmt",
+  "script_chars": 32,
+  "started_at": "2026-05-18T11:32:16.388Z",
+  "finished_at": "2026-05-18T11:32:55.920Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 39532,
+  "stdout_bytes": 1280,
+  "stderr_bytes": 899,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\74a34f6e-9f9d-43c1-98a9-cf8a4b8bef2a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\74a34f6e-9f9d-43c1-98a9-cf8a4b8bef2a.stderr"
+}

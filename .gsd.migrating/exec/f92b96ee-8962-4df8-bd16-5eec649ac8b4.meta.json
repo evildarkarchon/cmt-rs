@@ -1,0 +1,18 @@
+{
+  "id": "f92b96ee-8962-4df8-bd16-5eec649ac8b4",
+  "runtime": "bash",
+  "purpose": "green test for f4se domain contract",
+  "script_chars": 22,
+  "started_at": "2026-05-18T03:42:34.432Z",
+  "finished_at": "2026-05-18T03:43:13.143Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 38711,
+  "stdout_bytes": 901,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f92b96ee-8962-4df8-bd16-5eec649ac8b4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f92b96ee-8962-4df8-bd16-5eec649ac8b4.stderr"
+}

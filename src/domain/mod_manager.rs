@@ -455,14 +455,14 @@ impl Mo2ParseError {
                 ini_path,
             } => format!(
                 "Only Fallout 4 is supported.\ngameName is '{game_name}' in INI: \n{}",
-                ini_path.display()
+                display_path_slash(ini_path)
             ),
             Mo2ParseErrorKind::MissingSelectedProfile => {
                 "Profile is not set in ModOrganizer.ini.".to_owned()
             }
             Mo2ParseErrorKind::MissingStageSettings { .. } => "Missing MO2 settings".to_owned(),
             Mo2ParseErrorKind::MissingModlist { path } => {
-                format!("File doesn't exist: {}", path.display())
+                format!("File doesn't exist: {}", display_path_slash(path))
             }
         }
     }
@@ -534,8 +534,12 @@ pub enum Mo2ParseErrorKind {
     },
 }
 
+fn display_path_slash(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
+}
+
 fn display_optional_path(path: Option<&Path>) -> String {
-    path.map(|path| path.display().to_string())
+    path.map(display_path_slash)
         .unwrap_or_else(|| "None".to_owned())
 }
 

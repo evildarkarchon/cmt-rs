@@ -1,0 +1,18 @@
+{
+  "id": "3a178325-0e2c-4926-8e7a-1b3bb8e91b50",
+  "runtime": "python",
+  "purpose": "summarize Rust scanner and worker structures for S08 planning",
+  "script_chars": 687,
+  "started_at": "2026-05-18T07:37:17.636Z",
+  "finished_at": "2026-05-18T07:37:17.754Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 118,
+  "stdout_bytes": 17440,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3a178325-0e2c-4926-8e7a-1b3bb8e91b50.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3a178325-0e2c-4926-8e7a-1b3bb8e91b50.stderr"
+}

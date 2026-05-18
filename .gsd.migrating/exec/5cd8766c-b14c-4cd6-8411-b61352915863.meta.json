@@ -1,0 +1,18 @@
+{
+  "id": "5cd8766c-b14c-4cd6-8411-b61352915863",
+  "runtime": "bash",
+  "purpose": "S07 reference scan setting usages",
+  "script_chars": 408,
+  "started_at": "2026-05-18T05:14:57.395Z",
+  "finished_at": "2026-05-18T05:14:57.532Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 137,
+  "stdout_bytes": 940,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5cd8766c-b14c-4cd6-8411-b61352915863.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5cd8766c-b14c-4cd6-8411-b61352915863.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "8c6114a0-c928-4d5c-a83f-42118c94f423",
+  "runtime": "bash",
+  "purpose": "compile after adding downgrader Slint source",
+  "script_chars": 11,
+  "started_at": "2026-05-18T11:49:08.896Z",
+  "finished_at": "2026-05-18T11:49:18.073Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9177,
+  "stdout_bytes": 0,
+  "stderr_bytes": 923,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8c6114a0-c928-4d5c-a83f-42118c94f423.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8c6114a0-c928-4d5c-a83f-42118c94f423.stderr"
+}

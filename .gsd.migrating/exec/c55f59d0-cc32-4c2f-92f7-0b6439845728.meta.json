@@ -1,0 +1,18 @@
+{
+  "id": "c55f59d0-cc32-4c2f-92f7-0b6439845728",
+  "runtime": "bash",
+  "purpose": "final full cargo test for S06 T02",
+  "script_chars": 10,
+  "started_at": "2026-05-18T04:04:58.337Z",
+  "finished_at": "2026-05-18T04:05:06.845Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8508,
+  "stdout_bytes": 20145,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c55f59d0-cc32-4c2f-92f7-0b6439845728.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c55f59d0-cc32-4c2f-92f7-0b6439845728.stderr"
+}

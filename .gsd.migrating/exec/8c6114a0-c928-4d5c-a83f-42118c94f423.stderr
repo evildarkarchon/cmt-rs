@@ -1,0 +1,18 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+error: failed to run custom build command for `cmt-rs v0.1.0 (/mnt/j/cmt-rs)`
+
+Caused by:
+  process didn't exit successfully: `/mnt/j/cmt-rs/target/debug/build/cmt-rs-a8332e0b82eeb0cd/build-script-build` (exit status: 1)
+  --- stderr
+  error: Unknown property vertical-alignment in Rectangle
+     --> /mnt/j/cmt-rs/ui/downgrader_window.slint:56:13
+      |
+   56 |             vertical-alignment: center;
+      |             ^^^^^^^^^^^^^^^^^^
+      |
+  error: Unknown property vertical-alignment in Rectangle
+     --> /mnt/j/cmt-rs/ui/downgrader_window.slint:107:13
+      |
+  107 |             vertical-alignment: center;
+      |             ^^^^^^^^^^^^^^^^^^
+  Error: CompileError(["/mnt/j/cmt-rs/ui/downgrader_window.slint:56: Unknown property vertical-alignment in Rectangle", "/mnt/j/cmt-rs/ui/downgrader_window.slint:107: Unknown property vertical-alignment in Rectangle"])

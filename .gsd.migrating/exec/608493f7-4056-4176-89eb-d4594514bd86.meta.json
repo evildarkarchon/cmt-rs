@@ -1,0 +1,18 @@
+{
+  "id": "608493f7-4056-4176-89eb-d4594514bd86",
+  "runtime": "bash",
+  "purpose": "post-manifest final verification cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-18T07:16:03.029Z",
+  "finished_at": "2026-05-18T07:16:11.285Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8256,
+  "stdout_bytes": 27333,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\608493f7-4056-4176-89eb-d4594514bd86.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\608493f7-4056-4176-89eb-d4594514bd86.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "98a1f9a1-85c8-40db-972d-b4bcb0b9a648",
+  "runtime": "bash",
+  "purpose": "check main.rs imported worker symbols usage before adding F4SE wiring",
+  "script_chars": 180,
+  "started_at": "2026-05-18T04:28:51.456Z",
+  "finished_at": "2026-05-18T04:28:51.576Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 120,
+  "stdout_bytes": 54,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\98a1f9a1-85c8-40db-972d-b4bcb0b9a648.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\98a1f9a1-85c8-40db-972d-b4bcb0b9a648.stderr"
+}

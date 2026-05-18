@@ -1,0 +1,18 @@
+{
+  "id": "8c00703d-1e0f-4f74-a722-17952e160a1a",
+  "runtime": "bash",
+  "purpose": "T05 S06 diagnostic: list all F4SE test names",
+  "script_chars": 200,
+  "started_at": "2026-05-18T04:45:55.199Z",
+  "finished_at": "2026-05-18T04:46:03.691Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8492,
+  "stdout_bytes": 4061,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8c00703d-1e0f-4f74-a722-17952e160a1a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8c00703d-1e0f-4f74-a722-17952e160a1a.stderr"
+}

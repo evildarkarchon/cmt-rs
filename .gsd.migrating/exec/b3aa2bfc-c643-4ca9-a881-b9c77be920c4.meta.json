@@ -1,0 +1,18 @@
+{
+  "id": "b3aa2bfc-c643-4ca9-a881-b9c77be920c4",
+  "runtime": "bash",
+  "purpose": "apply cargo fmt after rustfmt diff",
+  "script_chars": 9,
+  "started_at": "2026-05-18T06:12:10.046Z",
+  "finished_at": "2026-05-18T06:12:10.553Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 507,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b3aa2bfc-c643-4ca9-a881-b9c77be920c4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b3aa2bfc-c643-4ca9-a881-b9c77be920c4.stderr"
+}

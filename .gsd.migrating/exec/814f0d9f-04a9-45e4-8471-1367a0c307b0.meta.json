@@ -1,0 +1,18 @@
+{
+  "id": "814f0d9f-04a9-45e4-8471-1367a0c307b0",
+  "runtime": "bash",
+  "purpose": "downgrader controller tests after clippy fixes",
+  "script_chars": 32,
+  "started_at": "2026-05-18T11:39:32.689Z",
+  "finished_at": "2026-05-18T11:40:52.189Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 79500,
+  "stdout_bytes": 1280,
+  "stderr_bytes": 409,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\814f0d9f-04a9-45e4-8471-1367a0c307b0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\814f0d9f-04a9-45e4-8471-1367a0c307b0.stderr"
+}

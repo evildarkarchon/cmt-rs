@@ -1,0 +1,22 @@
+    Updating crates.io index
+      Adding xdelta3 v0.1.5 to dependencies
+    Updating crates.io index
+error: failed to select a version for `clang-sys`.
+    ... required by package `bindgen v0.72.0`
+    ... which satisfies dependency `bindgen = "^0.72.0"` of package `skia-bindings v0.90.0`
+    ... which satisfies dependency `skia-bindings = "=0.90.0"` of package `skia-safe v0.90.0`
+    ... which satisfies dependency `skia-safe = "^0.90"` of package `i-slint-renderer-skia v1.16.1`
+    ... which satisfies dependency `i-slint-renderer-skia = "=1.16.1"` of package `i-slint-backend-winit v1.16.1`
+    ... which satisfies dependency `i-slint-backend-winit = "=1.16.1"` of package `i-slint-backend-selector v1.16.1`
+    ... which satisfies dependency `i-slint-backend-selector = "=1.16.1"` of package `slint v1.16.1`
+    ... which satisfies dependency `slint = "^1.16.1"` of package `cmt-rs v0.1.0 (/mnt/j/cmt-rs)`
+versions that meet the requirements `^1` are: 1.8.1, 1.8.0, 1.7.0, 1.6.1, 1.6.0, 1.4.0, 1.3.3, 1.3.2, 1.3.1, 1.3.0, 1.2.2, 1.2.1, 1.2.0, 1.1.1, 1.1.0, 1.0.3, 1.0.2, 1.0.1, 1.0.0
+
+package `clang-sys` links to the native library `clang`, but it conflicts with a previous package which links to `clang` as well:
+package `clang-sys v0.28.0`
+    ... which satisfies dependency `clang-sys = "^0.28.0"` of package `bindgen v0.52.0`
+    ... which satisfies dependency `bindgen = "^0.52"` of package `xdelta3 v0.1.5`
+    ... which satisfies dependency `xdelta3 = "^0.1.5"` of package `cmt-rs v0.1.0 (/mnt/j/cmt-rs)`
+Only one package in the dependency graph may specify the same links value. This helps ensure that only one copy of a native library is linked in the final binary. Try to adjust your dependencies so that only one package uses the `links = "clang"` value. For more information, see https://doc.rust-lang.org/cargo/reference/resolver.html#links.
+
+failed to select a version for `clang-sys` which could resolve this conflict

@@ -1,0 +1,34 @@
+    Checking cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: this manual char comparison can be written more succinctly
+    --> src/domain/scanner.rs:1058:17
+     |
+1058 | ...it(|ch| ch .../')
+     |       ^^^^^^^^...^^ help: consider using an array of `char`: `['\\', '/']`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#manual_pattern_char_comparison
+     = note: `#[warn(clippy::manual_pattern_char_comparison)]` on by default
+
+warning: the following explicit lifetimes could be elided: 'a
+    --> src/services/scanner.rs:2127:23
+     |
+2127 | ...result_by_type<'a>(
+     |                   ^^
+2128 | ... output: &'a Scanner...
+     |              ^^
+2129 | ... problem_type: Scann...
+2130 | ...> &'a ScannerResult {
+     |       ^^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#needless_lifetimes
+     = note: `#[warn(clippy::needless_lifetimes)]` on by default
+help: elide the lifetimes
+     |
+2127 ~     fn result_by_type(
+2128 ~         output: &ScannerScanOutput,
+2129 |         problem_type: ScannerProblemType,
+2130 ~     ) -> &ScannerResult {
+     |
+
+warning: `cmt-rs` (bin "cmt-rs") generated 1 warning (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs -- ` to apply 1 suggestion)
+warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings (1 duplicate) (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs --tests -- ` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 22.74s

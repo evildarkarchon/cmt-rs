@@ -1,0 +1,18 @@
+{
+  "id": "571020d3-b453-4e08-9c85-d7a87505cf17",
+  "runtime": "bash",
+  "purpose": "run cargo check after F4SE Slint lazy scan wiring",
+  "script_chars": 11,
+  "started_at": "2026-05-18T04:41:30.506Z",
+  "finished_at": "2026-05-18T04:41:47.136Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16630,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\571020d3-b453-4e08-9c85-d7a87505cf17.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\571020d3-b453-4e08-9c85-d7a87505cf17.stderr"
+}

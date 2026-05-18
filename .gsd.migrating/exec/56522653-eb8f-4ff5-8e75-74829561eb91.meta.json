@@ -1,0 +1,18 @@
+{
+  "id": "56522653-eb8f-4ff5-8e75-74829561eb91",
+  "runtime": "python",
+  "purpose": "main test source contract constants",
+  "script_chars": 312,
+  "started_at": "2026-05-18T04:58:52.428Z",
+  "finished_at": "2026-05-18T04:58:52.696Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 268,
+  "stdout_bytes": 108891,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\56522653-eb8f-4ff5-8e75-74829561eb91.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\56522653-eb8f-4ff5-8e75-74829561eb91.stderr"
+}

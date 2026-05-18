@@ -1,0 +1,18 @@
+{
+  "id": "0367ec33-bd43-4a45-a817-c3bf203352d8",
+  "runtime": "bash",
+  "purpose": "S06 inspect pelite PeFile parsing and rva API",
+  "script_chars": 673,
+  "started_at": "2026-05-18T03:18:21.359Z",
+  "finished_at": "2026-05-18T03:18:21.485Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 126,
+  "stdout_bytes": 893,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0367ec33-bd43-4a45-a817-c3bf203352d8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0367ec33-bd43-4a45-a817-c3bf203352d8.stderr"
+}

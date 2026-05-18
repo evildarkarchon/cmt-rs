@@ -1,0 +1,18 @@
+{
+  "id": "415698ba-812f-4001-ade8-90643c477463",
+  "runtime": "bash",
+  "purpose": "verification cargo test scanner_worker_payload",
+  "script_chars": 48,
+  "started_at": "2026-05-18T05:59:15.845Z",
+  "finished_at": "2026-05-18T05:59:32.797Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16952,
+  "stdout_bytes": 115,
+  "stderr_bytes": 366,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\415698ba-812f-4001-ade8-90643c477463.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\415698ba-812f-4001-ade8-90643c477463.stderr"
+}

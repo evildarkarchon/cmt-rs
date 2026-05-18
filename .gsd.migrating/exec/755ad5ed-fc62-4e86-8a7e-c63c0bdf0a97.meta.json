@@ -1,0 +1,18 @@
+{
+  "id": "755ad5ed-fc62-4e86-8a7e-c63c0bdf0a97",
+  "runtime": "bash",
+  "purpose": "Check ScannerScanSnapshot constructors signatures",
+  "script_chars": 95,
+  "started_at": "2026-05-18T09:13:55.553Z",
+  "finished_at": "2026-05-18T09:13:55.662Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 109,
+  "stdout_bytes": 170,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\755ad5ed-fc62-4e86-8a7e-c63c0bdf0a97.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\755ad5ed-fc62-4e86-8a7e-c63c0bdf0a97.stderr"
+}

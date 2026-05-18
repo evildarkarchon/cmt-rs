@@ -1,0 +1,18 @@
+{
+  "id": "7a6fd521-6f94-49b6-bae2-d5c992b04194",
+  "runtime": "bash",
+  "purpose": "Inspect xdelta3 crate metadata for MSRV/API feasibility",
+  "script_chars": 80,
+  "started_at": "2026-05-18T10:39:58.857Z",
+  "finished_at": "2026-05-18T10:39:59.662Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 805,
+  "stdout_bytes": 621,
+  "stderr_bytes": 117,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7a6fd521-6f94-49b6-bae2-d5c992b04194.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7a6fd521-6f94-49b6-bae2-d5c992b04194.stderr"
+}

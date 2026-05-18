@@ -1,0 +1,18 @@
+{
+  "id": "150bb463-066b-4774-83c9-16c1afdf2438",
+  "runtime": "bash",
+  "purpose": "S08 closeout verification rerun after harness script syntax fix",
+  "script_chars": 1361,
+  "started_at": "2026-05-18T09:43:01.819Z",
+  "finished_at": "2026-05-18T09:43:03.201Z",
+  "exit_code": 2,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 1382,
+  "stdout_bytes": 270,
+  "stderr_bytes": 1130,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\150bb463-066b-4774-83c9-16c1afdf2438.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\150bb463-066b-4774-83c9-16c1afdf2438.stderr"
+}

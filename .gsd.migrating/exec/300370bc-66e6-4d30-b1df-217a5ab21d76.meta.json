@@ -1,0 +1,18 @@
+{
+  "id": "300370bc-66e6-4d30-b1df-217a5ab21d76",
+  "runtime": "bash",
+  "purpose": "S06 find reference/sample DLL fixtures",
+  "script_chars": 66,
+  "started_at": "2026-05-18T03:20:12.369Z",
+  "finished_at": "2026-05-18T03:20:13.743Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 1374,
+  "stdout_bytes": 594,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\300370bc-66e6-4d30-b1df-217a5ab21d76.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\300370bc-66e6-4d30-b1df-217a5ab21d76.stderr"
+}

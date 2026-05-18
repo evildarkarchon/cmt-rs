@@ -1,0 +1,16 @@
+oxidelta = "0.1.4"     # VCDIFF (RFC 3284) delta encoder/decoder — Rust reimplementation of xdelta3
+xdelta3 = "0.1.5"      # Rust binding for xdelta3
+oxyromon = "0.21.0"    # Rusty ROM OrgaNizer
+stowr-cli = "0.3.0"    # A simple CLI tool for file management, including compressing, extracting, renaming, and organizing files…
+--- vcdiff ---
+vcdiff = "0.1.0"             # High-level bindings to open-vcdiff, a codec for the VCDIFF binary delta format.
+vcdiff-decoder = "1.0.0"     # A pure Rust implementation for a VCDIFF decoder.
+vcdiff-merger = "1.0.0"      # A pure Rust library for merging VCDIFF files.
+vcdiff-reader = "1.0.0"      # A library for reading VCDIFF files
+vcdiff-writer = "1.0.0"      # A library for creating valid VCDIFF files (not an encoder).
+smdiff-vcdiff = "0.1.0"      # A library for translating VCDIFF deltas to SMDIFF deltas
+vcdiff-common = "1.0.0"      # Common structs, functions, and traits for vcdiff format
+open-vcdiff-sys = "0.1.1"    # Low-level bindings to open-vcdiff, a codec for the VCDIFF binary delta format.
+oxidelta = "0.1.4"           # VCDIFF (RFC 3284) delta encoder/decoder — Rust reimplementation of xdelta3
+xdelta3 = "0.1.5"            # Rust binding for xdelta3
+... and 3 crates more (use --limit N to see more)

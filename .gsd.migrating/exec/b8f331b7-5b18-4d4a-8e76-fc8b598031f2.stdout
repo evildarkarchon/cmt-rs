@@ -1,0 +1,275 @@
+Path check:
+OK  .gsd/PROJECT.md
+OK  .gsd/REQUIREMENTS.md
+OK  .gsd/DECISIONS.md
+OK  .gsd/milestones/M001/M001-CONTEXT.md
+OK  .gsd/milestones/M001/M001-ROADMAP.md
+OK  .gsd/milestones/M001/slices/S07/S07-RESEARCH.md
+OK  CMT/src/tabs/_scanner.py
+OK  CMT/src/scan_settings.py
+OK  CMT/src/enums.py
+OK  CMT/src/globals.py
+OK  src/domain/settings.rs
+OK  src/platform/settings_store.rs
+OK  src/domain/overview.rs
+OK  src/services/overview.rs
+OK  src/domain/discovery.rs
+OK  src/domain/mod_manager.rs
+OK  src/services/discovery.rs
+OK  src/platform/filesystem.rs
+OK  src/platform/desktop.rs
+OK  src/platform/clipboard.rs
+OK  src/services/tools.rs
+OK  src/workers/events.rs
+OK  src/workers/handoff.rs
+OK  src/workers/mod.rs
+OK  src/app/mod.rs
+OK  src/main.rs
+OK  ui/main.slint
+OK  ui/scanner_tab.slint
+OK  ui/f4se_tab.slint
+OK  src/domain/f4se.rs
+OK  src/services/f4se.rs
+OK  src/app/f4se_controller.rs
+OK  src/app/overview_controller.rs
+OK  src/app/settings_controller.rs
+OK  src/services/mod.rs
+OK  src/domain/mod.rs
+OK  Cargo.toml
+
+Selected symbol hits:
+## src/domain/settings.rs
+7: const SCANNER_OVERVIEW_ISSUES_KEY: &str = "scanner_OverviewIssues";
+8: const SCANNER_ERRORS_KEY: &str = "scanner_Errors";
+9: const SCANNER_WRONG_FORMAT_KEY: &str = "scanner_WrongFormat";
+10: const SCANNER_LOOSE_PREVIS_KEY: &str = "scanner_LoosePrevis";
+11: const SCANNER_JUNK_FILES_KEY: &str = "scanner_JunkFiles";
+12: const SCANNER_PROBLEM_OVERRIDES_KEY: &str = "scanner_ProblemOverrides";
+13: const SCANNER_RACE_SUBGRAPHS_KEY: &str = "scanner_RaceSubgraphs";
+36: pub struct AppSettings {
+41: /// Scanner toggles persisted as reference-compatible `scanner_*` keys.
+42: pub scanner: ScannerSettings,
+52: scanner: ScannerSettings::default(),
+107: &mut settings.scanner.overview_issues,
+111: apply_bool(value, key, &mut settings.scanner.errors, &mut diagnostics)
+116: &mut settings.scanner.wrong_format,
+122: &mut settings.scanner.loose_previs,
+128: &mut settings.scanner.junk_files,
+134: &mut settings.scanner.problem_overrides,
+140: &mut settings.scanner.race_subgraphs,
+167: /// Keys intentionally preserve the mixed-case scanner names used by
+174: "scanner_OverviewIssues": self.scanner.overview_issues,
+175: "scanner_Errors": self.scanner.errors,
+176: "scanner_WrongFormat": self.scanner.wrong_format,
+177: "scanner_LoosePrevis": self.scanner.loose_previs,
+178: "scanner_JunkFiles": self.scanner.junk_files,
+## src/services/overview.rs
+1: //! Pure Overview diagnostics service.
+3: //! The reference Overview tab gathers discovery, binary, archive, module,
+20: MODULE_FULL_LABEL, MODULE_LIGHT_LABEL, ModulePanelSummary, OverviewActionError,
+21: OverviewAvailability, OverviewDeferredAction, OverviewDeferredActionKind,
+22: OverviewGamePathStatus, OverviewModManagerStatus, OverviewProblem,
+23: OverviewProblemDetail, OverviewProblemLink, OverviewProblemSource, OverviewProblemType,
+24: OverviewRefreshState, OverviewSnapshot, OverviewTopStatus, StatusSeverity,
+52: const VORTEX_PARTIAL_SUPPORT_SUMMARY: &str = "Note: Vortex is not yet fully supported.\nOverview should be accurate but Scanner will only look in Data and not y
+60: /// Input contract for the pure Overview diagnostic builder.
+65: pub struct OverviewDiagnosticsInput<'a> {
+71: pub binaries: &'a [OverviewBinaryFact],
+75: pub modules: &'a [ModuleRecord],
+77: pub enablement: &'a OverviewEnablementFacts,
+79: pub update: &'a OverviewUpdateCheckState,
+81: pub last_desktop_action: Option<&'a OverviewDesktopActionFeedback>,
+84: /// Pure builder for complete Overview snapshots.
+86: pub struct OverviewDiagnostics;
+88: impl OverviewDiagnostics {
+89: /// Builds a complete [`OverviewSnapshot`] from already-collected facts.
+90: pub fn build(input: OverviewDiagnosticsInput<'_>) -> OverviewSnapshot {
+124: let top = OverviewTopStatus::new(
+127: .map(|installation| OverviewGamePathStatus::found(installation.game_path.clone()))
+133: OverviewSnapshot {
+146: /// Classified binary/executable fact supplied to [`OverviewDiagnostics`].
+## src/workers/events.rs
+20: OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
+25: desktop::{DesktopActionOutcome, DesktopActionResult},
+32: pub struct WorkerTaskId(String);
+66: pub enum WorkerTaskKind {
+67: /// Complete Overview refresh, update-check, or Overview-specific orchestration work.
+68: Overview,
+71: /// Scanner traversal, parsing, or classification work.
+79: /// Desktop handoff such as opening a URL or path.
+80: DesktopAction,
+88: /// Returns a stable label suitable for structured logs and tests.
+91: Self::Overview => "overview",
+97: Self::DesktopAction => "desktop-action",
+112: pub struct WorkerTask {
+140: pub enum WorkerTaskStatus {
+160: /// Returns a stable label suitable for structured logs and tests.
+188: pub struct WorkerEvent {
+194: pub payload: WorkerPayload,
+199: pub fn new(task: WorkerTask, status: WorkerTaskStatus, payload: WorkerPayload) -> Self {
+209: Self::new(task, WorkerTaskStatus::Running, WorkerPayload::None)
+217: WorkerPayload::Progress(progress),
+222: pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+231: WorkerPayload::Error(failure),
+240: WorkerPayload::Cancellation(cancellation),
+249: WorkerPayload::Cancellation(cancellation),
+## src/main.rs
+1: pub mod app;
+2: pub mod domain;
+3: pub mod platform;
+4: pub mod services;
+5: pub mod workers;
+20: OverviewController, action_target_label, overview_desktop_action_payload,
+33: OverviewActionError, OverviewCountRow, OverviewDeferredAction, OverviewDeferredActionKind,
+34: OverviewDeferredActionTarget, OverviewProblem, OverviewRefreshState, OverviewSnapshot,
+35: OverviewTopStatusRow, StatusSeverity, UpdateBannerState, UpdateCheckFailure,
+42: clipboard::RealClipboardActions,
+43: desktop::RealDesktopActions,
+56: OverviewDesktopActionFeedback, OverviewDesktopActionOutcome, OverviewDiagnostics,
+57: OverviewDiagnosticsInput, OverviewUpdateCheckState,
+60: OverviewCollectedFacts, OverviewCollectionEnvironment, OverviewCollectionRequest,
+61: OverviewCollector,
+67: update::{OverviewLinkService, RealUpdateCheckClient, UpdateCheckService},
+71: AboutActionWorkerPayload, BlockingWorkerResult, SlintEventLoopSink, ToolsActionWorkerPayload,
+72: WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+84: enum AboutCallbackKind {
+99: struct ToolsUiProjection {
+105: struct AboutUiProjection {
+115: struct F4seUiProjection {
+133: let overview_controller = Arc::new(Mutex::new(OverviewController::new()));
+150: bind_settings_callbacks(&app, Rc::clone(&settings_controller));
+## ui/main.slint
+2: import { OverviewTab, OverviewUiRow } from "overview_tab.slint";
+4: import { ScannerTab } from "scanner_tab.slint";
+10: in-out property <string> update-source: "nexus";
+11: in-out property <string> log-level: "info";
+12: in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
+13: in-out property <bool> overview-refresh-busy: false;
+14: in-out property <[OverviewUiRow]> overview-top-rows;
+15: in-out property <[OverviewUiRow]> overview-binary-rows;
+16: in-out property <[OverviewUiRow]> overview-archive-rows;
+17: in-out property <[OverviewUiRow]> overview-module-rows;
+18: in-out property <string> overview-problems-summary: "Problems: 0";
+19: in-out property <[OverviewUiRow]> overview-problem-rows;
+20: in-out property <string> overview-update-heading: "";
+21: in-out property <string> overview-nexus-update-label: "Nexus Mods";
+22: in-out property <bool> overview-nexus-update-enabled: false;
+23: in-out property <string> overview-github-update-label: "GitHub";
+24: in-out property <bool> overview-github-update-enabled: false;
+25: in-out property <bool> overview-game-path-enabled: false;
+26: in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+27: in-out property <bool> overview-downgrade-enabled: false;
+28: in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+29: in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+30: in-out property <bool> overview-archive-patcher-enabled: false;
+31: in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+## ui/scanner_tab.slint
+1: export component ScannerTab inherits Rectangle {
+8: text: "Scanner";
+15: text: "Scanner behavior is reserved for a later port phase.";
+## src/platform/filesystem.rs
+19: pub enum FileType {
+46: pub struct FileMetadata {
+65: /// Directory entry returned by direct and recursive enumeration.
+67: pub struct DirectoryEntry {
+134: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+137: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
+142: pub struct RealFilesystem;
+209: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+211: let iterator = fs::read_dir(path).map_err(|error| {
+245: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+283: enum FakeNode {
+290: struct FakeFilesystem {
+372: fn read_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+388: fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>> {
+407: .walk_dir(root)?
+## src/domain/overview.rs
+1: //! Pure Overview-tab snapshot and projection contracts.
+3: //! The reference Overview tab combines discovery results, PC metadata, update
+4: //! checks, binary/archive/module summaries, and scanner problem records. This
+6: //! code can construct Overview state without touching Slint, the filesystem,
+91: /// Reference full-plugin limit used for Overview warning colors.
+93: /// Reference light-plugin limit used for Overview warning colors.
+95: /// Reference General/GNRL BA2 limit used for Overview warning colors.
+97: /// Reference Texture/DX10 BA2 limit used for Overview warning colors.
+111: /// Severity/color intent for Overview status rows and problem records.
+113: pub enum StatusSeverity {
+136: /// High-level lifecycle state for an Overview refresh.
+138: pub enum OverviewRefreshPhase {
+142: /// A worker is collecting data for the Overview snapshot.
+152: /// Safe, user-facing refresh state displayed by the Overview UI.
+154: pub struct OverviewRefreshState {
+156: pub phase: OverviewRefreshPhase,
+161: impl OverviewRefreshState {
+165: phase: OverviewRefreshPhase::Idle,
+173: phase: OverviewRefreshPhase::Loading,
+181: phase: OverviewRefreshPhase::Ready,
+189: phase: OverviewRefreshPhase::Partial,
+197: phase: OverviewRefreshPhase::Error,
+202: /// Returns true while a background Overview worker is expected to be active.
+204: matches!(self.phase, OverviewRefreshPhase::Loading)
+## src/domain/mod_manager.rs
+17: pub enum ModManagerKind {
+50: pub struct DetectedModManager {
+104: pub struct VortexContext {
+125: pub enum ModOrganizerTool {
+144: pub struct ModOrganizerDirectories {
+152: pub mod_directory: PathBuf,
+195: pub struct ModOrganizerSkipRules {
+230: /// Parsed MO2 context needed by scanner and overview workflows.
+232: pub struct ModOrganizerContext {
+326: pub struct Mo2Configuration {
+348: pub enum ModManagerContext {
+367: pub struct Mo2ParseError {
+413: /// Creates the missing staged-scanner settings error.
+505: pub enum Mo2ParseErrorKind {
+## src/platform/desktop.rs
+3: //! UI callbacks should receive [`DesktopActionResult`] values from this module
+13: pub struct DesktopActionResult {
+19: pub outcome: DesktopActionOutcome,
+24: impl DesktopActionResult {
+30: outcome: DesktopActionOutcome::Succeeded,
+41: outcome: DesktopActionOutcome::Failed(error.kind),
+49: matches!(self.outcome, DesktopActionOutcome::Succeeded)
+55: DesktopActionOutcome::Succeeded => None,
+56: DesktopActionOutcome::Failed(kind) => Some(kind),
+73: pub enum DesktopActionOutcome {
+81: pub trait DesktopActions {
+83: fn open_url(&self, url: &str) -> DesktopActionResult;
+86: fn open_path(&self, path: &Path) -> DesktopActionResult;
+89: fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult;
+94: pub struct RealDesktopActions;
+96: impl RealDesktopActions {
+103: impl DesktopActions for RealDesktopActions {
+104: fn open_url(&self, url: &str) -> DesktopActionResult {
+108: fn open_path(&self, path: &Path) -> DesktopActionResult {
+112: fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult {
+118: fn open_real_url(url: &str) -> DesktopActionResult {
+119: DesktopActionResult::failure(PlatformError::unsupported(
+126: fn open_real_path(path: &Path) -> DesktopActionResult {
+127: DesktopActionResult::failure(PlatformError::unsupported(
+## src/platform/clipboard.rs
+3: //! UI callbacks should not touch the host clipboard directly. This module keeps
+10: const INVALID_CLIPBOARD_TEXT_MESSAGE: &str = "Clipboard text is invalid.";
+14: pub struct ClipboardActionResult {
+20: pub outcome: ClipboardActionOutcome,
+25: impl ClipboardActionResult {
+29: operation: PlatformOperation::CopyToClipboard,
+31: outcome: ClipboardActionOutcome::Succeeded,
+32: safe_message: PlatformOperation::CopyToClipboard
+44: outcome: ClipboardActionOutcome::Failed(error.kind),
+52: matches!(self.outcome, ClipboardActionOutcome::Succeeded)
+58: ClipboardActionOutcome::Succeeded => None,
+59: ClipboardActionOutcome::Failed(kind) => Some(kind),
+76: pub enum ClipboardActionOutcome {
+84: pub trait ClipboardActions {
+86: fn copy_text(&self, text: &str) -> ClipboardActionResult;
+91: pub struct RealClipboardActions;
+93: impl RealClipboardActions {
+100: impl ClipboardActions for RealClipboardActions {
+101: fn copy_text(&self, text: &str) -> ClipboardActionResult {
+106: fn copy_real_text(text: &str) -> ClipboardActionResult {
+108: return ClipboardActionResult::failure(
+110: PlatformOperation::CopyToClipboard,
+119: let mut clipboard = match arboard::Clipboard::new() {
+122: return ClipboardActionResult::failure(PlatformError::command_failed(

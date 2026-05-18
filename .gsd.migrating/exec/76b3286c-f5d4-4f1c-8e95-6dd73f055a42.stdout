@@ -1,0 +1,79 @@
+## src\domain\mod_manager.rs
+133: /// Returns the reference lowercase executable suffixes used for matching.
+134: pub const fn executable_suffixes(self) -> &'static [&'static str] {
+196: /// Lowercase file suffixes to skip, defaulting to `.mohidden`.
+197: pub file_suffixes: Vec<String>,
+205: file_suffixes: vec![".mohidden".to_owned()],
+212: /// Creates skip rules while normalizing suffixes and directory names to lowercase.
+214: file_suffixes: impl IntoIterator<Item = impl AsRef<str>>,
+218: file_suffixes: file_suffixes
+220: .map(|suffix| suffix.as_ref().to_lowercase())
+599: assert_eq!(context.skip_rules.file_suffixes, vec![".mohidden", ".bak"]);
+626: assert_eq!(context.skip_rules.file_suffixes, vec![".mohidden"]);
+## src\services\discovery.rs
+776: let skip_file_suffixes = values
+778: .get("skip_file_suffixes")
+786: let skip_rules = ModOrganizerSkipRules::new(skip_file_suffixes, skip_directories);
+820: .executable_suffixes()
+822: .any(|suffix| value_lower.ends_with(suffix))
+1202: | "skip_file_suffixes"
+1210: .and_then(|value| value.strip_suffix(')'))
+1804: skip_file_suffixes=.MOHIDDEN, .Bak\n\
+1843: assert_eq!(context.skip_rules.file_suffixes, vec![".mohidden", ".bak"]);
+## src\services\overview_collector.rs
+32: const BA2_HEADER_LEN: usize = 12;
+35: const NG_STARTUP_BA2_CRC: &str = "A5808F5F";
+238: /// Classified BA2 records in deterministic path order.
+259: /// BA2 header classification.
+591: let startup_path = data_path.join("Fallout4 - Startup.ba2");
+595: let payload = bytes.get(BA2_HEADER_LEN..).unwrap_or(&[]);
+596: if crc32_upper(payload) == NG_STARTUP_BA2_CRC {
+610: "Fallout4 - Startup.ba2 is not a regular file.",
+616: "Fallout4 - Startup.ba2 was not found for downgrade detection.",
+946: let suffixes = ba2_suffixes(&installation.ini_files);
+957: for suffix in &suffixes {
+958: let archive_name = format!("{stem} - {suffix}.ba2");
+968: "Fallout4 - Nvflex.ba2",
+971: "Nvidia Flex is enabled but Fallout4 - Nvflex.ba2 was not found.",
+978: "Fallout4 - TexturesPatch.ba2",
+981: "Anniversary Edition requires Fallout4 - TexturesPatch.ba2, but it was not found.",
+1036: let header = match self.filesystem.read_prefix(path, BA2_HEADER_LEN) {
+1048: if header.len() != BA2_HEADER_LEN {
+1053: "Archive header is shorter than the BA2 header length.",
+1365: fn ba2_suffixes(ini_files: &Fallout4IniFiles) -> Vec<String> {
+1371: let mut suffixes = vec![
+1377: suffixes.push(format!("voices_{language}"));
+1379: suffixes
+1431: extension_eq(path, "ba2")
+1787: fn ba2(version: u32, format: &[u8; 4]) -> Vec<u8> {
+1814: assert_eq!(crc32_upper(&[0x40, 0x5a, 0x64, 0x4c]), NG_STARTUP_BA2_CRC);
+1817: .with_file("C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2", {
+1818: let mut bytes = ba2(8, b"GNRL");
+1819: bytes.truncate(BA2_HEADER_LEN);
+1900: fn overview_collector_reads_bounded_ba2_headers_and_classifies_versions_formats_and_errors() {
+1910: "Old.ba2, Seven.ba2, Eight.ba2, Unknown.ba2, Short.ba2, BadMagic.ba2, Locked.ba2"
+1914: .with_file("C:/Games/Fallout 4/Data/Old.ba2", ba2(1, b"GNRL"))
+1915: .with_file("C:/Games/Fallout 4/Data/Seven.ba2", ba2(7, b"DX10"))
+1916: .with_file("C:/Games/Fallout 4/Data/Eight.ba2", ba2(8, b"GNRL"))
+1917: .with_file("C:/Games/Fallout 4/Data/Unknown.ba2", ba2(42, b"GNRL"))
+1918: .with_file("C:/Games/Fallout 4/Data/Short.ba2", b"BTDX".to_vec())
+1919: .with_file("C:/Games/Fallout 4/Data/BadMagic.ba2", {
+1920: let mut bytes = ba2(8, b"GNRL");
+1924: .with_unreadable_file("C:/Games/Fallout 4/Data/Locked.ba2");
+1945: assert_eq!(versions["Old.ba2"], ArchiveVersion::OldGen);
+1946: assert_eq!(versions["Seven.ba2"], ArchiveVersion::NextGen7);
+1947: assert_eq!(versions["Eight.ba2"], ArchiveVersion::NextGen8);
+1948: assert_eq!(versions["Unknown.ba2"], ArchiveVersion::Unknown(42));
+1953: .any(|record| record.path.ends_with("Locked.ba2")
+1961: .filter(|(_, len)| *len == BA2_HEADER_LEN)
+1969: .any(|path| path.extension().is_some_and(|extension| extension == "ba2"))
+2053: " Fallout4 - Startup.ba2, MissingFromIni.ba2 ".to_owned(),
+2084: "C:/Games/Fallout 4/Data/PluginB - voices_fr.ba2",
+2085: ba2(8, b"DX10"),
+2088: "C:/Games/Fallout 4/Data/Fallout4 - Startup.ba2",
+2089: ba2(8, b"GNRL"),
+2092: "C:/Games/Fallout 4/Data/Fallout4 - Nvflex.ba2",
+2093: ba2(1, b"GNRL"),
+2115: .any(|record| record.path.ends_with("PluginB - voices_fr.ba2") && record.enabled)
+2121: .any(|record| record.path.ends_with("Fallout4 - Nvflex.ba2") && record.enabled)
+2127: .is_some_and(|path| path.ends_with("MissingFromIni.ba2"))

@@ -1,0 +1,18 @@
+{
+  "id": "dd1a177c-babb-4e7a-9aac-26ae4da93596",
+  "runtime": "python",
+  "purpose": "Append downgrader executor tests and recording seams",
+  "script_chars": 23589,
+  "started_at": "2026-05-18T11:02:32.434Z",
+  "finished_at": "2026-05-18T11:02:32.618Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 184,
+  "stdout_bytes": 25,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\dd1a177c-babb-4e7a-9aac-26ae4da93596.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\dd1a177c-babb-4e7a-9aac-26ae4da93596.stderr"
+}

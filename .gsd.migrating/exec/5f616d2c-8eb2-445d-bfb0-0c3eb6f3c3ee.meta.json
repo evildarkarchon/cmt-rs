@@ -1,0 +1,18 @@
+{
+  "id": "5f616d2c-8eb2-445d-bfb0-0c3eb6f3c3ee",
+  "runtime": "bash",
+  "purpose": "verification cargo test scanner_controller",
+  "script_chars": 44,
+  "started_at": "2026-05-18T05:59:15.841Z",
+  "finished_at": "2026-05-18T05:59:24.741Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8900,
+  "stdout_bytes": 115,
+  "stderr_bytes": 360,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5f616d2c-8eb2-445d-bfb0-0c3eb6f3c3ee.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5f616d2c-8eb2-445d-bfb0-0c3eb6f3c3ee.stderr"
+}

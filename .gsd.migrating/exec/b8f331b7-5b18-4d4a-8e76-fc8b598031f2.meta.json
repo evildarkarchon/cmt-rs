@@ -1,0 +1,18 @@
+{
+  "id": "b8f331b7-5b18-4d4a-8e76-fc8b598031f2",
+  "runtime": "bash",
+  "purpose": "S07 planning targeted symbol survey",
+  "script_chars": 1920,
+  "started_at": "2026-05-18T05:10:21.631Z",
+  "finished_at": "2026-05-18T05:10:21.848Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 217,
+  "stdout_bytes": 13769,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b8f331b7-5b18-4d4a-8e76-fc8b598031f2.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b8f331b7-5b18-4d4a-8e76-fc8b598031f2.stderr"
+}

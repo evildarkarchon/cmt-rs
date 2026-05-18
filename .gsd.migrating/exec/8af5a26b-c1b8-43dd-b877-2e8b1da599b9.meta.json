@@ -1,0 +1,18 @@
+{
+  "id": "8af5a26b-c1b8-43dd-b877-2e8b1da599b9",
+  "runtime": "bash",
+  "purpose": "final scoped f4se domain tests after rustfmt",
+  "script_chars": 22,
+  "started_at": "2026-05-18T03:43:45.052Z",
+  "finished_at": "2026-05-18T03:44:19.571Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 34519,
+  "stdout_bytes": 901,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8af5a26b-c1b8-43dd-b877-2e8b1da599b9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8af5a26b-c1b8-43dd-b877-2e8b1da599b9.stderr"
+}

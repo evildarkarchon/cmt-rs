@@ -1,0 +1,18 @@
+{
+  "id": "84456429-3f8f-4bb9-807f-82df94975bd3",
+  "runtime": "bash",
+  "purpose": "final rerun cargo test scanner_worker_payload after warning cleanup",
+  "script_chars": 48,
+  "started_at": "2026-05-18T06:16:07.198Z",
+  "finished_at": "2026-05-18T06:16:43.065Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 35867,
+  "stdout_bytes": 225,
+  "stderr_bytes": 404,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\84456429-3f8f-4bb9-807f-82df94975bd3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\84456429-3f8f-4bb9-807f-82df94975bd3.stderr"
+}

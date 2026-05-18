@@ -1,0 +1,18 @@
+{
+  "id": "f7babdb5-474a-4208-a514-b50eef776fad",
+  "runtime": "bash",
+  "purpose": "apply cargo fmt after scanner autofix domain changes",
+  "script_chars": 9,
+  "started_at": "2026-05-18T08:11:25.815Z",
+  "finished_at": "2026-05-18T08:11:26.355Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 540,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f7babdb5-474a-4208-a514-b50eef776fad.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f7babdb5-474a-4208-a514-b50eef776fad.stderr"
+}

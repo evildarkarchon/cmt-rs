@@ -1,0 +1,12 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+error: failed to run custom build command for `cmt-rs v0.1.0 (/mnt/j/cmt-rs)`
+
+Caused by:
+  process didn't exit successfully: `/mnt/j/cmt-rs/target/debug/build/cmt-rs-5d58e0829189b245/build-script-build` (exit status: 1)
+  --- stderr
+  error: Cannot override property 'row'
+     --> /mnt/j/cmt-rs/ui/scanner_tab.slint:134:38
+      |
+  134 |     in property <ScannerResultUiRow> row;
+      |                                      ^^^
+  Error: CompileError(["/mnt/j/cmt-rs/ui/scanner_tab.slint:134: Cannot override property 'row'"])

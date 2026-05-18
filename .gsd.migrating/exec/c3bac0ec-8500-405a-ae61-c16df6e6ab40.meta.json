@@ -1,0 +1,18 @@
+{
+  "id": "c3bac0ec-8500-405a-ae61-c16df6e6ab40",
+  "runtime": "bash",
+  "purpose": "locate scanner finalize helper",
+  "script_chars": 95,
+  "started_at": "2026-05-18T07:00:27.603Z",
+  "finished_at": "2026-05-18T07:00:27.809Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 206,
+  "stdout_bytes": 156,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c3bac0ec-8500-405a-ae61-c16df6e6ab40.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c3bac0ec-8500-405a-ae61-c16df6e6ab40.stderr"
+}

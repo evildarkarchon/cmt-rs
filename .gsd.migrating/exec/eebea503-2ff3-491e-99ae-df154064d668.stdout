@@ -1,0 +1,195 @@
+Diff in /mnt/j/cmt-rs/src/main.rs:676:
+ 
+         move || {
+             if let Some(app) = app.upgrade() {
+[31m-                request_scanner_auto_fix(
+(B[m[31m-                    &app,
+(B[m[31m-                    &controller,
+(B[m[31m-                    worker_runtime,
+(B[m[31m-                    scanner_sink.clone(),
+(B[m[31m-                );
+(B[m[32m+                request_scanner_auto_fix(&app, &controller, worker_runtime, scanner_sink.clone());
+(B[m             }
+         }
+     });
+Diff in /mnt/j/cmt-rs/src/main.rs:2807:
+         progress_text: controller.progress_text().to_owned(),
+         progress_percent: controller.progress_percent(),
+         result_count_text: controller.result_count_text().to_owned(),
+[31m-        result_rows: format_scanner_result_rows(controller.groups(), controller.results(), controller),
+(B[m[32m+        result_rows: format_scanner_result_rows(
+(B[m[32m+            controller.groups(),
+(B[m[32m+            controller.results(),
+(B[m[32m+            controller,
+(B[m[32m+        ),
+(B[m         show_mod_column: controller
+             .results()
+             .iter()
+Diff in /mnt/j/cmt-rs/src/main.rs:3030:
+                     .unwrap_or_default()
+                     .into(),
+                 has_mod: result.mod_attribution.is_some(),
+[31m-                row_fixed: row_state
+(B[m[31m-                    .map(|state| state.row_fixed)
+(B[m[31m-                    .unwrap_or_default(),
+(B[m[31m-                row_checked: row_state
+(B[m[31m-                    .map(|state| state.row_checked)
+(B[m[31m-                    .unwrap_or_default(),
+(B[m[32m+                row_fixed: row_state.map(|state| state.row_fixed).unwrap_or_default(),
+(B[m[32m+                row_checked: row_state.map(|state| state.row_checked).unwrap_or_default(),
+(B[m             });
+         }
+     }
+Diff in /mnt/j/cmt-rs/src/main.rs:4556:
+ 
+     #[test]
+     fn s08_scanner_autofix_runtime_wiring_empty_production_hidden_state_and_tampered_callback_rejected()
+[31m-    {
+(B[m[32m+     {
+(B[m         let mut controller = ScannerController::default();
+         let request = controller.request_scan().expect("scan should start");
+         controller.scan_completed(
+Diff in /mnt/j/cmt-rs/src/main.rs:4596:
+ 
+     #[test]
+     fn s08_scanner_autofix_runtime_wiring_fake_projection_shows_button_and_rejects_repeated_fixing_click()
+[31m-    {
+(B[m[32m+     {
+(B[m         let controller = Arc::new(Mutex::new(scanner_autofix_runtime_controller()));
+         let ready = with_scanner_controller_mut(&controller, |controller| {
+             project_scanner_state(controller)
+Diff in /mnt/j/cmt-rs/src/main.rs:4614:
+         let prepared = prepare_scanner_auto_fix_request(&controller)
+             .expect("fake supported result should prepare Auto-Fix worker data");
+         assert_eq!(prepared.request.task.kind, WorkerTaskKind::Patch);
+[31m-        assert_eq!(prepared.request.operation_key, AutoFixOperationKey::DeleteOrIgnoreFile);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            prepared.request.operation_key,
+(B[m[32m+            AutoFixOperationKey::DeleteOrIgnoreFile
+(B[m[32m+        );
+(B[m 
+         let fixing = with_scanner_controller_mut(&controller, |controller| {
+             project_scanner_state(controller)
+Diff in /mnt/j/cmt-rs/src/main.rs:4630:
+             project_scanner_state(controller)
+         })
+         .expect("controller should be readable");
+[31m-        assert_eq!(rejected_repeat.auto_fix_button_label, AUTO_FIXING_BUTTON_LABEL);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            rejected_repeat.auto_fix_button_label,
+(B[m[32m+            AUTO_FIXING_BUTTON_LABEL
+(B[m[32m+        );
+(B[m         assert_eq!(rejected_repeat.status_text, "Auto-Fix is running...");
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/main.rs:4652:
+             })
+             .expect("active Tokio runtime should schedule fake Auto-Fix worker");
+ 
+[31m-        handle.join().await.expect("fake Auto-Fix worker should join");
+(B[m[32m+        handle
+(B[m[32m+            .join()
+(B[m[32m+            .await
+(B[m[32m+            .expect("fake Auto-Fix worker should join");
+(B[m         let events = sink.events().expect("recorded events should be readable");
+[31m-        assert!(events.iter().any(|event| event.status == WorkerTaskStatus::Running));
+(B[m[31m-        assert!(events.iter().any(|event| event.status == WorkerTaskStatus::Completed));
+(B[m[32m+        assert!(
+(B[m[32m+            events
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|event| event.status == WorkerTaskStatus::Running)
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            events
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|event| event.status == WorkerTaskStatus::Completed)
+(B[m[32m+        );
+(B[m 
+         with_scanner_controller_mut(&controller, |controller| {
+             for event in events {
+Diff in /mnt/j/cmt-rs/src/main.rs:4667:
+         })
+         .expect("controller should be readable");
+ 
+[31m-        assert_eq!(projection.auto_fix_button_label, AUTO_FIX_FIXED_BUTTON_LABEL);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            projection.auto_fix_button_label,
+(B[m[32m+            AUTO_FIX_FIXED_BUTTON_LABEL
+(B[m[32m+        );
+(B[m         assert!(projection.auto_fix_button_enabled);
+[31m-        assert_eq!(projection.auto_fix_status_text, "Fixed fake scanner result.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            projection.auto_fix_status_text,
+(B[m[32m+            "Fixed fake scanner result."
+(B[m[32m+        );
+(B[m         assert!(projection.auto_fix_results_visible);
+         assert_eq!(projection.auto_fix_results_title, AUTO_FIX_RESULTS_TITLE);
+[31m-        assert_eq!(projection.auto_fix_results_summary, "Fixed fake scanner result.");
+(B[m[31m-        assert!(projection
+(B[m[31m-            .auto_fix_results_details
+(B[m[31m-            .contains("Fixed delete-or-ignore-file at row 0."));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            projection.auto_fix_results_summary,
+(B[m[32m+            "Fixed fake scanner result."
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            projection
+(B[m[32m+                .auto_fix_results_details
+(B[m[32m+                .contains("Fixed delete-or-ignore-file at row 0.")
+(B[m[32m+        );
+(B[m         assert!(projection.result_rows[1].row_fixed);
+         assert!(projection.result_rows[1].row_checked);
+     }
+Diff in /mnt/j/cmt-rs/src/main.rs:4714:
+         })
+         .expect("controller should be readable");
+ 
+[31m-        assert_eq!(projection.auto_fix_button_label, AUTO_FIX_FAILED_BUTTON_LABEL);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            projection.auto_fix_button_label,
+(B[m[32m+            AUTO_FIX_FAILED_BUTTON_LABEL
+(B[m[32m+        );
+(B[m         assert!(projection.auto_fix_button_enabled);
+         assert_eq!(
+             projection.auto_fix_status_text,
+Diff in /mnt/j/cmt-rs/src/main.rs:4751:
+             project_scanner_state(controller)
+         })
+         .expect("controller should be readable");
+[31m-        assert_eq!(spawn_failed.auto_fix_button_label, AUTO_FIX_FAILED_BUTTON_LABEL);
+(B[m[31m-        assert_eq!(spawn_failed.auto_fix_status_text, "Auto-Fix could not be started.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            spawn_failed.auto_fix_button_label,
+(B[m[32m+            AUTO_FIX_FAILED_BUTTON_LABEL
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            spawn_failed.auto_fix_status_text,
+(B[m[32m+            "Auto-Fix could not be started."
+(B[m[32m+        );
+(B[m         assert!(!spawn_failed.auto_fix_status_text.contains("runtime"));
+         assert!(spawn_failed.auto_fix_results_visible);
+ 
+Diff in /mnt/j/cmt-rs/src/main.rs:4776:
+             project_scanner_state(controller)
+         })
+         .expect("controller should be readable");
+[31m-        assert_eq!(worker_failed.auto_fix_button_label, AUTO_FIX_FAILED_BUTTON_LABEL);
+(B[m         assert_eq!(
+[32m+            worker_failed.auto_fix_button_label,
+(B[m[32m+            AUTO_FIX_FAILED_BUTTON_LABEL
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             worker_failed.auto_fix_status_text,
+             "Auto-Fix could not complete this operation."
+         );
+Diff in /mnt/j/cmt-rs/src/main.rs:4784:
+         assert!(worker_failed.auto_fix_results_visible);
+[31m-        assert!(!worker_failed.auto_fix_results_details.contains("raw worker"));
+(B[m[32m+        assert!(
+(B[m[32m+            !worker_failed
+(B[m[32m+                .auto_fix_results_details
+(B[m[32m+                .contains("raw worker")
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]

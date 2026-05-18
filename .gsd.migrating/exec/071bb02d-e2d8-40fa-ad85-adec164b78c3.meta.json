@@ -1,0 +1,18 @@
+{
+  "id": "071bb02d-e2d8-40fa-ad85-adec164b78c3",
+  "runtime": "bash",
+  "purpose": "clippy after scanner autofix cleanup",
+  "script_chars": 41,
+  "started_at": "2026-05-18T08:39:08.922Z",
+  "finished_at": "2026-05-18T08:39:29.807Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 20885,
+  "stdout_bytes": 0,
+  "stderr_bytes": 2854,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\071bb02d-e2d8-40fa-ad85-adec164b78c3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\071bb02d-e2d8-40fa-ad85-adec164b78c3.stderr"
+}

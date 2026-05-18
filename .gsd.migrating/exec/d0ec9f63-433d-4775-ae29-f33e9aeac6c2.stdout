@@ -1,0 +1,425 @@
+
+== CMT/src/tabs/_f4se.py ==
+28: TAG_NEUTRAL = "neutral"
+29: TAG_GOOD = "good"
+30: TAG_BAD = "bad"
+31: TAG_NOTE = "note"
+32: 
+33: EMOJI_DLL_UNKNOWN = "\N{BLACK QUESTION MARK ORNAMENT}"
+34: EMOJI_DLL_GOOD = "\N{HEAVY CHECK MARK}"
+35: EMOJI_DLL_BAD = ""
+36: EMOJI_DLL_NOTE = "\N{WARNING SIGN}"
+37: 
+38: logger = logging.getLogger(__name__)
+39: 
+40: class F4SETab(CMCTabFrame):
+41: 	def __init__(self, cmc: CMCheckerInterface, notebook: ttk.Notebook) -> None:
+42: 		super().__init__(cmc, notebook, "F4SE")
+43: 		self.loading_text = "Scanning DLLs..."
+44: 
+45: 		self.dll_info: dict[str, DLLInfo | None] = {}
+46: 
+47: 	def _load(self) -> bool:
+48: 		if self.cmc.game.data_path is None:
+49: 			self.loading_error = "Data folder not found"
+50: 			return False
+51: 
+52: 		if self.cmc.game.f4se_path is None:
+53: 			self.loading_error = "Data/F4SE/Plugins folder not found"
+54: 			if not self.cmc.game.manager:
+55: 				self.loading_error += "\nTry launching via your mod manager."
+56: 			return False
+57: 
+58: 		self.dll_info.clear()
+59: 		for dll_file in self.cmc.game.f4se_path.iterdir():
+60: 			if dll_file.suffix.lower() == ".dll" and not dll_file.name.startswith("msdia"):
+61: 				logger.debug("Scanning %s", dll_file.name)
+62: 				self.dll_info[dll_file.name] = parse_dll(dll_file)
+63: 
+64: 		return True
+65: 
+66: 	def _build_gui(self) -> None:
+67: 		self.grid_columnconfigure(0, weight=0)
+68: 		self.grid_columnconfigure(2, weight=1)
+69: 		self.grid_rowconfigure(0, weight=0)
+70: 		self.grid_rowconfigure(1, weight=1)
+71: 
+72: 		tree_dlls = ttk.Treeview(self, columns=("og", "ng", "ae", "user"))
+73: 		tree_dlls.heading("#0", text="DLL")
+74: 		tree_dlls.heading("og", text="OG")
+75: 		tree_dlls.heading("ng", text="NG")
+76: 		tree_dlls.heading("ae", text="AE")
+77: 		tree_dlls.heading("user", text="Your Game")
+78: 
+79: 		tree_dlls.column("#0", width=240, stretch=False, anchor=E)
+80: 		tree_dlls.column("og", width=60, stretch=False, anchor=CENTER)
+81: 		tree_dlls.column("ng", width=60, stretch=False, anchor=CENTER)
+82: 		tree_dlls.column("ae", width=60, stretch=False, anchor=CENTER)
+83: 		tree_dlls.column("user", width=80, stretch=False, anchor=CENTER)
+84: 
+85: 		tree_dlls.tag_configure(TAG_NEUTRAL, foreground=COLOR_NEUTRAL_1)
+86: 		tree_dlls.tag_configure(TAG_GOOD, foreground=COLOR_GOOD)
+87: 		tree_dlls.tag_configure(TAG_BAD, foreground=COLOR_BAD)
+88: 		tree_dlls.tag_configure(TAG_NOTE, foreground="yellow")
+89: 
+90: 		scroll_tree_y = ttk.Scrollbar(
+91: 			self,
+92: 			orient=VERTICAL,
+93: 			command=tree_dlls.yview,  # pyright: ignore[reportUnknownArgumentType]
+94: 		)
+95: 
+96: 		tree_dlls.grid(column=0, row=0, rowspan=2, sticky=NS)
+97: 		scroll_tree_y.grid(column=1, row=0, rowspan=2, sticky=NS)
+98: 		tree_dlls.configure(yscrollcommand=scroll_tree_y.set)
+99: 
+100: 		ttk.Label(
+101: 			self,
+102: 			text="F4SE DLLs",
+103: 			font=FONT,
+104: 			anchor=N,
+105: 		).grid(column=2, row=0, padx=5, pady=5)
+106: 
+107: 		text_about_f4se = Text(
+108: 			self,
+109: 			font=FONT_SMALL,
+110: 			wrap=CHAR,
+111: 			relief=FLAT,
+112: 		)
+113: 		text_about_f4se.insert(END, ABOUT_F4SE_DLLS)
+114: 		text_about_f4se.tag_add(TAG_NEUTRAL, "2.0", "2.18")
+115: 		text_about_f4se.tag_add(TAG_GOOD, "6.0", "6.1")
+116: 		text_about_f4se.tag_add(TAG_BAD, "8.0", "8.1")
+117: 		text_about_f4se.tag_add(TAG_NEUTRAL, "10.0", "10.1")
+118: 		text_about_f4se.tag_add(TAG_NOTE, "14.0", "14.1")
+119: 		text_about_f4se.tag_configure(TAG_GOOD, foreground=COLOR_GOOD)
+120: 		text_about_f4se.tag_configure(TAG_BAD, foreground=COLOR_BAD)
+121: 		text_about_f4se.tag_configure(TAG_NEUTRAL, foreground=COLOR_NEUTRAL_2)
+122: 		text_about_f4se.tag_configure(TAG_NOTE, foreground="yellow")
+123: 		text_about_f4se.configure(state=DISABLED)
+124: 		text_about_f4se.grid(column=2, row=1, sticky=NSEW, padx=0)
+125: 
+126: 		tag: str | None = None
+127: 		for dll, info in self.dll_info.items():
+128: 			values: list[str] = []
+129: 			if info is None or not info["IsF4SE"]:
+130: 				tag = TAG_NEUTRAL
+131: 				values = [EMOJI_DLL_UNKNOWN] * 3
+132: 			else:
+133: 				og = EMOJI_DLL_GOOD if info.get("SupportsOG") else EMOJI_DLL_BAD
+134: 
+135: 				supports_ngae = info.get("SupportsNGAE")
+136: 				supports_ng = info.get("SupportsNG")
+137: 				supports_ae = info.get("SupportsAE")
+138: 
+139: 				if supports_ngae:
+140: 					ng = EMOJI_DLL_NOTE if supports_ng is None else EMOJI_DLL_GOOD if supports_ng else EMOJI_DLL_BAD
+141: 					ae = EMOJI_DLL_NOTE if supports_ae is None else EMOJI_DLL_GOOD if supports_ae else EMOJI_DLL_BAD
+142: 
+143: 				else:
+144: 					ng = EMOJI_DLL_BAD
+145: 					ae = EMOJI_DLL_BAD
+146: 					# cg = EMOJI_DLL_GOOD if self.cmc.game.is_foog() else EMOJI_DLL_BAD
+147: 
+148: 				cg = "\N{CROSS MARK}"
+149: 				if self.cmc.game.is_foae():
+150: 					cg = EMOJI_DLL_GOOD if supports_ae else EMOJI_DLL_NOTE if supports_ngae else "\N{CROSS MARK}"
+151: 
+152: 				elif self.cmc.game.is_foog():
+153: 					cg = EMOJI_DLL_GOOD if info.get("SupportsOG") else "\N{CROSS MARK}"
+154: 
+155: 				elif self.cmc.game.is_fong():
+156: 					cg = EMOJI_DLL_GOOD if supports_ng else EMOJI_DLL_NOTE if supports_ngae else "\N{CROSS MARK}"
+157: 
+158: 				values = [og, ng, ae, cg]
+159: 				tag = TAG_NOTE if cg == EMOJI_DLL_NOTE else TAG_GOOD if cg == EMOJI_DLL_GOOD else TAG_BAD
+160: 
+161: 			tree_dlls.insert("", END, text=dll, values=values, tags=tag)
+
+== CMT/src/utils.py ==
+22: import os
+23: import struct
+24: import sys
+25: import winreg
+26: import zlib
+27: from ctypes import POINTER, WinDLL, byref, c_int, create_unicode_buffer, sizeof, windll, wintypes
+28: from pathlib import Path
+29: from tkinter import *
+30: from tkinter import ttk
+31: from typing import TYPE_CHECKING, ClassVar, Literal, overload
+32: 
+33: import chardet
+34: import requests
+35: import win32api
+36: from packaging.version import InvalidVersion, Version
+37: from psutil import Process
+38: 
+39: import sv_ttk
+40: from globals import APP_VERSION, COLOR_DEFAULT, FONT, FONT_SMALL, NEXUS_LINK
+41: from mod_manager_info import ModManagerInfo
+42: 
+43: if TYPE_CHECKING:
+44: 	import io
+45: 	from collections.abc import Generator, Sequence
+46: 	from ctypes import _CDataType  # pyright: ignore[reportPrivateUsage] # noqa: PLC2701
+47: 
+48: 	from enums import CSIDL
+49: 	from helpers import DLLInfo
+50: 
+51: logger = logging.getLogger(__name__)
+52: 
+53: DONT_RESOLVE_DLL_REFERENCES = 0x00000001
+54: HTTP_OK = 200
+55: KEY_CTRL = 12
+56: 
+57: win11_24h2 = sys.getwindowsversion().build >= 26100
+58: 
+59: type Fields = Sequence[tuple[str, type[_CDataType]] | tuple[str, type[_CDataType], int]]
+60: 
+61: class F4SEPluginVersionData(ctypes.Structure):
+62: 	_fields_: ClassVar[Fields] = [
+63: 		("dataVersion", ctypes.c_uint32),
+64: 		("pluginVersion", ctypes.c_uint32),
+65: 		("name", ctypes.c_char * 256),
+66: 		("author", ctypes.c_char * 256),
+67: 		("addressIndependence", ctypes.c_uint32),
+68: 		("structureIndependence", ctypes.c_uint32),
+69: 		("compatibleVersions", ctypes.c_uint32 * 16),
+70: 		("seVersionRequired", ctypes.c_uint32),
+71: 		("reservedNonBreaking", ctypes.c_uint32),
+72: 		("reservedBreaking", ctypes.c_uint32),
+73: 		("reserved", ctypes.c_uint8 * 512),
+74: 	]
+75: 
+76: def rglob(path: Path, ext: str) -> Generator[Path]:
+77: 	if not win11_24h2:
+78: 		yield from path.rglob(f"*.{ext}")
+79: 		return
+80: 
+81: 	ext = ext.lower()
+82: 	for root, _, files in path.walk():
+83: 		for file in files:
+84: 			if file.lower().endswith(f"*.{ext}"):
+85: 				yield root / file
+86: 
+87: 
+88: def is_file(path: Path) -> bool:
+89: 	if not win11_24h2:
+90: 		return path.is_file()
+91: 
+92: 	try:
+93: 		with path.open(encoding="utf-8"):
+94: 			pass
+95: 	except FileNotFoundError:
+96: 		return False
+97: 	except PermissionError:
+98: 		# Probably a folder
+99: 		try:
+100: 			_ = next(path.iterdir(), None)
+101: 		except NotADirectoryError:
+102: 			# Was a file with actual PermissionError
+103: 			return True
+104: 		except OSError:
+105: 			pass
+106: 		return False
+107: 	return True
+108: 
+109: 
+110: def is_dir(path: Path) -> bool:
+111: 	if not win11_24h2:
+112: 		return path.is_dir()
+113: 
+114: 	try:
+115: 		_ = next(path.iterdir(), None)
+116: 	except (NotADirectoryError, FileNotFoundError):
+117: 		return False
+118: 	return True
+119: 
+120: 
+121: def exists(path: Path) -> bool:
+122: 	if not win11_24h2:
+123: 		return path.exists()
+124: 
+125: 	# Files
+126: 	try:
+127: 		with path.open(encoding="utf-8"):
+128: 			return True
+129: 	except FileNotFoundError:
+130: 		return False
+131: 	except PermissionError:
+132: 		# Probably a folder, check below
+133: 		pass
+134: 
+135: 	# Folders
+136: 	try:
+137: 		_ = next(path.iterdir(), None)
+138: 	except (PermissionError, NotADirectoryError):
+139: 		# PermissionError: Actual folder but no permission
+140: 		# NotADirectoryError: Was a file with actual PermissionError
+141: 		pass
+142: 	except OSError:
+143: 		return False
+144: 	return True
+145: 
+146: 
+147: def read_text_encoded(file_path: Path) -> tuple[str, str]:
+148: 	file_bytes = file_path.read_bytes()
+149: 	encoding = chardet.detect(file_bytes)["encoding"] or "utf-8"
+150: 	return file_bytes.decode(encoding), encoding
+151: 
+152: 
+153: def load_font(font_path: str) -> None:
+154: 	# https://learn.microsoft.com/en-us/windows/win32/api/wingdi/nf-wingdi-addfontresourceexw
+155: 	# FR_PRIVATE = 0x10
+156: 	# FR_NOT_ENUM = 0x20
+157: 	buffer = create_unicode_buffer(font_path)
+158: 	windll.gdi32.AddFontResourceExW(byref(buffer), 0x10, 0)
+159: 
+160: 
+161: def get_environment_path(location: CSIDL) -> Path:
+162: 	buf = create_unicode_buffer(wintypes.MAX_PATH)
+163: 	windll.shell32.SHGetFolderPathW(None, location, None, 0, buf)
+164: 	path = Path(buf.value)
+165: 	if not is_dir(path):
+166: 		msg = f"Folder does not exist:\n{path}"
+167: 		raise FileNotFoundError(msg)
+168: 	return path
+169: 
+170: 
+171: def is_fo4_dir(path: Path) -> bool:
+172: 	return is_dir(path) and is_file(path / "Fallout4.exe")
+173: 
+174: 
+175: def find_mod_manager() -> ModManagerInfo | None:
+176: 	pid = os.getppid()
+177: 	proc: Process | None = Process(pid)
+178: 
+179: 	managers = {"ModOrganizer.exe", "Vortex.exe"}
+180: 	manager = None
+181: 
+182: 	for _ in range(8):
+183: 		if proc is None:
+184: 			break
+185: 
+186: 		with proc.oneshot():
+187: 			if proc.name() in managers:
+188: 				manager_path = Path(proc.exe())
+189: 				manager = "Mod Organizer" if proc.name() == "ModOrganizer.exe" else "Vortex"
+190: 				ver = get_file_version(manager_path)
+191: 				manager_version = Version(".".join(str(n) for n in ver[:3])) if ver else Version("0.0.0")
+192: 				return ModManagerInfo(manager, manager_path, manager_version)
+193: 			proc = proc.parent()
+194: 	return None
+195: 
+196: 
+197: def get_asset_path(relative_path: str) -> Path:
+198: 	# PyInstaller EXEs extract to a temp folder and store the path in sys._MEIPASS
+199: 	base_path = Path(str(getattr(sys, "_MEIPASS", False) or "."))
+200: 	return base_path / "assets" / relative_path
+201: 
+202: 
+203: def block_text_input(event: Event[Text]) -> str | None:
+204: 	# Block all input except CTRL+A / CTRL+C
+205: 	if event.state == KEY_CTRL and event.keysym in "AC":
+206: 		return None
+207: 	return "break"
+208: 
+209: 
+210: def get_file_version(path: Path) -> tuple[int, int, int, int] | None:
+211: 	try:
+212: 		info = win32api.GetFileVersionInfo(str(path), "\\")
+213: 	except:
+214: 		return None
+215: 	ms = info["FileVersionMS"]
+216: 	ls = info["FileVersionLS"]
+217: 	return (
+218: 		win32api.HIWORD(ms),
+219: 		win32api.LOWORD(ms),
+220: 		win32api.HIWORD(ls),
+221: 		win32api.LOWORD(ls),
+222: 	)
+223: 
+224: 
+225: def get_crc32(file_path: Path, chunk_size: int = 65536, max_chunks: int | None = None, *, skip_ba2_header: bool = False) -> str:
+226: 	with file_path.open("rb") as f:
+227: 		checksum = 0
+228: 		chunks = 0
+229: 		if skip_ba2_header:
+230: 			f.seek(12)
+231: 		while chunk := f.read(chunk_size):
+232: 			checksum = zlib.crc32(chunk, checksum)
+233: 			if max_chunks is not None:
+234: 				chunks += 1
+235: 				if chunks >= max_chunks:
+236: 					break
+237: 	return f"{checksum:08X}"
+238: 
+239: 
+240: def parse_dll(file_path: Path) -> DLLInfo:
+241: 	dll = WinDLL(str(file_path), winmode=DONT_RESOLVE_DLL_REFERENCES)
+242: 	dll_info: DLLInfo = {
+243: 		"IsF4SE": hasattr(dll, "F4SEPlugin_Load") or hasattr(dll, "F4SEPlugin_Preload"),
+244: 		"SupportsOG": hasattr(dll, "F4SEPlugin_Query"),
+245: 		"SupportsNGAE": hasattr(dll, "F4SEPlugin_Version"),
+246: 		"SupportsNG": None,
+247: 		"SupportsAE": None,
+248: 	}
+249: 
+250: 	if dll_info["SupportsNGAE"]:
+251: 		sym = ctypes.cast(
+252: 			dll.F4SEPlugin_Version,
+253: 			POINTER(F4SEPluginVersionData),
+254: 		)
+255: 		v = sym.contents
+256: 		if 0x010A3D40 in v.compatibleVersions or 0x010A3D80 in v.compatibleVersions:
+257: 			dll_info["SupportsNG"] = True
+258: 
+259: 		if any(n > 0x010B0890 for n in v.compatibleVersions):
+260: 			dll_info["SupportsAE"] = True
+261: 
+262: 	return dll_info
+263: 
+264: 
+265: def ver_to_str(version: str | tuple[int, int, int, int]) -> str:
+266: 	if isinstance(version, str):
+267: 		return version
+268: 
+269: 	return ".".join(map(str, version))
+270: 
+271: 
+272: def get_registry_value(key: int, subkey: str, value_name: str) -> str | None:
+273: 	try:
+274: 		with winreg.OpenKey(key, subkey) as reg_handle:
+275: 			value, value_type = winreg.QueryValueEx(reg_handle, value_name)
+276: 
+277: 		if value and value_type == winreg.REG_SZ and isinstance(value, str):
+278: 			return value
+279: 
+280: 	except OSError:
+
+== CMT/src/globals.py ==
+212: Fallout4_downgradeBackup.exe
+213: Fallout4_upgradeBackup.exe
+214: 
+215: Both Creation Kit and the game require steam_api64.dll to match their version, so they must be patched together (for now)."""
+216: 
+217: ABOUT_F4SE_DLLS = """This checks all DLLs in
+218: Data/F4SE/Plugins/ for
+219: version-specific code to
+220: determine OG/NG support.
+221: 
+222: \N{HEAVY CHECK MARK} Version is supported
+223: 
+224: \N{CROSS MARK} Version not supported
+225: 
+226: \N{BLACK QUESTION MARK ORNAMENT} Not an F4SE DLL.
+227: May still be loaded by
+228: other DLLs.
+229: 
+230: \N{WARNING SIGN} Consult mod page to
+231: verify version support if
+232: you see this icon.
+233: Some DLLs' version support
+234: cannot be reliably
+235: determined."""
+236: 
+237: TOOLTIP_NO_MOD_MANAGER = "Your mod manager must launch the app to be detected."

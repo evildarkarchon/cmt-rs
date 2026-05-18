@@ -1,0 +1,17 @@
+warning: unused import: `WorkerFailure`
+  --> src/app/downgrader_controller.rs:23:70
+   |
+23 | ...t, WorkerFailure,
+   |       ^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: unused import: `DowngraderInstallStatus`
+    --> src/app/downgrader_controller.rs:1209:51
+     |
+1209 | ...p, DowngraderInstallStatus},
+     |       ^^^^^^^^^^^^^^^^^^^^^^^
+
+warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings (run `cargo fix --bin "cmt-rs" -p cmt-rs --tests` to apply 2 suggestions)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.04s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-55702d1382f9d1b1)

@@ -1,0 +1,18 @@
+{
+  "id": "c58c55f3-0b6d-4d6f-90ae-cd000aa317fb",
+  "runtime": "bash",
+  "purpose": "downgrader worker payload tests after clippy fixes",
+  "script_chars": 36,
+  "started_at": "2026-05-18T11:39:32.692Z",
+  "finished_at": "2026-05-18T11:41:00.339Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 87647,
+  "stdout_bytes": 235,
+  "stderr_bytes": 418,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c58c55f3-0b6d-4d6f-90ae-cd000aa317fb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c58c55f3-0b6d-4d6f-90ae-cd000aa317fb.stderr"
+}

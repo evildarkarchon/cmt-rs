@@ -1,0 +1,18 @@
+{
+  "id": "eaa555ac-0265-4c43-a786-ed3d9c347bfa",
+  "runtime": "bash",
+  "purpose": "S08 closeout verification targeted tests and full Rust gates",
+  "script_chars": 1383,
+  "started_at": "2026-05-18T09:43:50.934Z",
+  "finished_at": "2026-05-18T09:45:58.100Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 127166,
+  "stdout_bytes": 3007,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\eaa555ac-0265-4c43-a786-ed3d9c347bfa.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\eaa555ac-0265-4c43-a786-ed3d9c347bfa.stderr"
+}

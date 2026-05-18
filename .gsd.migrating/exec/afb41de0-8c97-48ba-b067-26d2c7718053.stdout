@@ -1,0 +1,36 @@
+cargo info xdelta3:
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded xdelta3 v0.1.5
+xdelta3 #xdelta #patch #vcdiff
+Rust binding for xdelta3
+version: 0.1.5
+license: Apache-2.0
+rust-version: unknown
+documentation: https://docs.rs/xdelta3/0.1.5
+repository: https://github.com/liushuyu/xdelta3-rs
+crates.io: https://crates.io/crates/xdelta3/0.1.5
+
+cargo info oxidelta:
+    Updating crates.io index
+ Downloading crates ...
+  Downloaded oxidelta v0.1.4
+oxidelta #delta #vcdiff #xdelta #patch #compression
+VCDIFF (RFC 3284) delta encoder/decoder — Rust reimplementation of xdelta3
+version: 0.1.4
+license: MIT
+rust-version: 1.90
+documentation: https://docs.rs/oxidelta
+homepage: https://github.com/sockudo/oxidelta
+repository: https://github.com/sockudo/oxidelta
+crates.io: https://crates.io/crates/oxidelta/0.1.4
+features:
+ +default        = [cli, adler32, lzma-secondary, zlib-secondary, file-io]
+  adler32        = [dep:simd-adler32]
+  cli            = [dep:clap, dep:env_logger, dep:serde_json]
+  file-io        = [dep:sha2]
+  lzma-secondary = [dep:lzma-rs]
+  zlib-secondary = [dep:flate2]
+  fuzzing        = []
+  parallel       = [dep:rayon]
+  simd           = []

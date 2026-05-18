@@ -1,0 +1,18 @@
+{
+  "id": "5e2cb030-fb9f-4f74-b691-929a5f9ec50c",
+  "runtime": "bash",
+  "purpose": "format Rust source after Auto-Fix controller changes",
+  "script_chars": 9,
+  "started_at": "2026-05-18T09:05:28.997Z",
+  "finished_at": "2026-05-18T09:05:29.579Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 582,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5e2cb030-fb9f-4f74-b691-929a5f9ec50c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5e2cb030-fb9f-4f74-b691-929a5f9ec50c.stderr"
+}

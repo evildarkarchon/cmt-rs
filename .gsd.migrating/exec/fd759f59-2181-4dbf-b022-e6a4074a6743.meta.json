@@ -1,0 +1,18 @@
+{
+  "id": "fd759f59-2181-4dbf-b022-e6a4074a6743",
+  "runtime": "bash",
+  "purpose": "downgrader worker payload tests after import cleanup",
+  "script_chars": 36,
+  "started_at": "2026-05-18T11:34:29.151Z",
+  "finished_at": "2026-05-18T11:35:36.022Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 66871,
+  "stdout_bytes": 0,
+  "stderr_bytes": 1388,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fd759f59-2181-4dbf-b022-e6a4074a6743.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fd759f59-2181-4dbf-b022-e6a4074a6743.stderr"
+}

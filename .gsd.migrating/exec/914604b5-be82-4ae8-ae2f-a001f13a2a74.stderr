@@ -1,0 +1,12 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: constant `UNKNOWN_SOURCE_MESSAGE` is never used
+  --> src/services/downgrader.rs:42:7
+   |
+42 | const ...CE_MESSAGE: &...
+   |       ...^^^^^^^^^^
+   |
+   = note: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cmt-rs` (bin "cmt-rs" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 54.60s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-e8c11e718bafc9d4)

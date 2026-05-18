@@ -1,0 +1,10 @@
+error: expected identifier, found `:`
+    --> /mnt/j/cmt-rs/src/services/autofix.rs:1271:46
+     |
+1268 | ...   ...FixRequest {
+     |       ...---------- while parsing this struct
+...
+1271 | ...       selection_identity: pron_identity: pr...
+     |                                            ^ expected identifier
+
+Error writing files: failed to resolve mod `autofix`: cannot parse /mnt/j/cmt-rs/src/services/autofix.rs

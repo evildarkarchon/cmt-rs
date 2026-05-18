@@ -1,0 +1,18 @@
+{
+  "id": "8bd6b4ec-de7a-4c85-8691-622da2b96f3c",
+  "runtime": "bash",
+  "purpose": "final cargo test after scanner controller",
+  "script_chars": 10,
+  "started_at": "2026-05-18T06:13:53.456Z",
+  "finished_at": "2026-05-18T06:14:02.131Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8675,
+  "stdout_bytes": 26558,
+  "stderr_bytes": 308,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8bd6b4ec-de7a-4c85-8691-622da2b96f3c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8bd6b4ec-de7a-4c85-8691-622da2b96f3c.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "c4694c7a-8d45-468c-b206-8c62a1ae0f00",
+  "runtime": "bash",
+  "purpose": "format Rust after F4SE wiring tests",
+  "script_chars": 9,
+  "started_at": "2026-05-18T04:39:35.102Z",
+  "finished_at": "2026-05-18T04:39:35.599Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 497,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c4694c7a-8d45-468c-b206-8c62a1ae0f00.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c4694c7a-8d45-468c-b206-8c62a1ae0f00.stderr"
+}

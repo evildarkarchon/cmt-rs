@@ -1,0 +1,18 @@
+{
+  "id": "eca0b564-6817-44d7-9d61-3bb6558202f7",
+  "runtime": "bash",
+  "purpose": "check scanner progress pushes after callback refactor",
+  "script_chars": 85,
+  "started_at": "2026-05-18T07:00:14.916Z",
+  "finished_at": "2026-05-18T07:00:15.153Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 237,
+  "stdout_bytes": 79,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\eca0b564-6817-44d7-9d61-3bb6558202f7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\eca0b564-6817-44d7-9d61-3bb6558202f7.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "2e27d4c7-22be-4f02-874c-c3afe3560f55",
+  "runtime": "bash",
+  "purpose": "S06 find install type helper methods and tests",
+  "script_chars": 133,
+  "started_at": "2026-05-18T03:17:06.833Z",
+  "finished_at": "2026-05-18T03:17:06.941Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 108,
+  "stdout_bytes": 18280,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\2e27d4c7-22be-4f02-874c-c3afe3560f55.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\2e27d4c7-22be-4f02-874c-c3afe3560f55.stderr"
+}

@@ -1,0 +1,120 @@
+src/app/tools_controller.rs:9:    workers::{WorkerEvent, WorkerPayload},
+src/app/tools_controller.rs:17:#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+src/app/tools_controller.rs:33:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/tools_controller.rs:52:#[derive(Debug, Default, Clone, PartialEq, Eq)]
+src/app/tools_controller.rs:61:#[derive(Debug, Default, Clone, PartialEq, Eq)]
+src/app/tools_controller.rs:149:    pub fn handle_worker_event(&mut self, event: WorkerEvent) -> ToolsTransitionResult {
+src/app/tools_controller.rs:151:            WorkerPayload::ToolsAction(payload) => self.handle_feedback(payload.feedback),
+src/app/tools_controller.rs:168:            AboutActionWorkerPayload, WorkerEvent, WorkerPayload, WorkerTask, WorkerTaskKind,
+src/app/tools_controller.rs:231:        let event = WorkerEvent::completed(
+src/app/tools_controller.rs:233:            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(about_feedback)),
+src/app/f4se_controller.rs:11:        F4seWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerSpawnError, WorkerTask,
+src/app/f4se_controller.rs:25:#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash)]
+src/app/f4se_controller.rs:39:#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+src/app/f4se_controller.rs:57:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/f4se_controller.rs:76:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/f4se_controller.rs:263:    pub fn handle_worker_event(&mut self, event: WorkerEvent) -> F4seTransitionResult {
+src/app/f4se_controller.rs:267:            WorkerPayload::F4se(payload)
+src/app/f4se_controller.rs:274:            WorkerPayload::Error(failure)
+src/app/f4se_controller.rs:282:            WorkerPayload::None
+src/app/f4se_controller.rs:294:    fn handle_f4se_payload(&mut self, payload: F4seWorkerPayload) -> F4seTransitionResult {
+src/app/f4se_controller.rs:296:            F4seWorkerPayload::ScanCompleted { scan_id, snapshot } => {
+src/app/f4se_controller.rs:320:) -> WorkerPayload {
+src/app/f4se_controller.rs:321:    WorkerPayload::F4se(F4seWorkerPayload::scan_completed(scan_id, snapshot))
+src/app/f4se_controller.rs:364:        workers::{WorkerMessage, WorkerPayload},
+src/app/f4se_controller.rs:431:        let event = WorkerEvent::completed(
+src/app/f4se_controller.rs:453:        let latest = WorkerEvent::completed(
+src/app/f4se_controller.rs:462:        let stale = WorkerEvent::completed(
+src/app/f4se_controller.rs:479:        let event = WorkerEvent::failed(
+src/app/f4se_controller.rs:528:        let event = WorkerEvent::completed(
+src/app/f4se_controller.rs:530:            WorkerPayload::Generic(WorkerMessage::new("Generic complete.")),
+src/app/f4se_controller.rs:544:        let event = WorkerEvent::completed(
+src/app/f4se_controller.rs:546:            WorkerPayload::Scan(WorkerMessage::new("Other scan complete.")),
+src/app/f4se_controller.rs:560:        let event = WorkerEvent::failed(
+src/app/f4se_controller.rs:577:        let event = WorkerEvent::completed(
+src/app/about_controller.rs:10:    workers::{WorkerEvent, WorkerPayload},
+src/app/about_controller.rs:14:#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+src/app/about_controller.rs:30:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/about_controller.rs:49:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/about_controller.rs:62:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/about_controller.rs:88:#[derive(Debug, Default, Clone, PartialEq, Eq)]
+src/app/about_controller.rs:207:    pub fn handle_worker_event(&mut self, event: WorkerEvent) -> AboutTransitionResult {
+src/app/about_controller.rs:209:            WorkerPayload::AboutAction(payload) => self.handle_feedback(payload.feedback),
+src/app/about_controller.rs:245:            ToolsActionWorkerPayload, WorkerEvent, WorkerPayload, WorkerTask, WorkerTaskKind,
+src/app/about_controller.rs:359:        let event = WorkerEvent::completed(
+src/app/about_controller.rs:361:            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(tools_feedback)),
+src/app/overview_controller.rs:19:        OverviewWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerSpawnError,
+src/app/overview_controller.rs:35:#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+src/app/overview_controller.rs:53:#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+src/app/overview_controller.rs:79:#[derive(Debug, Clone, PartialEq, Eq)]
+src/app/overview_controller.rs:279:    pub fn handle_worker_event(&mut self, event: WorkerEvent) -> OverviewTransitionResult {
+src/app/overview_controller.rs:281:            WorkerPayload::Overview(payload) => self.handle_overview_payload(payload),
+src/app/overview_controller.rs:282:            WorkerPayload::Error(failure)
+src/app/overview_controller.rs:327:        payload: OverviewWorkerPayload,
+src/app/overview_controller.rs:330:            OverviewWorkerPayload::RefreshCompleted {
+src/app/overview_controller.rs:334:            OverviewWorkerPayload::UpdateCheckCompleted {
+src/app/overview_controller.rs:338:            OverviewWorkerPayload::DesktopActionCompleted { action, error } => {
+src/app/overview_controller.rs:380:) -> WorkerPayload {
+src/app/overview_controller.rs:381:    WorkerPayload::Overview(OverviewWorkerPayload::desktop_action_completed(
+src/app/overview_controller.rs:630:        let event = WorkerEvent::failed(
+src/app/overview_controller.rs:652:        let event = WorkerEvent::completed(
+src/app/overview_controller.rs:654:            WorkerPayload::Overview(OverviewWorkerPayload::refresh_completed(
+src/workers/mod.rs:18:    AboutActionWorkerPayload, CancellationToken, ExternalActionKind, ExternalActionOutcome,
+src/workers/mod.rs:19:    ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload, ToolsActionWorkerPayload,
+src/workers/mod.rs:20:    WorkerCancellation, WorkerEvent, WorkerFailure, WorkerMessage, WorkerPayload, WorkerProgress,
+src/workers/mod.rs:24:    RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,
+src/workers/mod.rs:32:#[derive(Debug, Clone, PartialEq, Eq)]
+src/workers/mod.rs:35:    Completed(WorkerPayload),
+src/workers/mod.rs:62:        S: WorkerEventSink,
+src/workers/mod.rs:96:            emit_or_log(&worker_sink, WorkerEvent::running(worker_task.clone()));
+src/workers/mod.rs:107:                    emit_or_log(&worker_sink, WorkerEvent::completed(worker_task, payload));
+src/workers/mod.rs:119:                        WorkerEvent::cancelled(worker_task, cancellation),
+src/workers/mod.rs:132:                    emit_or_log(&worker_sink, WorkerEvent::failed(worker_task, failure));
+src/workers/mod.rs:150:                    emit_or_log(&worker_sink, WorkerEvent::failed(worker_task, failure));
+src/workers/mod.rs:165:#[derive(Debug, Clone, PartialEq, Eq)]
+src/workers/mod.rs:191:    S: WorkerEventSink,
+src/workers/mod.rs:200:    S: WorkerEventSink,
+src/workers/mod.rs:229:        payload: WorkerPayload,
+src/workers/mod.rs:232:            .emit(WorkerEvent::new(self.task.clone(), status, payload))
+src/workers/mod.rs:238:            .emit(WorkerEvent::progress(self.task.clone(), progress))
+src/workers/mod.rs:246:        self.sink.emit(WorkerEvent::cancellation_acknowledged(
+src/workers/mod.rs:256:    S: WorkerEventSink,
+src/workers/mod.rs:266:    S: WorkerEventSink,
+src/workers/mod.rs:276:        self.sink.emit(WorkerEvent::cancellation_requested(
+src/workers/mod.rs:293:fn emit_or_log<S>(sink: &S, event: WorkerEvent)
+src/workers/mod.rs:295:    S: WorkerEventSink,
+src/workers/mod.rs:354:                Ok(WorkerTaskOutcome::Completed(WorkerPayload::Scan(
+src/workers/mod.rs:375:            WorkerPayload::Progress(WorkerProgress {
+src/workers/mod.rs:387:            Some(WorkerPayload::Scan(_))
+src/workers/mod.rs:449:            WorkerPayload::Error(failure) => {
+src/workers/mod.rs:464:            Ok(WorkerTaskOutcome::Completed(WorkerPayload::None))
+src/workers/events.rs:31:#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+src/workers/events.rs:65:#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+src/workers/events.rs:111:#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+src/workers/events.rs:139:#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+src/workers/events.rs:187:#[derive(Debug, Clone, PartialEq, Eq)]
+src/workers/events.rs:188:pub struct WorkerEvent {
+src/workers/events.rs:194:    pub payload: WorkerPayload,
+src/workers/events.rs:197:impl WorkerEvent {
+src/workers/events.rs:199:    pub fn new(task: WorkerTask, status: WorkerTaskStatus, payload: WorkerPayload) -> Self {
+src/workers/events.rs:209:        Self::new(task, WorkerTaskStatus::Running, WorkerPayload::None)
+src/workers/events.rs:217:            WorkerPayload::Progress(progress),
+src/workers/events.rs:222:    pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+src/workers/events.rs:231:            WorkerPayload::Error(failure),
+src/workers/events.rs:240:            WorkerPayload::Cancellation(cancellation),
+src/workers/events.rs:249:            WorkerPayload::Cancellation(cancellation),
+src/workers/events.rs:258:            WorkerPayload::Cancellation(cancellation),
+src/workers/events.rs:264:#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+src/workers/events.rs:300:#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+src/workers/events.rs:316:#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+src/workers/events.rs:351:#[derive(Debug, Default, Clone, PartialEq, Eq, Hash)]
+src/workers/events.rs:377:#[derive(Debug, Clone, PartialEq, Eq)]
+src/workers/events.rs:378:pub enum WorkerPayload {
+src/workers/events.rs:388:    F4se(F4seWorkerPayload),
+src/workers/events.rs:394:    Overview(OverviewWorkerPayload),
+src/workers/events.rs:396:    ToolsAction(ToolsActionWorkerPayload),
+src/workers/events.rs:398:    AboutAction(AboutActionWorkerPayload),
+src/workers/events.rs:410:#[derive(Debug, Clone, PartialEq, Eq)]
+src/workers/events.rs:411:pub enum F4seWorkerPayload {
+src/workers/events.rs:421:impl F4seWorkerPayload {
+src/workers/events.rs:446:#[derive(Debug, Clone, PartialEq, Eq)]

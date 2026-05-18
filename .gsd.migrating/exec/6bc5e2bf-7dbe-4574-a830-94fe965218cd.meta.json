@@ -1,0 +1,18 @@
+{
+  "id": "6bc5e2bf-7dbe-4574-a830-94fe965218cd",
+  "runtime": "bash",
+  "purpose": "run full Rust test suite after F4SE controller changes",
+  "script_chars": 10,
+  "started_at": "2026-05-18T04:15:40.864Z",
+  "finished_at": "2026-05-18T04:15:49.722Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8858,
+  "stdout_bytes": 21378,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6bc5e2bf-7dbe-4574-a830-94fe965218cd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6bc5e2bf-7dbe-4574-a830-94fe965218cd.stderr"
+}

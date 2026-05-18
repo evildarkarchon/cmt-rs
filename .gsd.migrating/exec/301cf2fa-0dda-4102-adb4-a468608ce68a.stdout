@@ -1,0 +1,15 @@
+
+running 10 tests
+test services::f4se::tests::f4se_scan_service_missing_data_for_absent_installation_or_data_path ... ok
+test services::f4se::tests::f4se_scan_service_missing_plugins_message_respects_manager_hint ... ok
+test services::f4se::tests::f4se_scan_service_plugins_read_error_returns_safe_scan_error ... ok
+test services::f4se::tests::f4se_scan_service_empty_plugin_folder_is_ready_with_zero_rows ... ok
+test services::f4se::tests::f4se_scan_service_unreadable_file_stays_visible_as_warning_row ... ok
+test services::f4se::tests::f4se_scan_service_classification_rows_use_export_facts ... ok
+test services::f4se::tests::f4se_scan_service_unknown_game_target_keeps_your_game_warning ... ok
+test services::f4se::tests::f4se_scan_service_malformed_parser_failure_stays_visible_and_continues ... ok
+test services::f4se::tests::f4se_scan_service_msdia_ignore_skips_reference_helper_dlls ... ok
+test services::f4se::tests::f4se_scan_service_direct_child_only_enumeration_and_deterministic_order ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 185 filtered out; finished in 0.01s
+

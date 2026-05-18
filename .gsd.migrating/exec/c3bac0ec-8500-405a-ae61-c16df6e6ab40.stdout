@@ -1,0 +1,3 @@
+1669:fn finalize_output(
+1769:fn any_category_enabled(settings: &ScannerSettings) -> bool {
+1779:fn data_scan_enabled(settings: &ScannerSettings) -> bool {

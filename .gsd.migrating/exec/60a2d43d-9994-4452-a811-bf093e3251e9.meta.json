@@ -1,0 +1,18 @@
+{
+  "id": "60a2d43d-9994-4452-a811-bf093e3251e9",
+  "runtime": "bash",
+  "purpose": "final rerun cargo check after scanner service task",
+  "script_chars": 11,
+  "started_at": "2026-05-18T05:55:46.681Z",
+  "finished_at": "2026-05-18T05:56:00.970Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 14289,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\60a2d43d-9994-4452-a811-bf093e3251e9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\60a2d43d-9994-4452-a811-bf093e3251e9.stderr"
+}

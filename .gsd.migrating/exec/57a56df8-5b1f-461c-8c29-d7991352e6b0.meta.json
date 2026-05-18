@@ -1,0 +1,18 @@
+{
+  "id": "57a56df8-5b1f-461c-8c29-d7991352e6b0",
+  "runtime": "bash",
+  "purpose": "Run targeted downgrader executor tests after clippy refactor",
+  "script_chars": 30,
+  "started_at": "2026-05-18T11:08:23.930Z",
+  "finished_at": "2026-05-18T11:09:03.405Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 39475,
+  "stdout_bytes": 805,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\57a56df8-5b1f-461c-8c29-d7991352e6b0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\57a56df8-5b1f-461c-8c29-d7991352e6b0.stderr"
+}

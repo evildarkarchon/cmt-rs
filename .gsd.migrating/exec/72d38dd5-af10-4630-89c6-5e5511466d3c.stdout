@@ -1,0 +1,75 @@
+src/domain/scanner.rs: exists=True size=56032
+src/domain/mod.rs: exists=True size=2870
+src/services/scanner.rs: exists=True size=97196
+src/services/mod.rs: exists=True size=715
+src/app/scanner_controller.rs: exists=True size=43516
+src/app/mod.rs: exists=True size=1423
+src/workers/events.rs: exists=True size=33335
+src/workers/mod.rs: exists=True size=17084
+src/main.rs: exists=True size=184133
+ui/scanner_tab.slint: exists=True size=22129
+ui/main.slint: exists=True size=14955
+Cargo.toml: exists=True size=901
+
+Autofix/deferred mentions:
+-- src/domain/scanner.rs (37 hits)
+45:/// S07 read-only status for write-capable Auto-Fix behavior deferred to a later slice.
+46:pub const AUTO_FIX_DEFERRED_STATUS: &str = "Auto-Fix is reserved for a later port phase.";
+76:pub const DETAIL_LABEL_SOLUTION: &str = "Solution:";
+86:/// Reference Auto-Fix button label for future write-capable scanner actions.
+87:pub const ACTION_AUTO_FIX_LABEL: &str = "Auto-Fix";
+411:pub enum ScannerSolutionKind {
+436:impl ScannerSolutionKind {
+648:/// Write-capable Auto-Fix action reserved for future slices.
+649:AutoFixDeferred,
+661:Self::AutoFixDeferred => "auto-fix",
+673:"auto-fix" => Some(Self::AutoFixDeferred),
+723:fn deferred_auto_fix() -> Self {
+725:kind: ScannerActionKind::AutoFixDeferred,
+726:label: ACTION_AUTO_FIX_LABEL,
+730:status_text: Some(AUTO_FIX_DEFERRED_STATUS),
+809:pub solution: Option<String>,
+814:/// Whether a future Auto-Fix action exists but is deferred by this slice.
+815:pub auto_fix_deferred: bool,
+824:solution: Option<String>,
+837:auto_fix_deferred: false,
+847:solution: Option<String>,
+866:auto_fix_deferred: false,
+888:/// Marks this result as having a future Auto-Fix action that is disabled in S07.
+889:pub const fn with_deferred_auto_fix(mut self) -> Self {
+890:self.auto_fix_deferred = true;
+... 12 more
+-- src/app/scanner_controller.rs (8 hits)
+22:ScannerWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerProgress,
+711:payload: ScannerWorkerPayload,
+714:ScannerWorkerPayload::ScanCompleted { scan_id, snapshot }
+721:ScannerWorkerPayload::ActionCompleted { feedback }
+755:WorkerPayload::Scanner(ScannerWorkerPayload::scan_completed(scan_id, snapshot))
+760:WorkerPayload::Scanner(ScannerWorkerPayload::action_completed(feedback))
+799:ScannerProblemType, ScannerSolutionKind, group_scanner_results,
+808:Some(ScannerSolutionKind::DeleteOrIgnoreFile.into_solution_text()),
+-- src/workers/events.rs (7 hits)
+389:Scanner(ScannerWorkerPayload),
+414:pub enum ScannerWorkerPayload {
+429:impl ScannerWorkerPayload {
+844:WorkerPayload::Scanner(ScannerWorkerPayload::scan_completed(11, snapshot.clone())),
+849:WorkerPayload::Scanner(ScannerWorkerPayload::ScanCompleted {
+866:WorkerPayload::Scanner(ScannerWorkerPayload::action_completed(feedback.clone())),
+871:WorkerPayload::Scanner(ScannerWorkerPayload::ActionCompleted { feedback: ref actual })
+-- src/workers/mod.rs (1 hits)
+19:ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload, ScannerWorkerPayload,
+-- src/main.rs (7 hits)
+178:detail_solution: String,
+2600:detail_solution: detail.solution,
+2666:solution: String,
+2682:solution: String::new(),
+2695:solution: scanner_detail_value(&detail.records, DETAIL_LABEL_SOLUTION),
+3699:"label: \"Solution:\"",
+3755:for prohibited in ["Auto-Fix", "Fixed!", "Fix Failed", "auto-fix"] {
+-- ui/scanner_tab.slint (2 hits)
+361:in-out property <string> scanner-detail-solution: "";
+596:label: "Solution:";
+-- ui/main.slint (1 hits)
+59:in-out property <string> scanner-detail-solution: "";
+
+Test files:

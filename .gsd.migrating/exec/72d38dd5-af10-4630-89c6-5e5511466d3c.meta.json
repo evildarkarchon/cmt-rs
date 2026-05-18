@@ -1,0 +1,18 @@
+{
+  "id": "72d38dd5-af10-4630-89c6-5e5511466d3c",
+  "runtime": "bash",
+  "purpose": "S08 path and symbol reconnaissance",
+  "script_chars": 1173,
+  "started_at": "2026-05-18T07:48:18.073Z",
+  "finished_at": "2026-05-18T07:48:18.250Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 177,
+  "stdout_bytes": 3520,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\72d38dd5-af10-4630-89c6-5e5511466d3c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\72d38dd5-af10-4630-89c6-5e5511466d3c.stderr"
+}

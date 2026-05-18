@@ -1,0 +1,18 @@
+{
+  "id": "594645d4-8339-4c0c-94d1-f04d5beeebcd",
+  "runtime": "bash",
+  "purpose": "run cargo test scanner_scan_service after adding scanner service",
+  "script_chars": 172,
+  "started_at": "2026-05-18T05:46:55.897Z",
+  "finished_at": "2026-05-18T05:47:16.678Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 20781,
+  "stdout_bytes": 4153,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\594645d4-8339-4c0c-94d1-f04d5beeebcd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\594645d4-8339-4c0c-94d1-f04d5beeebcd.stderr"
+}

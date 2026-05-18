@@ -1,0 +1,285 @@
+## fn build_overview_refresh_payload
+1124: fn build_overview_refresh_payload(refresh_id: u64, settings: AppSettings) -> BlockingWorkerResult {
+1125:     build_overview_snapshot(settings).map(|snapshot| {
+1126:         WorkerTaskOutcome::Completed(WorkerPayload::Overview(
+1127:             workers::OverviewWorkerPayload::refresh_completed(refresh_id, snapshot),
+1128:         ))
+1129:     })
+1130: }
+1131: 
+1132: fn build_overview_snapshot(settings: AppSettings) -> Result<OverviewSnapshot, WorkerFailure> {
+1133:     let span = tracing::info_span!(
+1134:         "overview_refresh_worker",
+1135:         update_source = settings.update_source.as_wire_value()
+1136:     );
+1137:     let _guard = span.enter();
+1138:     tracing::info!(
+1139:         event = "overview-refresh-started",
+1140:         "Overview refresh started"
+1141:     );
+1142: 
+1143:     let filesystem = RealFilesystem::new();
+1144:     let registry = RealRegistry::new();
+1145:     let process = RealProcessInspector::new();
+1146:     let current_working_directory = current_working_directory();
+1147:     let local_appdata = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
+1148: 
+1149:     let mut discovery_request = DiscoveryRequest::new(current_working_directory);
+1150:     discovery_request = discovery_request.with_current_process_id(std::process::id());
+1151:     if let Some(path) = local_appdata.clone() {
+1152:         discovery_request = discovery_request.with_local_appdata(path);
+1153:     }
+1154: 
+1155:     let discovery =
+1156:         DiscoveryService::new(&filesystem, &registry, &process).discover(&discovery_request);
+1157:     if let Err(error) = &discovery.game {
+1158:         tracing::warn!(
+1159:             event = "overview-discovery-game-failed",
+1160:             safe_message = error.user_message(),
+1161:             "Overview discovery did not find a usable Fallout 4 installation"
+1162:         );
+1163:     }
+1164:     if let Err(error) = &discovery.mod_manager {
+1165:         tracing::warn!(
+1166:             event = "overview-discovery-manager-failed",
+1167:             safe_message = error.user_message(),
+1168:             "Overview mod-manager discovery failed safely"
+1169:         );
+1170:     }
+1171: 
+1172:     let mut collection_environment = OverviewCollectionEnvironment::new();
+1173:     if let Some(path) = local_appdata {
+1174:         collection_environment = collection_environment.with_local_appdata(path);
+1175:     }
+1176: 
+1177:     let collected = match &discovery.game {
+1178:         Ok(installation) => {
+1179:             let collector = OverviewCollector::new(&filesystem, &process);
+1180:             collector.collect(OverviewCollectionRequest::new(
+1181:                 installation,
+1182:                 &collection_environment,
+1183:             ))
+1184:         }
+1185:         Err(_) => OverviewCollectedFacts::default(),
+1186:     };
+1187: 
+1188:     tracing::info!(
+1189:         event = "overview-filesystem-collected",
+1190:         binaries = collected.diagnostics.binary_count,
+1191:         archives = collected.diagnostics.archive_count,
+1192:         modules = collected.diagnostics.module_count,
+1193:         enabled_archives = collected.diagnostics.enabled_archive_count,
+1194:         enabled_modules = collected.diagnostics.enabled_module_count,
+1195:         missing_files = collected.diagnostics.missing_file_count,
+1196:         unreadable_files = collected.diagnostics.unreadable_file_count,
+1197:         "Overview filesystem collection completed"
+1198:     );
+1199: 
+1200:     let update_state = if matches!(settings.update_source, UpdateSource::None) {
+1201:         OverviewUpdateCheckState::NotChecked
+1202:     } else {
+1203:         OverviewUpdateCheckState::Checking
+1204:     };
+1205:     let snapshot = OverviewDiagnostics::build(OverviewDiagnosticsInput {
+1206:         discovery: &discovery,
+1207:         settings: &settings,
+1208:         binaries: &collected.binaries,
+1209:         archives: &collected.archives,
+1210:         modules: &collected.modules,
+1211:         enablement: &collected.enablement,
+1212:         update: &update_state,
+1213:         last_desktop_action: None,
+1214:     });
+1215: 
+1216:     tracing::info!(
+1217:         event = "overview-refresh-finished",
+1218:         phase = ?snapshot.refresh.phase,
+1219:         problems = snapshot.problems.len(),
+1220:         "Overview refresh snapshot built"
+1221:     );
+1222:     Ok(snapshot)
+1223: }
+1224: 
+1225: fn current_working_directory() -> PathBuf {
+1226:     match std::env::current_dir() {
+1227:         Ok(path) => path,
+1228:         Err(error) => {
+1229:             tracing::warn!(
+1230:                 event = "overview-current-dir-failed",
+1231:                 error = %error,
+1232:                 "Current working directory could not be read; using empty fallback"
+1233:             );
+1234:             PathBuf::new()
+1235:         }
+1236:     }
+1237: }
+1238: 
+1239: fn schedule_overview_update_check(
+1240:     request: app::overview_controller::OverviewRefreshRequest,
+1241:     overview_sink: SlintEventLoopSink,
+1242:     runtime_handle: tokio::runtime::Handle,
+1243: ) {
+1244:     if !request.should_check_updates() {
+1245:         tracing::debug!(
+1246:             event = "overview-update-skipped",
+1247:             refresh_id = request.refresh_id,
+1248:             update_source = request.update_source.as_wire_value(),
+1249:             "Overview update check skipped by settings"
+1250:         );
+1251:         return;
+1252:     }
+1253: 
+1254:     let task = request.update_task();
+1255:     emit_worker_event_or_log(&overview_sink, WorkerEvent::running(task.clone()));
+1256: 
+1257:     runtime_handle.spawn(async move {
+1258:         let banner = match RealUpdateCheckClient::new() {
+1259:             Ok(client) => {
+1260:                 let service = UpdateCheckService::new(client);
+1261:                 service.check(request.update_source).await.banner_state()
+1262:             }
+1263:             Err(error) => {
+
+## fn build_overview_snapshot
+1132: fn build_overview_snapshot(settings: AppSettings) -> Result<OverviewSnapshot, WorkerFailure> {
+1133:     let span = tracing::info_span!(
+1134:         "overview_refresh_worker",
+1135:         update_source = settings.update_source.as_wire_value()
+1136:     );
+1137:     let _guard = span.enter();
+1138:     tracing::info!(
+1139:         event = "overview-refresh-started",
+1140:         "Overview refresh started"
+1141:     );
+1142: 
+1143:     let filesystem = RealFilesystem::new();
+1144:     let registry = RealRegistry::new();
+1145:     let process = RealProcessInspector::new();
+1146:     let current_working_directory = current_working_directory();
+1147:     let local_appdata = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
+1148: 
+1149:     let mut discovery_request = DiscoveryRequest::new(current_working_directory);
+1150:     discovery_request = discovery_request.with_current_process_id(std::process::id());
+1151:     if let Some(path) = local_appdata.clone() {
+1152:         discovery_request = discovery_request.with_local_appdata(path);
+1153:     }
+1154: 
+1155:     let discovery =
+1156:         DiscoveryService::new(&filesystem, &registry, &process).discover(&discovery_request);
+1157:     if let Err(error) = &discovery.game {
+1158:         tracing::warn!(
+1159:             event = "overview-discovery-game-failed",
+1160:             safe_message = error.user_message(),
+1161:             "Overview discovery did not find a usable Fallout 4 installation"
+1162:         );
+1163:     }
+1164:     if let Err(error) = &discovery.mod_manager {
+1165:         tracing::warn!(
+1166:             event = "overview-discovery-manager-failed",
+1167:             safe_message = error.user_message(),
+1168:             "Overview mod-manager discovery failed safely"
+1169:         );
+1170:     }
+1171: 
+1172:     let mut collection_environment = OverviewCollectionEnvironment::new();
+1173:     if let Some(path) = local_appdata {
+1174:         collection_environment = collection_environment.with_local_appdata(path);
+1175:     }
+1176: 
+1177:     let collected = match &discovery.game {
+1178:         Ok(installation) => {
+1179:             let collector = OverviewCollector::new(&filesystem, &process);
+1180:             collector.collect(OverviewCollectionRequest::new(
+1181:                 installation,
+1182:                 &collection_environment,
+1183:             ))
+1184:         }
+1185:         Err(_) => OverviewCollectedFacts::default(),
+1186:     };
+1187: 
+1188:     tracing::info!(
+1189:         event = "overview-filesystem-collected",
+1190:         binaries = collected.diagnostics.binary_count,
+1191:         archives = collected.diagnostics.archive_count,
+1192:         modules = collected.diagnostics.module_count,
+1193:         enabled_archives = collected.diagnostics.enabled_archive_count,
+1194:         enabled_modules = collected.diagnostics.enabled_module_count,
+1195:         missing_files = collected.diagnostics.missing_file_count,
+1196:         unreadable_files = collected.diagnostics.unreadable_file_count,
+1197:         "Overview filesystem collection completed"
+1198:     );
+1199: 
+1200:     let update_state = if matches!(settings.update_source, UpdateSource::None) {
+1201:         OverviewUpdateCheckState::NotChecked
+1202:     } else {
+1203:         OverviewUpdateCheckState::Checking
+1204:     };
+1205:     let snapshot = OverviewDiagnostics::build(OverviewDiagnosticsInput {
+1206:         discovery: &discovery,
+1207:         settings: &settings,
+1208:         binaries: &collected.binaries,
+1209:         archives: &collected.archives,
+1210:         modules: &collected.modules,
+1211:         enablement: &collected.enablement,
+1212:         update: &update_state,
+1213:         last_desktop_action: None,
+1214:     });
+1215: 
+1216:     tracing::info!(
+1217:         event = "overview-refresh-finished",
+1218:         phase = ?snapshot.refresh.phase,
+1219:         problems = snapshot.problems.len(),
+1220:         "Overview refresh snapshot built"
+1221:     );
+1222:     Ok(snapshot)
+1223: }
+1224: 
+1225: fn current_working_directory() -> PathBuf {
+1226:     match std::env::current_dir() {
+1227:         Ok(path) => path,
+1228:         Err(error) => {
+1229:             tracing::warn!(
+1230:                 event = "overview-current-dir-failed",
+1231:                 error = %error,
+1232:                 "Current working directory could not be read; using empty fallback"
+1233:             );
+1234:             PathBuf::new()
+1235:         }
+1236:     }
+1237: }
+1238: 
+1239: fn schedule_overview_update_check(
+1240:     request: app::overview_controller::OverviewRefreshRequest,
+1241:     overview_sink: SlintEventLoopSink,
+1242:     runtime_handle: tokio::runtime::Handle,
+1243: ) {
+1244:     if !request.should_check_updates() {
+1245:         tracing::debug!(
+1246:             event = "overview-update-skipped",
+1247:             refresh_id = request.refresh_id,
+1248:             update_source = request.update_source.as_wire_value(),
+1249:             "Overview update check skipped by settings"
+1250:         );
+1251:         return;
+1252:     }
+1253: 
+1254:     let task = request.update_task();
+1255:     emit_worker_event_or_log(&overview_sink, WorkerEvent::running(task.clone()));
+1256: 
+1257:     runtime_handle.spawn(async move {
+1258:         let banner = match RealUpdateCheckClient::new() {
+1259:             Ok(client) => {
+1260:                 let service = UpdateCheckService::new(client);
+1261:                 service.check(request.update_source).await.banner_state()
+1262:             }
+1263:             Err(error) => {
+1264:                 tracing::warn!(
+1265:                     event = "overview-update-client-build-failed",
+1266:                     refresh_id = request.refresh_id,
+1267:                     error = %error,
+1268:                     "Overview update client could not be created; failing silently"
+1269:                 );
+1270:                 update_failure_banner(request.update_source, "update client could not be created")
+1271:             }
+
+## fn overview_refresh_completed_payload

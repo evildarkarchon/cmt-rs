@@ -1,0 +1,18 @@
+{
+  "id": "5c72152c-368f-4456-910a-ec1adb86bb24",
+  "runtime": "bash",
+  "purpose": "targeted scanner Auto-Fix domain tests after formatting",
+  "script_chars": 33,
+  "started_at": "2026-05-18T08:11:36.942Z",
+  "finished_at": "2026-05-18T08:12:15.191Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 38249,
+  "stdout_bytes": 1055,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5c72152c-368f-4456-910a-ec1adb86bb24.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5c72152c-368f-4456-910a-ec1adb86bb24.stderr"
+}

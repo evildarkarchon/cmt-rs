@@ -1,0 +1,112 @@
+Diff in /mnt/j/cmt-rs/src/main.rs:1660:
+ }
+ 
+ fn apply_current_scanner_state(app: &MainWindow, controller: &Arc<Mutex<ScannerController>>) {
+[31m-    let Some(projection) = with_scanner_controller_mut(controller, |controller| {
+(B[m[31m-        project_scanner_state(controller)
+(B[m[31m-    }) else {
+(B[m[32m+    let Some(projection) =
+(B[m[32m+        with_scanner_controller_mut(controller, |controller| project_scanner_state(controller))
+(B[m[32m+    else {
+(B[m         return;
+     };
+     apply_scanner_projection(app, projection);
+Diff in /mnt/j/cmt-rs/src/main.rs:1854:
+         problem: scanner_detail_value(&detail.records, DETAIL_LABEL_PROBLEM),
+         summary: scanner_detail_value(&detail.records, DETAIL_LABEL_SUMMARY),
+         solution: scanner_detail_value(&detail.records, DETAIL_LABEL_SOLUTION),
+[31m-        open_path_enabled: scanner_detail_has_enabled_action(detail, ScannerActionKind::OpenLocation),
+(B[m[31m-        open_url_enabled: scanner_detail_has_enabled_action(detail, ScannerActionKind::OpenSolutionUrl),
+(B[m[31m-        copy_url_enabled: scanner_detail_has_enabled_action(detail, ScannerActionKind::CopySolutionUrl),
+(B[m[31m-        file_list_enabled: scanner_detail_has_enabled_action(detail, ScannerActionKind::ShowFileList),
+(B[m[32m+        open_path_enabled: scanner_detail_has_enabled_action(
+(B[m[32m+            detail,
+(B[m[32m+            ScannerActionKind::OpenLocation,
+(B[m[32m+        ),
+(B[m[32m+        open_url_enabled: scanner_detail_has_enabled_action(
+(B[m[32m+            detail,
+(B[m[32m+            ScannerActionKind::OpenSolutionUrl,
+(B[m[32m+        ),
+(B[m[32m+        copy_url_enabled: scanner_detail_has_enabled_action(
+(B[m[32m+            detail,
+(B[m[32m+            ScannerActionKind::CopySolutionUrl,
+(B[m[32m+        ),
+(B[m[32m+        file_list_enabled: scanner_detail_has_enabled_action(
+(B[m[32m+            detail,
+(B[m[32m+            ScannerActionKind::ShowFileList,
+(B[m[32m+        ),
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/main.rs:1896:
+         });
+ 
+         for result in &group.results {
+[31m-            let result_index = scanner_flat_result_index(result, flat_results, &mut used_flat_indices);
+(B[m[32m+            let result_index =
+(B[m[32m+                scanner_flat_result_index(result, flat_results, &mut used_flat_indices);
+(B[m             rows.push(ScannerResultUiRow {
+                 row_kind: "result".into(),
+                 result_index: usize_to_i32(result_index),
+Diff in /mnt/j/cmt-rs/src/main.rs:2403:
+             OVERVIEW_SLINT,
+         ),
+         ("ui/f4se_tab.slint", "F4seTab", "F4SE", F4SE_SLINT),
+[31m-        ("ui/scanner_tab.slint", "ScannerTab", "Scanner", SCANNER_SLINT),
+(B[m[32m+        (
+(B[m[32m+            "ui/scanner_tab.slint",
+(B[m[32m+            "ScannerTab",
+(B[m[32m+            "Scanner",
+(B[m[32m+            SCANNER_SLINT,
+(B[m[32m+        ),
+(B[m         ("ui/tools_tab.slint", "ToolsTab", "Tools", TOOLS_SLINT),
+         (
+             "ui/settings_tab.slint",
+Diff in /mnt/j/cmt-rs/src/main.rs:2982:
+         assert!(idle.categories.junk_files);
+         assert!(idle.categories.problem_overrides);
+         assert!(idle.categories.race_subgraphs);
+[31m-        assert_eq!(idle.result_count_text, "0 Results ~ Select an item for details");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            idle.result_count_text,
+(B[m[32m+            "0 Results ~ Select an item for details"
+(B[m[32m+        );
+(B[m         assert!(idle.result_rows.is_empty());
+         assert!(!idle.detail_visible);
+         assert!(!idle.show_mod_column);
+Diff in /mnt/j/cmt-rs/src/main.rs:3015:
+ 
+         assert_eq!(selected.result_rows.len(), 2);
+         assert_eq!(selected.result_rows[0].row_kind.as_str(), "group");
+[31m-        assert_eq!(selected.result_rows[0].problem.as_str(), "Unexpected Format");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            selected.result_rows[0].problem.as_str(),
+(B[m[32m+            "Unexpected Format"
+(B[m[32m+        );
+(B[m         assert_eq!(selected.result_rows[1].row_kind.as_str(), "result");
+         assert_eq!(selected.result_rows[1].result_index, 0);
+         assert_eq!(selected.result_rows[1].problem.as_str(), "example.mp3");
+Diff in /mnt/j/cmt-rs/src/main.rs:3025:
+         assert!(selected.detail_visible);
+         assert_eq!(selected.detail_mod, "Example Mod");
+         assert_eq!(selected.detail_problem, "Sound/example.mp3");
+[31m-        assert_eq!(selected.detail_summary, "Format not in whitelist for sound.");
+(B[m[31m-        assert!(selected.detail_solution.contains("This file may need to be converted."));
+(B[m[31m-        assert!(selected.detail_solution.contains("https://example.invalid/cmt"));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            selected.detail_summary,
+(B[m[32m+            "Format not in whitelist for sound."
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            selected
+(B[m[32m+                .detail_solution
+(B[m[32m+                .contains("This file may need to be converted.")
+(B[m[32m+        );
+(B[m[32m+        assert!(
+(B[m[32m+            selected
+(B[m[32m+                .detail_solution
+(B[m[32m+                .contains("https://example.invalid/cmt")
+(B[m[32m+        );
+(B[m         assert!(selected.open_path_enabled);
+         assert!(selected.open_url_enabled);
+         assert!(selected.copy_url_enabled);

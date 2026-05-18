@@ -1,0 +1,18 @@
+{
+  "id": "58659787-ff63-4704-aeb2-651306bb5192",
+  "runtime": "bash",
+  "purpose": "Run clippy quality gate after downgrader executor changes",
+  "script_chars": 41,
+  "started_at": "2026-05-18T11:06:16.346Z",
+  "finished_at": "2026-05-18T11:06:54.575Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 38229,
+  "stdout_bytes": 0,
+  "stderr_bytes": 1332,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\58659787-ff63-4704-aeb2-651306bb5192.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\58659787-ff63-4704-aeb2-651306bb5192.stderr"
+}

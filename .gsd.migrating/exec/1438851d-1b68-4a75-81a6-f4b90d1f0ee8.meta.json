@@ -1,0 +1,18 @@
+{
+  "id": "1438851d-1b68-4a75-81a6-f4b90d1f0ee8",
+  "runtime": "bash",
+  "purpose": "run targeted scanner autofix service tests after cleanup",
+  "script_chars": 34,
+  "started_at": "2026-05-18T08:37:52.399Z",
+  "finished_at": "2026-05-18T08:38:29.838Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 37439,
+  "stdout_bytes": 780,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1438851d-1b68-4a75-81a6-f4b90d1f0ee8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1438851d-1b68-4a75-81a6-f4b90d1f0ee8.stderr"
+}

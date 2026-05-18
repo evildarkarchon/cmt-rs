@@ -1,0 +1,55 @@
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/callbacks/property-changes.slint
+17:changed zoo => { }
+18:changed clou => { }
+20:changed zoo => { }
+23:changed not-exist => {}
+26:changed clicked => { }
+29:changed hello => { }
+32:changed invalid => { }
+37:changed invalid2 => { }
+42:changed invalid3 => { }
+48:changed xyz => { }
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/accessibility/accessible_properties.slint
+13://          >                                        <error{The property must be known at compile time and cannot be changed at runtime}
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/basic/states_transitions3.slint
+24://                  ><error{The property is not changed as part of this transition}
+28://                  >  <error{The property is not changed as part of this transition}
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/basic/dialog.slint
+55://      >                                            <error{The property must be known at compile time and cannot be changed at runtime}
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/basic/unknown_item.slint
+18:changed efgh => { self.foo(); }
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/elements/popup.slint
+41://          >                      <error{The property must be known at compile time and cannot be changed at runtime}
+44://          >                                               <error{The property must be known at compile time and cannot be changed at runtime}
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/tests/syntax/elements/popup3.slint
+11://          >                                               <error{The property must be known at compile time and cannot be changed at runtime}
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/qt/combobox.slint
+112:changed has-focus => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/material/slider.slint
+18:callback changed <=> base.changed;
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/menus.slint
+30:changed is-current => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/combobox-base.slint
+63:// via the changed handler of current-index
+75:changed model => {
+79:changed current-index => {
+89:changed has-focus => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/lineedit-base.slint
+20:changed has-focus => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/menu-base.slint
+44:changed has-hover => {
+185:changed has-hover => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/spinbox-base.slint
+44:changed value => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/time-picker-base.slint
+507:changed selection-mode => {
+515:changed time => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/common/datepicker_base.slint
+444:changed date => {
+449:changed selection-mode => {
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/cosmic/slider.slint
+17:callback changed <=> base.changed;
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/fluent/slider.slint
+16:callback changed <=> base.changed;
+## /home/evild/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/i-slint-compiler-1.16.1/widgets/cupertino/slider.slint
+16:callback changed <=> base.changed;

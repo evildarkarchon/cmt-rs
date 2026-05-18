@@ -1,0 +1,10 @@
+
+running 5 tests
+test services::autofix::scanner_autofix_service::scanner_autofix_service_production_registry_is_empty_and_rejects_typed_solution ... ok
+test services::autofix::scanner_autofix_service::scanner_autofix_service_rejects_failed_precondition_before_execute ... ok
+test services::autofix::scanner_autofix_service::scanner_autofix_service_fake_success_and_failure_return_owned_completion_payloads ... ok
+test services::autofix::scanner_autofix_service::scanner_autofix_service_catalog_uses_typed_solution_and_rejects_stale_inputs ... ok
+test services::autofix::scanner_autofix_service::scanner_autofix_service_rejects_missing_target_and_confirmation_before_execute ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 269 filtered out; finished in 0.01s
+

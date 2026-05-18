@@ -1,0 +1,18 @@
+{
+  "id": "0d3ab1e3-e8a7-466c-813d-aec17f455bc9",
+  "runtime": "bash",
+  "purpose": "final verification cargo fmt --check",
+  "script_chars": 17,
+  "started_at": "2026-05-18T07:12:01.489Z",
+  "finished_at": "2026-05-18T07:12:02.035Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 546,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0d3ab1e3-e8a7-466c-813d-aec17f455bc9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0d3ab1e3-e8a7-466c-813d-aec17f455bc9.stderr"
+}

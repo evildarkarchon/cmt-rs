@@ -1,0 +1,200 @@
+src/domain/discovery.rs:67:    OldGen,
+src/domain/discovery.rs:71:    NextGen,
+src/domain/discovery.rs:72:    /// Reference `Anniversary` state.
+src/domain/discovery.rs:73:    Anniversary,
+src/domain/discovery.rs:74:    /// Reference `Next-Gen & Anniversary` state.
+src/domain/discovery.rs:75:    NextGenAnniversary,
+src/domain/discovery.rs:85:    pub const fn as_reference_str(self) -> &'static str {
+src/domain/discovery.rs:88:            Self::OldGen => "Old-Gen",
+src/domain/discovery.rs:90:            Self::NextGen => "Next-Gen",
+src/domain/discovery.rs:91:            Self::Anniversary => "Anniversary",
+src/domain/discovery.rs:92:            Self::NextGenAnniversary => "Next-Gen & Anniversary",
+src/domain/discovery.rs:101:        formatter.write_str(self.as_reference_str())
+src/domain/discovery.rs:120:    pub install_type: Fallout4InstallType,
+src/domain/discovery.rs:140:            install_type: Fallout4InstallType::Unknown,
+src/domain/discovery.rs:201:    OldGen,
+src/domain/discovery.rs:203:    NextGen7,
+src/domain/discovery.rs:205:    NextGen8,
+src/domain/discovery.rs:214:            Self::OldGen => 1,
+src/domain/discovery.rs:215:            Self::NextGen7 => 7,
+src/domain/discovery.rs:216:            Self::NextGen8 => 8,
+src/domain/discovery.rs:279:    pub const fn as_reference_str(&self) -> Option<&'static str> {
+src/domain/discovery.rs:524:        assert_eq!(installation.install_type.as_reference_str(), "Unknown");
+src/domain/discovery.rs:553:            ArchiveVersion::NextGen8,
+src/domain/discovery.rs:576:            installation.modules[0].header_version.as_reference_str(),
+src/domain/discovery.rs:586:    fn install_type_and_semantic_version_reference_display_values_are_stable() {
+src/domain/discovery.rs:587:        assert_eq!(Fallout4InstallType::OldGen.to_string(), "Old-Gen");
+src/domain/discovery.rs:590:            Fallout4InstallType::NextGenAnniversary.to_string(),
+src/domain/discovery.rs:591:            "Next-Gen & Anniversary"
+src/domain/overview.rs:415:                    severity: install_type_severity(self.version),
+src/domain/overview.rs:506:    pub install_type: Fallout4InstallType,
+src/domain/overview.rs:517:    pub fn new(label: impl Into<String>, install_type: Fallout4InstallType) -> Self {
+src/domain/overview.rs:521:            install_type,
+src/domain/overview.rs:524:            severity: install_type_severity(install_type),
+src/domain/overview.rs:698:                ArchiveVersion::OldGen => counts.old_gen_version += 1,
+src/domain/overview.rs:699:                ArchiveVersion::NextGen7 | ArchiveVersion::NextGen8 => counts.next_gen_version += 1,
+src/domain/overview.rs:1374:            snapshot.top.version = installation.install_type;
+src/domain/overview.rs:1419:fn install_type_severity(install_type: Fallout4InstallType) -> StatusSeverity {
+src/domain/overview.rs:1420:    match install_type {
+src/domain/overview.rs:1421:        Fallout4InstallType::OldGen
+src/domain/overview.rs:1423:        | Fallout4InstallType::NextGen
+src/domain/overview.rs:1424:        | Fallout4InstallType::Anniversary
+src/domain/overview.rs:1425:        | Fallout4InstallType::NextGenAnniversary => StatusSeverity::Good,
+src/domain/overview.rs:1563:        installation.install_type = Fallout4InstallType::OldGen;
+src/domain/overview.rs:1567:            ArchiveVersion::NextGen8,
+src/domain/overview.rs:1590:        assert_eq!(snapshot.top.version, Fallout4InstallType::OldGen);
+src/domain/overview.rs:1625:        installation.install_type = Fallout4InstallType::NextGen;
+src/services/overview.rs:95:        let effective_install_type = effective_install_type(installation, input.binaries);
+src/services/overview.rs:103:            effective_install_type,
+src/services/overview.rs:115:        append_archive_problems(input.archives, effective_install_type, &mut problems);
+src/services/overview.rs:129:            effective_install_type,
+src/services/overview.rs:154:    pub install_type: Fallout4InstallType,
+src/services/overview.rs:163:    pub fn new(file_name: impl Into<String>, install_type: Fallout4InstallType) -> Self {
+src/services/overview.rs:167:            install_type,
+src/services/overview.rs:418:fn effective_install_type(
+src/services/overview.rs:425:        .map(|fact| fact.install_type)
+src/services/overview.rs:426:        .or_else(|| installation.map(|installation| installation.install_type))
+src/services/overview.rs:498:    install_type: Fallout4InstallType,
+src/services/overview.rs:505:        let severity = binary_severity(fact, install_type);
+src/services/overview.rs:506:        let mut row = BinaryStatusRow::new(binary_label(&fact.file_name), fact.install_type)
+src/services/overview.rs:511:        append_binary_problem(fact, install_type, severity, problems);
+src/services/overview.rs:527:fn binary_severity(fact: &OverviewBinaryFact, install_type: Fallout4InstallType) -> StatusSeverity {
+src/services/overview.rs:528:    if is_compatible_binary_install_type(fact.install_type, install_type) {
+src/services/overview.rs:532:    if fact.install_type == Fallout4InstallType::NotFound
+src/services/overview.rs:533:        && is_optional_missing_binary(&fact.file_name, install_type)
+src/services/overview.rs:538:    match fact.install_type {
+src/services/overview.rs:542:        Fallout4InstallType::OldGen
+src/services/overview.rs:544:        | Fallout4InstallType::NextGen
+src/services/overview.rs:545:        | Fallout4InstallType::Anniversary
+src/services/overview.rs:546:        | Fallout4InstallType::NextGenAnniversary => StatusSeverity::Error,
+src/services/overview.rs:552:    install_type: Fallout4InstallType,
+src/services/overview.rs:556:    if !severity.is_problem() && fact.install_type != Fallout4InstallType::Unknown {
+src/services/overview.rs:561:        && fact.install_type == Fallout4InstallType::Unknown
+src/services/overview.rs:581:    if fact.install_type == Fallout4InstallType::NotFound
+src/services/overview.rs:582:        && is_optional_missing_binary(&fact.file_name, install_type)
+src/services/overview.rs:587:    let problem = if fact.install_type == Fallout4InstallType::NotFound {
+src/services/overview.rs:592:    let summary = if fact.install_type == Fallout4InstallType::NotFound {
+src/services/overview.rs:609:fn is_compatible_binary_install_type(
+src/services/overview.rs:614:        || (actual == Fallout4InstallType::OldGen && expected == Fallout4InstallType::DownGrade)
+src/services/overview.rs:615:        || (actual == Fallout4InstallType::NextGenAnniversary
+src/services/overview.rs:618:                Fallout4InstallType::NextGen | Fallout4InstallType::Anniversary
+src/services/overview.rs:622:fn is_optional_missing_binary(file_name: &str, install_type: Fallout4InstallType) -> bool {
+src/services/overview.rs:627:                install_type,
+src/services/overview.rs:628:                Fallout4InstallType::NextGen
+src/services/overview.rs:629:                    | Fallout4InstallType::Anniversary
+src/services/overview.rs:630:                    | Fallout4InstallType::NextGenAnniversary
+src/services/overview.rs:720:    install_type: Fallout4InstallType,
+src/services/overview.rs:755:            ArchiveVersion::NextGen7 | ArchiveVersion::NextGen8
+src/services/overview.rs:756:                if archive_version_mismatches_game(record.version, install_type) =>
+src/services/overview.rs:771:            ArchiveVersion::OldGen | ArchiveVersion::NextGen7 | ArchiveVersion::NextGen8 => {}
+src/services/overview.rs:790:    install_type: Fallout4InstallType,
+src/services/overview.rs:792:    matches!(version, ArchiveVersion::NextGen7 | ArchiveVersion::NextGen8)
+src/services/overview.rs:794:            install_type,
+src/services/overview.rs:795:            Fallout4InstallType::OldGen | Fallout4InstallType::DownGrade
+src/services/overview.rs:1158:    fn installation(install_type: Fallout4InstallType) -> Fallout4Installation {
+src/services/overview.rs:1164:        installation.install_type = install_type;
+src/services/overview.rs:1168:    fn installation_without_data(install_type: Fallout4InstallType) -> Fallout4Installation {
+src/services/overview.rs:1174:        installation.install_type = install_type;
+src/services/overview.rs:1232:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1238:            OverviewBinaryFact::new("Fallout4.exe", Fallout4InstallType::OldGen)
+src/services/overview.rs:1241:            OverviewBinaryFact::new("steam_api64.dll", Fallout4InstallType::OldGen),
+src/services/overview.rs:1247:                ArchiveVersion::OldGen,
+src/services/overview.rs:1253:                ArchiveVersion::OldGen,
+src/services/overview.rs:1285:        assert_eq!(snapshot.top.version, Fallout4InstallType::OldGen);
+src/services/overview.rs:1311:        let mut installation = installation(Fallout4InstallType::NextGen);
+src/services/overview.rs:1320:            OverviewBinaryFact::new("Fallout4.exe", Fallout4InstallType::NextGen),
+src/services/overview.rs:1326:            ArchiveVersion::NextGen8,
+src/services/overview.rs:1344:        assert_eq!(snapshot.top.version, Fallout4InstallType::NextGen);
+src/services/overview.rs:1362:            installation(Fallout4InstallType::Anniversary),
+src/services/overview.rs:1369:            Fallout4InstallType::Anniversary,
+src/services/overview.rs:1389:        assert_eq!(snapshot.top.version, Fallout4InstallType::Anniversary);
+src/services/overview.rs:1407:            installation_without_data(Fallout4InstallType::OldGen),
+src/services/overview.rs:1414:            Fallout4InstallType::OldGen,
+src/services/overview.rs:1448:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1455:            Fallout4InstallType::OldGen,
+src/services/overview.rs:1502:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1525:                ArchiveVersion::OldGen,
+src/services/overview.rs:1529:                "C:/Games/Fallout 4/Data/NextGenOnOld.ba2",
+src/services/overview.rs:1531:                ArchiveVersion::NextGen8,
+src/services/overview.rs:1590:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1597:            Fallout4InstallType::OldGen,
+src/services/overview.rs:1600:            "C:/Games/Fallout 4/Data/NextGenOnOld.ba2",
+src/services/overview.rs:1602:            ArchiveVersion::NextGen8,
+src/services/overview.rs:1628:            Some(Path::new("NextGenOnOld.ba2"))
+src/services/overview.rs:1635:            installation(Fallout4InstallType::NextGen),
+src/services/overview.rs:1642:            Fallout4InstallType::NextGen,
+src/services/overview.rs:1649:                    ArchiveVersion::OldGen,
+src/services/overview.rs:1695:            installation(Fallout4InstallType::NextGen),
+src/services/overview.rs:1702:            Fallout4InstallType::NextGen,
+src/services/overview.rs:1732:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1739:            Fallout4InstallType::OldGen,
+src/services/overview.rs:1766:            installation(Fallout4InstallType::OldGen),
+src/services/overview.rs:1772:            Fallout4InstallType::OldGen,
+src/services/overview.rs:1885:            installation(Fallout4InstallType::NextGen),
+src/services/overview.rs:1892:            Fallout4InstallType::NextGen,
+src/services/overview.rs:1899:                    ArchiveVersion::OldGen,
+src/services/overview_collector.rs:67:            BaseFileClassification::version("1.10.163.0", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:69:            BaseFileClassification::version("1.10.984.0", Fallout4InstallType::NextGen),
+src/services/overview_collector.rs:73:            BaseFileClassification::version("1.11.191.0", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:79:            BaseFileClassification::hash("02445570", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:80:            BaseFileClassification::hash("F6A06FF5", Fallout4InstallType::NextGen),
+src/services/overview_collector.rs:85:            BaseFileClassification::hash("720BB9C3", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:91:            BaseFileClassification::version("2.89.45.4", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:92:            BaseFileClassification::version("7.40.51.27", Fallout4InstallType::NextGenAnniversary),
+src/services/overview_collector.rs:93:            BaseFileClassification::hash("BD3AA35F", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:99:            BaseFileClassification::version("0.0.6.23", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:100:            BaseFileClassification::version("0.0.7.2", Fallout4InstallType::NextGen),
+src/services/overview_collector.rs:104:            BaseFileClassification::version("0.0.7.7", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:111:            Fallout4InstallType::OldGen,
+src/services/overview_collector.rs:117:            BaseFileClassification::version("1.10.162.0", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:119:            BaseFileClassification::version("1.10.982.3", Fallout4InstallType::NextGen),
+src/services/overview_collector.rs:120:            BaseFileClassification::version("1.11.137.0", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:126:            BaseFileClassification::hash("4CDFC7B5", Fallout4InstallType::OldGen),
+src/services/overview_collector.rs:127:            BaseFileClassification::hash("71A5240B", Fallout4InstallType::NextGen),
+src/services/overview_collector.rs:128:            BaseFileClassification::hash("C867674F", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:143:    install_type: Fallout4InstallType,
+src/services/overview_collector.rs:147:    const fn version(token: &'static str, install_type: Fallout4InstallType) -> Self {
+src/services/overview_collector.rs:151:            install_type,
+src/services/overview_collector.rs:155:    const fn hash(token: &'static str, install_type: Fallout4InstallType) -> Self {
+src/services/overview_collector.rs:159:            install_type,
+src/services/overview_collector.rs:410:        let detected_install_type = detected_install_type_from_binaries(&binaries);
+src/services/overview_collector.rs:416:            detected_install_type,
+src/services/overview_collector.rs:475:                detected_game_type = fact.install_type;
+src/services/overview_collector.rs:476:            } else if fact.install_type == Fallout4InstallType::NextGenAnniversary
+src/services/overview_collector.rs:479:                    Fallout4InstallType::NextGen | Fallout4InstallType::Anniversary
+src/services/overview_collector.rs:482:                fact.install_type = detected_game_type;
+src/services/overview_collector.rs:528:            && let Some(install_type) =
+src/services/overview_collector.rs:529:                lookup_install_type(definition, BinaryClassificationSource::Version, version)
+src/services/overview_collector.rs:531:            return OverviewBinaryFact::new(definition.relative_path, install_type)
+src/services/overview_collector.rs:547:        let install_type = hash
+src/services/overview_collector.rs:550:                lookup_install_type(definition, BinaryClassificationSource::Hash, hash)
+src/services/overview_collector.rs:554:        OverviewBinaryFact::new(definition.relative_path, install_type)
+src/services/overview_collector.rs:584:        if fallout4_fact.install_type != Fallout4InstallType::OldGen {
+src/services/overview_collector.rs:597:                        fallout4_fact.install_type = Fallout4InstallType::DownGrade;
+src/services/overview_collector.rs:688:        install_type: Fallout4InstallType,
+src/services/overview_collector.rs:693:            self.collect_address_library(installation, install_type, diagnostics);
+src/services/overview_collector.rs:710:            install_type,
+src/services/overview_collector.rs:726:        _install_type: Fallout4InstallType,
+src/services/overview_collector.rs:923:        install_type: Fallout4InstallType,
+src/services/overview_collector.rs:975:        if install_type == Fallout4InstallType::Anniversary {
+src/services/overview_collector.rs:981:                "Anniversary Edition requires Fallout4 - TexturesPatch.ba2, but it was not found.",
+src/services/overview_collector.rs:1069:            1 => ArchiveVersion::OldGen,
+src/services/overview_collector.rs:1070:            7 => ArchiveVersion::NextGen7,
+src/services/overview_collector.rs:1071:            8 => ArchiveVersion::NextGen8,
+src/services/overview_collector.rs:1263:fn lookup_install_type(
+src/services/overview_collector.rs:1274:        .map(|classification| classification.install_type)
+src/services/overview_collector.rs:1284:fn detected_install_type_from_binaries(binaries: &[OverviewBinaryFact]) -> Fallout4InstallType {
+src/services/overview_collector.rs:1288:        .map(|fact| fact.install_type)
+src/services/overview_collector.rs:1835:            row(&facts.binaries, "Fallout4.exe").install_type,
+src/services/overview_collector.rs:1839:            row(&facts.binaries, "Fallout4Launcher.exe").install_type,
+src/services/overview_collector.rs:1840:            Fallout4InstallType::OldGen
+src/services/overview_collector.rs:1843:            row(&facts.binaries, "steam_api64.dll").install_type,
+src/services/overview_collector.rs:1844:            Fallout4InstallType::NextGenAnniversary
+src/services/overview_collector.rs:1847:            row(&facts.binaries, "f4se_loader.exe").install_type,
+src/services/overview_collector.rs:1851:            row(&facts.binaries, "CreationKit.exe").install_type,
+src/services/overview_collector.rs:1864:        missing_data_installation.install_type = Fallout4InstallType::Unknown;
+src/services/overview_collector.rs:1945:        assert_eq!(versions["Old.ba2"], ArchiveVersion::OldGen);
+src/services/overview_collector.rs:1946:        assert_eq!(versions["Seven.ba2"], ArchiveVersion::NextGen7);
+src/services/overview_collector.rs:1947:        assert_eq!(versions["Eight.ba2"], ArchiveVersion::NextGen8);
+src/services/overview_collector.rs:2180:            row(&facts.binaries, "Fallout4Launcher.exe").install_type,
+src/services/overview_collector.rs:2181:            Fallout4InstallType::OldGen

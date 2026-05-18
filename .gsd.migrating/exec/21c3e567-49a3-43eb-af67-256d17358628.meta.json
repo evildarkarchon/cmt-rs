@@ -1,0 +1,18 @@
+{
+  "id": "21c3e567-49a3-43eb-af67-256d17358628",
+  "runtime": "python",
+  "purpose": "reference scanner use of each ScanSetting",
+  "script_chars": 350,
+  "started_at": "2026-05-18T04:57:19.100Z",
+  "finished_at": "2026-05-18T04:57:19.284Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 184,
+  "stdout_bytes": 930,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\21c3e567-49a3-43eb-af67-256d17358628.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\21c3e567-49a3-43eb-af67-256d17358628.stderr"
+}

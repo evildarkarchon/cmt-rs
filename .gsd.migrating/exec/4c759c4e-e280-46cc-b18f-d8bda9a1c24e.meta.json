@@ -1,0 +1,18 @@
+{
+  "id": "4c759c4e-e280-46cc-b18f-d8bda9a1c24e",
+  "runtime": "bash",
+  "purpose": "S06 inspect Slint TabWidget API from cached crate",
+  "script_chars": 576,
+  "started_at": "2026-05-18T03:16:04.926Z",
+  "finished_at": "2026-05-18T03:16:05.024Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 98,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4c759c4e-e280-46cc-b18f-d8bda9a1c24e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4c759c4e-e280-46cc-b18f-d8bda9a1c24e.stderr"
+}

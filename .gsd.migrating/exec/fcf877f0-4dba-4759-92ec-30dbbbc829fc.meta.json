@@ -1,0 +1,18 @@
+{
+  "id": "fcf877f0-4dba-4759-92ec-30dbbbc829fc",
+  "runtime": "bash",
+  "purpose": "inspect existing fake settings helpers and test tail",
+  "script_chars": 195,
+  "started_at": "2026-05-18T07:02:36.414Z",
+  "finished_at": "2026-05-18T07:02:36.580Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 166,
+  "stdout_bytes": 2847,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fcf877f0-4dba-4759-92ec-30dbbbc829fc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fcf877f0-4dba-4759-92ec-30dbbbc829fc.stderr"
+}

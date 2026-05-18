@@ -1,0 +1,18 @@
+{
+  "id": "b593e1da-51e8-4178-a894-24037d3b3f4c",
+  "runtime": "bash",
+  "purpose": "Locate WorkerRuntime implementation",
+  "script_chars": 126,
+  "started_at": "2026-05-18T09:12:22.903Z",
+  "finished_at": "2026-05-18T09:12:23.006Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 103,
+  "stdout_bytes": 1352,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b593e1da-51e8-4178-a894-24037d3b3f4c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b593e1da-51e8-4178-a894-24037d3b3f4c.stderr"
+}

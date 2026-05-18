@@ -1,0 +1,120 @@
+ui/main.slint:1:import { TabWidget } from "std-widgets.slint";
+ui/main.slint:42:    callback update-source-selected(string);
+ui/main.slint:43:    callback log-level-selected(string);
+ui/main.slint:60:    TabWidget {
+ui/main.slint:132:                update-source-selected(value) => {
+ui/main.slint:133:                    root.update-source-selected(value);
+ui/main.slint:135:                log-level-selected(value) => {
+ui/main.slint:136:                    root.log-level-selected(value);
+ui/settings_tab.slint:6:    callback selected();
+ui/settings_tab.slint:42:            root.selected();
+ui/settings_tab.slint:50:    callback update-source-selected(string);
+ui/settings_tab.slint:51:    callback log-level-selected(string);
+ui/settings_tab.slint:75:                        selected => {
+ui/settings_tab.slint:77:                            root.update-source-selected("both");
+ui/settings_tab.slint:84:                        selected => {
+ui/settings_tab.slint:86:                            root.update-source-selected("github");
+ui/settings_tab.slint:93:                        selected => {
+ui/settings_tab.slint:95:                            root.update-source-selected("nexus");
+ui/settings_tab.slint:102:                        selected => {
+ui/settings_tab.slint:104:                            root.update-source-selected("none");
+ui/settings_tab.slint:121:                        selected => {
+ui/settings_tab.slint:123:                            root.log-level-selected("debug");
+ui/settings_tab.slint:130:                        selected => {
+ui/settings_tab.slint:132:                            root.log-level-selected("info");
+ui/settings_tab.slint:139:                        selected => {
+ui/settings_tab.slint:141:                            root.log-level-selected("warning");
+ui/settings_tab.slint:148:                        selected => {
+ui/settings_tab.slint:150:                            root.log-level-selected("error");
+src/main.rs:123:    apply_current_overview_snapshot(&app, &overview_controller);
+src/main.rs:124:    apply_current_tools_state(&app, &tools_controller);
+src/main.rs:125:    apply_current_about_state(&app, &about_controller);
+src/main.rs:175:    app.on_update_source_selected({
+src/main.rs:179:        move |selected| {
+src/main.rs:182:                .select_update_source(selected.as_str());
+src/main.rs:189:    app.on_log_level_selected({
+src/main.rs:193:        move |selected| {
+src/main.rs:194:            let visible_value = controller.borrow_mut().select_log_level(selected.as_str());
+src/main.rs:236:            apply_current_tools_state(&app, &controller);
+src/main.rs:283:            apply_current_about_state(&app, &controller);
+src/main.rs:386:                apply_current_about_state(&app, &controller);
+src/main.rs:420:            apply_current_overview_snapshot(&app, &controller);
+src/main.rs:767:    let settings = settings_controller.borrow().current_settings().clone();
+src/main.rs:773:    apply_current_overview_snapshot(app, overview_controller);
+src/main.rs:796:        apply_current_overview_snapshot(app, overview_controller);
+src/main.rs:825:    let current_working_directory = current_working_directory();
+src/main.rs:828:    let mut discovery_request = DiscoveryRequest::new(current_working_directory);
+src/main.rs:829:    discovery_request = discovery_request.with_current_process_id(std::process::id());
+src/main.rs:904:fn current_working_directory() -> PathBuf {
+src/main.rs:905:    match std::env::current_dir() {
+src/main.rs:909:                event = "overview-current-dir-failed",
+src/main.rs:1063:    apply_current_overview_snapshot(app, overview_controller);
+src/main.rs:1074:    apply_current_tools_state(app, controller);
+src/main.rs:1085:    apply_current_about_state(app, controller);
+src/main.rs:1219:fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+src/main.rs:1228:fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+src/main.rs:1303:fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<OverviewController>>) {
+src/main.rs:1561:        return "Not available for the current Overview state.".to_owned();
+src/main.rs:1572:                "Action is disabled for the current Overview state.".to_owned()
+src/main.rs:2368:                "root.update-source-selected(\"both\")",
+src/main.rs:2371:                "root.update-source-selected(\"github\")",
+src/main.rs:2374:                "root.update-source-selected(\"nexus\")",
+src/main.rs:2377:                "root.update-source-selected(\"none\")",
+src/main.rs:2382:        assert!(SETTINGS_SLINT.contains("callback update-source-selected(string)"));
+src/main.rs:2393:                "root.log-level-selected(\"debug\")",
+src/main.rs:2396:                "root.log-level-selected(\"info\")",
+src/main.rs:2399:                "root.log-level-selected(\"warning\")",
+src/main.rs:2402:                "root.log-level-selected(\"error\")",
+src/main.rs:2407:        assert!(SETTINGS_SLINT.contains("callback log-level-selected(string)"));
+src/main.rs:2430:                "callback update-source-selected(string)",
+src/main.rs:2431:                "callback log-level-selected(string)",
+src/main.rs:2438:                "root.update-source-selected(value)",
+src/main.rs:2439:                "root.log-level-selected(value)",
+src/workers/mod.rs:65:        let runtime_handle = tokio::runtime::Handle::try_current().map_err(|error| {
+src/workers/mod.rs:167:    /// No Tokio runtime was active for the current thread.
+src/workers/mod.rs:336:        let calling_thread = std::thread::current().id();
+src/workers/mod.rs:346:                    Some(std::thread::current().id());
+src/workers/mod.rs:376:                current: Some(1),
+src/workers/events.rs:266:    pub current: Option<u64>,
+src/workers/events.rs:283:    /// Adds optional current and total counts without implying percentages or ETA.
+src/workers/events.rs:284:    pub const fn with_counts(mut self, current: Option<u64>, total: Option<u64>) -> Self {
+src/workers/events.rs:285:        self.current = current;
+src/workers/events.rs:292:        self.message.is_none() && self.current.is_none() && self.total.is_none()
+src/workers/events.rs:525:    /// User-selected or adapter-supplied target.
+src/workers/events.rs:731:        assert_eq!(text_only.current, None);
+src/workers/events.rs:732:        assert_eq!(counts_only.current, Some(3));
+src/workers/events.rs:734:        assert_eq!(open_ended.current, Some(7));
+src/domain/discovery.rs:27:/// versions. The current Rust domain contract only needs a stable three-part
+src/domain/discovery.rs:119:    /// Binary classification state for the current install.
+src/domain/discovery.rs:204:    /// v8, current Next-Gen archive version.
+src/domain/mod_manager.rs:243:    /// `selected_profile` value from `[General]`.
+src/domain/mod_manager.rs:244:    pub selected_profile: String,
+src/domain/mod_manager.rs:259:        selected_profile: impl Into<String>,
+src/domain/mod_manager.rs:268:            selected_profile: selected_profile.into(),
+src/domain/mod_manager.rs:405:    /// Creates the missing selected-profile error from `ModManagerInfo.read_mo2_ini`.
+src/domain/mod_manager.rs:406:    pub fn missing_selected_profile() -> Self {
+src/domain/mod_manager.rs:417:        selected_profile: Option<impl Into<String>>,
+src/domain/mod_manager.rs:424:                selected_profile: selected_profile.map(Into::into),
+src/domain/mod_manager.rs:476:                selected_profile,
+src/domain/mod_manager.rs:482:                selected_profile.as_deref().unwrap_or("None"),
+src/domain/mod_manager.rs:508:    /// No usable `ModOrganizer.ini` could be found for the current instance.
+src/domain/mod_manager.rs:517:    /// The INI did not contain `selected_profile`.
+src/domain/mod_manager.rs:525:        /// Optional selected profile.
+src/domain/mod_manager.rs:526:        selected_profile: Option<String>,
+src/domain/mod_manager.rs:530:    /// The selected profile did not contain `modlist.txt`.
+src/domain/mod_manager.rs:592:        assert_eq!(context.selected_profile, "Default");
+src/domain/mod_manager.rs:663:        let missing_profile = Mo2ParseError::missing_selected_profile();
+src/app/settings_controller.rs:45:    pub fn current_settings(&self) -> &AppSettings {
+src/app/settings_controller.rs:49:    /// Returns the typed update-source value from the current settings snapshot.
+src/app/settings_controller.rs:50:    pub const fn current_update_source(&self) -> UpdateSource {
+src/app/settings_controller.rs:54:    /// Returns the update-source value Slint should display for the current snapshot.
+src/app/settings_controller.rs:56:        self.current_update_source().as_wire_value()
+src/app/settings_controller.rs:59:    /// Returns the lowercase log-level value Slint should display for the current snapshot.
+src/app/settings_controller.rs:69:    pub fn select_update_source(&mut self, selected: &str) -> &'static str {
+src/app/settings_controller.rs:70:        let Some(update_source) = UpdateSource::from_wire_value(selected) else {
+src/app/settings_controller.rs:72:                selected,
+src/app/settings_controller.rs:89:    pub fn select_log_level(&mut self, selected: &str) -> &'static str {
+src/app/settings_controller.rs:90:        let log_level = ui_value_to_log_level(selected).unwrap_or_else(|| {
+src/app/settings_controller.rs:92:                selected,
+src/app/overview_controller.rs:5://! events into a current [`OverviewSnapshot`](crate::domain::overview::OverviewSnapshot)
+src/app/overview_controller.rs:104:    /// Returns the current render-ready Overview snapshot.

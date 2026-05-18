@@ -1,0 +1,18 @@
+{
+  "id": "d35cb4fd-c323-41da-a700-7b8dc82730be",
+  "runtime": "bash",
+  "purpose": "format after moving F4SE test import",
+  "script_chars": 9,
+  "started_at": "2026-05-18T03:59:44.949Z",
+  "finished_at": "2026-05-18T03:59:45.468Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 519,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d35cb4fd-c323-41da-a700-7b8dc82730be.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d35cb4fd-c323-41da-a700-7b8dc82730be.stderr"
+}

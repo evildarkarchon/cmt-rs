@@ -1,0 +1,5 @@
+error: expected a version like "1.32"
+ --> Cargo.toml:6:16
+  |
+6 | rust-version = ""
+  |                ^^

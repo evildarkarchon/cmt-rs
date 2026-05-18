@@ -1,0 +1,18 @@
+{
+  "id": "09421a6d-cd7d-4cbc-ad66-fbd4fc51ca45",
+  "runtime": "bash",
+  "purpose": "Verification: cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-18T10:36:31.135Z",
+  "finished_at": "2026-05-18T10:37:18.222Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 47087,
+  "stdout_bytes": 32098,
+  "stderr_bytes": 366,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\09421a6d-cd7d-4cbc-ad66-fbd4fc51ca45.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\09421a6d-cd7d-4cbc-ad66-fbd4fc51ca45.stderr"
+}

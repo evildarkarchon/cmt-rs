@@ -1,0 +1,18 @@
+{
+  "id": "9eb81764-601d-4435-8242-302704186419",
+  "runtime": "bash",
+  "purpose": "run s07 scanner runtime wiring tests",
+  "script_chars": 37,
+  "started_at": "2026-05-18T07:08:22.076Z",
+  "finished_at": "2026-05-18T07:09:06.447Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 44371,
+  "stdout_bytes": 686,
+  "stderr_bytes": 482,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9eb81764-601d-4435-8242-302704186419.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9eb81764-601d-4435-8242-302704186419.stderr"
+}

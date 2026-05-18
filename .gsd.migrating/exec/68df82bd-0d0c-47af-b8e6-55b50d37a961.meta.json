@@ -1,0 +1,18 @@
+{
+  "id": "68df82bd-0d0c-47af-b8e6-55b50d37a961",
+  "runtime": "bash",
+  "purpose": "verify downgrader controller targeted tests",
+  "script_chars": 32,
+  "started_at": "2026-05-18T11:31:35.521Z",
+  "finished_at": "2026-05-18T11:31:44.000Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8479,
+  "stdout_bytes": 1280,
+  "stderr_bytes": 694,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\68df82bd-0d0c-47af-b8e6-55b50d37a961.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\68df82bd-0d0c-47af-b8e6-55b50d37a961.stderr"
+}

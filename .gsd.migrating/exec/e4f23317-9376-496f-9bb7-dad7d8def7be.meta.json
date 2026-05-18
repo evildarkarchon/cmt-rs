@@ -1,0 +1,18 @@
+{
+  "id": "e4f23317-9376-496f-9bb7-dad7d8def7be",
+  "runtime": "bash",
+  "purpose": "fresh T02 verification: cargo test scanner_scan_service",
+  "script_chars": 265,
+  "started_at": "2026-05-18T07:21:01.818Z",
+  "finished_at": "2026-05-18T07:21:10.618Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8800,
+  "stdout_bytes": 2075,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e4f23317-9376-496f-9bb7-dad7d8def7be.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e4f23317-9376-496f-9bb7-dad7d8def7be.stderr"
+}

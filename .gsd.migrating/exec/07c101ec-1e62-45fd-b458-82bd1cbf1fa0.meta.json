@@ -1,0 +1,18 @@
+{
+  "id": "07c101ec-1e62-45fd-b458-82bd1cbf1fa0",
+  "runtime": "bash",
+  "purpose": "probe escaping dollar for gsd_exec bash",
+  "script_chars": 57,
+  "started_at": "2026-05-18T09:43:30.654Z",
+  "finished_at": "2026-05-18T09:43:30.782Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 128,
+  "stdout_bytes": 17,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\07c101ec-1e62-45fd-b458-82bd1cbf1fa0.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\07c101ec-1e62-45fd-b458-82bd1cbf1fa0.stderr"
+}

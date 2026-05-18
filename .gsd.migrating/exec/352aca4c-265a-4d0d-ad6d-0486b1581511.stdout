@@ -1,0 +1,284 @@
+## pub fn handle_worker_event @ 279
+pub fn handle_worker_event(&mut self, event: WorkerEvent) -> OverviewTransitionResult {
+        match event.payload {
+            WorkerPayload::Overview(payload) => self.handle_overview_payload(payload),
+            WorkerPayload::Error(failure)
+                if event.task.kind == WorkerTaskKind::Overview
+                    && event.status == WorkerTaskStatus::Failed =>
+            {
+                let refresh_id = refresh_id_from_task_id(&event.task.id)
+                    .or(self.latest_refresh_id)
+                    .unwrap_or_default();
+                self.refresh_failed(refresh_id, failure)
+            }
+            _ => OverviewTransitionResult::Ignored,
+        }
+    }
+
+    /// Returns the current game-path open action when discovery found one.
+    pub fn game_path_action(&self) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.top.game_path {
+            OverviewGamePathStatus::Found(path) => Some(OverviewDeferredAction::open_path(
+                OverviewDeferredActionKind::OpenGamePath,
+                "Game Path",
+                path.clone(),
+            )),
+            OverviewGamePathStatus::NotFound => None,
+        }
+    }
+
+    /// Returns the current update-provider action when an update banner is visible.
+    pub fn update_provider_action(
+        &self,
+        provider: UpdateProvider,
+    ) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.update_banner {
+            UpdateBannerState::Available { releases, .. } => releases
+                .iter()
+                .find(|release| release.provider == provider)
+                .map(|release| release.action.clone()),
+            UpdateBannerState::Disabled
+            | UpdateBannerState::NotChecked { .. }
+            | UpdateBannerState::Checking { .. }
+            | UpdateBannerState::NoUpdate { .. }
+            | UpdateBannerState::FailedSilently { .. } => None,
+        }
+    }
+
+    fn handle_overview_payload(
+        &mut self,
+        payload: OverviewWorkerPayload,
+    ) -> OverviewTransitionResult {
+        match payload {
+            OverviewWorkerPayload::RefreshCompleted {
+                refresh_id,
+                snapshot,
+            } => self.refresh_completed(refresh_id, *snapshot),
+            OverviewWorkerPayload::UpdateCheckCompleted {
+                refresh_id,
+                update_banner,
+            } => self.update_check_completed(refresh_id, update_banner),
+            OverviewWorkerPayload::DesktopActionCompleted { action, error } => {
+                self.desktop_action_completed(action, error)
+            }
+        }
+  
+
+## WorkerPayload::Overview @ 281
+WorkerPayload::Overview(payload) => self.handle_overview_payload(payload),
+            WorkerPayload::Error(failure)
+                if event.task.kind == WorkerTaskKind::Overview
+                    && event.status == WorkerTaskStatus::Failed =>
+            {
+                let refresh_id = refresh_id_from_task_id(&event.task.id)
+                    .or(self.latest_refresh_id)
+                    .unwrap_or_default();
+                self.refresh_failed(refresh_id, failure)
+            }
+            _ => OverviewTransitionResult::Ignored,
+        }
+    }
+
+    /// Returns the current game-path open action when discovery found one.
+    pub fn game_path_action(&self) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.top.game_path {
+            OverviewGamePathStatus::Found(path) => Some(OverviewDeferredAction::open_path(
+                OverviewDeferredActionKind::OpenGamePath,
+                "Game Path",
+                path.clone(),
+            )),
+            OverviewGamePathStatus::NotFound => None,
+        }
+    }
+
+    /// Returns the current update-provider action when an update banner is visible.
+    pub fn update_provider_action(
+        &self,
+        provider: UpdateProvider,
+    ) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.update_banner {
+            UpdateBannerState::Available { releases, .. } => releases
+                .iter()
+                .find(|release| release.provider == provider)
+                .map(|release| release.action.clone()),
+            UpdateBannerState::Disabled
+            | UpdateBannerState::NotChecked { .. }
+            | UpdateBannerState::Checking { .. }
+            | UpdateBannerState::NoUpdate { .. }
+            | UpdateBannerState::FailedSilently { .. } => None,
+        }
+    }
+
+    fn handle_overview_payload(
+        &mut self,
+        payload: OverviewWorkerPayload,
+    ) -> OverviewTransitionResult {
+        match payload {
+            OverviewWorkerPayload::RefreshCompleted {
+                refresh_id,
+                snapshot,
+            } => self.refresh_completed(refresh_id, *snapshot),
+            OverviewWorkerPayload::UpdateCheckCompleted {
+                refresh_id,
+                update_banner,
+            } => self.update_check_completed(refresh_id, update_banner),
+            OverviewWorkerPayload::DesktopActionCompleted { action, error } => {
+                self.desktop_action_completed(action, error)
+            }
+        }
+    }
+
+    fn is_latest_refresh(&self, refresh_id: OverviewRefreshId) -> bool {
+        self.latest_refresh_id == Some(refresh_id)
+ 
+
+## WorkerPayload::Error @ 282
+WorkerPayload::Error(failure)
+                if event.task.kind == WorkerTaskKind::Overview
+                    && event.status == WorkerTaskStatus::Failed =>
+            {
+                let refresh_id = refresh_id_from_task_id(&event.task.id)
+                    .or(self.latest_refresh_id)
+                    .unwrap_or_default();
+                self.refresh_failed(refresh_id, failure)
+            }
+            _ => OverviewTransitionResult::Ignored,
+        }
+    }
+
+    /// Returns the current game-path open action when discovery found one.
+    pub fn game_path_action(&self) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.top.game_path {
+            OverviewGamePathStatus::Found(path) => Some(OverviewDeferredAction::open_path(
+                OverviewDeferredActionKind::OpenGamePath,
+                "Game Path",
+                path.clone(),
+            )),
+            OverviewGamePathStatus::NotFound => None,
+        }
+    }
+
+    /// Returns the current update-provider action when an update banner is visible.
+    pub fn update_provider_action(
+        &self,
+        provider: UpdateProvider,
+    ) -> Option<OverviewDeferredAction> {
+        match &self.snapshot.update_banner {
+            UpdateBannerState::Available { releases, .. } => releases
+                .iter()
+                .find(|release| release.provider == provider)
+                .map(|release| release.action.clone()),
+            UpdateBannerState::Disabled
+            | UpdateBannerState::NotChecked { .. }
+            | UpdateBannerState::Checking { .. }
+            | UpdateBannerState::NoUpdate { .. }
+            | UpdateBannerState::FailedSilently { .. } => None,
+        }
+    }
+
+    fn handle_overview_payload(
+        &mut self,
+        payload: OverviewWorkerPayload,
+    ) -> OverviewTransitionResult {
+        match payload {
+            OverviewWorkerPayload::RefreshCompleted {
+                refresh_id,
+                snapshot,
+            } => self.refresh_completed(refresh_id, *snapshot),
+            OverviewWorkerPayload::UpdateCheckCompleted {
+                refresh_id,
+                update_banner,
+            } => self.update_check_completed(refresh_id, update_banner),
+            OverviewWorkerPayload::DesktopActionCompleted { action, error } => {
+                self.desktop_action_completed(action, error)
+            }
+        }
+    }
+
+    fn is_latest_refresh(&self, refresh_id: OverviewRefreshId) -> bool {
+        self.latest_refresh_id == Some(refresh_id)
+    }
+}
+
+/// Builds worker metadata for a blocking Overview refresh.
+pub fn overview_ref
+
+## overview_refresh_id_from_task @ missing
+## overview_refresh_task @ 69
+overview_refresh_task(self.refresh_id)
+    }
+
+    /// Builds the worker metadata used for the async update check tied to this refresh.
+    pub fn update_task(self) -> WorkerTask {
+        overview_update_task(self.refresh_id)
+    }
+}
+
+/// Pure reducer for Overview UI state and owned worker events.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct OverviewController {
+    snapshot: OverviewSnapshot,
+    next_refresh_id: OverviewRefreshId,
+    latest_refresh_id: Option<OverviewRefreshId>,
+    pending_update_banner: Option<(OverviewRefreshId, UpdateBannerState)>,
+}
+
+impl Default for OverviewController {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl OverviewController {
+    /// Creates an idle controller with an empty Overview snapshot.
+    pub fn new() -> Self {
+        Self {
+            snapshot: OverviewSnapshot::empty(),
+            next_refresh_id: 1,
+            latest_refresh_id: None,
+            pending_update_banner: None,
+        }
+    }
+
+    /// Returns the current render-ready Overview snapshot.
+    pub fn snapshot(&self) -> &OverviewSnapshot {
+        &self.snapshot
+    }
+
+    /// Returns the current safe last-action error, if any.
+    pub fn last_safe_action_error(&self) -> Option<&OverviewActionError> {
+        self.snapshot.last_action_error.as_ref()
+    }
+
+    /// Starts the initial loading transition using the supplied settings snapshot.
+    pub fn initial_loading(&mut self, update_source: UpdateSource) -> OverviewRefreshRequest {
+        self.request_refresh(update_source)
+    }
+
+    /// Starts a new refresh and returns the worker request to schedule.
+    pub fn request_refresh(&mut self, update_source: UpdateSource) -> OverviewRefreshRequest {
+        let refresh_id = self.next_refresh_id;
+        self.next_refresh_id = self.next_refresh_id.saturating_add(1);
+        self.latest_refresh_id = Some(refresh_id);
+        self.pending_update_banner = None;
+
+        let last_action_error = self.snapshot.last_action_error.clone();
+        self.snapshot = OverviewSnapshot::loading("Refreshing Overview...");
+        self.snapshot.update_banner = initial_update_banner(update_source);
+        self.snapshot.last_action_error = last_action_error;
+
+        tracing::info!(
+            event = "overview-refresh-requested",
+            refresh_id,
+            update_source = update_source.as_wire_value(),
+            "Overview refresh requested"
+        );
+
+        OverviewRefreshRequest {
+            refresh_id,
+            update_source,
+        }
+    }
+
+    /// Applies a successful refresh snapshot if it belongs to the latest request.
+

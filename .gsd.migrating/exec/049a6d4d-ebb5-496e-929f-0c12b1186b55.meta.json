@@ -1,0 +1,18 @@
+{
+  "id": "049a6d4d-ebb5-496e-929f-0c12b1186b55",
+  "runtime": "bash",
+  "purpose": "compile after removing unsupported rectangle alignment",
+  "script_chars": 11,
+  "started_at": "2026-05-18T11:49:50.917Z",
+  "finished_at": "2026-05-18T11:50:12.351Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 21434,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\049a6d4d-ebb5-496e-929f-0c12b1186b55.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\049a6d4d-ebb5-496e-929f-0c12b1186b55.stderr"
+}

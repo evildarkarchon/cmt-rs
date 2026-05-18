@@ -1,18 +1,17 @@
 # GSD State
 
-**Active Milestone:** M001: Initial Port
-**Active Slice:** S06: F4SE Diagnostics
-**Phase:** planning
-**Requirements Status:** 42 active · 12 validated · 0 deferred · 0 out of scope
+**Active Milestone:** None
+**Active Slice:** None
+**Phase:** pre-planning
+**Requirements Status:** 0 active · 0 validated · 0 deferred · 0 out of scope
 
 ## Milestone Registry
-- 🔄 **M001:** Initial Port
 
 ## Recent Decisions
 - None recorded
 
 ## Blockers
-- None
+- DB unavailable — runtime markdown state derivation is disabled
 
 ## Next Action
-Slice S06 has no DB tasks. Plan slice tasks before execution.
+Open or create the canonical GSD database before deriving workflow state.

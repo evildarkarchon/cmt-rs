@@ -1,0 +1,18 @@
+{
+  "id": "2dd5d585-b4cb-46f5-90ec-93f18937316d",
+  "runtime": "bash",
+  "purpose": "red test for new f4se domain contract",
+  "script_chars": 22,
+  "started_at": "2026-05-18T03:38:36.931Z",
+  "finished_at": "2026-05-18T03:38:57.192Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 20261,
+  "stdout_bytes": 0,
+  "stderr_bytes": 12637,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\2dd5d585-b4cb-46f5-90ec-93f18937316d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\2dd5d585-b4cb-46f5-90ec-93f18937316d.stderr"
+}

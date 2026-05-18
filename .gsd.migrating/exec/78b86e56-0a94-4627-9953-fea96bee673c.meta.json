@@ -1,0 +1,18 @@
+{
+  "id": "78b86e56-0a94-4627-9953-fea96bee673c",
+  "runtime": "bash",
+  "purpose": "format check after f4se domain contract",
+  "script_chars": 17,
+  "started_at": "2026-05-18T03:43:23.045Z",
+  "finished_at": "2026-05-18T03:43:23.535Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 490,
+  "stdout_bytes": 2698,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\78b86e56-0a94-4627-9953-fea96bee673c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\78b86e56-0a94-4627-9953-fea96bee673c.stderr"
+}

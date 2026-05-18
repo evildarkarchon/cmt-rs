@@ -1,0 +1,18 @@
+{
+  "id": "3481d87d-0cd6-4146-87f5-14dcbf842beb",
+  "runtime": "bash",
+  "purpose": "rerun clippy after F4SE guard cleanup",
+  "script_chars": 41,
+  "started_at": "2026-05-18T04:02:53.324Z",
+  "finished_at": "2026-05-18T04:03:10.433Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 17109,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3481d87d-0cd6-4146-87f5-14dcbf842beb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3481d87d-0cd6-4146-87f5-14dcbf842beb.stderr"
+}

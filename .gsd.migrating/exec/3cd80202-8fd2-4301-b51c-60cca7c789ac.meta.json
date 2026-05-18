@@ -1,0 +1,18 @@
+{
+  "id": "3cd80202-8fd2-4301-b51c-60cca7c789ac",
+  "runtime": "bash",
+  "purpose": "run clippy after F4SE controller worker payload changes",
+  "script_chars": 41,
+  "started_at": "2026-05-18T04:15:53.744Z",
+  "finished_at": "2026-05-18T04:16:13.419Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 19675,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3cd80202-8fd2-4301-b51c-60cca7c789ac.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3cd80202-8fd2-4301-b51c-60cca7c789ac.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "f71f3c37-687f-4917-b074-a62c8ef8c356",
+  "runtime": "bash",
+  "purpose": "inspect installed Slint std-widgets docs/source for TabWidget selected-index API",
+  "script_chars": 671,
+  "started_at": "2026-05-18T04:19:42.934Z",
+  "finished_at": "2026-05-18T04:20:12.754Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 29820,
+  "stdout_bytes": 14896,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f71f3c37-687f-4917-b074-a62c8ef8c356.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f71f3c37-687f-4917-b074-a62c8ef8c356.stderr"
+}

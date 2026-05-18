@@ -1,0 +1,7 @@
+
+running 2 tests
+test services::f4se::tests::f4se_dll_inspector_compatible_version_mapping_only_proves_known_runtime_support ... ok
+test services::f4se::tests::f4se_dll_inspector_malformed_bytes_return_typed_parse_failure ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 193 filtered out; finished in 0.00s
+

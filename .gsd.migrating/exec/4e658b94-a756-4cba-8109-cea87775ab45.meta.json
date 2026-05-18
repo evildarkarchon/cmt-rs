@@ -1,0 +1,18 @@
+{
+  "id": "4e658b94-a756-4cba-8109-cea87775ab45",
+  "runtime": "bash",
+  "purpose": "format check after test import fix",
+  "script_chars": 17,
+  "started_at": "2026-05-18T11:36:18.746Z",
+  "finished_at": "2026-05-18T11:36:19.402Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 656,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4e658b94-a756-4cba-8109-cea87775ab45.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4e658b94-a756-4cba-8109-cea87775ab45.stderr"
+}

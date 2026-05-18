@@ -1,0 +1,408 @@
+Diff in /mnt/j/cmt-rs/src/domain/downgrader.rs:1111:
+         );
+         assert_eq!(step.kind.as_str(), "create_current_backup");
+         assert!(step.kind.is_mutating_execution_step());
+[31m-        assert_eq!(step.message, "Create backup Fallout4_downgradeBackup.exe from Fallout4.exe.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            step.message,
+(B[m[32m+            "Create backup Fallout4_downgradeBackup.exe from Fallout4.exe."
+(B[m[32m+        );
+(B[m         assert!(!DowngraderPlanStepKind::SkipNotFound.is_mutating_execution_step());
+ 
+         let already =
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:26:
+             skipped_already_message, skipped_not_found_message, skipped_unsupported_message,
+         },
+     },
+[31m-    platform::{
+(B[m[31m-        PlatformErrorKind,
+(B[m[31m-        filesystem::Filesystem,
+(B[m[31m-    },
+(B[m[32m+    platform::{PlatformErrorKind, filesystem::Filesystem},
+(B[m };
+ 
+ const UNSAFE_ROOT_MESSAGE: &str = "Fallout 4 installation path is unsafe.";
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:321:
+             if row.failure.is_some() {
+                 counts.failed_rows += 1;
+             }
+[31m-            if row
+(B[m[31m-                .steps
+(B[m[31m-                .iter()
+(B[m[31m-                .all(|step| matches!(step.kind, DowngraderPlanStepKind::SkipAlreadyDesired | DowngraderPlanStepKind::SkipNotFound | DowngraderPlanStepKind::SkipUnsupportedVersion))
+(B[m[31m-            {
+(B[m[32m+            if row.steps.iter().all(|step| {
+(B[m[32m+                matches!(
+(B[m[32m+                    step.kind,
+(B[m[32m+                    DowngraderPlanStepKind::SkipAlreadyDesired
+(B[m[32m+                        | DowngraderPlanStepKind::SkipNotFound
+(B[m[32m+                        | DowngraderPlanStepKind::SkipUnsupportedVersion
+(B[m[32m+                )
+(B[m[32m+            }) {
+(B[m                 counts.skipped_rows += 1;
+             }
+             if row.restores_from_backup() {
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:376:
+             has_installation = request.installation.is_some(),
+         );
+         let _guard = span.enter();
+[31m-        info!(event = "downgrader-status-request", "Downgrader status requested");
+(B[m[32m+        info!(
+(B[m[32m+            event = "downgrader-status-request",
+(B[m[32m+            "Downgrader status requested"
+(B[m[32m+        );
+(B[m 
+         let game_root = self.validated_game_root(request.installation)?;
+         validate_managed_definitions(&game_root)?;
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:384:
+         let mut raw_rows = Vec::with_capacity(DOWNGRADER_FILE_DEFINITIONS.len());
+         let mut diagnostics = Vec::new();
+         for definition in DOWNGRADER_FILE_DEFINITIONS {
+[31m-            let resolved_path = resolve_managed_relative_path(&game_root, definition.relative_path)?;
+(B[m[32m+            let resolved_path =
+(B[m[32m+                resolve_managed_relative_path(&game_root, definition.relative_path)?;
+(B[m             let row = self.read_managed_file(definition, resolved_path);
+             if let Some(read_error) = &row.read_error {
+                 diagnostics.push(DowngraderStatusDiagnostic {
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:409:
+             .map(|row| row.detected_status)
+             .unwrap_or(DowngraderInstallStatus::Unknown);
+         for row in &mut raw_rows {
+[31m-            row.display_status = display_status_for(row.relative_path, row.detected_status, fallout4_status);
+(B[m[32m+            row.display_status =
+(B[m[32m+                display_status_for(row.relative_path, row.detected_status, fallout4_status);
+(B[m         }
+ 
+         let default_target = default_target_from_fallout4(fallout4_status);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:464:
+             has_installation = request.installation.is_some(),
+         );
+         let _guard = span.enter();
+[31m-        info!(event = "downgrader-plan-request", "Downgrader preview plan requested");
+(B[m[32m+        info!(
+(B[m[32m+            event = "downgrader-plan-request",
+(B[m[32m+            "Downgrader preview plan requested"
+(B[m[32m+        );
+(B[m 
+         let status = self.status_snapshot(DowngraderStatusRequest::new(
+             request.request_id,
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:577:
+         status_row: &DowngraderStatusFile,
+         options: DowngraderOptionsSnapshot,
+     ) -> DowngraderPreviewPlanRow {
+[31m-        let base_plan = DowngraderPlanRow::from_definition(
+(B[m[31m-            definition,
+(B[m[31m-            status_row.detected_status,
+(B[m[31m-            options,
+(B[m[31m-        );
+(B[m[32m+        let base_plan =
+(B[m[32m+            DowngraderPlanRow::from_definition(definition, status_row.detected_status, options);
+(B[m         let mut row = DowngraderPreviewPlanRow {
+             plan: base_plan,
+             display_status: status_row.display_status,
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:597:
+             DowngraderPlanAction::SkipAlreadyDesired => {
+                 row.steps.push(DowngraderPlanStep::new(
+                     DowngraderPlanStepKind::SkipAlreadyDesired,
+[31m-                    skipped_already_message(row.plan.display_name, row.plan.target.desired_status()),
+(B[m[32m+                    skipped_already_message(
+(B[m[32m+                        row.plan.display_name,
+(B[m[32m+                        row.plan.target.desired_status(),
+(B[m[32m+                    ),
+(B[m                 ));
+                 return row;
+             }
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:645:
+ 
+         let current_backup_path = backup_path_for(&row.current_path, &row.plan.current_backup_name);
+         let desired_backup_path = backup_path_for(&row.current_path, &row.plan.desired_backup_name);
+[31m-        let current_backup = self.probe_backup(current_backup_path, row.plan.current_backup_name.clone());
+(B[m[31m-        let desired_backup = self.probe_backup(desired_backup_path, row.plan.desired_backup_name.clone());
+(B[m[32m+        let current_backup =
+(B[m[32m+            self.probe_backup(current_backup_path, row.plan.current_backup_name.clone());
+(B[m[32m+        let desired_backup =
+(B[m[32m+            self.probe_backup(desired_backup_path, row.plan.desired_backup_name.clone());
+(B[m 
+         if let Some(read_error) = current_backup.read_error.clone() {
+             row.current_backup = Some(current_backup);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:697:
+             ));
+         }
+ 
+[31m-        let desired_backup_is_valid = desired_backup.crc32.as_deref().is_some_and(|backup_crc| {
+(B[m[31m-            crc_is_desired_target_for_plan(backup_crc, row.plan.target)
+(B[m[31m-        });
+(B[m[32m+        let desired_backup_is_valid = desired_backup
+(B[m[32m+            .crc32
+(B[m[32m+            .as_deref()
+(B[m[32m+            .is_some_and(|backup_crc| crc_is_desired_target_for_plan(backup_crc, row.plan.target));
+(B[m         if desired_backup.exists && desired_backup_is_valid {
+             row.steps.push(DowngraderPlanStep::new(
+                 DowngraderPlanStepKind::RestoreDesiredBackup,
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:738:
+             if !options.keep_backups {
+                 row.steps.push(DowngraderPlanStep::new(
+                     DowngraderPlanStepKind::DeleteCurrentBackup,
+[31m-                    format!("Delete backup {} after patch.", row.plan.current_backup_name),
+(B[m[32m+                    format!(
+(B[m[32m+                        "Delete backup {} after patch.",
+(B[m[32m+                        row.plan.current_backup_name
+(B[m[32m+                    ),
+(B[m                 ));
+             }
+             if options.delete_deltas {
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:897:
+     static OLD_GEN_TARGET_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+     static NEXT_GEN_TARGET_CRCS: OnceLock<Vec<&'static str>> = OnceLock::new();
+     match target {
+[31m-        DowngraderTarget::OldGen => OLD_GEN_TARGET_CRCS
+(B[m[31m-            .get_or_init(|| crcs_for_status(DowngraderInstallStatus::OldGen)),
+(B[m[31m-        DowngraderTarget::NextGen => NEXT_GEN_TARGET_CRCS
+(B[m[31m-            .get_or_init(|| crcs_for_status(DowngraderInstallStatus::NextGen)),
+(B[m[32m+        DowngraderTarget::OldGen => {
+(B[m[32m+            OLD_GEN_TARGET_CRCS.get_or_init(|| crcs_for_status(DowngraderInstallStatus::OldGen))
+(B[m[32m+        }
+(B[m[32m+        DowngraderTarget::NextGen => {
+(B[m[32m+            NEXT_GEN_TARGET_CRCS.get_or_init(|| crcs_for_status(DowngraderInstallStatus::NextGen))
+(B[m[32m+        }
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:975:
+ fn unsafe_managed_path(relative_path: &'static str) -> Result<PathBuf, DowngraderServiceError> {
+     warn!(
+         event = "downgrader-managed-path-unsafe",
+[31m-        relative_path,
+(B[m[31m-        "Downgrader rejected unsafe managed path"
+(B[m[32m+        relative_path, "Downgrader rejected unsafe managed path"
+(B[m     );
+     Err(DowngraderServiceError::UnsafeManagedPath {
+         relative_path: relative_path.to_owned(),
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1061:
+             }
+         }
+ 
+[31m-        fn node(&self, path: &Path, operation: PlatformOperation) -> Result<&FakeNode, PlatformError> {
+(B[m[32m+        fn node(
+(B[m[32m+            &self,
+(B[m[32m+            path: &Path,
+(B[m[32m+            operation: PlatformOperation,
+(B[m[32m+        ) -> Result<&FakeNode, PlatformError> {
+(B[m             self.nodes.get(path).ok_or_else(|| {
+                 PlatformError::new(
+                     operation,
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1155:
+         PathBuf::from("Game")
+     }
+ 
+[31m-    fn options(target: DowngraderTarget, keep_backups: bool, delete_deltas: bool) -> DowngraderOptionsSnapshot {
+(B[m[32m+    fn options(
+(B[m[32m+        target: DowngraderTarget,
+(B[m[32m+        keep_backups: bool,
+(B[m[32m+        delete_deltas: bool,
+(B[m[32m+    ) -> DowngraderOptionsSnapshot {
+(B[m         DowngraderOptionsSnapshot::new(target, keep_backups, delete_deltas)
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1249:
+         assert_eq!(snapshot.rows.len(), 6);
+         assert_eq!(snapshot.default_target, DowngraderTarget::NextGen);
+         assert_eq!(snapshot.rows[0].display_name, "Fallout4.exe");
+[31m-        assert_eq!(snapshot.rows[5].relative_path, "Tools\\Archive2\\Archive2Interop.dll");
+(B[m         assert_eq!(
+[31m-            snapshot.status_for("Fallout4.exe").map(|row| row.detected_status),
+(B[m[32m+            snapshot.rows[5].relative_path,
+(B[m[32m+            "Tools\\Archive2\\Archive2Interop.dll"
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("Fallout4.exe")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::NextGen)
+         );
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1258:
+[31m-            snapshot.status_for("steam_api64.dll").map(|row| row.detected_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("steam_api64.dll")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::NextGenAnniversary)
+         );
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1262:
+[31m-            snapshot.status_for("steam_api64.dll").map(|row| row.display_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("steam_api64.dll")
+(B[m[32m+                .map(|row| row.display_status),
+(B[m             Some(DowngraderInstallStatus::NextGen)
+         );
+         assert!(!snapshot.unknown_game);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1271:
+             .expect("old-gen status snapshot");
+         assert_eq!(snapshot.default_target, DowngraderTarget::OldGen);
+         assert_eq!(
+[31m-            snapshot.status_for("steam_api64.dll").map(|row| row.display_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("steam_api64.dll")
+(B[m[32m+                .map(|row| row.display_status),
+(B[m             Some(DowngraderInstallStatus::NextGenAnniversary)
+         );
+ 
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1280:
+             .status_snapshot(DowngraderStatusRequest::new(9, Some(&installation())))
+             .expect("anniversary status snapshot");
+         assert_eq!(
+[31m-            snapshot.status_for("steam_api64.dll").map(|row| row.display_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("steam_api64.dll")
+(B[m[32m+                .map(|row| row.display_status),
+(B[m             Some(DowngraderInstallStatus::Anniversary)
+         );
+         assert_eq!(snapshot.default_target, DowngraderTarget::NextGen);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1291:
+         let fs = FakeFilesystem::default()
+             .with_dir(game_root())
+             .with_crc_file("Game/Fallout4.exe", "97DA3E03")
+[31m-            .with_file("Game/Fallout4Launcher.exe", b"not a known launcher crc".to_vec())
+(B[m[32m+            .with_file(
+(B[m[32m+                "Game/Fallout4Launcher.exe",
+(B[m[32m+                b"not a known launcher crc".to_vec(),
+(B[m[32m+            )
+(B[m             .with_unreadable_file("Game/steam_api64.dll")
+             .with_crc_file("Game/CreationKit.exe", "49E45284");
+         let service = DowngraderService::new(&fs);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1302:
+ 
+         assert_eq!(snapshot.rows.len(), 6);
+         assert_eq!(
+[31m-            snapshot.status_for("Fallout4.exe").map(|row| row.detected_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("Fallout4.exe")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::Obsolete)
+         );
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1309:
+[31m-            snapshot.status_for("Fallout4Launcher.exe").map(|row| row.detected_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("Fallout4Launcher.exe")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::Unknown)
+         );
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1313:
+[31m-            snapshot.status_for("steam_api64.dll").map(|row| row.detected_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("steam_api64.dll")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::Unknown)
+         );
+         assert!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1320:
+                 .is_some_and(|message| message.contains("permission was denied"))
+         );
+         assert_eq!(
+[31m-            snapshot.status_for("Archive2.exe").map(|row| row.detected_status),
+(B[m[32m+            snapshot
+(B[m[32m+                .status_for("Archive2.exe")
+(B[m[32m+                .map(|row| row.detected_status),
+(B[m             Some(DowngraderInstallStatus::NotFound)
+         );
+         assert!(snapshot.unknown_game);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1355:
+         assert!(fallout.restores_from_backup());
+         assert!(!fallout.requires_download());
+         assert_eq!(
+[31m-            fallout.desired_backup.as_ref().and_then(|probe| probe.crc32.as_deref()),
+(B[m[32m+            fallout
+(B[m[32m+                .desired_backup
+(B[m[32m+                .as_ref()
+(B[m[32m+                .and_then(|probe| probe.crc32.as_deref()),
+(B[m             Some("C6053902")
+         );
+         assert!(plan.can_execute);
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1362:
+         assert_eq!(plan.counts.restore_from_backup_rows, 1);
+[31m-        assert_eq!(fs.nodes, before_nodes, "preview planning must not mutate fake files");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            fs.nodes, before_nodes,
+(B[m[32m+            "preview planning must not mutate fake files"
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1418:
+             .with_crc_file("Game/Fallout4Launcher.exe", "02445570")
+             .with_crc_file("Game/steam_api64.dll", "BBD912FC")
+             .with_crc_file("Game/CreationKit.exe", "49E45284")
+[31m-            .with_file("Game/Tools/Archive2/Archive2.exe", b"unknown archive2".to_vec());
+(B[m[32m+            .with_file(
+(B[m[32m+                "Game/Tools/Archive2/Archive2.exe",
+(B[m[32m+                b"unknown archive2".to_vec(),
+(B[m[32m+            );
+(B[m         let service = DowngraderService::new(&fs);
+ 
+         let plan = service
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1443:
+                 "Archive2Interop.dll",
+             ]
+         );
+[31m-        assert_eq!(row_steps(&plan.rows[0]), vec![DowngraderPlanStepKind::SkipAlreadyDesired]);
+(B[m[31m-        assert_eq!(row_steps(&plan.rows[3]), vec![DowngraderPlanStepKind::SkipUnsupportedVersion]);
+(B[m[31m-        assert_eq!(row_steps(&plan.rows[4]), vec![DowngraderPlanStepKind::SkipUnsupportedVersion]);
+(B[m[31m-        assert_eq!(row_steps(&plan.rows[5]), vec![DowngraderPlanStepKind::SkipNotFound]);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(&plan.rows[0]),
+(B[m[32m+            vec![DowngraderPlanStepKind::SkipAlreadyDesired]
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(&plan.rows[3]),
+(B[m[32m+            vec![DowngraderPlanStepKind::SkipUnsupportedVersion]
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(&plan.rows[4]),
+(B[m[32m+            vec![DowngraderPlanStepKind::SkipUnsupportedVersion]
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(&plan.rows[5]),
+(B[m[32m+            vec![DowngraderPlanStepKind::SkipNotFound]
+(B[m[32m+        );
+(B[m         assert!(plan.can_execute);
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1465:
+             ))
+             .expect("preview plan");
+         let fallout = &plan.rows[0];
+[31m-        assert_eq!(row_steps(fallout), vec![DowngraderPlanStepKind::PlanFailure]);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(fallout),
+(B[m[32m+            vec![DowngraderPlanStepKind::PlanFailure]
+(B[m[32m+        );
+(B[m         assert!(
+             fallout
+                 .failure
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1485:
+                 options(DowngraderTarget::OldGen, true, false),
+             ))
+             .expect("preview plan with unreadable current");
+[31m-        assert_eq!(row_steps(&plan.rows[0]), vec![DowngraderPlanStepKind::PlanFailure]);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            row_steps(&plan.rows[0]),
+(B[m[32m+            vec![DowngraderPlanStepKind::PlanFailure]
+(B[m[32m+        );
+(B[m         assert!(!plan.can_execute);
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1501:
+ 
+         let missing_installation = Fallout4Installation::new("MissingGame");
+         let error = service
+[31m-            .status_snapshot(DowngraderStatusRequest::new(17, Some(&missing_installation)))
+(B[m[32m+            .status_snapshot(DowngraderStatusRequest::new(
+(B[m[32m+                17,
+(B[m[32m+                Some(&missing_installation),
+(B[m[32m+            ))
+(B[m             .expect_err("missing root should fail safely");
+         assert_eq!(error.user_message(), FALLOUT4_NOT_FOUND_MESSAGE);
+ 

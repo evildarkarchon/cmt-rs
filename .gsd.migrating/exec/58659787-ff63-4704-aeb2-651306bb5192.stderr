@@ -1,0 +1,33 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: this function has too many arguments (9/7)
+    --> src/services/downgrader.rs:1509:5
+     |
+1509 | /     fn download_apply_and_cleanup<D,...
+1510 | |         &self,
+1511 | |         request_id: u64,
+1512 | |         game_root: &Path,
+...    |
+1521 | |         D: DeltaDownloader + ?Sized,
+1522 | |         A: DeltaApplier + ?Sized,
+     | |_________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+     = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: this function has too many arguments (8/7)
+    --> src/services/scanner.rs:1118:5
+     |
+1118 | /     fn scan_data_tree<P>(
+1119 | |         &self,
+1120 | |         data_path: &Path,
+1121 | |         request: &ScannerScanRequest<'_>,
+...    |
+1127 | |     ) where
+1128 | |         P: FnMut(&ScannerProgressEvent),
+     | |________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: `cmt-rs` (bin "cmt-rs") generated 2 warnings
+warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings (2 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 41.77s

@@ -1,0 +1,11 @@
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+warning: unused import: `WorkerTaskStatus`
+  --> src/main.rs:92:52
+   |
+92 | ...e, WorkerTaskStatus,
+   |       ^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cmt-rs` (bin "cmt-rs") generated 1 warning (run `cargo fix --bin "cmt-rs" -p cmt-rs` to apply 1 suggestion)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.89s

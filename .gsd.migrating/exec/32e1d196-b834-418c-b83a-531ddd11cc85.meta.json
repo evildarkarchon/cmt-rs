@@ -1,0 +1,18 @@
+{
+  "id": "32e1d196-b834-418c-b83a-531ddd11cc85",
+  "runtime": "bash",
+  "purpose": "Find service constructors/fake filesystem patterns and CRC dependency availability",
+  "script_chars": 297,
+  "started_at": "2026-05-18T10:21:51.367Z",
+  "finished_at": "2026-05-18T10:21:51.480Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 3651,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\32e1d196-b834-418c-b83a-531ddd11cc85.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\32e1d196-b834-418c-b83a-531ddd11cc85.stderr"
+}

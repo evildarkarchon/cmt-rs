@@ -3505,6 +3505,13 @@ mod tests {
             AUTO_FIX_BUTTON_LABEL, AUTO_FIX_FAILED_BUTTON_LABEL, AUTO_FIX_FIXED_BUTTON_LABEL,
             AUTO_FIX_RESULTS_TITLE, AUTO_FIXING_BUTTON_LABEL, AutoFixOperationKey,
         },
+        downgrader::{
+            ABOUT_BUTTON_LABEL, CURRENT_CREATION_KIT_GROUP_LABEL, CURRENT_GAME_GROUP_LABEL,
+            DELETE_PATCHES_CHECKBOX_LABEL, DESIRED_VERSION_GROUP_LABEL, DOWNGRADER_MODAL_HEIGHT,
+            DOWNGRADER_MODAL_TITLE, DOWNGRADER_MODAL_WIDTH, INITIAL_LOG_LINE,
+            KEEP_BACKUPS_CHECKBOX_LABEL, OPTIONS_GROUP_LABEL, PATCH_ALL_BUTTON_LABEL,
+            TARGET_NEXT_GEN_LABEL, TARGET_OLD_GEN_LABEL,
+        },
         f4se::{
             F4SE_HEADING, F4SE_LEGEND_TEXT, F4SE_LOADING_TEXT, F4SE_TABLE_COLUMNS, F4seDllFacts,
             render_f4se_dll_row,
@@ -3532,6 +3539,7 @@ mod tests {
     const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
     const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
     const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
+    const DOWNGRADER_SLINT: &str = include_str!("../ui/downgrader_window.slint");
     const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
     const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
     const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
@@ -5085,12 +5093,159 @@ mod tests {
     }
 
     #[test]
+    fn s09_downgrader_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderStatusUiRow"));
+        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderPlanUiRow"));
+        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderLogUiRow"));
+        assert!(DOWNGRADER_SLINT.contains("export component DowngraderWindow inherits Window"));
+        assert!(MAIN_SLINT.contains(
+            "import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow }"
+        ));
+
+        assert!(DOWNGRADER_SLINT.contains(&slint_assignment("title", DOWNGRADER_MODAL_TITLE)));
+        assert!(DOWNGRADER_SLINT.contains(&format!("width: {}px", DOWNGRADER_MODAL_WIDTH)));
+        assert!(DOWNGRADER_SLINT.contains(&format!("height: {}px", DOWNGRADER_MODAL_HEIGHT)));
+
+        for label in [
+            CURRENT_GAME_GROUP_LABEL,
+            CURRENT_CREATION_KIT_GROUP_LABEL,
+            DESIRED_VERSION_GROUP_LABEL,
+            OPTIONS_GROUP_LABEL,
+            TARGET_OLD_GEN_LABEL,
+            TARGET_NEXT_GEN_LABEL,
+            KEEP_BACKUPS_CHECKBOX_LABEL,
+            DELETE_PATCHES_CHECKBOX_LABEL,
+            ABOUT_BUTTON_LABEL,
+            INITIAL_LOG_LINE,
+        ] {
+            assert!(
+                DOWNGRADER_SLINT.contains(&slint_assignment("text", label))
+                    || DOWNGRADER_SLINT.contains(&slint_assignment("title", label))
+                    || DOWNGRADER_SLINT.contains(label),
+                "Downgrader Slint should contain reference label {label:?}"
+            );
+        }
+        assert!(DOWNGRADER_SLINT.contains(&slint_assignment("text", PATCH_ALL_BUTTON_LABEL)));
+
+        assert_source_contains_in_order(
+            DOWNGRADER_SLINT,
+            &[
+                "title: \"Current Game\"",
+                "Fallout4.exe:",
+                "Fallout4Launcher.exe:",
+                "steam_api64.dll:",
+                "title: \"Current Creation Kit\"",
+                "CreationKit.exe:",
+                "Archive2.exe:",
+                "Archive2Interop.dll:",
+                "title: \"Desired Version\"",
+                "text: \"Old-Gen\"",
+                "target-id: \"old_gen\"",
+                "text: \"Next-Gen\"",
+                "target-id: \"next_gen\"",
+                "title: \"Options\"",
+                "text: \"Keep Backups\"",
+                "option-id: \"keep_backups\"",
+                "text: \"Delete Patches\"",
+                "option-id: \"delete_patches\"",
+                "text: \"Patch\\n All\"",
+                "text: \"About\"",
+            ],
+        );
+        assert!(!DOWNGRADER_SLINT.contains("Tools\\\\Archive2\\\\Archive2.exe:"));
+        assert!(!DOWNGRADER_SLINT.contains("Tools\\\\Archive2\\\\Archive2Interop.dll:"));
+
+        assert_source_contains_in_order(
+            DOWNGRADER_SLINT,
+            &[
+                "in-out property <[DowngraderStatusUiRow]> current-game-status-rows",
+                "in-out property <[DowngraderStatusUiRow]> current-creation-kit-status-rows",
+                "in-out property <string> selected-target",
+                "in-out property <bool> keep-backups",
+                "in-out property <bool> delete-patches",
+                "in-out property <[DowngraderPlanUiRow]> plan-rows",
+                "in-out property <bool> plan-visible",
+                "in-out property <string> confirmation-state",
+                "in-out property <[DowngraderLogUiRow]> log-rows",
+                "in-out property <string> log-text",
+                "in-out property <float> progress-percent",
+                "in-out property <string> progress-text",
+                "in-out property <bool> patch-enabled",
+                "in-out property <bool> about-enabled",
+                "in-out property <bool> close-blocked",
+                "callback target-selected(string)",
+                "callback option-toggled(string, bool)",
+                "callback patch-requested()",
+                "callback confirm-requested()",
+                "callback about-requested()",
+                "callback modal-close-requested()",
+            ],
+        );
+        assert!(
+            DOWNGRADER_SLINT.contains("Review the plan, then click Patch All again to confirm.")
+        );
+        assert!(DOWNGRADER_SLINT.contains("root.confirm-requested()"));
+        assert!(DOWNGRADER_SLINT.contains("root.patch-requested()"));
+        assert!(DOWNGRADER_SLINT.contains("close/Escape"));
+    }
+
+    #[test]
+    fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred()
+     {
+        assert!(!DOWNGRADER_SLINT.contains("target-id: \"anniversary\""));
+        assert!(!DOWNGRADER_SLINT.contains("text: \"Anniversary\""));
+
+        assert_source_contains_in_order(
+            OVERVIEW_SLINT,
+            &[
+                "overview-downgrade-enabled: true",
+                "overview-downgrade-status: \"Open Downgrade Manager.\"",
+                "callback open-downgrade-manager-requested()",
+                "action-label: root.overview-downgrade-label",
+                "action-enabled: root.overview-downgrade-enabled",
+                "root.open-downgrade-manager-requested()",
+            ],
+        );
+        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
+        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+
+        assert_source_contains_in_order(
+            TOOLS_SLINT,
+            &[
+                "callback open-downgrade-manager-requested()",
+                "label: \"Downgrade Manager\"",
+                "action-id: \"tools.downgrade_manager\"",
+                "Open the Downgrade Manager workflow.",
+                "root.open-downgrade-manager-requested()",
+                "label: \"Archive Patcher\"",
+                "action-id: \"tools.archive_patcher\"",
+                "button-enabled: false;",
+                "Deferred until S10 Archive Patcher workflow is ported.",
+            ],
+        );
+        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 1);
+
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "callback overview-open-downgrade-manager-requested()",
+                "callback tools-open-downgrade-manager-requested()",
+                "OverviewTab {",
+                "root.overview-open-downgrade-manager-requested()",
+                "ToolsTab {",
+                "root.tools-open-downgrade-manager-requested()",
+            ],
+        );
+    }
+
+    #[test]
     fn s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups() {
         assert!(TOOLS_SLINT.contains("export component ToolsTab"));
         assert!(TOOLS_SLINT.contains("background: #202020;"));
         assert!(TOOLS_SLINT.contains("in-out property <string> tools-last-action-error"));
         assert!(TOOLS_SLINT.contains("in-out property <string> tools-disabled-utility-status"));
         assert!(TOOLS_SLINT.contains("callback tool-action-requested(string)"));
+        assert!(TOOLS_SLINT.contains("callback open-downgrade-manager-requested()"));
         assert!(TOOLS_SLINT.contains("SafeErrorBanner"));
         assert!(!TOOLS_SLINT.contains("Tools behavior is reserved for a later port phase."));
 
@@ -5110,15 +5265,15 @@ mod tests {
                 "title: \"Toolkit Utilities\"",
                 "label: \"Downgrade Manager\"",
                 "action-id: \"tools.downgrade_manager\"",
-                "button-enabled: false;",
-                "Deferred until S09 Downgrade Manager workflow is ported.",
+                "Open the Downgrade Manager workflow.",
+                "root.open-downgrade-manager-requested()",
                 "label: \"Archive Patcher\"",
                 "action-id: \"tools.archive_patcher\"",
                 "button-enabled: false;",
                 "Deferred until S10 Archive Patcher workflow is ported.",
             ],
         );
-        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 2);
+        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 1);
         assert!(TOOLS_SLINT.contains("root.tool-action-requested(action_id)"));
         assert_no_direct_urls_or_reference_tree("ui/tools_tab.slint", TOOLS_SLINT);
     }
@@ -5536,11 +5691,9 @@ mod tests {
         );
         assert!(OVERVIEW_SLINT.contains("overview-last-action-error"));
         assert!(OVERVIEW_SLINT.contains("overview-refresh-busy"));
-        assert!(OVERVIEW_SLINT.contains("overview-downgrade-enabled: false"));
+        assert!(OVERVIEW_SLINT.contains("overview-downgrade-enabled: true"));
         assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
-        assert!(
-            OVERVIEW_SLINT.contains("Deferred until the Downgrade Manager workflow is ported.")
-        );
+        assert!(OVERVIEW_SLINT.contains("Open Downgrade Manager."));
         assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
         assert!(!OVERVIEW_SLINT.contains("Overview behavior is reserved for a later port phase."));
     }

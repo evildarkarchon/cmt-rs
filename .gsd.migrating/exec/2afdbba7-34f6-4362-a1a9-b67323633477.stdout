@@ -1,0 +1,36 @@
+CMT/src/game_info.py:31:	find_mod_manager,
+CMT/src/game_info.py:41:	from mod_manager_info import ModManagerInfo
+CMT/src/game_info.py:54:		self._data_path: Path | None = None
+CMT/src/game_info.py:55:		self._f4se_path: Path | None = None
+CMT/src/game_info.py:78:		self.manager: ModManagerInfo | None = find_mod_manager()
+CMT/src/game_info.py:149:		data_path = value / "Data"
+CMT/src/game_info.py:150:		if is_dir(data_path):
+CMT/src/game_info.py:151:			self._data_path = data_path
+CMT/src/game_info.py:152:			f4se_path = data_path / "F4SE/Plugins"
+CMT/src/game_info.py:153:			self._f4se_path = f4se_path if is_dir(f4se_path) else None
+CMT/src/game_info.py:155:			self._data_path = None
+CMT/src/game_info.py:156:			self._f4se_path = None
+CMT/src/game_info.py:159:	def data_path(self) -> Path | None:
+CMT/src/game_info.py:160:		return self._data_path
+CMT/src/game_info.py:163:	def f4se_path(self) -> Path | None:
+CMT/src/game_info.py:164:		return self._f4se_path
+CMT/src/game_info.py:176:		if self.manager is not None:
+CMT/src/game_info.py:177:			if self.manager.name == "Mod Organizer":
+CMT/src/game_info.py:178:				portable_ini_path = self.manager.exe_path.parent / "ModOrganizer.ini"
+CMT/src/game_info.py:181:				portable_txt_path = self.manager.exe_path.parent / "portable.txt"
+CMT/src/game_info.py:186:					self.manager.read_mo2_ini(portable_ini_path)
+CMT/src/game_info.py:187:					self.manager.portable = True
+CMT/src/game_info.py:188:					self.manager.portable_txt_path = portable_txt_path
+CMT/src/game_info.py:201:								self.manager.read_mo2_ini(appdata_ini_path)
+CMT/src/game_info.py:203:				if not self.manager.game_path:
+CMT/src/game_info.py:207:					self.manager.read_mo2_ini(portable_ini_path)
+CMT/src/game_info.py:208:					self.manager.portable = True
+CMT/src/game_info.py:210:			elif self.manager.name == "Vortex":
+CMT/src/game_info.py:213:			if self.manager.game_path:
+CMT/src/game_info.py:214:				self.game_path = self.manager.game_path
+CMT/src/game_info.py:277:	def is_foog(self) -> bool:
+CMT/src/game_info.py:280:	def is_fong(self) -> bool:
+CMT/src/game_info.py:283:	def is_foogng(self) -> bool:
+CMT/src/game_info.py:286:	def is_foae(self) -> bool:
+CMT/src/game_info.py:289:	def is_fongae(self) -> bool:
+CMT/src/helpers.py:228:class DLLInfo(TypedDict):

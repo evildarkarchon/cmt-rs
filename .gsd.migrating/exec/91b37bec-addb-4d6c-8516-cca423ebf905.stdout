@@ -1,0 +1,11 @@
+
+running 6 tests
+test app::scanner_controller::tests::scanner_controller_autofix_production_catalog_hides_button_and_rejects_tampered_request ... ok
+test app::scanner_controller::tests::scanner_controller_autofix_fake_catalog_accepts_request_and_sets_fixing_state ... ok
+test app::scanner_controller::tests::scanner_controller_autofix_success_completion_sets_fixed_detail_and_row_state ... ok
+test app::scanner_controller::tests::scanner_controller_autofix_failure_completion_uses_safe_text_and_keeps_diagnostics_off_ui ... ok
+test app::scanner_controller::tests::scanner_controller_autofix_selection_change_and_new_scan_make_completion_stale ... ok
+test app::scanner_controller::tests::scanner_controller_autofix_worker_failure_maps_safe_message_without_diagnostics ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 275 filtered out; finished in 0.01s
+

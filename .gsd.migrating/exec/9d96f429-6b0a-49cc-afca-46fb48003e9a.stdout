@@ -1,0 +1,27 @@
+src/domain/mod.rs:64:        assert_type::<crate::domain::downgrader::DowngraderStatusRow>();
+src/domain/mod.rs:66:        assert_type::<crate::domain::downgrader::DowngraderPlanAction>();
+src/domain/mod.rs:67:        assert_type::<crate::domain::downgrader::DowngraderPlanRow>();
+src/domain/downgrader.rs:278:    pub const fn status_row(self, status: DowngraderInstallStatus) -> DowngraderStatusRow {
+src/domain/downgrader.rs:279:        DowngraderStatusRow {
+src/domain/downgrader.rs:290:pub struct DowngraderStatusRow {
+src/domain/downgrader.rs:301:impl DowngraderStatusRow {
+src/domain/downgrader.rs:332:pub enum DowngraderPlanAction {
+src/domain/downgrader.rs:343:impl DowngraderPlanAction {
+src/domain/downgrader.rs:375:pub struct DowngraderPlanRow {
+src/domain/downgrader.rs:387:    pub action: DowngraderPlanAction,
+src/domain/downgrader.rs:398:impl DowngraderPlanRow {
+src/domain/downgrader.rs:412:            action: DowngraderPlanAction::from_status(current_status, target),
+src/domain/downgrader.rs:423:            DowngraderPlanAction::SkipAlreadyDesired => Some(skipped_already_log_row(
+src/domain/downgrader.rs:427:            DowngraderPlanAction::SkipNotFound => {
+src/domain/downgrader.rs:430:            DowngraderPlanAction::SkipUnsupportedVersion => {
+src/domain/downgrader.rs:433:            DowngraderPlanAction::ValidateBackupOrPatch => None,
+src/domain/downgrader.rs:1018:            DowngraderPlanRow::from_definition(fallout4, DowngraderInstallStatus::NextGen, options);
+src/domain/downgrader.rs:1019:        assert_eq!(row.action, DowngraderPlanAction::ValidateBackupOrPatch);
+src/domain/downgrader.rs:1027:            DowngraderPlanRow::from_definition(fallout4, DowngraderInstallStatus::OldGen, options);
+src/domain/downgrader.rs:1028:        assert_eq!(already.action, DowngraderPlanAction::SkipAlreadyDesired);
+src/domain/downgrader.rs:1038:            DowngraderPlanAction::from_status(
+src/domain/downgrader.rs:1042:            DowngraderPlanAction::SkipNotFound
+src/domain/downgrader.rs:1045:            DowngraderPlanAction::from_status(
+src/domain/downgrader.rs:1049:            DowngraderPlanAction::SkipUnsupportedVersion
+src/domain/downgrader.rs:1052:            DowngraderPlanAction::from_status(
+src/domain/downgrader.rs:1056:            DowngraderPlanAction::ValidateBackupOrPatch

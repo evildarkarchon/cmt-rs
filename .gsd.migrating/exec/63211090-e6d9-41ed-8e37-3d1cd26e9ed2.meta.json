@@ -1,0 +1,18 @@
+{
+  "id": "63211090-e6d9-41ed-8e37-3d1cd26e9ed2",
+  "runtime": "bash",
+  "purpose": "compile check after removing unused imports",
+  "script_chars": 11,
+  "started_at": "2026-05-18T11:34:29.146Z",
+  "finished_at": "2026-05-18T11:35:11.223Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 42077,
+  "stdout_bytes": 0,
+  "stderr_bytes": 326,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\63211090-e6d9-41ed-8e37-3d1cd26e9ed2.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\63211090-e6d9-41ed-8e37-3d1cd26e9ed2.stderr"
+}
