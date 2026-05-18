@@ -103,6 +103,8 @@ pub enum ActionRejectionKind {
     InternalUtility,
     /// Known action had an invalid static input.
     InvalidInput,
+    /// The background worker boundary could not accept or finish the action.
+    WorkerUnavailable,
 }
 
 /// Safe action outcome returned by the service.
@@ -295,6 +297,89 @@ impl AboutActionFeedback {
     pub fn diagnostic(&self) -> Option<&str> {
         self.diagnostic.as_deref()
     }
+}
+
+/// Parses a Tools-tab callback id without touching platform adapters.
+///
+/// Unknown ids and disabled/internal utilities return the same safe feedback the
+/// full service would have produced, allowing UI callbacks to fail closed before
+/// scheduling background work.
+pub fn tools_action_for_id(action_id: &str) -> Result<ToolsActionKind, ToolsActionFeedback> {
+    let Some(entry) = find_tool_entry(action_id) else {
+        tracing::warn!(
+            event = "s05-tools-action-rejected",
+            surface = ActionSurface::Tools.label(),
+            action_id,
+            reason = "unknown-action",
+            "Tools action rejected because the id is unknown"
+        );
+        return Err(ToolsActionFeedback::rejected(
+            action_id,
+            None,
+            ActionRejectionKind::UnknownAction,
+            "Tools action is not available.",
+            Some(format!("unknown Tools action id: {action_id}")),
+        ));
+    };
+
+    if let Some(utility) = entry.deferred_utility() {
+        tracing::warn!(
+            event = "s05-tools-action-rejected",
+            surface = ActionSurface::Tools.label(),
+            action_id = entry.id.as_str(),
+            utility_key = utility.key,
+            reason = "disabled-utility",
+            "Tools utility action rejected because it is deferred"
+        );
+        return Err(ToolsActionFeedback::rejected(
+            entry.id.as_str(),
+            Some(ToolsActionKind::DeferredUtility(entry.id)),
+            ActionRejectionKind::DisabledUtility,
+            utility.status_text,
+            Some(format!("deferred Tools utility: {}", utility.key)),
+        ));
+    }
+
+    if entry.external_link().is_some() {
+        Ok(ToolsActionKind::ExternalLink(entry.id))
+    } else {
+        tracing::warn!(
+            event = "s05-tools-action-rejected",
+            surface = ActionSurface::Tools.label(),
+            action_id = entry.id.as_str(),
+            reason = "internal-utility",
+            "Tools action rejected because it has no external target"
+        );
+        Err(ToolsActionFeedback::rejected(
+            entry.id.as_str(),
+            Some(ToolsActionKind::DeferredUtility(entry.id)),
+            ActionRejectionKind::InternalUtility,
+            "Tools action does not have an external target.",
+            Some("known Tools action has no external link".to_owned()),
+        ))
+    }
+}
+
+/// Parses an About-tab callback id without touching desktop or clipboard adapters.
+pub fn about_action_for_id(action_id: &str) -> Result<AboutActionKind, AboutActionFeedback> {
+    let Some((_link, action)) = find_about_action(action_id) else {
+        tracing::warn!(
+            event = "s05-about-action-rejected",
+            surface = ActionSurface::About.label(),
+            action_id,
+            reason = "unknown-action",
+            "About action rejected because the id is unknown"
+        );
+        return Err(AboutActionFeedback::rejected(
+            action_id,
+            None,
+            ActionRejectionKind::UnknownAction,
+            "About action is not available.",
+            Some(format!("unknown About action id: {action_id}")),
+        ));
+    };
+
+    Ok(action)
 }
 
 /// Executes known Tools/About action ids through injected platform adapters.

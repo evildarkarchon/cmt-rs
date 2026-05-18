@@ -12,11 +12,15 @@ use std::{
 };
 
 use app::{
+    about_controller::{AboutController, AboutState, AboutTransitionResult},
     overview_controller::{
         OverviewController, action_target_label, overview_desktop_action_payload,
         overview_desktop_task, unavailable_action_error,
     },
     settings_controller::SettingsController,
+    tools_controller::{
+        TOOLS_DEFAULT_DISABLED_UTILITY_STATUS, ToolsController, ToolsState, ToolsTransitionResult,
+    },
 };
 use domain::{
     overview::{
@@ -27,8 +31,10 @@ use domain::{
         UpdateProvider,
     },
     settings::{AppSettings, UpdateSource},
+    tools::{ABOUT_LINKS, AboutLinkId},
 };
 use platform::{
+    clipboard::RealClipboardActions,
     desktop::RealDesktopActions,
     filesystem::RealFilesystem,
     process::RealProcessInspector,
@@ -45,15 +51,57 @@ use services::{
         OverviewCollectedFacts, OverviewCollectionEnvironment, OverviewCollectionRequest,
         OverviewCollector,
     },
+    tools::{
+        AboutActionFeedback, AboutActionKind, ActionRejectionKind, ToolsActionFeedback,
+        ToolsActionKind, ToolsActionService, about_action_for_id, tools_action_for_id,
+    },
     update::{OverviewLinkService, RealUpdateCheckClient, UpdateCheckService},
 };
 use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 use workers::{
-    BlockingWorkerResult, SlintEventLoopSink, WorkerEvent, WorkerEventSink, WorkerFailure,
-    WorkerPayload, WorkerRuntime, WorkerTaskOutcome,
+    AboutActionWorkerPayload, BlockingWorkerResult, SlintEventLoopSink, ToolsActionWorkerPayload,
+    WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+    WorkerTask, WorkerTaskKind, WorkerTaskOutcome,
 };
 
 slint::include_modules!();
+
+const TOOLS_WORKER_TASK_PREFIX: &str = "s05-tools-action:";
+const ABOUT_WORKER_TASK_PREFIX: &str = "s05-about-action:";
+const TOOLS_ACTION_START_ERROR: &str = "Tools action could not be started.";
+const ABOUT_ACTION_START_ERROR: &str = "About action could not be started.";
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum AboutCallbackKind {
+    Open,
+    Copy,
+}
+
+impl AboutCallbackKind {
+    const fn label(self) -> &'static str {
+        match self {
+            Self::Open => "open",
+            Self::Copy => "copy",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ToolsUiProjection {
+    last_action_error: String,
+    disabled_utility_status: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct AboutUiProjection {
+    last_action_error: String,
+    nexus_copy_label: String,
+    nexus_copy_enabled: bool,
+    discord_copy_label: String,
+    discord_copy_enabled: bool,
+    github_copy_label: String,
+    github_copy_enabled: bool,
+}
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
@@ -66,14 +114,32 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = MainWindow::new()?;
     let settings_controller = Rc::new(RefCell::new(load_settings_controller()));
     let overview_controller = Arc::new(Mutex::new(OverviewController::new()));
+    let tools_controller = Arc::new(Mutex::new(ToolsController::new()));
+    let about_controller = Arc::new(Mutex::new(AboutController::new()));
     let worker_runtime = WorkerRuntime::new();
 
     app.set_update_source(settings_controller.borrow().visible_update_source().into());
     app.set_log_level(settings_controller.borrow().visible_log_level().into());
     apply_current_overview_snapshot(&app, &overview_controller);
+    apply_current_tools_state(&app, &tools_controller);
+    apply_current_about_state(&app, &about_controller);
 
     let overview_sink = bind_overview_worker_sink(&app, Arc::clone(&overview_controller));
+    let tools_sink = bind_tools_worker_sink(&app, Arc::clone(&tools_controller));
+    let about_sink = bind_about_worker_sink(&app, Arc::clone(&about_controller));
     bind_settings_callbacks(&app, Rc::clone(&settings_controller));
+    bind_tools_callbacks(
+        &app,
+        Arc::clone(&tools_controller),
+        worker_runtime,
+        tools_sink.clone(),
+    );
+    bind_about_callbacks(
+        &app,
+        Arc::clone(&about_controller),
+        worker_runtime,
+        about_sink,
+    );
     bind_overview_callbacks(
         &app,
         Arc::clone(&overview_controller),
@@ -128,6 +194,202 @@ fn bind_settings_callbacks(
             let visible_value = controller.borrow_mut().select_log_level(selected.as_str());
             if let Some(app) = app.upgrade() {
                 app.set_log_level(visible_value.into());
+            }
+        }
+    });
+}
+
+fn bind_tools_worker_sink(
+    app: &MainWindow,
+    controller: Arc<Mutex<ToolsController>>,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let Some(app) = app.upgrade() else {
+            tracing::warn!(
+                event = "s05-tools-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Tools worker event arrived after the Slint window was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_tools_controller_mut(&controller, |controller| {
+            handle_tools_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        if result.is_applied() {
+            tracing::debug!(
+                event = "s05-tools-worker-event-applied",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Tools worker event applied to render state"
+            );
+            apply_current_tools_state(&app, &controller);
+        } else {
+            tracing::debug!(
+                event = "s05-tools-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Tools worker event ignored because it belongs to another surface"
+            );
+        }
+    })
+}
+
+fn bind_about_worker_sink(
+    app: &MainWindow,
+    controller: Arc<Mutex<AboutController>>,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let Some(app) = app.upgrade() else {
+            tracing::warn!(
+                event = "s05-about-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "About worker event arrived after the Slint window was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_about_controller_mut(&controller, |controller| {
+            handle_about_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        if result.is_applied() {
+            tracing::debug!(
+                event = "s05-about-worker-event-applied",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "About worker event applied to render state"
+            );
+            apply_current_about_state(&app, &controller);
+        } else {
+            tracing::debug!(
+                event = "s05-about-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "About worker event ignored because it belongs to another surface"
+            );
+        }
+    })
+}
+
+fn bind_tools_callbacks(
+    app: &MainWindow,
+    controller: Arc<Mutex<ToolsController>>,
+    worker_runtime: WorkerRuntime,
+    tools_sink: SlintEventLoopSink,
+) {
+    app.on_tool_action_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move |action_id| {
+            if let Some(app) = app.upgrade() {
+                request_tools_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    tools_sink.clone(),
+                    action_id.to_string(),
+                );
+            }
+        }
+    });
+}
+
+fn bind_about_callbacks(
+    app: &MainWindow,
+    controller: Arc<Mutex<AboutController>>,
+    worker_runtime: WorkerRuntime,
+    about_sink: SlintEventLoopSink,
+) {
+    app.on_about_open_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let about_sink = about_sink.clone();
+
+        move |action_id| {
+            if let Some(app) = app.upgrade() {
+                request_about_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    about_sink.clone(),
+                    action_id.to_string(),
+                    AboutCallbackKind::Open,
+                );
+            }
+        }
+    });
+
+    app.on_about_copy_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let about_sink = about_sink.clone();
+
+        move |action_id| {
+            if let Some(app) = app.upgrade() {
+                request_about_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    about_sink.clone(),
+                    action_id.to_string(),
+                    AboutCallbackKind::Copy,
+                );
+            }
+        }
+    });
+
+    app.on_about_copy_label_reset_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move |action_id| {
+            let action_id = action_id.to_string();
+            let Some(app) = app.upgrade() else {
+                tracing::warn!(
+                    event = "s05-about-copy-label-reset-dropped",
+                    action_id,
+                    "About copy-label reset arrived after the Slint window was gone"
+                );
+                return;
+            };
+
+            let Some(result) = with_about_controller_mut(&controller, |controller| {
+                controller.reset_copy_label(&action_id)
+            }) else {
+                return;
+            };
+
+            if result.is_applied() {
+                apply_current_about_state(&app, &controller);
+            } else {
+                tracing::debug!(
+                    event = "s05-about-copy-label-reset-ignored-at-runtime",
+                    action_id,
+                    "About copy-label reset id was not applied"
+                );
             }
         }
     });
@@ -280,6 +542,218 @@ fn bind_overview_callbacks(
             }
         }
     });
+}
+
+fn request_tools_action(
+    app: &MainWindow,
+    controller: &Arc<Mutex<ToolsController>>,
+    worker_runtime: WorkerRuntime,
+    tools_sink: SlintEventLoopSink,
+    action_id: String,
+) {
+    let action = match tools_action_for_id(&action_id) {
+        Ok(action @ ToolsActionKind::ExternalLink(_)) => action,
+        Ok(action @ ToolsActionKind::DeferredUtility(_)) => {
+            let feedback = ToolsActionFeedback::rejected(
+                action_id.as_str(),
+                Some(action),
+                ActionRejectionKind::DisabledUtility,
+                "Tools action is not available.",
+                Some("deferred Tools action reached runtime scheduler".to_owned()),
+            );
+            apply_tools_feedback(app, controller, feedback);
+            return;
+        }
+        Err(feedback) => {
+            tracing::warn!(
+                event = "s05-tools-action-preflight-rejected",
+                action_id = feedback.action_id.as_str(),
+                outcome = ?feedback.outcome,
+                diagnostic = feedback.diagnostic.as_deref().unwrap_or(""),
+                "Tools action failed closed before worker scheduling"
+            );
+            apply_tools_feedback(app, controller, feedback);
+            return;
+        }
+    };
+
+    tracing::info!(
+        event = "s05-tools-action-schedule",
+        action_id = action_id.as_str(),
+        action = ?action,
+        "Scheduling Tools action worker"
+    );
+
+    let task = tools_action_worker_task(&action_id);
+    let worker_action_id = action_id.clone();
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, tools_sink, move |_context| {
+        build_tools_action_payload(worker_action_id)
+    }) {
+        tracing::error!(
+            event = "s05-tools-action-spawn-failed",
+            action_id = action_id.as_str(),
+            error = %error,
+            "Tools action worker could not be scheduled"
+        );
+        apply_tools_feedback(
+            app,
+            controller,
+            tools_spawn_failed_feedback(&action_id, Some(action), error),
+        );
+    }
+}
+
+fn request_about_action(
+    app: &MainWindow,
+    controller: &Arc<Mutex<AboutController>>,
+    worker_runtime: WorkerRuntime,
+    about_sink: SlintEventLoopSink,
+    action_id: String,
+    callback_kind: AboutCallbackKind,
+) {
+    let action = match about_action_for_id(&action_id) {
+        Ok(action) if about_action_matches_callback(action, callback_kind) => action,
+        Ok(action) => {
+            let feedback = about_callback_mismatch_feedback(&action_id, action, callback_kind);
+            tracing::warn!(
+                event = "s05-about-action-callback-mismatch",
+                action_id = action_id.as_str(),
+                callback_kind = callback_kind.label(),
+                action_kind = if action.is_copy() { "copy" } else { "open" },
+                "About action failed closed because it arrived through the wrong callback"
+            );
+            apply_about_feedback(app, controller, feedback);
+            return;
+        }
+        Err(feedback) => {
+            tracing::warn!(
+                event = "s05-about-action-preflight-rejected",
+                action_id = feedback.action_id.as_str(),
+                callback_kind = callback_kind.label(),
+                outcome = ?feedback.outcome,
+                diagnostic = feedback.diagnostic.as_deref().unwrap_or(""),
+                "About action failed closed before worker scheduling"
+            );
+            apply_about_feedback(app, controller, feedback);
+            return;
+        }
+    };
+
+    tracing::info!(
+        event = "s05-about-action-schedule",
+        action_id = action_id.as_str(),
+        callback_kind = callback_kind.label(),
+        link_id = action.link_id().as_str(),
+        "Scheduling About action worker"
+    );
+
+    let task = about_action_worker_task(&action_id);
+    let worker_action_id = action_id.clone();
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, about_sink, move |_context| {
+        build_about_action_payload(worker_action_id)
+    }) {
+        tracing::error!(
+            event = "s05-about-action-spawn-failed",
+            action_id = action_id.as_str(),
+            callback_kind = callback_kind.label(),
+            error = %error,
+            "About action worker could not be scheduled"
+        );
+        apply_about_feedback(
+            app,
+            controller,
+            about_spawn_failed_feedback(&action_id, Some(action), error),
+        );
+    }
+}
+
+fn build_tools_action_payload(action_id: String) -> BlockingWorkerResult {
+    let service = ToolsActionService::new(RealDesktopActions::new(), RealClipboardActions::new());
+    let feedback = service.execute_tools_action(&action_id);
+    Ok(WorkerTaskOutcome::Completed(WorkerPayload::ToolsAction(
+        ToolsActionWorkerPayload::action_completed(feedback),
+    )))
+}
+
+fn build_about_action_payload(action_id: String) -> BlockingWorkerResult {
+    let service = ToolsActionService::new(RealDesktopActions::new(), RealClipboardActions::new());
+    let feedback = service.execute_about_action(&action_id);
+    Ok(WorkerTaskOutcome::Completed(WorkerPayload::AboutAction(
+        AboutActionWorkerPayload::action_completed(feedback),
+    )))
+}
+
+fn tools_action_worker_task(action_id: &str) -> WorkerTask {
+    WorkerTask::new(
+        format!("{TOOLS_WORKER_TASK_PREFIX}{action_id}"),
+        WorkerTaskKind::DesktopAction,
+    )
+    .with_label(format!("Tools action {action_id}"))
+}
+
+fn about_action_worker_task(action_id: &str) -> WorkerTask {
+    WorkerTask::new(
+        format!("{ABOUT_WORKER_TASK_PREFIX}{action_id}"),
+        WorkerTaskKind::DesktopAction,
+    )
+    .with_label(format!("About action {action_id}"))
+}
+
+fn tools_spawn_failed_feedback(
+    action_id: &str,
+    action: Option<ToolsActionKind>,
+    error: WorkerSpawnError,
+) -> ToolsActionFeedback {
+    ToolsActionFeedback::rejected(
+        action_id,
+        action,
+        ActionRejectionKind::WorkerUnavailable,
+        TOOLS_ACTION_START_ERROR,
+        Some(error.to_string()),
+    )
+}
+
+fn about_spawn_failed_feedback(
+    action_id: &str,
+    action: Option<AboutActionKind>,
+    error: WorkerSpawnError,
+) -> AboutActionFeedback {
+    AboutActionFeedback::rejected(
+        action_id,
+        action,
+        ActionRejectionKind::WorkerUnavailable,
+        ABOUT_ACTION_START_ERROR,
+        Some(error.to_string()),
+    )
+}
+
+fn about_action_matches_callback(
+    action: AboutActionKind,
+    callback_kind: AboutCallbackKind,
+) -> bool {
+    matches!(
+        (action, callback_kind),
+        (AboutActionKind::Open { .. }, AboutCallbackKind::Open)
+            | (AboutActionKind::Copy { .. }, AboutCallbackKind::Copy)
+    )
+}
+
+fn about_callback_mismatch_feedback(
+    action_id: &str,
+    action: AboutActionKind,
+    callback_kind: AboutCallbackKind,
+) -> AboutActionFeedback {
+    AboutActionFeedback::rejected(
+        action_id,
+        Some(action),
+        ActionRejectionKind::InvalidInput,
+        "About action is not available.",
+        Some(format!(
+            "About {} callback received a {} action id",
+            callback_kind.label(),
+            if action.is_copy() { "copy" } else { "open" }
+        )),
+    )
 }
 
 fn request_overview_refresh(
@@ -589,6 +1063,88 @@ fn apply_action_error(
     apply_current_overview_snapshot(app, overview_controller);
 }
 
+fn apply_tools_feedback(
+    app: &MainWindow,
+    controller: &Arc<Mutex<ToolsController>>,
+    feedback: ToolsActionFeedback,
+) {
+    with_tools_controller_mut(controller, |controller| {
+        controller.handle_feedback(feedback);
+    });
+    apply_current_tools_state(app, controller);
+}
+
+fn apply_about_feedback(
+    app: &MainWindow,
+    controller: &Arc<Mutex<AboutController>>,
+    feedback: AboutActionFeedback,
+) {
+    with_about_controller_mut(controller, |controller| {
+        controller.handle_feedback(feedback);
+    });
+    apply_current_about_state(app, controller);
+}
+
+fn handle_tools_worker_event(
+    controller: &mut ToolsController,
+    event: WorkerEvent,
+) -> ToolsTransitionResult {
+    if let Some(feedback) = tools_worker_failure_feedback_from_event(&event) {
+        return controller.handle_feedback(feedback);
+    }
+
+    controller.handle_worker_event(event)
+}
+
+fn handle_about_worker_event(
+    controller: &mut AboutController,
+    event: WorkerEvent,
+) -> AboutTransitionResult {
+    if let Some(feedback) = about_worker_failure_feedback_from_event(&event) {
+        return controller.handle_feedback(feedback);
+    }
+
+    controller.handle_worker_event(event)
+}
+
+fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+    let WorkerPayload::Error(failure) = &event.payload else {
+        return None;
+    };
+    let action_id = tools_action_id_from_task(&event.task)?;
+
+    Some(ToolsActionFeedback::rejected(
+        action_id,
+        tools_action_for_id(action_id).ok(),
+        ActionRejectionKind::WorkerUnavailable,
+        failure.safe_message.clone(),
+        failure.diagnostic.clone(),
+    ))
+}
+
+fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+    let WorkerPayload::Error(failure) = &event.payload else {
+        return None;
+    };
+    let action_id = about_action_id_from_task(&event.task)?;
+
+    Some(AboutActionFeedback::rejected(
+        action_id,
+        about_action_for_id(action_id).ok(),
+        ActionRejectionKind::WorkerUnavailable,
+        failure.safe_message.clone(),
+        failure.diagnostic.clone(),
+    ))
+}
+
+fn tools_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+    task.id.as_str().strip_prefix(TOOLS_WORKER_TASK_PREFIX)
+}
+
+fn about_action_id_from_task(task: &WorkerTask) -> Option<&str> {
+    task.id.as_str().strip_prefix(ABOUT_WORKER_TASK_PREFIX)
+}
+
 fn emit_worker_event_or_log<S>(sink: &S, event: WorkerEvent)
 where
     S: WorkerEventSink,
@@ -624,6 +1180,124 @@ fn with_overview_controller_mut<T>(
             None
         }
     }
+}
+
+fn with_tools_controller_mut<T>(
+    controller: &Arc<Mutex<ToolsController>>,
+    action: impl FnOnce(&mut ToolsController) -> T,
+) -> Option<T> {
+    match controller.lock() {
+        Ok(mut controller) => Some(action(&mut controller)),
+        Err(error) => {
+            tracing::error!(
+                event = "s05-tools-controller-lock-poisoned",
+                diagnostic = %error,
+                "Tools controller state is unavailable"
+            );
+            None
+        }
+    }
+}
+
+fn with_about_controller_mut<T>(
+    controller: &Arc<Mutex<AboutController>>,
+    action: impl FnOnce(&mut AboutController) -> T,
+) -> Option<T> {
+    match controller.lock() {
+        Ok(mut controller) => Some(action(&mut controller)),
+        Err(error) => {
+            tracing::error!(
+                event = "s05-about-controller-lock-poisoned",
+                diagnostic = %error,
+                "About controller state is unavailable"
+            );
+            None
+        }
+    }
+}
+
+fn apply_current_tools_state(app: &MainWindow, controller: &Arc<Mutex<ToolsController>>) {
+    let Some(projection) = with_tools_controller_mut(controller, |controller| {
+        project_tools_state(controller.state())
+    }) else {
+        return;
+    };
+    apply_tools_projection(app, &projection);
+}
+
+fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutController>>) {
+    let Some(projection) = with_about_controller_mut(controller, |controller| {
+        project_about_state(controller.state())
+    }) else {
+        return;
+    };
+    apply_about_projection(app, &projection);
+}
+
+fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
+    ToolsUiProjection {
+        last_action_error: state
+            .last_safe_error
+            .as_ref()
+            .map(|error| error.summary.clone())
+            .unwrap_or_default(),
+        disabled_utility_status: state
+            .disabled_utility_status
+            .clone()
+            .unwrap_or_else(|| TOOLS_DEFAULT_DISABLED_UTILITY_STATUS.to_owned()),
+    }
+}
+
+fn project_about_state(state: &AboutState) -> AboutUiProjection {
+    let nexus = about_copy_projection(state, AboutLinkId::Nexus);
+    let discord = about_copy_projection(state, AboutLinkId::Discord);
+    let github = about_copy_projection(state, AboutLinkId::Github);
+
+    AboutUiProjection {
+        last_action_error: state
+            .last_safe_error
+            .as_ref()
+            .map(|error| error.summary.clone())
+            .unwrap_or_default(),
+        nexus_copy_label: nexus.0,
+        nexus_copy_enabled: nexus.1,
+        discord_copy_label: discord.0,
+        discord_copy_enabled: discord.1,
+        github_copy_label: github.0,
+        github_copy_enabled: github.1,
+    }
+}
+
+fn about_copy_projection(state: &AboutState, link_id: AboutLinkId) -> (String, bool) {
+    if let Some(button) = state
+        .copy_buttons
+        .iter()
+        .find(|button| button.link_id == link_id)
+    {
+        return (button.label.clone(), button.enabled);
+    }
+
+    let fallback_label = ABOUT_LINKS
+        .iter()
+        .find(|link| link.id == link_id)
+        .map(|link| link.copy_button_label)
+        .unwrap_or_default();
+    (fallback_label.to_owned(), true)
+}
+
+fn apply_tools_projection(app: &MainWindow, projection: &ToolsUiProjection) {
+    app.set_tools_last_action_error(projection.last_action_error.as_str().into());
+    app.set_tools_disabled_utility_status(projection.disabled_utility_status.as_str().into());
+}
+
+fn apply_about_projection(app: &MainWindow, projection: &AboutUiProjection) {
+    app.set_about_last_action_error(projection.last_action_error.as_str().into());
+    app.set_about_nexus_copy_label(projection.nexus_copy_label.as_str().into());
+    app.set_about_nexus_copy_enabled(projection.nexus_copy_enabled);
+    app.set_about_discord_copy_label(projection.discord_copy_label.as_str().into());
+    app.set_about_discord_copy_enabled(projection.discord_copy_enabled);
+    app.set_about_github_copy_label(projection.github_copy_label.as_str().into());
+    app.set_about_github_copy_enabled(projection.github_copy_enabled);
 }
 
 fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<OverviewController>>) {
@@ -947,7 +1621,8 @@ mod tests {
     };
     use crate::domain::tools::{
         ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
-        ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, IMAGE_RESOURCE_PATHS, TOOL_GROUPS,
+        ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, AboutActionId, AboutLinkId,
+        IMAGE_RESOURCE_PATHS, TOOL_GROUPS, ToolActionId,
     };
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
@@ -1270,6 +1945,289 @@ mod tests {
             ],
         );
         assert_no_direct_urls_or_reference_tree("ui/main.slint", MAIN_SLINT);
+    }
+
+    #[test]
+    fn s05_runtime_wiring_tools_projection_uses_initial_status_and_safe_errors() {
+        let mut controller = ToolsController::new();
+
+        let initial = project_tools_state(controller.state());
+
+        assert_eq!(initial.last_action_error, "");
+        assert_eq!(
+            initial.disabled_utility_status,
+            TOOLS_DEFAULT_DISABLED_UTILITY_STATUS
+        );
+
+        controller.handle_feedback(ToolsActionFeedback::failed(
+            ToolActionId::BethiniPie.as_str(),
+            ToolsActionKind::ExternalLink(ToolActionId::BethiniPie),
+            crate::platform::PlatformOperation::OpenUrl,
+            crate::platform::PlatformErrorKind::UnsupportedPlatform,
+            "URL open is not supported on this platform.",
+            Some("raw OS diagnostic".to_owned()),
+        ));
+
+        let failed = project_tools_state(controller.state());
+
+        assert_eq!(
+            failed.last_action_error,
+            "URL open is not supported on this platform."
+        );
+        assert_eq!(
+            failed.disabled_utility_status,
+            TOOLS_DEFAULT_DISABLED_UTILITY_STATUS
+        );
+        assert!(!failed.last_action_error.contains("raw OS"));
+    }
+
+    #[test]
+    fn s05_runtime_wiring_about_projection_tracks_copy_success_and_reset() {
+        let mut controller = AboutController::new();
+
+        controller.handle_feedback(AboutActionFeedback::succeeded(
+            AboutActionId::CopyDiscord.as_str(),
+            AboutActionKind::Copy {
+                link_id: AboutLinkId::Discord,
+                action_id: AboutActionId::CopyDiscord,
+            },
+            "Copied to clipboard.",
+        ));
+
+        let copied = project_about_state(controller.state());
+
+        assert_eq!(copied.nexus_copy_label, ABOUT_COPY_LINK_LABEL);
+        assert!(copied.nexus_copy_enabled);
+        assert_eq!(copied.discord_copy_label, ABOUT_COPY_SUCCESS_LABEL);
+        assert!(!copied.discord_copy_enabled);
+        assert_eq!(copied.github_copy_label, ABOUT_COPY_LINK_LABEL);
+        assert!(copied.github_copy_enabled);
+
+        assert_eq!(
+            controller.reset_copy_label(AboutActionId::CopyDiscord.as_str()),
+            AboutTransitionResult::Applied
+        );
+        let reset = project_about_state(controller.state());
+
+        assert_eq!(reset.discord_copy_label, ABOUT_COPY_INVITE_LABEL);
+        assert!(reset.discord_copy_enabled);
+    }
+
+    #[test]
+    fn s05_runtime_wiring_callback_id_mapping_fails_closed_before_workers() {
+        let tools_unknown = tools_action_for_id("tools.open_arbitrary_url")
+            .expect_err("unknown Tools ids should fail closed");
+        assert_eq!(
+            tools_unknown.outcome,
+            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::UnknownAction)
+        );
+        assert_eq!(
+            tools_unknown.safe_message(),
+            "Tools action is not available."
+        );
+
+        let tools_deferred = tools_action_for_id(ToolActionId::DowngradeManager.as_str())
+            .expect_err("deferred Tools utilities should fail closed");
+        assert_eq!(
+            tools_deferred.outcome,
+            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
+        );
+
+        let open_action = about_action_for_id(AboutActionId::OpenGithub.as_str())
+            .expect("known About open action should parse");
+        assert!(about_action_matches_callback(
+            open_action,
+            AboutCallbackKind::Open
+        ));
+        assert!(!about_action_matches_callback(
+            open_action,
+            AboutCallbackKind::Copy
+        ));
+
+        let copy_action = about_action_for_id(AboutActionId::CopyGithub.as_str())
+            .expect("known About copy action should parse");
+        let mismatch = about_callback_mismatch_feedback(
+            AboutActionId::CopyGithub.as_str(),
+            copy_action,
+            AboutCallbackKind::Open,
+        );
+
+        assert_eq!(
+            mismatch.outcome,
+            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::InvalidInput)
+        );
+        assert_eq!(mismatch.safe_message(), "About action is not available.");
+    }
+
+    #[test]
+    fn s05_runtime_wiring_spawn_failure_feedback_maps_to_safe_errors() {
+        let tools_error = WorkerSpawnError::NoActiveRuntime {
+            task_id: workers::WorkerTaskId::new("tools-no-runtime"),
+        };
+        let tools_feedback = tools_spawn_failed_feedback(
+            ToolActionId::BethiniPie.as_str(),
+            Some(ToolsActionKind::ExternalLink(ToolActionId::BethiniPie)),
+            tools_error,
+        );
+
+        assert_eq!(
+            tools_feedback.outcome,
+            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::WorkerUnavailable)
+        );
+        assert_eq!(tools_feedback.safe_message(), TOOLS_ACTION_START_ERROR);
+        assert!(tools_feedback.diagnostic().is_some());
+
+        let about_error = WorkerSpawnError::NoActiveRuntime {
+            task_id: workers::WorkerTaskId::new("about-no-runtime"),
+        };
+        let about_feedback = about_spawn_failed_feedback(
+            AboutActionId::CopyNexus.as_str(),
+            about_action_for_id(AboutActionId::CopyNexus.as_str()).ok(),
+            about_error,
+        );
+
+        assert_eq!(
+            about_feedback.outcome,
+            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::WorkerUnavailable)
+        );
+        assert_eq!(about_feedback.safe_message(), ABOUT_ACTION_START_ERROR);
+        assert!(about_feedback.diagnostic().is_some());
+    }
+
+    #[test]
+    fn s05_runtime_wiring_worker_payloads_apply_and_unrelated_payloads_are_ignored() {
+        let mut tools = ToolsController::new();
+        let tools_event = WorkerEvent::completed(
+            tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+                ToolsActionFeedback::failed(
+                    ToolActionId::BethiniPie.as_str(),
+                    ToolsActionKind::ExternalLink(ToolActionId::BethiniPie),
+                    crate::platform::PlatformOperation::OpenUrl,
+                    crate::platform::PlatformErrorKind::UnsupportedPlatform,
+                    "URL open is not supported on this platform.",
+                    Some("raw desktop diagnostic".to_owned()),
+                ),
+            )),
+        );
+
+        assert_eq!(
+            handle_tools_worker_event(&mut tools, tools_event),
+            ToolsTransitionResult::Applied
+        );
+        assert_eq!(
+            project_tools_state(tools.state()).last_action_error,
+            "URL open is not supported on this platform."
+        );
+
+        let about_success = AboutActionFeedback::succeeded(
+            AboutActionId::CopyGithub.as_str(),
+            AboutActionKind::Copy {
+                link_id: AboutLinkId::Github,
+                action_id: AboutActionId::CopyGithub,
+            },
+            "Copied to clipboard.",
+        );
+        let unrelated_for_tools = WorkerEvent::completed(
+            about_action_worker_task(AboutActionId::CopyGithub.as_str()),
+            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(
+                about_success.clone(),
+            )),
+        );
+
+        assert_eq!(
+            handle_tools_worker_event(&mut tools, unrelated_for_tools),
+            ToolsTransitionResult::Ignored
+        );
+
+        let mut about = AboutController::new();
+        let about_event = WorkerEvent::completed(
+            about_action_worker_task(AboutActionId::CopyGithub.as_str()),
+            WorkerPayload::AboutAction(AboutActionWorkerPayload::action_completed(about_success)),
+        );
+
+        assert_eq!(
+            handle_about_worker_event(&mut about, about_event),
+            AboutTransitionResult::Applied
+        );
+        let about_projection = project_about_state(about.state());
+        assert_eq!(about_projection.github_copy_label, ABOUT_COPY_SUCCESS_LABEL);
+        assert!(!about_projection.github_copy_enabled);
+
+        let unrelated_for_about = WorkerEvent::completed(
+            tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+            WorkerPayload::ToolsAction(ToolsActionWorkerPayload::action_completed(
+                ToolsActionFeedback::succeeded(
+                    ToolActionId::BethiniPie.as_str(),
+                    ToolsActionKind::ExternalLink(ToolActionId::BethiniPie),
+                    "Opened URL.",
+                ),
+            )),
+        );
+
+        assert_eq!(
+            handle_about_worker_event(&mut about, unrelated_for_about),
+            AboutTransitionResult::Ignored
+        );
+    }
+
+    #[test]
+    fn s05_runtime_wiring_worker_failure_payloads_map_by_surface_task_prefix() {
+        let mut tools = ToolsController::new();
+        let tools_failure = WorkerEvent::failed(
+            tools_action_worker_task(ToolActionId::BethiniPie.as_str()),
+            WorkerFailure::new("Worker task panicked.").with_diagnostic("panic payload"),
+        );
+
+        assert_eq!(
+            handle_tools_worker_event(&mut tools, tools_failure),
+            ToolsTransitionResult::Applied
+        );
+        assert_eq!(
+            project_tools_state(tools.state()).last_action_error,
+            "Worker task panicked."
+        );
+
+        let mut about = AboutController::new();
+        let about_failure = WorkerEvent::failed(
+            about_action_worker_task(AboutActionId::OpenNexus.as_str()),
+            WorkerFailure::new("Worker task panicked.").with_diagnostic("panic payload"),
+        );
+
+        assert_eq!(
+            handle_about_worker_event(&mut about, about_failure),
+            AboutTransitionResult::Applied
+        );
+        assert_eq!(
+            project_about_state(about.state()).last_action_error,
+            "Worker task panicked."
+        );
+
+        let unrelated_failure = WorkerEvent::failed(
+            WorkerTask::new("other-surface", WorkerTaskKind::Generic),
+            WorkerFailure::new("Generic worker failed."),
+        );
+        assert_eq!(
+            handle_about_worker_event(&mut about, unrelated_failure),
+            AboutTransitionResult::Ignored
+        );
+    }
+
+    #[cfg(not(windows))]
+    #[test]
+    fn s05_runtime_wiring_non_windows_real_desktop_actions_fail_safely() {
+        use crate::platform::{PlatformErrorKind, desktop::DesktopActions};
+
+        let result = RealDesktopActions::new().open_url("https://example.invalid/cmt");
+
+        assert_eq!(
+            result.failure_kind(),
+            Some(PlatformErrorKind::UnsupportedPlatform)
+        );
+        assert_eq!(
+            result.safe_message(),
+            "URL open is not supported on this platform."
+        );
     }
 
     #[test]
