@@ -1,0 +1,18 @@
+{
+  "id": "0dff9193-3924-4be5-b60b-dfd68517fa04",
+  "runtime": "bash",
+  "purpose": "Quality gate cargo test full after T04 runtime wiring",
+  "script_chars": 10,
+  "started_at": "2026-05-18T02:09:25.996Z",
+  "finished_at": "2026-05-18T02:09:34.657Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8661,
+  "stdout_bytes": 18160,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0dff9193-3924-4be5-b60b-dfd68517fa04.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0dff9193-3924-4be5-b60b-dfd68517fa04.stderr"
+}

@@ -1,0 +1,127 @@
+src/workers/mod.rs:    CancellationToken, ExternalActionKind, ExternalActionOutcome, ExternalActionPayload,
+src/services/update.rs:    platform::desktop::{DesktopActionResult, DesktopActions},
+src/services/update.rs:    result: DesktopActionResult,
+src/services/update.rs:        fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResult {
+src/services/update.rs:                DesktopActionResult::failure(PlatformError::new(
+src/services/update.rs:                DesktopActionResult::success(operation, target)
+src/services/update.rs:        fn open_url(&self, url: &str) -> DesktopActionResult {
+src/services/update.rs:            self.run(PlatformOperation::OpenUrl, url.to_owned())
+src/services/update.rs:        fn open_path(&self, path: &Path) -> DesktopActionResult {
+src/services/update.rs:            self.run(PlatformOperation::OpenPath, path.display().to_string())
+src/services/update.rs:        fn launch_tool(&self, executable: &Path, _args: &[String]) -> DesktopActionResult {
+src/services/update.rs:                PlatformOperation::LaunchTool,
+src/services/update.rs:                PlatformOperation::OpenUrl,
+src/services/update.rs:                PlatformOperation::OpenPath,
+src/services/overview.rs:                    PlatformOperation::ListProcesses,
+src/services/overview.rs:                PlatformOperation::ReadSystemMetadata,
+src/services/overview_collector.rs:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/overview_collector.rs:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/overview_collector.rs:                        PlatformOperation::ReadFile,
+src/services/overview_collector.rs:                    PlatformOperation::ReadFile,
+src/services/overview_collector.rs:                    Err(Self::permission_denied(path, PlatformOperation::ReadFile))
+src/services/overview_collector.rs:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/services/overview_collector.rs:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/services/overview_collector.rs:                    PlatformOperation::ReadVersionMetadata,
+src/platform/desktop.rs://! UI callbacks should receive [`DesktopActionResult`] values from this module
+src/platform/desktop.rs:pub struct DesktopActionResult {
+src/platform/desktop.rs:impl DesktopActionResult {
+src/platform/desktop.rs:    fn open_url(&self, url: &str) -> DesktopActionResult;
+src/platform/desktop.rs:    fn open_path(&self, path: &Path) -> DesktopActionResult;
+src/platform/desktop.rs:    fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult;
+src/platform/desktop.rs:    fn open_url(&self, url: &str) -> DesktopActionResult {
+src/platform/desktop.rs:    fn open_path(&self, path: &Path) -> DesktopActionResult {
+src/platform/desktop.rs:    fn launch_tool(&self, executable: &Path, args: &[String]) -> DesktopActionResult {
+src/platform/desktop.rs:fn open_real_url(url: &str) -> DesktopActionResult {
+src/platform/desktop.rs:    DesktopActionResult::failure(PlatformError::unsupported(
+src/platform/desktop.rs:        PlatformOperation::OpenUrl,
+src/platform/desktop.rs:fn open_real_path(path: &Path) -> DesktopActionResult {
+src/platform/desktop.rs:    DesktopActionResult::failure(PlatformError::unsupported(
+src/platform/desktop.rs:        PlatformOperation::OpenPath,
+src/platform/desktop.rs:fn launch_real_tool(executable: &Path, _args: &[String]) -> DesktopActionResult {
+src/platform/desktop.rs:    DesktopActionResult::failure(PlatformError::unsupported(
+src/platform/desktop.rs:        PlatformOperation::LaunchTool,
+src/platform/desktop.rs:fn open_real_url(url: &str) -> DesktopActionResult {
+src/platform/desktop.rs:    hand_to_windows_shell(PlatformOperation::OpenUrl, url)
+src/platform/desktop.rs:fn open_real_path(path: &Path) -> DesktopActionResult {
+src/platform/desktop.rs:    hand_to_windows_shell(PlatformOperation::OpenPath, &path.display().to_string())
+src/platform/desktop.rs:fn hand_to_windows_shell(operation: PlatformOperation, target: &str) -> DesktopActionResult {
+src/platform/desktop.rs:        DesktopActionResult::success(operation, target.to_owned())
+src/platform/desktop.rs:        DesktopActionResult::failure(PlatformError::command_failed(
+src/platform/desktop.rs:fn launch_real_tool(executable: &Path, args: &[String]) -> DesktopActionResult {
+src/platform/desktop.rs:        Ok(_) => DesktopActionResult::success(
+src/platform/desktop.rs:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:        Err(error) => DesktopActionResult::failure(PlatformError::from_io(
+src/platform/desktop.rs:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:        fn run(&self, operation: PlatformOperation, target: String) -> DesktopActionResult {
+src/platform/desktop.rs:                DesktopActionResult::failure(PlatformError::new(
+src/platform/desktop.rs:                DesktopActionResult::success(operation, target)
+src/platform/desktop.rs:        fn open_url(&self, url: &str) -> DesktopActionResult {
+src/platform/desktop.rs:            self.run(PlatformOperation::OpenUrl, url.to_owned())
+src/platform/desktop.rs:        fn open_path(&self, path: &Path) -> DesktopActionResult {
+src/platform/desktop.rs:            self.run(PlatformOperation::OpenPath, path.display().to_string())
+src/platform/desktop.rs:        fn launch_tool(&self, executable: &Path, _args: &[String]) -> DesktopActionResult {
+src/platform/desktop.rs:                PlatformOperation::LaunchTool,
+src/platform/desktop.rs:        assert_eq!(result.operation, PlatformOperation::OpenUrl);
+src/platform/desktop.rs:            PlatformOperation::LaunchTool,
+src/platform/desktop.rs:        assert_eq!(result.operation, PlatformOperation::LaunchTool);
+src/workers/events.rs:        desktop::{DesktopActionOutcome, DesktopActionResult},
+src/workers/events.rs:    ExternalAction(ExternalActionPayload),
+src/workers/events.rs:pub struct ExternalActionPayload {
+src/workers/events.rs:impl ExternalActionPayload {
+src/workers/events.rs:impl From<DesktopActionResult> for ExternalActionPayload {
+src/workers/events.rs:    fn from(result: DesktopActionResult) -> Self {
+src/workers/events.rs:            PlatformOperation::OpenUrl | PlatformOperation::OpenPath => ExternalActionKind::Desktop,
+src/workers/events.rs:            PlatformOperation::LaunchTool => ExternalActionKind::Tool,
+src/workers/events.rs:            DesktopActionResult::success(PlatformOperation::OpenUrl, "https://example.invalid/cmt");
+src/workers/events.rs:        let success_payload = ExternalActionPayload::from(success);
+src/workers/events.rs:        assert_eq!(success_payload.operation, PlatformOperation::OpenUrl);
+src/workers/events.rs:        let failure = DesktopActionResult::failure(PlatformError::command_failed(
+src/workers/events.rs:            PlatformOperation::LaunchTool,
+src/workers/events.rs:        let failure_payload = ExternalActionPayload::from(failure);
+src/workers/events.rs:        assert_eq!(failure_payload.operation, PlatformOperation::LaunchTool);
+src/platform/mod.rs:            PlatformOperation::LaunchTool,
+src/platform/mod.rs:        assert_type::<crate::platform::desktop::DesktopActionResult>();
+src/platform/filesystem.rs:                    PlatformOperation::ReadMetadata,
+src/platform/filesystem.rs:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:                PlatformOperation::ReadFile,
+src/platform/filesystem.rs:                PlatformOperation::ReadDirectory,
+src/platform/filesystem.rs:                    PlatformOperation::ReadDirectory,
+src/platform/filesystem.rs:                    PlatformOperation::ReadMetadata,
+src/platform/filesystem.rs:        PlatformError::from_io(PlatformOperation::WalkDirectory, target, io_error)
+src/platform/filesystem.rs:        PlatformError::command_failed(PlatformOperation::WalkDirectory, target, error.to_string())
+src/platform/filesystem.rs:            let node = self.node(path, PlatformOperation::ReadMetadata)?;
+src/platform/filesystem.rs:            match self.node(path, PlatformOperation::ReadFile)? {
+src/platform/filesystem.rs:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:                    PlatformOperation::ReadFile,
+src/platform/filesystem.rs:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/platform/filesystem.rs:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/platform/filesystem.rs:        assert_eq!(error.operation, PlatformOperation::ReadMetadata);
+src/platform/filesystem.rs:        assert_eq!(error.operation, PlatformOperation::ReadFile);
+src/platform/process.rs:        PlatformOperation::ListProcesses,
+src/platform/process.rs:        PlatformOperation::ReadVersionMetadata,
+src/platform/process.rs:        PlatformOperation::ReadSystemMetadata,
+src/platform/process.rs:            PlatformOperation::ReadVersionMetadata,
+src/platform/process.rs:                PlatformOperation::ReadSystemMetadata,
+src/platform/process.rs:        assert_eq!(error.operation, PlatformOperation::ReadSystemMetadata);
+src/services/discovery.rs:                        PlatformOperation::ReadFile,
+src/services/discovery.rs:            match self.node(path, PlatformOperation::ReadMetadata)? {
+src/services/discovery.rs:            match self.node(path, PlatformOperation::ReadFile)? {
+src/services/discovery.rs:                    PlatformOperation::ReadFile,
+src/services/discovery.rs:                    PlatformOperation::ReadFile,
+src/services/discovery.rs:            self.node(path, PlatformOperation::ReadDirectory)?;
+src/services/discovery.rs:            self.node(path, PlatformOperation::WalkDirectory)?;
+src/services/discovery.rs:                    PlatformOperation::ReadRegistry,
+src/platform/registry.rs:        PlatformOperation::ReadRegistry,
+src/platform/registry.rs:                PlatformOperation::ReadRegistry,
+src/platform/registry.rs:            PlatformOperation::ReadRegistry,
+src/platform/registry.rs:                    PlatformOperation::ReadRegistry,
+src/platform/registry.rs:        assert_eq!(error.operation, PlatformOperation::ReadRegistry);
+src/platform/registry.rs:        assert_eq!(error.operation, PlatformOperation::ReadRegistry);

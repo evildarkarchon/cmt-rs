@@ -1,0 +1,18 @@
+{
+  "id": "ffd81e97-5482-47a9-aec5-498fb308aea4",
+  "runtime": "bash",
+  "purpose": "format T02 Rust changes",
+  "script_chars": 9,
+  "started_at": "2026-05-18T01:34:03.202Z",
+  "finished_at": "2026-05-18T01:34:03.779Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 577,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\ffd81e97-5482-47a9-aec5-498fb308aea4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\ffd81e97-5482-47a9-aec5-498fb308aea4.stderr"
+}

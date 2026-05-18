@@ -5,6 +5,7 @@
 //! pure domain state here without putting that logic in Slint markup.
 
 pub mod discovery;
+pub mod f4se;
 pub mod mod_manager;
 pub mod overview;
 pub mod settings;
@@ -38,6 +39,12 @@ mod tests {
         assert_type::<crate::domain::overview::OverviewSnapshot>();
         assert_type::<crate::domain::overview::OverviewProblem>();
         assert_type::<crate::domain::overview::UpdateBannerState>();
+        assert_type::<crate::domain::f4se::F4seGameTarget>();
+        assert_type::<crate::domain::f4se::F4seDllFacts>();
+        assert_type::<crate::domain::f4se::F4seCompatibilityCell>();
+        assert_type::<crate::domain::f4se::F4seDllRow>();
+        assert_type::<crate::domain::f4se::F4seScanSnapshot>();
+        assert_type::<crate::domain::f4se::F4seScanStatus>();
         assert_type::<crate::domain::tools::ToolGroup>();
         assert_type::<crate::domain::tools::ToolEntry>();
         assert_type::<crate::domain::tools::ToolActionId>();

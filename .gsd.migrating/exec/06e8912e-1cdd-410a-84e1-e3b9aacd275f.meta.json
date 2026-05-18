@@ -1,0 +1,18 @@
+{
+  "id": "06e8912e-1cdd-410a-84e1-e3b9aacd275f",
+  "runtime": "bash",
+  "purpose": "Quality gate cargo fmt check after T04 runtime wiring",
+  "script_chars": 17,
+  "started_at": "2026-05-18T02:07:42.210Z",
+  "finished_at": "2026-05-18T02:07:42.659Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 449,
+  "stdout_bytes": 2674,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\06e8912e-1cdd-410a-84e1-e3b9aacd275f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\06e8912e-1cdd-410a-84e1-e3b9aacd275f.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "6574d641-bd28-4bd5-bb83-b3e8e446f5e7",
+  "runtime": "bash",
+  "purpose": "S05 closeout verification: cargo fmt --check",
+  "script_chars": 17,
+  "started_at": "2026-05-18T02:14:52.029Z",
+  "finished_at": "2026-05-18T02:14:52.492Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 463,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6574d641-bd28-4bd5-bb83-b3e8e446f5e7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6574d641-bd28-4bd5-bb83-b3e8e446f5e7.stderr"
+}

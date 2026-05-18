@@ -1,0 +1,18 @@
+{
+  "id": "66ae84e9-3722-49c6-89af-27a9be59ac56",
+  "runtime": "bash",
+  "purpose": "S05 source markers for link constants, tests, assets excluding vendored Python",
+  "script_chars": 658,
+  "started_at": "2026-05-18T00:51:50.469Z",
+  "finished_at": "2026-05-18T00:51:50.656Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 187,
+  "stdout_bytes": 10990,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\66ae84e9-3722-49c6-89af-27a9be59ac56.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\66ae84e9-3722-49c6-89af-27a9be59ac56.stderr"
+}

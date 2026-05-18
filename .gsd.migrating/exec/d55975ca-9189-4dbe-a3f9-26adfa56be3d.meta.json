@@ -1,0 +1,18 @@
+{
+  "id": "d55975ca-9189-4dbe-a3f9-26adfa56be3d",
+  "runtime": "bash",
+  "purpose": "S05 closeout cargo verification gates",
+  "script_chars": 1102,
+  "started_at": "2026-05-18T02:14:00.629Z",
+  "finished_at": "2026-05-18T02:14:01.239Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 610,
+  "stdout_bytes": 414,
+  "stderr_bytes": 273,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d55975ca-9189-4dbe-a3f9-26adfa56be3d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d55975ca-9189-4dbe-a3f9-26adfa56be3d.stderr"
+}

@@ -1,0 +1,4 @@
+missing src/platform/clipboard.rs
+missing src/services/tools.rs
+missing src/app/tools_controller.rs
+missing src/app/about_controller.rs

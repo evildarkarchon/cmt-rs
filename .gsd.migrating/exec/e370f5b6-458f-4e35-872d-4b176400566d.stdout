@@ -1,0 +1,65 @@
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\common\about-slint.slint
+18 source: Palette.color-scheme == ColorScheme.dark ? @image-url("MadeWithSlint-logo-dark.svg") : @image-url("MadeWithSlint-logo-light.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cosmic\lineedit.slint
+54 source: @image-url("_edit_clear_symbolic.svg");
+65 show-password-image: @image-url("_view_reveal.svg");
+66 hide-password-image: @image-url("_view_conceal.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cosmic\menu.slint
+69 sub-menu-icon: @image-url("_arrow_forward.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cosmic\styling.slint
+71 out property <image> arrow-down: @image-url("_arrow_down.svg");
+72 out property <image> arrow-up: @image-url("_arrow_up.svg");
+73 out property <image> check-mark: @image-url("_check-mark.svg");
+74 out property <image> dropdown: @image-url("_pane_down.svg");
+75 out property <image> keyboard: @image-url("_keyboard.svg");
+76 out property <image> clock: @image-url("_clock.svg");
+77 out property <image> arrow-back: @image-url("_arrow_back.svg");
+78 out property <image> arrow-forward: @image-url("_arrow_forward.svg");
+79 out property <image> edit: @image-url("_edit.svg");
+80 out property <image> calendar: @image-url("_calendar.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cupertino\lineedit.slint
+70 show-password-image: @image-url("_visibility.svg");
+71 hide-password-image: @image-url("_visibility_off.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cupertino\menu.slint
+69 sub-menu-icon: @image-url("_arrow_forward.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\cupertino\styling.slint
+116 out property <image> arrow-down: @image-url("_arrow-down.svg");
+117 out property <image> arrow-up: @image-url("_arrow-up.svg");
+118 out property <image> check-mark: @image-url("_check-mark.svg");
+119 out property <image> chevron-down: @image-url("_chevron-down.svg");
+120 out property <image> chevron-up: @image-url("_chevron-up.svg");
+121 out property <image> down: @image-url("_down.svg");
+122 out property <image> dropdown: @image-url("_dropdown.svg");
+123 out property <image> left: @image-url("_left.svg");
+124 out property <image> right: @image-url("_right.svg");
+125 out property <image> up: @image-url("_up.svg");
+126 out property <image> keyboard: @image-url("_keyboard.svg");
+127 out property <image> clock: @image-url("_clock.svg");
+128 out property <image> arrow-back: @image-url("_arrow_back.svg");
+129 out property <image> arrow-forward: @image-url("_arrow_forward.svg");
+130 out property <image> edit: @image-url("_edit.svg");
+131 out property <image> calendar: @image-url("_calendar.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\fluent\lineedit.slint
+61 source: @image-url("_dismiss.svg");
+72 show-password-image: @image-url("_eye_show.svg");
+73 hide-password-image: @image-url("_eye_hide.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\fluent\menu.slint
+75 sub-menu-icon: @image-url("_arrow_forward.svg");
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-compiler-1.16.1\widgets\fluent\styling.slint
+91 out property <image> arrow-down: @image-url("_arrow-down.svg");
+92 out property <image> arrow-up: @image-url("_arrow-up.svg");
+93 out property <image> check-mark: @image-url("_check-mark.svg");
+94 out property <image> chevron-down: @image-url("_chevron-down.svg");
+95 out property <image> chevron-up: @image-url("_chevron-up.svg");
+96 out property <image> down: @image-url("_down.svg");
+97 out property <image> dropdown: @image-url("_dropdown.svg");
+98 out property <image> left: @image-url("_left.svg");
+99 out property <image> right: @image-url("_right.svg");
+100 out property <image> up: @image-url("_up.svg");
+101 out property <image> keyboard: @image-url("_keyboard.svg");
+102 out property <image> clock: @image-url("_clock.svg");
+103 out property <image> arrow-back: @image-url("_arrow_back.svg");
+104 out property <image> arrow-forward: @image-url("_arrow_forward.svg");
+105 out property <image> edit: @image-url("_edit.svg");
+106 out property <image> calendar: @image-url("_calendar.svg");
+image_url_files 10

@@ -1,0 +1,18 @@
+{
+  "id": "e96e3a1c-5c3c-4832-acc1-f62b49305f52",
+  "runtime": "bash",
+  "purpose": "S05 closeout verification: cargo clippy --all-targets --all-features",
+  "script_chars": 41,
+  "started_at": "2026-05-18T02:15:18.378Z",
+  "finished_at": "2026-05-18T02:15:26.859Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8481,
+  "stdout_bytes": 0,
+  "stderr_bytes": 72,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e96e3a1c-5c3c-4832-acc1-f62b49305f52.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e96e3a1c-5c3c-4832-acc1-f62b49305f52.stderr"
+}

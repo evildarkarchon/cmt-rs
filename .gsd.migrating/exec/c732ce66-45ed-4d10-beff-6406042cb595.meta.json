@@ -1,0 +1,18 @@
+{
+  "id": "c732ce66-45ed-4d10-beff-6406042cb595",
+  "runtime": "python",
+  "purpose": "Check local Slint clipboard API availability",
+  "script_chars": 909,
+  "started_at": "2026-05-18T01:02:30.586Z",
+  "finished_at": "2026-05-18T01:02:36.253Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 5667,
+  "stdout_bytes": 110,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c732ce66-45ed-4d10-beff-6406042cb595.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c732ce66-45ed-4d10-beff-6406042cb595.stderr"
+}

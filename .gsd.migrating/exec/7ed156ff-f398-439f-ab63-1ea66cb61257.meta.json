@@ -1,0 +1,18 @@
+{
+  "id": "7ed156ff-f398-439f-ab63-1ea66cb61257",
+  "runtime": "python",
+  "purpose": "Search project and Slint examples for Timer syntax",
+  "script_chars": 658,
+  "started_at": "2026-05-18T01:04:03.707Z",
+  "finished_at": "2026-05-18T01:04:07.034Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 3327,
+  "stdout_bytes": 5635,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7ed156ff-f398-439f-ab63-1ea66cb61257.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7ed156ff-f398-439f-ab63-1ea66cb61257.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "7209436d-e479-44e1-9c78-10271f400cbd",
+  "runtime": "bash",
+  "purpose": "S05 Slint image syntax examples from local project/vendor only",
+  "script_chars": 377,
+  "started_at": "2026-05-18T00:52:34.295Z",
+  "finished_at": "2026-05-18T00:52:34.452Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 157,
+  "stdout_bytes": 94,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7209436d-e479-44e1-9c78-10271f400cbd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7209436d-e479-44e1-9c78-10271f400cbd.stderr"
+}

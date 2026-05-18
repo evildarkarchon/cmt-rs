@@ -1,0 +1,2 @@
+256:- Validation: S02 verifies persisted JSON keys and values for `log_level`, `update_source`, scanner toggles, and downgrader settings through typed domain/store tests plus full Rust gates.
+307:| R007 | core-capability | validated | S02 | none | S02 verifies persisted JSON keys and values for `log_level`, `update_source`, scanner toggles, and downgrader settings through typed domain/store tests plus full Rust gates. |

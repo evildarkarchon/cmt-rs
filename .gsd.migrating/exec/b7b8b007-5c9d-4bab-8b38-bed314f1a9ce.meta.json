@@ -1,0 +1,18 @@
+{
+  "id": "b7b8b007-5c9d-4bab-8b38-bed314f1a9ce",
+  "runtime": "bash",
+  "purpose": "verification: full cargo test after T03 Slint tabs",
+  "script_chars": 10,
+  "started_at": "2026-05-18T01:50:35.976Z",
+  "finished_at": "2026-05-18T01:50:44.401Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8425,
+  "stdout_bytes": 17550,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b7b8b007-5c9d-4bab-8b38-bed314f1a9ce.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b7b8b007-5c9d-4bab-8b38-bed314f1a9ce.stderr"
+}

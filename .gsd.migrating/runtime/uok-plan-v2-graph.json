@@ -1,5 +1,5 @@
 {
-  "compiledAt": "2026-05-18T00:19:02.057Z",
+  "compiledAt": "2026-05-18T02:13:11.265Z",
   "milestoneId": "M001",
   "pipeline": {
     "clarifyRoundLimit": 3,
@@ -363,6 +363,116 @@
         "unitType": "complete-slice",
         "unitId": "M001.S04",
         "title": "S04",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S05:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        "src/domain/tools.rs",
+        "src/domain/mod.rs",
+        "resources/images/icon-256.png",
+        "resources/images/logo-nexusmods.png",
+        "resources/images/logo-discord.png",
+        "resources/images/logo-github.png"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S05.T01",
+        "title": "Added a pure Tools/About reference contract module, exported it, and copied the required About image assets into Rust-owned resources.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S05:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S05:T01"
+      ],
+      "writes": [
+        "Cargo.toml",
+        "Cargo.lock",
+        "src/platform/mod.rs",
+        "src/platform/desktop.rs",
+        "src/platform/clipboard.rs",
+        "src/services/mod.rs",
+        "src/services/tools.rs",
+        "src/app/mod.rs",
+        "src/app/tools_controller.rs",
+        "src/app/about_controller.rs",
+        "src/workers/events.rs",
+        "src/workers/mod.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S05.T02",
+        "title": "Added fakeable Tools/About action services, clipboard boundary, pure reducers, and owned worker payloads with safe feedback.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S05:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S05:T02"
+      ],
+      "writes": [
+        "ui/tools_tab.slint",
+        "ui/about_tab.slint",
+        "ui/main.slint",
+        "src/main.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S05.T03",
+        "title": "Replaced the Tools and About Slint placeholders with reference-shaped tabs, safe status surfaces, stable action-id callbacks, image assets, copy timers, and source-contract tests.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S05:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S05:T03"
+      ],
+      "writes": [
+        "src/main.rs",
+        "src/services/tools.rs",
+        "src/app/tools_controller.rs"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S05.T04",
+        "title": "Wired the real MainWindow Tools/About callbacks through fail-closed preflight, background workers, production desktop/clipboard adapters, and Slint state projection.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S05:T05",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S05:T04"
+      ],
+      "writes": [],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S05.T05",
+        "title": "Verified S05 full cargo gates and confirmed the CMT reference submodule is clean.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S05",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S05:T05"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S05",
+        "title": "S05",
         "status": "pending"
       }
     }

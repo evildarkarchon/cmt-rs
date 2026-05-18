@@ -1,0 +1,18 @@
+{
+  "id": "37df8d65-bd1e-452f-b282-26f6b80d1da4",
+  "runtime": "bash",
+  "purpose": "S05 Rust module inventory",
+  "script_chars": 158,
+  "started_at": "2026-05-18T00:52:42.253Z",
+  "finished_at": "2026-05-18T00:52:42.366Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 772,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\37df8d65-bd1e-452f-b282-26f6b80d1da4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\37df8d65-bd1e-452f-b282-26f6b80d1da4.stderr"
+}

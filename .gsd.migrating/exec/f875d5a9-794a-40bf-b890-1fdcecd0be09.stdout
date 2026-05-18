@@ -1,0 +1,98 @@
+Assets under CMT reference:
+- CMT/src/assets/images/check-20.png
+- CMT/src/assets/images/icon-256.png
+- CMT/src/assets/images/icon-32.png
+- CMT/src/assets/images/info-16.png
+- CMT/src/assets/images/logo-discord.png
+- CMT/src/assets/images/logo-github.png
+- CMT/src/assets/images/logo-nexusmods.png
+- CMT/src/assets/images/refresh-32.png
+- CMT/src/assets/images/update-24.png
+- CMT/src/assets/images/warning-16.png
+
+Rust-owned assets currently:
+- ./Python/pythoncore-3.14-64/Doc/html/_images/datetime-inheritance.svg
+- ./Python/pythoncore-3.14-64/Doc/html/_images/hashlib-blake2-tree.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/kde_example.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_01_introduction.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_02_readme.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_03_license.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_04_installation_type.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_05_custom_install.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_06_summary.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_07_applications.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_08_install_certificates.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/mac_installer_09_custom_install_free_threaded.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/pathlib-inheritance.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/tk_msg.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/turtle-star.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/win_install_freethreaded.png
+- ./Python/pythoncore-3.14-64/Doc/html/_images/win_installer.png
+- ./Python/pythoncore-3.14-64/Doc/html/_static/file.png
+- ./Python/pythoncore-3.14-64/Doc/html/_static/minus.png
+- ./Python/pythoncore-3.14-64/Doc/html/_static/og-image.png
+- ./Python/pythoncore-3.14-64/Doc/html/_static/plus.png
+- ./Python/pythoncore-3.14-64/Doc/html/_static/py.svg
+- ./Python/pythoncore-3.14-64/Lib/idlelib/Icons/idle.ico
+- ./Python/pythoncore-3.14-64/Lib/idlelib/Icons/idle_16.png
+- ./Python/pythoncore-3.14-64/Lib/idlelib/Icons/idle_256.png
+- ./Python/pythoncore-3.14-64/Lib/idlelib/Icons/idle_32.png
+- ./Python/pythoncore-3.14-64/Lib/idlelib/Icons/idle_48.png
+- ./Python/pythoncore-3.14-64/tcl/tk8.6/demos/images/earthmenu.png
+- ./Python/pythoncore-3.14-64/tcl/tk8.6/demos/images/ouster.png
+
+Existing modules/tests mentioning tools/about/clipboard:
+src/main.rs:262:                    "Downgrade Manager is reserved for a later port phase.".to_owned(),
+src/main.rs:278:                    "Archive Patcher is reserved for a later port phase.".to_owned(),
+src/main.rs:656:        deferred_action_label(
+src/main.rs:665:        deferred_action_status(
+src/main.rs:668:            "Downgrade Manager",
+src/main.rs:673:        deferred_action_label(
+src/main.rs:682:        deferred_action_status(
+src/main.rs:685:            "Archive Patcher",
+src/main.rs:869:fn deferred_action_label(
+src/main.rs:881:fn deferred_action_status(
+src/main.rs:973:            "ToolsTab",
+src/main.rs:985:            "AboutTab",
+src/main.rs:1132:            OVERVIEW_SLINT.contains("Deferred until the Downgrade Manager workflow is ported.")
+src/main.rs:1134:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:1139:    fn overview_projection_rows_lock_reference_order_and_deferred_status() {
+src/main.rs:1173:            deferred_action_label(
+src/main.rs:1178:            "Downgrade Manager..."
+src/main.rs:1181:            deferred_action_label(
+src/main.rs:1186:            "Archive Patcher..."
+src/main.rs:1189:            deferred_action_status(
+src/main.rs:1192:                "Downgrade Manager",
+src/main.rs:1194:            "Deferred until the Downgrade Manager workflow is ported."
+ui/overview_tab.slint:148:    in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+ui/overview_tab.slint:150:    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+ui/overview_tab.slint:151:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/overview_tab.slint:153:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/main.slint:5:import { ToolsTab } from "tools_tab.slint";
+ui/main.slint:7:import { AboutTab } from "about_tab.slint";
+ui/main.slint:26:    in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+ui/main.slint:28:    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+ui/main.slint:29:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/main.slint:31:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/main.slint:105:            ToolsTab {}
+ui/main.slint:124:            AboutTab {}
+ui/tools_tab.slint:1:export component ToolsTab inherits Rectangle {
+ui/about_tab.slint:1:export component AboutTab inherits Rectangle {
+src/domain/overview.rs:101:pub const ACTION_DOWNGRADE_MANAGER_LABEL: &str = "Downgrade Manager...";
+src/domain/overview.rs:103:pub const ACTION_ARCHIVE_PATCHER_LABEL: &str = "Archive Patcher...";
+src/domain/overview.rs:109:pub const GITHUB_LINK: &str = "https://github.com/wxMichael/Collective-Modding-Toolkit";
+src/domain/overview.rs:271:    /// Optional deferred action tied to the row, such as opening the game path.
+src/domain/overview.rs:546:/// Binary panel summary, including the deferred Downgrade Manager utility.
+src/domain/overview.rs:857:            Self::Github => GITHUB_LINK,
+src/domain/overview.rs:1006:    /// Open the Downgrade Manager utility.
+src/domain/overview.rs:1008:    /// Open the Archive Patcher utility.
+src/domain/overview.rs:1016:/// Target data needed to execute a deferred action later.
+src/domain/overview.rs:1408:    pub fn deferred_action_labels(&self) -> Vec<&str> {
+src/domain/overview.rs:1513:            snapshot.deferred_action_labels(),
+src/domain/overview.rs:1514:            vec!["Downgrade Manager...", "Archive Patcher..."]
+src/domain/overview.rs:1669:            OverviewDeferredActionTarget::Url(GITHUB_LINK.to_owned())
+src/services/update.rs:820:        domain::overview::GITHUB_LINK,
+src/services/update.rs:1041:            OverviewDeferredActionTarget::Url(GITHUB_LINK.to_owned())
+src/services/update.rs:1142:                GITHUB_LINK,
+src/services/overview.rs:339:/// Success or failure result for a deferred desktop action.
+src/services/overview.rs:1400:            OverviewDeferredActionTarget::Url(crate::domain::overview::GITHUB_LINK.to_owned())

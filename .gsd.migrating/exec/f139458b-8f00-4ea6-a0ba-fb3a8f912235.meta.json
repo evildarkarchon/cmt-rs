@@ -1,0 +1,18 @@
+{
+  "id": "f139458b-8f00-4ea6-a0ba-fb3a8f912235",
+  "runtime": "bash",
+  "purpose": "run clippy after S05 Tools/About domain contract",
+  "script_chars": 41,
+  "started_at": "2026-05-18T01:16:07.450Z",
+  "finished_at": "2026-05-18T01:16:23.699Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16249,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f139458b-8f00-4ea6-a0ba-fb3a8f912235.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f139458b-8f00-4ea6-a0ba-fb3a8f912235.stderr"
+}

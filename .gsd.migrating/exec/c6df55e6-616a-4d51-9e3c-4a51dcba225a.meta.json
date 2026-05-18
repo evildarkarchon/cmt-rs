@@ -1,0 +1,18 @@
+{
+  "id": "c6df55e6-616a-4d51-9e3c-4a51dcba225a",
+  "runtime": "bash",
+  "purpose": "summarize cargo lock arboard presence",
+  "script_chars": 45,
+  "started_at": "2026-05-18T01:19:37.980Z",
+  "finished_at": "2026-05-18T01:19:38.065Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 85,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c6df55e6-616a-4d51-9e3c-4a51dcba225a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c6df55e6-616a-4d51-9e3c-4a51dcba225a.stderr"
+}

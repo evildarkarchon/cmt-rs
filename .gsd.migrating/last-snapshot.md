@@ -1,0 +1,10 @@
+# GSD context snapshot (2026-05-18T02:51:02.113Z)
+
+## Top project memories
+- [MEM003] (pattern) Settings UI persistence is mediated by SettingsController, which owns the last successfully persisted AppSettings snapshot. Slint callbacks optimistically change the visible property, then Rust saves and returns the value Slint must display, allowing failed writes to revert the UI to persisted state.
+- [MEM009] (architecture) Platform OS access is isolated behind fakeable traits in src/platform. Real discovery/open adapters should use crate/native APIs where practical and return typed PlatformError or DesktopActionResult values; non-Windows real adapters intentionally return UnsupportedPlatform while domain models and fake-backed tests remain cross-platform.
+- [MEM013] (pattern) Background work in this port should emit owned WorkerEvent envelopes through WorkerEventSink implementations. Use RecordingEventSink in tests and SlintEventLoopSink for UI handoff so worker closures never mutate Slint component handles or models directly.
+- [MEM025] (pattern) S04 established the Overview data-flow pattern: pure domain `OverviewSnapshot` and Slint-free `OverviewController`, adapter-backed collection/update/link services, owned worker payloads, and UI mutation only through the Slint event-loop sink. Future tabs should preserve this separation so filesystem, network, and desktop work remain fakeable and non-blocking.
+- [MEM014] (pattern) For S03 discovery work, keep pure domain contracts, platform facts, and service orchestration separate: domain modules do not touch OS/Slint, platform access goes through fakeable traits, and DiscoveryService records ordered attempts/manager steps without showing UI prompts. MO2 configuration failures are intentionally manager-specific and should not be hidden by falling through to unrelated game-path sources.
+- [MEM002] (gotcha) Settings-tab UI intentionally exposes a `Warning` log-level radio even though `CMT/src/tabs/_settings.py` lists only Debug/Info/Error; the Rust port derive
+…[truncated]

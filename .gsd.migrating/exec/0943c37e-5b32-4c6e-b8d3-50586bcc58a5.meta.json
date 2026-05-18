@@ -1,0 +1,18 @@
+{
+  "id": "0943c37e-5b32-4c6e-b8d3-50586bcc58a5",
+  "runtime": "bash",
+  "purpose": "locate copy_text_button reference behavior",
+  "script_chars": 210,
+  "started_at": "2026-05-18T01:39:10.516Z",
+  "finished_at": "2026-05-18T01:39:10.623Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 107,
+  "stdout_bytes": 701,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0943c37e-5b32-4c6e-b8d3-50586bcc58a5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0943c37e-5b32-4c6e-b8d3-50586bcc58a5.stderr"
+}

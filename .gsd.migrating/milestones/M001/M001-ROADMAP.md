@@ -24,7 +24,7 @@
 - [x] **S04: S04** `risk:medium` `depends:[]`
   > After this: User can see Overview game, binary, archive, module, and update status panels populated from typed discovery and diagnostics.
 
-- [ ] **S05: Tools Shell, Links & About** `risk:medium` `depends:[S04]`
+- [x] **S05: S05** `risk:medium` `depends:[]`
   > After this: User can open Tools and About, see reference groupings/attribution, launch static links or utility entry points, and receive visible failure feedback.
 
 - [ ] **S06: F4SE Diagnostics** `risk:medium` `depends:[S05]`

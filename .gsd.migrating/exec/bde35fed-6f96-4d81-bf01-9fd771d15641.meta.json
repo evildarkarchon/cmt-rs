@@ -1,0 +1,18 @@
+{
+  "id": "bde35fed-6f96-4d81-bf01-9fd771d15641",
+  "runtime": "bash",
+  "purpose": "Find S05-related requirements by text",
+  "script_chars": 119,
+  "started_at": "2026-05-18T02:16:25.196Z",
+  "finished_at": "2026-05-18T02:16:25.289Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 93,
+  "stdout_bytes": 424,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bde35fed-6f96-4d81-bf01-9fd771d15641.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bde35fed-6f96-4d81-bf01-9fd771d15641.stderr"
+}

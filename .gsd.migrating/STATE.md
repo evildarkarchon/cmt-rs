@@ -1,7 +1,7 @@
 # GSD State
 
 **Active Milestone:** M001: Initial Port
-**Active Slice:** S05: Tools Shell, Links & About
+**Active Slice:** S06: F4SE Diagnostics
 **Phase:** planning
 **Requirements Status:** 42 active · 12 validated · 0 deferred · 0 out of scope
 
@@ -15,4 +15,4 @@
 - None
 
 ## Next Action
-Slice S05 has no DB tasks. Plan slice tasks before execution.
+Slice S06 has no DB tasks. Plan slice tasks before execution.

@@ -1,0 +1,18 @@
+{
+  "id": "c2022290-bf2a-4472-9512-2ebd6f2acfdf",
+  "runtime": "bash",
+  "purpose": "focused T02 s05 action tests",
+  "script_chars": 22,
+  "started_at": "2026-05-18T01:34:06.867Z",
+  "finished_at": "2026-05-18T01:34:45.571Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 38704,
+  "stdout_bytes": 1806,
+  "stderr_bytes": 702,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c2022290-bf2a-4472-9512-2ebd6f2acfdf.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c2022290-bf2a-4472-9512-2ebd6f2acfdf.stderr"
+}

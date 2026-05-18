@@ -1,0 +1,18 @@
+{
+  "id": "f44f0264-6eb7-4be3-825f-f775bc658b86",
+  "runtime": "bash",
+  "purpose": "full cargo test after T02 action layer",
+  "script_chars": 10,
+  "started_at": "2026-05-18T01:35:25.244Z",
+  "finished_at": "2026-05-18T01:35:57.102Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 31858,
+  "stdout_bytes": 17253,
+  "stderr_bytes": 295,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f44f0264-6eb7-4be3-825f-f775bc658b86.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f44f0264-6eb7-4be3-825f-f775bc658b86.stderr"
+}

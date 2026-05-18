@@ -1,0 +1,35 @@
+Cargo.toml: exists=True file=True size=848
+build.rs: exists=True file=True size=100
+ui/main.slint: exists=True file=True size=5841
+ui/tools_tab.slint: exists=True file=True size=492
+ui/about_tab.slint: exists=True file=True size=492
+ui/overview_tab.slint: exists=True file=True size=10266
+src/main.rs: exists=True file=True size=46239
+src/domain/mod.rs: exists=True file=True size=1824
+src/platform/mod.rs: exists=True file=True size=9836
+src/platform/desktop.rs: exists=True file=True size=9401
+src/workers/events.rs: exists=True file=True size=24972
+src/workers/handoff.rs: exists=True file=True size=6804
+src/workers/mod.rs: exists=True file=True size=16987
+src/app/mod.rs: exists=True file=True size=1314
+src/app/overview_controller.rs: exists=True file=True size=26350
+CMT/src/tabs/_tools.py: exists=True file=True size=5521
+CMT/src/tabs/_about.py: exists=True file=True size=4085
+CMT/src/globals.py: exists=True file=True size=12943
+CMT/src/utils.py: exists=True file=True size=12554
+CMT/src/assets/images/icon-256.png: exists=True file=True size=71572
+CMT/src/assets/images/logo-nexusmods.png: exists=True file=True size=9235
+CMT/src/assets/images/logo-discord.png: exists=True file=True size=3288
+CMT/src/assets/images/logo-github.png: exists=True file=True size=4025
+resources/images/icon-256.png: exists=False file=False size=-
+resources/images/logo-nexusmods.png: exists=False file=False size=-
+resources/images/logo-discord.png: exists=False file=False size=-
+resources/images/logo-github.png: exists=False file=False size=-
+
+Top src dirs:
+src/app files ['src\\app\\mod.rs', 'src\\app\\overview_controller.rs', 'src\\app\\settings_controller.rs']
+src/domain files ['src\\domain\\discovery.rs', 'src\\domain\\mod.rs', 'src\\domain\\mod_manager.rs', 'src\\domain\\overview.rs', 'src\\domain\\settings.rs']
+src/platform files ['src\\platform\\desktop.rs', 'src\\platform\\filesystem.rs', 'src\\platform\\mod.rs', 'src\\platform\\process.rs', 'src\\platform\\registry.rs', 'src\\platform\\settings_store.rs']
+src/services files ['src\\services\\discovery.rs', 'src\\services\\mod.rs', 'src\\services\\overview.rs', 'src\\services\\overview_collector.rs', 'src\\services\\update.rs']
+src/workers files ['src\\workers\\events.rs', 'src\\workers\\handoff.rs', 'src\\workers\\mod.rs']
+ui files ['ui\\about_tab.slint', 'ui\\f4se_tab.slint', 'ui\\main.slint', 'ui\\overview_tab.slint', 'ui\\scanner_tab.slint', 'ui\\settings_tab.slint', 'ui\\tools_tab.slint']

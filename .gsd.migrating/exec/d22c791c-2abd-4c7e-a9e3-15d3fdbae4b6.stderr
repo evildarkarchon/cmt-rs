@@ -1,0 +1,23 @@
+[WARNING] Failed to read unmanaged installs: expected str, bytes or os.PathLike object, not NoneType
+Traceback (most recent call last):
+  File "<string>", line 12, in <module>
+    d=ast.literal_eval(assign.value)
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 106, in literal_eval
+    return _convert(node_or_string)
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 95, in _convert
+    return dict(zip(map(_convert, node.keys),
+                    map(_convert, node.values)))
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 84, in _convert
+    return tuple(map(_convert, node.elts))
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 84, in _convert
+    return tuple(map(_convert, node.elts))
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 105, in _convert
+    return _convert_signed_num(node)
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 79, in _convert_signed_num
+    return _convert_num(node)
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 70, in _convert_num
+    _raise_malformed_node(node)
+    ~~~~~~~~~~~~~~~~~~~~~^^^^^^
+  File "J:\cmt-rs\Python\pythoncore-3.14-64\Lib\ast.py", line 67, in _raise_malformed_node
+    raise ValueError(msg + f': {node!r}')
+ValueError: malformed node or string on line 82: Lambda(args=arguments(posonlyargs=[], args=[], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[]), body=Call(func=Name(id='Downgrader', ctx=Load(...)), args=[Attribute(value=Attribute(...), attr='root', ctx=Load(...)), Attribute(value=Name(...), attr='cmc', ctx=Load(...))], keywords=[]))

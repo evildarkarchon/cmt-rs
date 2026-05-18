@@ -1,0 +1,18 @@
+{
+  "id": "0a3bde12-08b4-4d05-b6e0-abd89273286e",
+  "runtime": "python",
+  "purpose": "S05 current-code surface summary for Tools/About research",
+  "script_chars": 929,
+  "started_at": "2026-05-18T00:50:24.300Z",
+  "finished_at": "2026-05-18T00:50:24.438Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 138,
+  "stdout_bytes": 51514,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0a3bde12-08b4-4d05-b6e0-abd89273286e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0a3bde12-08b4-4d05-b6e0-abd89273286e.stderr"
+}

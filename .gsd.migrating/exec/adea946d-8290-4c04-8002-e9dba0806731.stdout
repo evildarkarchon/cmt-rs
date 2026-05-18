@@ -1,0 +1,10 @@
+
+running 5 tests
+test domain::tools::tests::s05_reference_contract_about_title_credit_links_and_copy_labels_match_reference ... ok
+test domain::tools::tests::s05_reference_contract_tool_urls_help_text_and_hints_match_reference ... ok
+test domain::tools::tests::s05_reference_contract_tool_group_labels_and_button_order_match_reference ... ok
+test domain::tools::tests::s05_reference_contract_deferred_utilities_are_disabled_and_ids_are_unique ... ok
+test domain::tools::tests::s05_reference_contract_image_resources_are_rust_owned_and_present ... ok
+
+test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 143 filtered out; finished in 0.01s
+

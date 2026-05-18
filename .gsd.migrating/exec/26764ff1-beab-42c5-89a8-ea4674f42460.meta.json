@@ -1,0 +1,18 @@
+{
+  "id": "26764ff1-beab-42c5-89a8-ea4674f42460",
+  "runtime": "bash",
+  "purpose": "compile check after exporting S05 Tools/About domain module",
+  "script_chars": 11,
+  "started_at": "2026-05-18T01:15:45.577Z",
+  "finished_at": "2026-05-18T01:15:59.361Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 13784,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\26764ff1-beab-42c5-89a8-ea4674f42460.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\26764ff1-beab-42c5-89a8-ea4674f42460.stderr"
+}

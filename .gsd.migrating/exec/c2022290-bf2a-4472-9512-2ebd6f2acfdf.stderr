@@ -1,0 +1,18 @@
+    Updating crates.io index
+     Locking 4 packages to latest Rust 1.95.0 compatible versions
+      Adding arboard v3.6.1
+      Adding lock_api v0.4.14
+      Adding parking_lot v0.12.5
+      Adding parking_lot_core v0.9.12
+ Downloading crates ...
+  Downloaded lock_api v0.4.14
+  Downloaded parking_lot_core v0.9.12
+  Downloaded parking_lot v0.12.5
+  Downloaded arboard v3.6.1
+   Compiling parking_lot_core v0.9.12
+   Compiling lock_api v0.4.14
+   Compiling parking_lot v0.12.5
+   Compiling arboard v3.6.1
+   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 41.40s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-bf976a11ac674446)

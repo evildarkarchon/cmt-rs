@@ -1,0 +1,18 @@
+src/workers/events.rs:767:                AboutActionFeedback, AboutActionKind, ActionRejectionKind, ToolsActionFeedback,
+src/workers/events.rs:774:            ActionRejectionKind::DisabledUtility,
+src/app/tools_controller.rs:8:    services::tools::{ActionOutcome, ActionRejectionKind, ToolsActionFeedback, ToolsActionKind},
+src/app/tools_controller.rs:96:            ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
+src/app/tools_controller.rs:97:            | ActionOutcome::Rejected(ActionRejectionKind::InternalUtility)
+src/app/tools_controller.rs:176:            ActionRejectionKind::DisabledUtility,
+src/services/tools.rs:97:pub enum ActionRejectionKind {
+src/services/tools.rs:114:    Rejected(ActionRejectionKind),
+src/services/tools.rs:164:        kind: ActionRejectionKind,
+src/services/tools.rs:251:        kind: ActionRejectionKind,
+src/services/tools.rs:328:                ActionRejectionKind::UnknownAction,
+src/services/tools.rs:346:                ActionRejectionKind::DisabledUtility,
+src/services/tools.rs:363:                ActionRejectionKind::InternalUtility,
+src/services/tools.rs:393:                ActionRejectionKind::UnknownAction,
+src/services/tools.rs:424:                        ActionRejectionKind::InvalidInput,
+src/services/tools.rs:852:            ActionOutcome::Rejected(ActionRejectionKind::UnknownAction)
+src/services/tools.rs:860:            ActionOutcome::Rejected(ActionRejectionKind::UnknownAction)
+src/services/tools.rs:880:            ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)

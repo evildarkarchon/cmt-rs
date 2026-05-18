@@ -1,0 +1,87 @@
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-backend-winit-1.16.1\clipboard.rs
+4: use copypasta::ClipboardProvider;
+7: pub type ClipboardPair = (Box<dyn ClipboardProvider>, Box<dyn ClipboardProvider>);
+9: pub fn select_clipboard(
+10: pair: &mut ClipboardPair,
+11: clipboard: i_slint_core::platform::Clipboard,
+12: ) -> Option<&mut dyn ClipboardProvider> {
+13: match clipboard {
+14: i_slint_core::platform::Clipboard::DefaultClipboard => Some(pair.0.as_mut()),
+15: i_slint_core::platform::Clipboard::SelectionClipboard => Some(pair.1.as_mut()),
+20: pub fn create_clipboard(
+22: ) -> ClipboardPair {
+23: // Provide a truly silent no-op clipboard context, as copypasta's NoopClipboard spams stdout with
+25: struct SilentClipboardContext;
+26: impl ClipboardProvider for SilentClipboardContext {
+54: let clipboard = unsafe { copypasta::wayland_clipboard::create_clipboards_from_external(wayland.display.as_ptr()) };
+55: return (Box::new(clipboard.1), Box::new(clipboard.0));
+59: use copypasta::x11_clipboard::{X11ClipboardContext, Primary, Clipboard};
+60: let prim = X11ClipboardContext::<Primary>::new()
+62: Box::new(SilentClipboardContext) as Box<dyn ClipboardProvider>,
+63: |x| Box::new(x) as Box<dyn ClipboardProvider>,
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-backend-winit-1.16.1\lib.rs
+27: mod clipboard;
+533: clipboard: std::cell::RefCell<clipboard::ClipboardPair>,
+606: let clipboard = crate::clipboard::create_clipboard(
+618: clipboard: RefCell::new(clipboard),
+909: fn set_clipboard_text(&self, text: &str, clipboard: i_slint_core::platform::Clipboard) {
+910: crate::wasm_input_helper::set_clipboard_text(text.into(), clipboard);
+914: fn set_clipboard_text(&self, text: &str, clipboard: i_slint_core::platform::Clipboard) {
+915: let mut pair = self.shared_data.clipboard.borrow_mut();
+916: if let Some(clipboard) = clipboard::select_clipboard(&mut pair, clipboard) {
+917: clipboard.set_contents(text.into()).ok();
+922: fn clipboard_text(&self, clipboard: i_slint_core::platform::Clipboard) -> Option<String> {
+923: crate::wasm_input_helper::get_clipboard_text(clipboard)
+927: fn clipboard_text(&self, clipboard: i_slint_core::platform::Clipboard) -> Option<String> {
+928: let mut pair = self.shared_data.clipboard.borrow_mut();
+929: clipboard::select_clipboard(&mut pair, clipboard).and_then(|c| c.get_contents().ok())
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-backend-winit-1.16.1\wasm_input_helper.rs
+73: h.add_event_listener("paste", move |e: web_sys::ClipboardEvent| {
+75: let Some(text) = e.clipboard_data().and_then(|data| data.get_data("text").ok())
+80: let synthetic_clipboard_data = RefCell::new(text);
+81: CURRENT_WASM_CLIPBOARD_DATA.set(&synthetic_clipboard_data, || {
+97: h.add_event_listener("copy", move |e: web_sys::ClipboardEvent| {
+101: let synthetic_clipboard_data = RefCell::new(String::default());
+102: CURRENT_WASM_CLIPBOARD_DATA.set(&synthetic_clipboard_data, || {
+115: if let Some(data) = e.clipboard_data() {
+116: data.set_data("text", &synthetic_clipboard_data.into_inner()).ok();
+122: h.add_event_listener("cut", move |e: web_sys::ClipboardEvent| {
+137: if let Some(data) = e.clipboard_data() {
+328: scoped_tls_hkt::scoped_thread_local!(static CURRENT_WASM_CLIPBOARD_DATA : for<'a> &'a RefCell<String>);
+330: pub(crate) fn set_clipboard_text(data: String, clipboard: i_slint_core::platform::Clipboard) {
+331: if CURRENT_WASM_CLIPBOARD_DATA.is_set()
+332: && matches!(clipboard, i_slint_core::platform::Clipboard::DefaultClipboard)
+334: CURRENT_WASM_CLIPBOARD_DATA.with(|current_data| *current_data.borrow_mut() = data)
+338: pub(crate) fn get_clipboard_text(clipboard: i_slint_core::platform::Clipboard) -> Option<String> {
+339: if CURRENT_WASM_CLIPBOARD_DATA.is_set()
+340: && matches!(clipboard, i_slint_core::platform::Clipboard::DefaultClipboard)
+342: Some(CURRENT_WASM_CLIPBOARD_DATA.with(|current_data| current_data.borrow().clone()))
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-core-1.16.1\platform.rs
+124: /// Sends the given text into the system clipboard.
+126: /// If the platform doesn't support the specified clipboard, this function should do nothing
+127: fn set_clipboard_text(&self, _text: &str, _clipboard: Clipboard) {}
+129: /// Returns a copy of text stored in the system clipboard, if any.
+131: /// If the platform doesn't support the specified clipboard, the function should return None
+132: fn clipboard_text(&self, _clipboard: Clipboard) -> Option<String> {
+158: /// The clip board, used in [`Platform::clipboard_text`] and [Platform::set_clipboard_text`]
+162: pub enum Clipboard {
+163: /// This is the default clipboard used for text action for Ctrl+V,  Ctrl+C.
+164: /// Corresponds to the secondary clipboard on X11.
+166: DefaultClipboard = 0,
+168: /// This is the clipboard that is used when text is selected
+169: /// Corresponds to the primary clipboard on X11.
+171: SelectionClipboard = 1,
+C:\Users\evild\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\i-slint-core-1.16.1\items\text.rs
+26: use crate::platform::Clipboard;
+888: self.copy_clipboard(window_adapter, Clipboard::SelectionClipboard);
+899: // We trigger the callbacks because paste_clipboard might not if there is no clipboard
+904: self.paste_clipboard(window_adapter, self_rc, Clipboard::SelectionClipboard);
+1950: self.copy_clipboard(w, Clipboard::DefaultClipboard);
+1953: fn copy_clipboard(
+1956: clipboard: Clipboard,
+1967: .set_clipboard_text(&text[anchor..cursor], clipboard);
+1971: self.paste_clipboard(window_adapter, self_rc, Clipboard::DefaultClipboard);
+1974: fn paste_clipboard(
+1978: clipboard: Clipboard,
+1983: .clipboard_text(clipboard)
+files_with_clipboard 5

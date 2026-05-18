@@ -1,0 +1,21 @@
+
+running 16 tests
+test platform::clipboard::tests::s05_actions_real_clipboard_rejects_empty_text_before_os_access ... ok
+test app::tools_controller::tests::s05_actions_tools_controller_applies_failures_as_safe_error_banners ... ok
+test app::tools_controller::tests::s05_actions_tools_controller_sets_disabled_status_without_error_banner ... ok
+test app::tools_controller::tests::s05_actions_tools_controller_ignores_about_worker_payloads ... ok
+test platform::clipboard::tests::s05_actions_clipboard_result_keeps_diagnostics_out_of_safe_text ... ok
+test workers::events::tests::s05_actions_worker_payload_round_trips_tools_and_about_feedback ... ok
+test app::about_controller::tests::s05_actions_about_controller_failure_sets_safe_error_without_raw_diagnostic ... ok
+test app::about_controller::tests::s05_actions_about_controller_ignores_tools_worker_payloads_and_unknown_resets ... ok
+test app::about_controller::tests::s05_actions_about_controller_copy_success_sets_only_target_label_and_reset_restores ... ok
+test services::tools::tests::s05_actions_disabled_utilities_are_rejected_without_launching ... ok
+test services::tools::tests::s05_actions_unknown_action_ids_are_rejected_without_adapter_calls ... ok
+test services::tools::tests::s05_actions_about_clipboard_success_copies_only_reference_url ... ok
+test services::tools::tests::s05_actions_tools_open_success_uses_static_url ... ok
+test services::tools::tests::s05_actions_tools_desktop_open_failure_returns_safe_message_and_diagnostic ... ok
+test services::tools::tests::s05_actions_unsupported_clipboard_adapter_failure_is_safe ... ok
+test services::tools::tests::s05_actions_about_clipboard_failure_returns_safe_message_and_diagnostic ... ok
+
+test result: ok. 16 passed; 0 failed; 0 ignored; 0 measured; 148 filtered out; finished in 0.01s
+
