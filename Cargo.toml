@@ -1,8 +1,9 @@
 [package]
-name = "cmt-rs"
-version = "0.1.0"
-edition = "2024"
 build = "build.rs"
+edition = "2024"
+name = "cmt-rs"
+rust-version = "1.85.0"
+version = "0.1.0"
 
 [dependencies]
 anyhow = "1.0.102"
@@ -10,20 +11,20 @@ arboard = "3.6.1"
 crc32fast = "1.5.0"
 directories = "6.0.0"
 pelite = "0.10.0"
-reqwest = { version = "0.13.3", default-features = false, features = ["json", "rustls"] }
-serde = { version = "1.0.228", features = ["derive"] }
+reqwest = {version = "0.13.3", default-features = false, features = ["json", "rustls"]}
+serde = {version = "1.0.228", features = ["derive"]}
 serde_json = "1.0.149"
 slint = "1.16.1"
-thiserror = "2.0.18"
 sysinfo = "0.39.2"
-tokio = { version = "1.52.3", features = ["rt-multi-thread", "macros", "sync"] }
+thiserror = "2.0.18"
+tokio = {version = "1.52.3", features = ["rt-multi-thread", "macros", "sync"]}
 toml = "1.1.2"
 tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+tracing-subscriber = {version = "0.3.23", features = ["env-filter"]}
 walkdir = "2.5.0"
 
 [target.'cfg(windows)'.dependencies]
-windows = { version = "0.62.2", features = ["Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"] }
+windows = {version = "0.62.2", features = ["Win32_Storage_FileSystem", "Win32_UI_Shell", "Win32_UI_WindowsAndMessaging"]}
 windows-registry = "0.6.1"
 
 [build-dependencies]

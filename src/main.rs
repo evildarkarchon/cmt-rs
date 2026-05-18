@@ -20,7 +20,11 @@ use app::{
         OverviewController, action_target_label, overview_desktop_action_payload,
         overview_desktop_task, unavailable_action_error,
     },
-    scanner_controller::{ScannerController, ScannerControllerPhase},
+    scanner_controller::{
+        SCANNER_ACTION_UNAVAILABLE_MESSAGE, ScannerController, ScannerControllerPhase,
+        ScannerScanWorkerRequest, ScannerTransitionResult, any_scanner_category_enabled,
+        scanner_action_completed_payload, scanner_scan_completed_payload,
+    },
     settings_controller::SettingsController,
     tools_controller::{
         TOOLS_DEFAULT_DISABLED_UTILITY_STATUS, ToolsController, ToolsState, ToolsTransitionResult,
@@ -29,6 +33,7 @@ use app::{
 use domain::{
     discovery::{FALLOUT4_EXECUTABLE, Fallout4InstallType},
     f4se::{F4seDllRow, F4seGameTarget, F4seRowSeverity, F4seScanSnapshot, F4seScanStatus},
+    mod_manager::ModManagerContext,
     overview::{
         ACTION_ARCHIVE_PATCHER_LABEL, ACTION_DOWNGRADE_MANAGER_LABEL, BinaryStatusRow,
         OverviewActionError, OverviewCountRow, OverviewDeferredAction, OverviewDeferredActionKind,
@@ -38,22 +43,23 @@ use domain::{
     },
     scanner::{
         DETAIL_LABEL_MOD, DETAIL_LABEL_PROBLEM, DETAIL_LABEL_SOLUTION, DETAIL_LABEL_SUMMARY,
-        ScannerActionKind, ScannerCategoryKind, ScannerCategoryProjection, ScannerFileList,
-        ScannerResult, ScannerResultGroup,
+        PROGRESS_REFRESHING_OVERVIEW_TEXT, ScannerActionDescriptor, ScannerActionFeedback,
+        ScannerActionKind, ScannerActionTarget, ScannerCategoryKind, ScannerCategoryProjection,
+        ScannerFileList, ScannerResult, ScannerResultGroup, ScannerScanSnapshot,
     },
     settings::{AppSettings, UpdateSource},
     tools::{ABOUT_LINKS, AboutLinkId},
 };
 use platform::{
-    clipboard::RealClipboardActions,
-    desktop::RealDesktopActions,
+    clipboard::{ClipboardActions, RealClipboardActions},
+    desktop::{DesktopActions, RealDesktopActions},
     filesystem::RealFilesystem,
     process::RealProcessInspector,
     registry::RealRegistry,
-    settings_store::{FileAssetResolver, SettingsStore},
+    settings_store::{AssetResolver, FileAssetResolver, SettingsStore},
 };
 use services::{
-    discovery::{DiscoveryRequest, DiscoveryService},
+    discovery::{DiscoveredModManager, DiscoveryRequest, DiscoveryService},
     f4se::{
         F4seScanDiagnosticKind, F4seScanDiagnostics, F4seScanRequest, F4seScanService,
         PeliteF4seDllInspector,
@@ -66,6 +72,7 @@ use services::{
         OverviewCollectedFacts, OverviewCollectionEnvironment, OverviewCollectionRequest,
         OverviewCollector,
     },
+    scanner::{ScannerProgressEvent, ScannerScanOutput, ScannerScanRequest, ScannerScanService},
     tools::{
         AboutActionFeedback, AboutActionKind, ActionRejectionKind, ToolsActionFeedback,
         ToolsActionKind, ToolsActionService, about_action_for_id, tools_action_for_id,
@@ -83,8 +90,23 @@ slint::include_modules!();
 
 const TOOLS_WORKER_TASK_PREFIX: &str = "s05-tools-action:";
 const ABOUT_WORKER_TASK_PREFIX: &str = "s05-about-action:";
+const SCANNER_ACTION_TASK_PREFIX: &str = "s07-scanner-action:";
 const TOOLS_ACTION_START_ERROR: &str = "Tools action could not be started.";
 const ABOUT_ACTION_START_ERROR: &str = "About action could not be started.";
+const SCANNER_ACTION_START_ERROR: &str = "Scanner action could not be started.";
+
+#[derive(Debug, Clone)]
+struct PreparedScannerScan {
+    request: ScannerScanWorkerRequest,
+    settings: AppSettings,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+struct ScannerActionExecution {
+    scan_id: Option<u64>,
+    descriptor: ScannerActionDescriptor,
+    details_text: Option<String>,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum AboutCallbackKind {
@@ -199,6 +221,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let overview_sink = bind_overview_worker_sink(&app, Arc::clone(&overview_controller));
     let f4se_sink = bind_f4se_worker_sink(&app, Arc::clone(&f4se_controller));
+    let scanner_sink = bind_scanner_worker_sink(&app, Arc::clone(&scanner_controller));
     let tools_sink = bind_tools_worker_sink(&app, Arc::clone(&tools_controller));
     let about_sink = bind_about_worker_sink(&app, Arc::clone(&about_controller));
     bind_settings_callbacks(&app, Rc::clone(&settings_controller));
@@ -219,6 +242,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Arc::clone(&f4se_controller),
         worker_runtime,
         f4se_sink,
+    );
+    bind_scanner_callbacks(
+        &app,
+        Arc::clone(&scanner_controller),
+        Rc::clone(&settings_controller),
+        worker_runtime,
+        scanner_sink,
     );
     bind_overview_callbacks(
         &app,
@@ -469,6 +499,234 @@ fn bind_about_callbacks(
                     event = "s05-about-copy-label-reset-ignored-at-runtime",
                     action_id,
                     "About copy-label reset id was not applied"
+                );
+            }
+        }
+    });
+}
+
+fn bind_scanner_worker_sink(
+    app: &MainWindow,
+    controller: Arc<Mutex<ScannerController>>,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let Some(app) = app.upgrade() else {
+            tracing::warn!(
+                event = "s07-scanner-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Scanner worker event arrived after the Slint window was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_scanner_controller_mut(&controller, |controller| {
+            handle_scanner_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        match result {
+            ScannerTransitionResult::Applied => {
+                tracing::debug!(
+                    event = "s07-scanner-worker-event-applied",
+                    task_id = %task_id,
+                    task_kind,
+                    status,
+                    "Scanner worker event applied to render state"
+                );
+                apply_current_scanner_state(&app, &controller);
+            }
+            ScannerTransitionResult::StaleIgnored => tracing::debug!(
+                event = "s07-scanner-worker-event-stale-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Scanner worker event was stale and ignored"
+            ),
+            ScannerTransitionResult::Ignored => tracing::debug!(
+                event = "s07-scanner-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Ignoring non-Scanner worker event on Scanner sink"
+            ),
+            ScannerTransitionResult::Rejected => tracing::debug!(
+                event = "s07-scanner-worker-event-rejected",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Scanner worker event was rejected by the current selection state"
+            ),
+        }
+    })
+}
+
+fn bind_scanner_callbacks(
+    app: &MainWindow,
+    controller: Arc<Mutex<ScannerController>>,
+    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+    worker_runtime: WorkerRuntime,
+    scanner_sink: SlintEventLoopSink,
+) {
+    app.on_scanner_category_toggled({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move |category_id, enabled| {
+            let category_id = category_id.to_string();
+            let Some(category) = scanner_category_from_ui_id(&category_id) else {
+                tracing::warn!(
+                    event = "s07-scanner-category-toggle-invalid",
+                    category_id,
+                    enabled,
+                    "Scanner category callback id was invalid"
+                );
+                return;
+            };
+
+            let Some(result) = with_scanner_controller_mut(&controller, |controller| {
+                controller.toggle_category(category, enabled)
+            }) else {
+                return;
+            };
+
+            if result.is_applied()
+                && let Some(app) = app.upgrade()
+            {
+                apply_current_scanner_state(&app, &controller);
+            }
+        }
+    });
+
+    app.on_scanner_scan_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let settings_controller = Rc::clone(&settings_controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_scan(
+                    &app,
+                    &controller,
+                    &settings_controller,
+                    worker_runtime,
+                    scanner_sink.clone(),
+                );
+            }
+        }
+    });
+
+    app.on_scanner_result_selected({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move |result_index| {
+            let Some(result_index) = i32_to_usize(result_index) else {
+                tracing::warn!(
+                    event = "s07-scanner-result-selection-invalid",
+                    result_index,
+                    "Scanner result selection index was invalid"
+                );
+                return;
+            };
+            let Some(result) = with_scanner_controller_mut(&controller, |controller| {
+                controller.select_result(result_index)
+            }) else {
+                return;
+            };
+            if result.is_applied()
+                && let Some(app) = app.upgrade()
+            {
+                apply_current_scanner_state(&app, &controller);
+            }
+        }
+    });
+
+    app.on_scanner_copy_details_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    scanner_sink.clone(),
+                    ScannerActionKind::CopyDetails,
+                );
+            }
+        }
+    });
+
+    app.on_scanner_file_list_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                toggle_scanner_file_list(&app, &controller);
+            }
+        }
+    });
+
+    app.on_scanner_open_path_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    scanner_sink.clone(),
+                    ScannerActionKind::OpenLocation,
+                );
+            }
+        }
+    });
+
+    app.on_scanner_open_url_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    scanner_sink.clone(),
+                    ScannerActionKind::OpenSolutionUrl,
+                );
+            }
+        }
+    });
+
+    app.on_scanner_copy_url_requested({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let scanner_sink = scanner_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_scanner_action(
+                    &app,
+                    &controller,
+                    worker_runtime,
+                    scanner_sink.clone(),
+                    ScannerActionKind::CopySolutionUrl,
                 );
             }
         }
@@ -1131,6 +1389,557 @@ fn about_callback_mismatch_feedback(
     )
 }
 
+fn request_scanner_scan(
+    app: &MainWindow,
+    controller: &Arc<Mutex<ScannerController>>,
+    settings_controller: &Rc<RefCell<SettingsController<FileAssetResolver>>>,
+    worker_runtime: WorkerRuntime,
+    scanner_sink: SlintEventLoopSink,
+) {
+    let Some(prepared) = prepare_scanner_scan_request(controller, settings_controller) else {
+        apply_current_scanner_state(app, controller);
+        return;
+    };
+
+    apply_current_scanner_state(app, controller);
+
+    let scan_id = prepared.request.scan_id;
+    let task = prepared.request.task.clone();
+    let worker_task = task.clone();
+    let settings = prepared.settings;
+    tracing::info!(
+        event = "s07-scanner-scan-schedule",
+        scan_id,
+        task_id = %task.id,
+        "Scheduling Scanner scan worker"
+    );
+
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |context| {
+        build_scanner_scan_payload(context, scan_id, settings)
+    }) {
+        tracing::error!(
+            event = "s07-scanner-scan-spawn-failed",
+            scan_id,
+            task_id = %worker_task.id,
+            error = %error,
+            "Scanner scan worker could not be scheduled"
+        );
+        with_scanner_controller_mut(controller, |controller| {
+            controller.spawn_failed(scan_id, error);
+        });
+        apply_current_scanner_state(app, controller);
+        return;
+    }
+
+    with_scanner_controller_mut(controller, |controller| {
+        controller.scan_started(scan_id);
+    });
+    apply_current_scanner_state(app, controller);
+}
+
+fn prepare_scanner_scan_request<R: AssetResolver>(
+    controller: &Arc<Mutex<ScannerController>>,
+    settings_controller: &Rc<RefCell<SettingsController<R>>>,
+) -> Option<PreparedScannerScan> {
+    let scanner_settings =
+        with_scanner_controller_mut(controller, |controller| controller.settings().clone())?;
+
+    if !any_scanner_category_enabled(&scanner_settings) {
+        tracing::warn!(
+            event = "s07-scanner-scan-not-scheduled",
+            reason = "no-enabled-categories",
+            "Scanner scan not scheduled because all categories are disabled"
+        );
+        with_scanner_controller_mut(controller, |controller| {
+            controller.request_scan();
+        });
+        return None;
+    }
+
+    let save_result = settings_controller
+        .borrow_mut()
+        .save_scanner_settings_for_scan(scanner_settings);
+    with_scanner_controller_mut(controller, |controller| {
+        controller.replace_settings(save_result.visible_settings.clone());
+    });
+
+    if !save_result.should_schedule_scan() {
+        tracing::warn!(
+            event = "s07-scanner-scan-not-scheduled",
+            reason = "settings-save-failed",
+            "Scanner scan not scheduled because settings persistence failed"
+        );
+        return None;
+    }
+
+    let request =
+        with_scanner_controller_mut(controller, ScannerController::request_scan).flatten()?;
+    let settings = settings_controller.borrow().current_settings().clone();
+    Some(PreparedScannerScan { request, settings })
+}
+
+fn build_scanner_scan_payload<S>(
+    context: workers::WorkerTaskContext<S>,
+    scan_id: u64,
+    settings: AppSettings,
+) -> BlockingWorkerResult
+where
+    S: WorkerEventSink,
+{
+    let span = tracing::info_span!("s07_scanner_scan_worker", scan_id);
+    let _guard = span.enter();
+    tracing::info!(
+        event = "s07-scanner-worker-started",
+        scan_id,
+        task_id = %context.task().id,
+        "Scanner scan worker started"
+    );
+    emit_scanner_progress_message(
+        &context,
+        scan_id,
+        PROGRESS_REFRESHING_OVERVIEW_TEXT,
+        Some(1),
+        Some(100),
+    );
+
+    let filesystem = RealFilesystem::new();
+    let registry = RealRegistry::new();
+    let process = RealProcessInspector::new();
+    let current_working_directory = current_working_directory();
+    let local_appdata = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
+
+    let mut discovery_request = DiscoveryRequest::new(current_working_directory);
+    discovery_request = discovery_request.with_current_process_id(std::process::id());
+    if let Some(path) = local_appdata.clone() {
+        discovery_request = discovery_request.with_local_appdata(path);
+    }
+
+    let discovery =
+        DiscoveryService::new(&filesystem, &registry, &process).discover(&discovery_request);
+    if let Err(error) = &discovery.game {
+        tracing::warn!(
+            event = "s07-scanner-discovery-failure",
+            scan_id,
+            safe_message = %error.user_message(),
+            "Scanner discovery did not find a usable Fallout 4 installation"
+        );
+    }
+    if let Err(error) = &discovery.mod_manager {
+        tracing::warn!(
+            event = "s07-scanner-manager-discovery-failure",
+            scan_id,
+            safe_message = %error.user_message(),
+            "Scanner mod-manager discovery failed safely"
+        );
+    }
+
+    let mut collection_environment = OverviewCollectionEnvironment::new();
+    if let Some(path) = local_appdata {
+        collection_environment = collection_environment.with_local_appdata(path);
+    }
+
+    let collected = match &discovery.game {
+        Ok(installation) => {
+            let collector = OverviewCollector::new(&filesystem, &process);
+            collector.collect(OverviewCollectionRequest::new(
+                installation,
+                &collection_environment,
+            ))
+        }
+        Err(_) => OverviewCollectedFacts::default(),
+    };
+
+    tracing::info!(
+        event = "s07-scanner-overview-facts-collected",
+        scan_id,
+        binaries = collected.diagnostics.binary_count,
+        archives = collected.diagnostics.archive_count,
+        modules = collected.diagnostics.module_count,
+        enabled_archives = collected.diagnostics.enabled_archive_count,
+        enabled_modules = collected.diagnostics.enabled_module_count,
+        missing_files = collected.diagnostics.missing_file_count,
+        unreadable_files = collected.diagnostics.unreadable_file_count,
+        "Scanner worker rebuilt Overview facts before scan"
+    );
+
+    let update_state = OverviewUpdateCheckState::NotChecked;
+    let overview_snapshot = OverviewDiagnostics::build(OverviewDiagnosticsInput {
+        discovery: &discovery,
+        settings: &settings,
+        binaries: &collected.binaries,
+        archives: &collected.archives,
+        modules: &collected.modules,
+        enablement: &collected.enablement,
+        update: &update_state,
+        last_desktop_action: None,
+    });
+
+    tracing::info!(
+        event = "s07-scanner-overview-refresh-phase",
+        scan_id,
+        overview_problem_count = overview_snapshot.problems.len(),
+        "Scanner worker built Overview problem feed"
+    );
+
+    let manager_context =
+        scanner_manager_context(discovery.mod_manager.as_ref().ok().and_then(Option::as_ref));
+    let mut scan_request = ScannerScanRequest::new(scan_id, &settings.scanner)
+        .with_overview_problems(&overview_snapshot.problems)
+        .with_enabled_modules(&collected.modules)
+        .with_enabled_archives(&collected.archives);
+    if let Ok(installation) = &discovery.game {
+        scan_request = scan_request.with_installation(installation);
+    }
+    if let Some(manager_context) = manager_context.as_ref() {
+        scan_request = scan_request.with_mod_manager(manager_context);
+    }
+
+    let service = ScannerScanService::new(&filesystem);
+    let output = service.scan_with_progress(scan_request, |progress| {
+        trace_scanner_progress_event(progress);
+        emit_scanner_progress_event(&context, progress);
+    });
+    trace_scanner_scan_output(&output);
+
+    let snapshot = ScannerScanSnapshot::from_grouped(
+        output.scan_id,
+        output.results,
+        output.groups,
+        output.status.safe_message,
+    );
+    Ok(WorkerTaskOutcome::Completed(
+        scanner_scan_completed_payload(scan_id, snapshot),
+    ))
+}
+
+fn scanner_manager_context(manager: Option<&DiscoveredModManager>) -> Option<ModManagerContext> {
+    match manager {
+        Some(DiscoveredModManager::ModOrganizer(configuration)) => Some(
+            ModManagerContext::ModOrganizer(Box::new(configuration.context.clone())),
+        ),
+        Some(DiscoveredModManager::Vortex(context)) => {
+            Some(ModManagerContext::Vortex(context.clone()))
+        }
+        None => None,
+    }
+}
+
+fn emit_scanner_progress_event<S>(
+    context: &workers::WorkerTaskContext<S>,
+    progress: &ScannerProgressEvent,
+) where
+    S: WorkerEventSink,
+{
+    emit_scanner_progress_message(
+        context,
+        progress.scan_id,
+        &progress.safe_message,
+        scanner_progress_current(progress),
+        scanner_progress_total(progress),
+    );
+}
+
+fn emit_scanner_progress_message<S>(
+    context: &workers::WorkerTaskContext<S>,
+    scan_id: u64,
+    message: &str,
+    current: Option<u64>,
+    total: Option<u64>,
+) where
+    S: WorkerEventSink,
+{
+    let progress = workers::WorkerProgress::new()
+        .with_message(message.to_owned())
+        .with_counts(current, total);
+    if let Err(error) = context.emit_progress(progress) {
+        tracing::warn!(
+            event = "s07-scanner-progress-handoff-failed",
+            scan_id,
+            task_id = %context.task().id,
+            error = %error,
+            diagnostic = error.diagnostic.as_deref().unwrap_or(""),
+            "Scanner progress could not be handed to the UI"
+        );
+    }
+}
+
+fn scanner_progress_current(progress: &ScannerProgressEvent) -> Option<u64> {
+    progress
+        .folder_index
+        .map(|index| index as u64)
+        .or_else(|| scanner_percent_as_count(progress.percent))
+}
+
+fn scanner_progress_total(progress: &ScannerProgressEvent) -> Option<u64> {
+    progress
+        .folder_total
+        .map(|total| total as u64)
+        .or_else(|| scanner_percent_as_count(progress.percent).map(|_| 100))
+}
+
+fn scanner_percent_as_count(percent: f32) -> Option<u64> {
+    if percent.is_finite() {
+        Some(percent.clamp(0.0, 100.0).round() as u64)
+    } else {
+        None
+    }
+}
+
+fn trace_scanner_progress_event(progress: &ScannerProgressEvent) {
+    tracing::debug!(
+        event = "s07-scanner-progress-emitted",
+        scan_id = progress.scan_id,
+        phase = progress.phase.as_str(),
+        percent = progress.percent,
+        folder = progress.folder.as_deref().unwrap_or(""),
+        folder_index = ?progress.folder_index,
+        folder_total = ?progress.folder_total,
+        safe_message = progress.safe_message.as_str(),
+        "Scanner progress emitted from worker"
+    );
+}
+
+fn trace_scanner_scan_output(output: &ScannerScanOutput) {
+    tracing::info!(
+        event = "s07-scanner-scan-output",
+        scan_id = output.scan_id,
+        status = ?output.status.kind,
+        result_count = output.results.len(),
+        group_count = output.groups.len(),
+        overview_problem_count = output.diagnostics.overview_problem_count,
+        indexed_mod_count = output.diagnostics.indexed_mod_count,
+        indexed_file_count = output.diagnostics.indexed_file_count,
+        traversed_folders = output.diagnostics.traversed_folder_count,
+        traversed_files = output.diagnostics.traversed_file_count,
+        partial_read_failures = output.diagnostics.partial_read_failure_count,
+        race_subgraph_records = output.diagnostics.race_subgraph_record_count,
+        race_subgraph_modules = output.diagnostics.race_subgraph_module_count,
+        "Scanner scan completed with structured counts"
+    );
+
+    for diagnostic in &output.diagnostics.errors {
+        tracing::warn!(
+            event = "s07-scanner-safe-diagnostic",
+            scan_id = output.scan_id,
+            phase = diagnostic.phase.as_str(),
+            kind = ?diagnostic.kind,
+            path = %diagnostic
+                .path
+                .as_ref()
+                .map(|path| path.display().to_string())
+                .unwrap_or_default(),
+            safe_message = diagnostic.safe_message.as_str(),
+            "Scanner scan captured a recoverable diagnostic"
+        );
+    }
+}
+
+fn toggle_scanner_file_list(app: &MainWindow, controller: &Arc<Mutex<ScannerController>>) {
+    let Some(result) = with_scanner_controller_mut(controller, ScannerController::toggle_file_list)
+    else {
+        return;
+    };
+
+    if result.is_applied() || matches!(result, ScannerTransitionResult::Rejected) {
+        apply_current_scanner_state(app, controller);
+    }
+}
+
+fn request_scanner_action(
+    app: &MainWindow,
+    controller: &Arc<Mutex<ScannerController>>,
+    worker_runtime: WorkerRuntime,
+    scanner_sink: SlintEventLoopSink,
+    action: ScannerActionKind,
+) {
+    let Some(execution) = prepare_scanner_action_execution(controller, action) else {
+        apply_current_scanner_state(app, controller);
+        return;
+    };
+
+    let task = scanner_action_task(execution.descriptor.kind, execution.scan_id);
+    let worker_task = task.clone();
+    let scan_id = execution.scan_id;
+    tracing::info!(
+        event = "s07-scanner-action-schedule",
+        action = execution.descriptor.kind.as_id(),
+        scan_id = ?scan_id,
+        task_id = %task.id,
+        "Scheduling Scanner read-only action worker"
+    );
+
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, scanner_sink, move |_context| {
+        execute_scanner_action_payload(execution)
+    }) {
+        tracing::error!(
+            event = "s07-scanner-action-spawn-failed",
+            action = action.as_id(),
+            scan_id = ?scan_id,
+            task_id = %worker_task.id,
+            error = %error,
+            "Scanner read-only action worker could not be scheduled"
+        );
+        let feedback = ScannerActionFeedback::failed(scan_id, action, SCANNER_ACTION_START_ERROR)
+            .with_diagnostic(error.to_string());
+        with_scanner_controller_mut(controller, |controller| {
+            controller.action_completed(feedback);
+        });
+        apply_current_scanner_state(app, controller);
+    }
+}
+
+fn prepare_scanner_action_execution(
+    controller: &Arc<Mutex<ScannerController>>,
+    action: ScannerActionKind,
+) -> Option<ScannerActionExecution> {
+    with_scanner_controller_mut(controller, |controller| {
+        let scan_id = controller.latest_scan_id();
+        let details_text = controller
+            .selected_detail()
+            .map(|detail| detail.copy_details_text.clone());
+        controller
+            .request_selected_action(action.as_id())
+            .map(|descriptor| ScannerActionExecution {
+                scan_id,
+                descriptor,
+                details_text,
+            })
+    })
+    .flatten()
+}
+
+fn scanner_action_task(action: ScannerActionKind, scan_id: Option<u64>) -> WorkerTask {
+    let scan_label = scan_id
+        .map(|scan_id| scan_id.to_string())
+        .unwrap_or_else(|| "none".to_owned());
+    WorkerTask::new(
+        format!(
+            "{SCANNER_ACTION_TASK_PREFIX}{scan_label}:{}",
+            action.as_id()
+        ),
+        WorkerTaskKind::DesktopAction,
+    )
+    .with_label(action.as_id())
+}
+
+fn scanner_action_from_task_id(
+    task_id: &workers::WorkerTaskId,
+) -> Option<(Option<u64>, ScannerActionKind)> {
+    let rest = task_id.as_str().strip_prefix(SCANNER_ACTION_TASK_PREFIX)?;
+    let (scan_id, action_id) = rest.split_once(':')?;
+    let scan_id = if scan_id == "none" {
+        None
+    } else {
+        Some(scan_id.parse::<u64>().ok()?)
+    };
+    Some((scan_id, ScannerActionKind::from_id(action_id)?))
+}
+
+fn execute_scanner_action_payload(execution: ScannerActionExecution) -> BlockingWorkerResult {
+    let feedback = execute_scanner_action_with_adapters(
+        execution,
+        RealDesktopActions::new(),
+        RealClipboardActions::new(),
+    );
+    Ok(WorkerTaskOutcome::Completed(
+        scanner_action_completed_payload(feedback),
+    ))
+}
+
+fn execute_scanner_action_with_adapters<D, C>(
+    execution: ScannerActionExecution,
+    desktop: D,
+    clipboard: C,
+) -> ScannerActionFeedback
+where
+    D: DesktopActions,
+    C: ClipboardActions,
+{
+    let scan_id = execution.scan_id;
+    let action = execution.descriptor.kind;
+    match (action, execution.descriptor.target) {
+        (ScannerActionKind::CopyDetails, ScannerActionTarget::DetailsText) => {
+            let Some(details_text) = execution.details_text.filter(|text| !text.is_empty()) else {
+                return ScannerActionFeedback::failed(
+                    scan_id,
+                    action,
+                    "Scanner details are not available to copy.",
+                );
+            };
+            scanner_feedback_from_clipboard_result(
+                scan_id,
+                action,
+                clipboard.copy_text(&details_text),
+            )
+        }
+        (ScannerActionKind::OpenLocation, ScannerActionTarget::Path(path)) => {
+            scanner_feedback_from_desktop_result(scan_id, action, desktop.open_path(&path))
+        }
+        (ScannerActionKind::OpenSolutionUrl, ScannerActionTarget::Url(url)) => {
+            scanner_feedback_from_desktop_result(scan_id, action, desktop.open_url(&url))
+        }
+        (ScannerActionKind::CopySolutionUrl, ScannerActionTarget::Url(url)) => {
+            scanner_feedback_from_clipboard_result(scan_id, action, clipboard.copy_text(&url))
+        }
+        _ => ScannerActionFeedback::failed(scan_id, action, SCANNER_ACTION_UNAVAILABLE_MESSAGE),
+    }
+}
+
+fn scanner_feedback_from_desktop_result(
+    scan_id: Option<u64>,
+    action: ScannerActionKind,
+    result: platform::desktop::DesktopActionResult,
+) -> ScannerActionFeedback {
+    let feedback = if result.is_success() {
+        ScannerActionFeedback::succeeded(scan_id, action, result.safe_message())
+    } else {
+        ScannerActionFeedback::failed(scan_id, action, result.safe_message())
+    };
+    if let Some(diagnostic) = result.diagnostic() {
+        feedback.with_diagnostic(diagnostic.to_owned())
+    } else {
+        feedback
+    }
+}
+
+fn scanner_feedback_from_clipboard_result(
+    scan_id: Option<u64>,
+    action: ScannerActionKind,
+    result: platform::clipboard::ClipboardActionResult,
+) -> ScannerActionFeedback {
+    let feedback = if result.is_success() {
+        ScannerActionFeedback::succeeded(scan_id, action, result.safe_message())
+    } else {
+        ScannerActionFeedback::failed(scan_id, action, result.safe_message())
+    };
+    if let Some(diagnostic) = result.diagnostic() {
+        feedback.with_diagnostic(diagnostic.to_owned())
+    } else {
+        feedback
+    }
+}
+
+fn scanner_category_from_ui_id(category_id: &str) -> Option<ScannerCategoryKind> {
+    match category_id {
+        "overview-issues" => Some(ScannerCategoryKind::OverviewIssues),
+        "errors" => Some(ScannerCategoryKind::Errors),
+        "wrong-file-formats" => Some(ScannerCategoryKind::WrongFormat),
+        "loose-previs" => Some(ScannerCategoryKind::LoosePrevis),
+        "junk-files" => Some(ScannerCategoryKind::JunkFiles),
+        "problem-overrides" => Some(ScannerCategoryKind::ProblemOverrides),
+        "race-subgraphs" => Some(ScannerCategoryKind::RaceSubgraphs),
+        _ => None,
+    }
+}
+
+fn i32_to_usize(value: i32) -> Option<usize> {
+    if value < 0 {
+        None
+    } else {
+        Some(value as usize)
+    }
+}
+
 fn request_overview_refresh(
     app: &MainWindow,
     overview_controller: &Arc<Mutex<OverviewController>>,
@@ -1467,6 +2276,17 @@ fn handle_f4se_worker_event(
     controller.handle_worker_event(event)
 }
 
+fn handle_scanner_worker_event(
+    controller: &mut ScannerController,
+    event: WorkerEvent,
+) -> ScannerTransitionResult {
+    if let Some(feedback) = scanner_worker_failure_feedback_from_event(&event) {
+        return controller.action_completed(feedback);
+    }
+
+    controller.handle_worker_event(event)
+}
+
 fn handle_tools_worker_event(
     controller: &mut ToolsController,
     event: WorkerEvent,
@@ -1487,6 +2307,25 @@ fn handle_about_worker_event(
     }
 
     controller.handle_worker_event(event)
+}
+
+fn scanner_worker_failure_feedback_from_event(
+    event: &WorkerEvent,
+) -> Option<ScannerActionFeedback> {
+    let WorkerPayload::Error(failure) = &event.payload else {
+        return None;
+    };
+    let (scan_id, action) = scanner_action_from_task_id(&event.task.id)?;
+
+    Some(
+        ScannerActionFeedback::failed(scan_id, action, failure.safe_message.clone())
+            .with_diagnostic(
+                failure
+                    .diagnostic
+                    .clone()
+                    .unwrap_or_else(|| "scanner action worker failed".to_owned()),
+            ),
+    )
 }
 
 fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
@@ -2529,6 +3368,20 @@ mod tests {
     }
 
     #[test]
+    fn shell_contract_tab_component_files_export_expected_components() {
+        for (file, component, label, source) in TAB_COMPONENTS {
+            assert!(
+                source.contains(&format!("export component {component}")),
+                "{file} should export {component}"
+            );
+            assert!(
+                source.contains(label),
+                "{file} should preserve tab label marker {label:?}"
+            );
+        }
+    }
+
+    #[test]
     fn shell_contract_inert_tab_components_are_static_placeholders() {
         let prohibited_markers = [
             "callback",
@@ -3083,6 +3936,417 @@ mod tests {
                 .as_str()
                 .contains("example.mp3")
         );
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_startup_projection_uses_persisted_settings() {
+        let settings = crate::domain::settings::ScannerSettings {
+            overview_issues: true,
+            errors: false,
+            wrong_format: false,
+            loose_previs: true,
+            junk_files: false,
+            problem_overrides: true,
+            race_subgraphs: false,
+        };
+        let controller = ScannerController::new(settings);
+
+        let projection = project_scanner_state(&controller);
+
+        assert!(projection.categories.overview_issues);
+        assert!(!projection.categories.errors);
+        assert!(!projection.categories.wrong_file_formats);
+        assert!(projection.categories.loose_previs);
+        assert!(!projection.categories.junk_files);
+        assert!(projection.categories.problem_overrides);
+        assert!(!projection.categories.race_subgraphs);
+        assert!(projection.categories.read_only);
+        assert_eq!(projection.scan_button_text, SCAN_BUTTON_LABEL);
+        assert!(projection.scan_button_enabled);
+        assert!(!projection.busy);
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_scan_scheduling_persists_and_clears_old_state() {
+        let app_settings = AppSettings {
+            scanner: crate::domain::settings::ScannerSettings {
+                wrong_format: false,
+                race_subgraphs: false,
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        let (settings_controller, settings_path) =
+            main_test_settings_controller("scanner-schedule", app_settings.clone());
+        let mut controller = ScannerController::new(app_settings.scanner.clone());
+        let old_request = controller
+            .request_scan()
+            .expect("first scan should create old state");
+        controller.scan_completed(
+            old_request.scan_id,
+            ScannerScanSnapshot::from_results(
+                old_request.scan_id,
+                vec![scanner_runtime_result()],
+                "Old scan complete.",
+            ),
+        );
+        controller.select_result(0);
+        let controller = Arc::new(Mutex::new(controller));
+
+        let prepared = prepare_scanner_scan_request(&controller, &settings_controller)
+            .expect("persisted scanner settings should schedule a scan");
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        let persisted = std::fs::read_to_string(settings_path).expect("settings should persist");
+
+        assert_eq!(prepared.request.scan_id, 2);
+        assert_eq!(prepared.request.task.kind, WorkerTaskKind::Scan);
+        assert_eq!(prepared.request.task.id.as_str(), "s07-scanner-scan:2");
+        assert!(!prepared.request.settings_snapshot.wrong_format);
+        assert!(!prepared.settings.scanner.wrong_format);
+        assert!(projection.busy);
+        assert!(!projection.scan_button_enabled);
+        assert_eq!(projection.status_text, "Scanning...");
+        assert_eq!(projection.progress_text, PROGRESS_REFRESHING_OVERVIEW_TEXT);
+        assert!(projection.result_rows.is_empty());
+        assert!(!projection.detail_visible);
+        assert!(persisted.contains("\"scanner_WrongFormat\": false"));
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_does_not_schedule_when_save_reverts_or_toggles_off() {
+        let disabled = crate::domain::settings::ScannerSettings {
+            overview_issues: false,
+            errors: false,
+            wrong_format: false,
+            loose_previs: false,
+            junk_files: false,
+            problem_overrides: false,
+            race_subgraphs: false,
+        };
+        let app_settings = AppSettings {
+            scanner: disabled.clone(),
+            ..Default::default()
+        };
+        let (settings_controller, _settings_path) =
+            main_test_settings_controller("scanner-no-toggles", app_settings.clone());
+        let controller = Arc::new(Mutex::new(ScannerController::new(disabled)));
+
+        assert!(prepare_scanner_scan_request(&controller, &settings_controller).is_none());
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert!(!projection.busy);
+        assert!(!projection.scan_button_enabled);
+        assert_eq!(projection.status_text, "No scanner categories are enabled.");
+
+        let root = unique_main_test_root("scanner-save-fails");
+        let blocked_settings_path = root.join("settings.json");
+        std::fs::create_dir_all(&blocked_settings_path)
+            .expect("directory should block settings save");
+        let store = SettingsStore::with_asset_resolver(
+            blocked_settings_path,
+            crate::platform::settings_store::StaticAssetResolver::new(Some("nexus")),
+        );
+        let settings_controller = Rc::new(RefCell::new(SettingsController::from_settings(
+            store,
+            AppSettings::default(),
+        )));
+        let mut scanner_controller = ScannerController::new(Default::default());
+        scanner_controller.toggle_category(ScannerCategoryKind::WrongFormat, false);
+        let controller = Arc::new(Mutex::new(scanner_controller));
+
+        assert!(prepare_scanner_scan_request(&controller, &settings_controller).is_none());
+        let reverted = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert!(!reverted.busy);
+        assert!(reverted.scan_button_enabled);
+        assert!(
+            reverted.categories.wrong_file_formats,
+            "failed save should revert visible Scanner toggles to last persisted settings"
+        );
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_applies_progress_completion_stale_and_zero_results() {
+        let mut controller = ScannerController::default();
+        let request = controller.request_scan().expect("scan should start");
+
+        assert_eq!(
+            handle_scanner_worker_event(
+                &mut controller,
+                WorkerEvent::running(request.task.clone())
+            ),
+            ScannerTransitionResult::Applied
+        );
+        assert_eq!(
+            handle_scanner_worker_event(
+                &mut controller,
+                WorkerEvent::progress(
+                    request.task.clone(),
+                    workers::WorkerProgress::new()
+                        .with_message("Scanning... 1/3: Meshes")
+                        .with_counts(Some(1), Some(3)),
+                ),
+            ),
+            ScannerTransitionResult::Applied
+        );
+        let progressing = project_scanner_state(&controller);
+        assert!(progressing.busy);
+        assert_eq!(progressing.progress_text, "Scanning... 1/3: Meshes");
+        assert!(progressing.progress_percent > 33.0 && progressing.progress_percent < 34.0);
+
+        let empty_snapshot =
+            ScannerScanSnapshot::empty(request.scan_id, "Scanner completed with 0 results.");
+        assert_eq!(
+            handle_scanner_worker_event(
+                &mut controller,
+                WorkerEvent::completed(
+                    request.task.clone(),
+                    scanner_scan_completed_payload(request.scan_id, empty_snapshot),
+                ),
+            ),
+            ScannerTransitionResult::Applied
+        );
+        let completed = project_scanner_state(&controller);
+        assert!(!completed.busy);
+        assert!(completed.scan_button_enabled);
+        assert_eq!(completed.progress_percent, 100.0);
+        assert_eq!(
+            completed.result_count_text,
+            "0 Results ~ Select an item for details"
+        );
+        assert!(completed.result_rows.is_empty());
+        assert!(!completed.detail_visible);
+
+        let second = controller.request_scan().expect("second scan should start");
+        assert_eq!(second.scan_id, 2);
+        let stale = handle_scanner_worker_event(
+            &mut controller,
+            WorkerEvent::completed(
+                request.task,
+                scanner_scan_completed_payload(
+                    request.scan_id,
+                    ScannerScanSnapshot::empty(request.scan_id, "Old completion."),
+                ),
+            ),
+        );
+        assert_eq!(stale, ScannerTransitionResult::StaleIgnored);
+        assert_eq!(controller.active_scan_id(), Some(second.scan_id));
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_selected_detail_actions_and_failure_feedback_are_safe() {
+        let mut controller = ScannerController::default();
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            ScannerScanSnapshot::from_results(
+                request.scan_id,
+                vec![scanner_runtime_result()],
+                "Scanner scan complete.",
+            ),
+        );
+        controller.select_result(0);
+        let controller = Arc::new(Mutex::new(controller));
+
+        let copy_execution =
+            prepare_scanner_action_execution(&controller, ScannerActionKind::CopyDetails)
+                .expect("selected result should expose Copy Details");
+        let copy_feedback = execute_scanner_action_with_adapters(
+            copy_execution,
+            RuntimeFakeDesktopActions::default(),
+            RuntimeFakeClipboardActions::default(),
+        );
+        assert!(copy_feedback.succeeded);
+        assert_eq!(copy_feedback.safe_message(), "Copied to clipboard.");
+
+        let path_execution =
+            prepare_scanner_action_execution(&controller, ScannerActionKind::OpenLocation)
+                .expect("selected result should expose Open Location");
+        let path_feedback = execute_scanner_action_with_adapters(
+            path_execution,
+            RuntimeFakeDesktopActions {
+                fail_path: true,
+                fail_url: false,
+            },
+            RuntimeFakeClipboardActions::default(),
+        );
+        assert!(!path_feedback.succeeded);
+        assert_eq!(path_feedback.safe_message(), "Path open failed.");
+        assert_eq!(
+            path_feedback.diagnostic.as_deref(),
+            Some("raw path failure")
+        );
+        with_scanner_controller_mut(&controller, |controller| {
+            controller.action_completed(path_feedback);
+        });
+        let projection = with_scanner_controller_mut(&controller, |controller| {
+            project_scanner_state(controller)
+        })
+        .expect("controller should be readable");
+        assert_eq!(projection.action_feedback, "Path open failed.");
+        assert!(!projection.action_feedback.contains("raw path"));
+    }
+
+    #[test]
+    fn s07_scanner_runtime_wiring_action_worker_failure_event_maps_to_safe_feedback() {
+        let mut controller = ScannerController::default();
+        let request = controller.request_scan().expect("scan should start");
+        controller.scan_completed(
+            request.scan_id,
+            ScannerScanSnapshot::empty(request.scan_id, "Scanner scan complete."),
+        );
+        let task = scanner_action_task(ScannerActionKind::OpenLocation, Some(request.scan_id));
+        assert_eq!(
+            scanner_action_from_task_id(&task.id),
+            Some((Some(request.scan_id), ScannerActionKind::OpenLocation))
+        );
+
+        let result = handle_scanner_worker_event(
+            &mut controller,
+            WorkerEvent::failed(
+                task,
+                WorkerFailure::new("Path open failed.").with_diagnostic("raw worker failure"),
+            ),
+        );
+
+        assert_eq!(result, ScannerTransitionResult::Applied);
+        let feedback = controller
+            .last_action_feedback()
+            .expect("failed action feedback should be visible");
+        assert_eq!(feedback.safe_message(), "Path open failed.");
+        assert_eq!(feedback.diagnostic.as_deref(), Some("raw worker failure"));
+        let projection = project_scanner_state(&controller);
+        assert_eq!(projection.action_feedback, "Path open failed.");
+        assert!(!projection.action_feedback.contains("raw worker"));
+    }
+
+    fn scanner_runtime_result() -> ScannerResult {
+        ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            PathBuf::from("C:/Games/Fallout 4/Data/Sound/example.mp3"),
+            PathBuf::from("Sound/example.mp3"),
+            "Format not in whitelist for sound.",
+            Some("This file may need to be converted.".to_owned()),
+        )
+        .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/cmt")])
+        .with_file_list(ScannerFileList::generic(vec![ScannerFileListEntry::new(
+            1,
+            PathBuf::from("Sound/example.mp3"),
+        )]))
+    }
+
+    fn main_test_settings_controller(
+        name: &str,
+        settings: AppSettings,
+    ) -> (
+        Rc<RefCell<SettingsController<crate::platform::settings_store::StaticAssetResolver>>>,
+        PathBuf,
+    ) {
+        let root = unique_main_test_root(name);
+        std::fs::create_dir_all(&root).expect("settings test root should be created");
+        let settings_path = root.join("settings.json");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            crate::platform::settings_store::StaticAssetResolver::new(Some("nexus")),
+        );
+        (
+            Rc::new(RefCell::new(SettingsController::from_settings(
+                store, settings,
+            ))),
+            settings_path,
+        )
+    }
+
+    fn unique_main_test_root(name: &str) -> PathBuf {
+        let unique = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .expect("test clock should be after Unix epoch")
+            .as_nanos();
+        std::env::temp_dir().join(format!("cmt-rs-main-{name}-{unique}"))
+    }
+
+    #[derive(Debug, Default, Clone, Copy)]
+    struct RuntimeFakeDesktopActions {
+        fail_path: bool,
+        fail_url: bool,
+    }
+
+    impl DesktopActions for RuntimeFakeDesktopActions {
+        fn open_url(&self, url: &str) -> crate::platform::desktop::DesktopActionResult {
+            if self.fail_url {
+                crate::platform::desktop::DesktopActionResult::failure(
+                    crate::platform::PlatformError::command_failed(
+                        crate::platform::PlatformOperation::OpenUrl,
+                        url,
+                        "raw url failure",
+                    ),
+                )
+            } else {
+                crate::platform::desktop::DesktopActionResult::success(
+                    crate::platform::PlatformOperation::OpenUrl,
+                    url,
+                )
+            }
+        }
+
+        fn open_path(
+            &self,
+            path: &std::path::Path,
+        ) -> crate::platform::desktop::DesktopActionResult {
+            if self.fail_path {
+                crate::platform::desktop::DesktopActionResult::failure(
+                    crate::platform::PlatformError::command_failed(
+                        crate::platform::PlatformOperation::OpenPath,
+                        path.display().to_string(),
+                        "raw path failure",
+                    ),
+                )
+            } else {
+                crate::platform::desktop::DesktopActionResult::success(
+                    crate::platform::PlatformOperation::OpenPath,
+                    path.display().to_string(),
+                )
+            }
+        }
+
+        fn launch_tool(
+            &self,
+            executable: &std::path::Path,
+            _args: &[String],
+        ) -> crate::platform::desktop::DesktopActionResult {
+            crate::platform::desktop::DesktopActionResult::success(
+                crate::platform::PlatformOperation::LaunchTool,
+                executable.display().to_string(),
+            )
+        }
+    }
+
+    #[derive(Debug, Default, Clone, Copy)]
+    struct RuntimeFakeClipboardActions {
+        fail_copy: bool,
+    }
+
+    impl ClipboardActions for RuntimeFakeClipboardActions {
+        fn copy_text(&self, _text: &str) -> crate::platform::clipboard::ClipboardActionResult {
+            if self.fail_copy {
+                crate::platform::clipboard::ClipboardActionResult::failure(
+                    crate::platform::PlatformError::command_failed(
+                        crate::platform::PlatformOperation::CopyToClipboard,
+                        "system clipboard",
+                        "raw clipboard failure",
+                    ),
+                )
+            } else {
+                crate::platform::clipboard::ClipboardActionResult::success("system clipboard")
+            }
+        }
     }
 
     #[test]
