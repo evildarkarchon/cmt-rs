@@ -16,6 +16,7 @@ use std::{
 use crate::{
     domain::{
         autofix::AutoFixCompletion,
+        downgrader::{DowngraderExecutionLogRow, DowngraderProgress},
         f4se::F4seScanSnapshot,
         overview::{
             OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
@@ -26,7 +27,10 @@ use crate::{
         PlatformError, PlatformErrorKind, PlatformOperation,
         desktop::{DesktopActionOutcome, DesktopActionResult},
     },
-    services::tools::{AboutActionFeedback, ToolsActionFeedback},
+    services::{
+        downgrader::{DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderStatusSnapshot},
+        tools::{AboutActionFeedback, ToolsActionFeedback},
+    },
 };
 
 /// Stable identity for one background task.
@@ -186,7 +190,7 @@ impl fmt::Display for WorkerTaskStatus {
 }
 
 /// Shared envelope emitted by every background worker.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct WorkerEvent {
     /// Stable task identity and high-level kind metadata.
     pub task: WorkerTask,
@@ -376,7 +380,7 @@ impl WorkerCancellation {
 }
 
 /// Typed payload variants carried by worker events.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum WorkerPayload {
     /// No additional payload is needed for this lifecycle event.
     None,
@@ -400,6 +404,8 @@ pub enum WorkerPayload {
     ToolsAction(ToolsActionWorkerPayload),
     /// About-tab action completion result.
     AboutAction(AboutActionWorkerPayload),
+    /// Downgrader modal status, plan, progress, log, or run result.
+    Downgrader(DowngraderWorkerPayload),
     /// External process, tool, or desktop-action result.
     ExternalAction(ExternalActionPayload),
     /// Cancellation details.
@@ -592,6 +598,157 @@ impl AboutActionWorkerPayload {
     /// Creates an About action-completion payload.
     pub fn action_completed(feedback: AboutActionFeedback) -> Self {
         Self { feedback }
+    }
+}
+
+/// Downgrader worker stage used for safe failure routing and stale-event rejection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum DowngraderWorkerStage {
+    /// The worker was loading current file status.
+    Status,
+    /// The worker was preparing a read-only inline plan.
+    Plan,
+    /// The worker was executing the explicitly confirmed patch run.
+    Run,
+}
+
+impl DowngraderWorkerStage {
+    /// Returns a stable label suitable for structured tracing and tests.
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Status => "status",
+            Self::Plan => "plan",
+            Self::Run => "run",
+        }
+    }
+}
+
+/// Downgrader-specific worker payloads that must cross the UI handoff boundary intact.
+#[derive(Debug, Clone, PartialEq)]
+pub enum DowngraderWorkerPayload {
+    /// A current-file status worker produced a render-ready snapshot.
+    StatusLoaded {
+        /// Status request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned status snapshot produced off the UI thread.
+        snapshot: Box<DowngraderStatusSnapshot>,
+    },
+    /// A read-only planning worker produced an inline confirmation plan.
+    PlanReady {
+        /// Plan request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned preview plan produced off the UI thread.
+        plan: Box<DowngraderPreviewPlan>,
+    },
+    /// A confirmed run worker produced a user-visible log row.
+    LogRow {
+        /// Run request id used to reject stale worker results.
+        request_id: u64,
+        /// Reference-style user-visible row.
+        row: DowngraderExecutionLogRow,
+    },
+    /// A confirmed run worker produced bounded progress.
+    Progress {
+        /// Run request id used to reject stale worker results.
+        request_id: u64,
+        /// Clamped progress value.
+        progress: DowngraderProgress,
+    },
+    /// A confirmed run worker completed and returned final execution facts.
+    RunCompleted {
+        /// Run request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned execution result produced off the UI thread.
+        result: Box<DowngraderExecutionResult>,
+    },
+    /// A worker failed safely before producing its normal payload.
+    SafeFailure {
+        /// Request id used to reject stale worker failures.
+        request_id: u64,
+        /// Worker stage that failed.
+        stage: DowngraderWorkerStage,
+        /// User-safe failure text suitable for modal logs.
+        safe_message: String,
+        /// Optional diagnostic detail for logs/tests, never modal text.
+        diagnostic: Option<String>,
+    },
+}
+
+impl DowngraderWorkerPayload {
+    /// Creates a Downgrader status-loaded payload.
+    pub fn status_loaded(request_id: u64, snapshot: DowngraderStatusSnapshot) -> Self {
+        Self::StatusLoaded {
+            request_id,
+            snapshot: Box::new(snapshot),
+        }
+    }
+
+    /// Creates a Downgrader plan-ready payload.
+    pub fn plan_ready(request_id: u64, plan: DowngraderPreviewPlan) -> Self {
+        Self::PlanReady {
+            request_id,
+            plan: Box::new(plan),
+        }
+    }
+
+    /// Creates a Downgrader log-row payload.
+    pub fn log_row(request_id: u64, row: DowngraderExecutionLogRow) -> Self {
+        Self::LogRow { request_id, row }
+    }
+
+    /// Creates a Downgrader progress payload.
+    pub fn progress(request_id: u64, progress: DowngraderProgress) -> Self {
+        Self::Progress {
+            request_id,
+            progress,
+        }
+    }
+
+    /// Creates a Downgrader run-completed payload.
+    pub fn run_completed(request_id: u64, result: DowngraderExecutionResult) -> Self {
+        Self::RunCompleted {
+            request_id,
+            result: Box::new(result),
+        }
+    }
+
+    /// Creates a Downgrader safe-failure payload.
+    pub fn safe_failure(
+        request_id: u64,
+        stage: DowngraderWorkerStage,
+        safe_message: impl Into<String>,
+        diagnostic: Option<String>,
+    ) -> Self {
+        Self::SafeFailure {
+            request_id,
+            stage,
+            safe_message: safe_message.into(),
+            diagnostic,
+        }
+    }
+
+    /// Returns the request id attached to this payload.
+    pub const fn request_id(&self) -> u64 {
+        match self {
+            Self::StatusLoaded { request_id, .. }
+            | Self::PlanReady { request_id, .. }
+            | Self::LogRow { request_id, .. }
+            | Self::Progress { request_id, .. }
+            | Self::RunCompleted { request_id, .. }
+            | Self::SafeFailure { request_id, .. } => *request_id,
+        }
+    }
+
+    /// Returns the stage associated with this payload.
+    pub const fn stage(&self) -> DowngraderWorkerStage {
+        match self {
+            Self::StatusLoaded { .. } => DowngraderWorkerStage::Status,
+            Self::PlanReady { .. } => DowngraderWorkerStage::Plan,
+            Self::LogRow { .. } | Self::Progress { .. } | Self::RunCompleted { .. } => {
+                DowngraderWorkerStage::Run
+            }
+            Self::SafeFailure { stage, .. } => *stage,
+        }
     }
 }
 
@@ -932,6 +1089,144 @@ mod tests {
         assert_eq!(payload.scan_id(), Some(42));
         assert!(payload.snapshot().is_none());
         assert_eq!(payload.auto_fix_completion(), Some(&completion));
+    }
+
+    #[test]
+    fn downgrader_worker_payload_round_trips_owned_status_plan_log_progress_run_and_failure() {
+        use std::path::PathBuf;
+
+        use crate::{
+            domain::downgrader::{
+                DowngraderExecutionLogRow, DowngraderLogLevel, DowngraderOptionsSnapshot,
+                DowngraderProgress, DowngraderTarget,
+            },
+            services::downgrader::{
+                DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderPreviewPlanCounts,
+                DowngraderStatusSnapshot,
+            },
+            workers::{RecordingEventSink, WorkerEventSink},
+        };
+
+        let status = DowngraderStatusSnapshot {
+            request_id: 10,
+            game_root: PathBuf::from("Game"),
+            rows: Vec::new(),
+            default_target: DowngraderTarget::OldGen,
+            unknown_game: false,
+            unknown_creation_kit: false,
+            diagnostics: Vec::new(),
+        };
+        let options = DowngraderOptionsSnapshot::new(DowngraderTarget::OldGen, true, true);
+        let plan = DowngraderPreviewPlan {
+            request_id: 11,
+            game_root: PathBuf::from("Game"),
+            options,
+            status: status.clone(),
+            rows: Vec::new(),
+            counts: DowngraderPreviewPlanCounts::default(),
+            can_execute: true,
+        };
+        let log_row =
+            DowngraderExecutionLogRow::new(DowngraderLogLevel::Good, "Patched Fallout4.exe");
+        let result = DowngraderExecutionResult {
+            request_id: 12,
+            game_root: PathBuf::from("Game"),
+            options,
+            rows: Vec::new(),
+            log_rows: vec![log_row.clone()],
+            progress_events: Vec::new(),
+            diagnostics: Vec::new(),
+        };
+        let sink = RecordingEventSink::new();
+        let task = WorkerTask::new("s09-downgrader-run:12", WorkerTaskKind::Patch);
+
+        for event in [
+            WorkerEvent::completed(
+                WorkerTask::new("s09-downgrader-status:10", WorkerTaskKind::Patch),
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::status_loaded(
+                    10,
+                    status.clone(),
+                )),
+            ),
+            WorkerEvent::completed(
+                WorkerTask::new("s09-downgrader-plan:11", WorkerTaskKind::Patch),
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::plan_ready(11, plan.clone())),
+            ),
+            WorkerEvent::new(
+                task.clone(),
+                WorkerTaskStatus::Progress,
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::log_row(12, log_row.clone())),
+            ),
+            WorkerEvent::new(
+                task.clone(),
+                WorkerTaskStatus::Progress,
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::progress(
+                    12,
+                    DowngraderProgress::new(42.5),
+                )),
+            ),
+            WorkerEvent::completed(
+                task.clone(),
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::run_completed(
+                    12,
+                    result.clone(),
+                )),
+            ),
+            WorkerEvent::failed(
+                WorkerTask::new("s09-downgrader-run:13", WorkerTaskKind::Patch),
+                WorkerFailure::new("Downgrader failed safely."),
+            ),
+            WorkerEvent::new(
+                WorkerTask::new("s09-downgrader-plan:14", WorkerTaskKind::Patch),
+                WorkerTaskStatus::Failed,
+                WorkerPayload::Downgrader(DowngraderWorkerPayload::safe_failure(
+                    14,
+                    DowngraderWorkerStage::Plan,
+                    "Downgrader plan failed safely.",
+                    Some("raw diagnostic".to_owned()),
+                )),
+            ),
+        ] {
+            sink.emit(event).expect("recording sink should store event");
+        }
+
+        let events = sink.events().expect("recorded events should be readable");
+        assert_eq!(events.len(), 7);
+        assert!(matches!(
+            &events[0].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::StatusLoaded { request_id: 10, snapshot })
+                if snapshot.as_ref() == &status
+        ));
+        assert!(matches!(
+            &events[1].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::PlanReady { request_id: 11, plan: actual })
+                if actual.as_ref() == &plan
+        ));
+        assert!(matches!(
+            &events[2].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::LogRow { request_id: 12, row })
+                if row == &log_row
+        ));
+        assert!(matches!(
+            &events[3].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::Progress { request_id: 12, progress })
+                if progress.percent == 42.5
+        ));
+        assert!(matches!(
+            &events[4].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::RunCompleted { request_id: 12, result: actual })
+                if actual.as_ref() == &result
+        ));
+        assert!(matches!(&events[5].payload, WorkerPayload::Error(_)));
+        assert!(matches!(
+            &events[6].payload,
+            WorkerPayload::Downgrader(DowngraderWorkerPayload::SafeFailure {
+                request_id: 14,
+                stage: DowngraderWorkerStage::Plan,
+                safe_message,
+                diagnostic: Some(diagnostic),
+            }) if safe_message == "Downgrader plan failed safely." && diagnostic == "raw diagnostic"
+        ));
     }
 
     #[test]

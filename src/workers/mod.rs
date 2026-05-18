@@ -15,10 +15,11 @@ pub mod events;
 pub mod handoff;
 
 pub use events::{
-    AboutActionWorkerPayload, CancellationToken, ExternalActionKind, ExternalActionOutcome,
-    ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload, ScannerWorkerPayload,
-    ToolsActionWorkerPayload, WorkerCancellation, WorkerEvent, WorkerFailure, WorkerMessage,
-    WorkerPayload, WorkerProgress, WorkerTask, WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
+    AboutActionWorkerPayload, CancellationToken, DowngraderWorkerPayload, DowngraderWorkerStage,
+    ExternalActionKind, ExternalActionOutcome, ExternalActionPayload, F4seWorkerPayload,
+    OverviewWorkerPayload, ScannerWorkerPayload, ToolsActionWorkerPayload, WorkerCancellation,
+    WorkerEvent, WorkerFailure, WorkerMessage, WorkerPayload, WorkerProgress, WorkerTask,
+    WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
 };
 pub use handoff::{
     RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,
@@ -29,7 +30,7 @@ pub use handoff::{
 pub type BlockingWorkerResult = Result<WorkerTaskOutcome, WorkerFailure>;
 
 /// Final result state returned by a blocking worker closure.
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum WorkerTaskOutcome {
     /// Worker completed successfully and produced a typed payload.
     Completed(WorkerPayload),
