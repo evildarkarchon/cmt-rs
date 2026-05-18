@@ -1,6 +1,6 @@
 import { TabWidget } from "std-widgets.slint";
 import { OverviewTab, OverviewUiRow } from "overview_tab.slint";
-import { F4seTab } from "f4se_tab.slint";
+import { F4seTab, F4seUiRow } from "f4se_tab.slint";
 import { ScannerTab } from "scanner_tab.slint";
 import { ToolsTab } from "tools_tab.slint";
 import { SettingsTab } from "settings_tab.slint";
@@ -30,6 +30,13 @@ export component MainWindow inherits Window {
     in-out property <bool> overview-archive-patcher-enabled: false;
     in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
     in-out property <string> overview-last-action-error: "";
+    in-out property <string> f4se-status-text: "F4SE scan has not run yet.";
+    in-out property <bool> f4se-busy: false;
+    in-out property <string> f4se-loading-or-error-text: "";
+    in-out property <string> f4se-unknown-game-detail: "";
+    in-out property <[F4seUiRow]> f4se-rows;
+    property <int> active-tab-index: 0;
+    property <bool> f4se-tab-activation-observed: false;
     in-out property <string> tools-last-action-error: "";
     in-out property <string> tools-disabled-utility-status: "Downgrade Manager is deferred until S09; Archive Patcher is deferred until S10.";
     in-out property <string> about-last-action-error: "";
@@ -47,6 +54,7 @@ export component MainWindow inherits Window {
     callback overview-open-github-update-requested();
     callback overview-open-downgrade-manager-requested();
     callback overview-open-archive-patcher-requested();
+    callback f4se-tab-activated();
     callback tool-action-requested(string);
     callback about-open-requested(string);
     callback about-copy-requested(string);
@@ -57,7 +65,17 @@ export component MainWindow inherits Window {
     height: 640px;
 
     // The tab labels and order mirror CMT/src/cm_checker.py and CMT/src/enums.py.
+    f4se-tab-lazy-activation := Timer {
+        interval: 16ms;
+        running: root.active-tab-index == 1 && !root.f4se-tab-activation-observed;
+        triggered => {
+            root.f4se-tab-activation-observed = true;
+            root.f4se-tab-activated();
+        }
+    }
+
     TabWidget {
+        current-index <=> root.active-tab-index;
         Tab {
             title: "Overview";
             OverviewTab {
@@ -105,7 +123,13 @@ export component MainWindow inherits Window {
 
         Tab {
             title: "F4SE";
-            F4seTab {}
+            F4seTab {
+                f4se-status-text <=> root.f4se-status-text;
+                f4se-busy <=> root.f4se-busy;
+                f4se-loading-or-error-text <=> root.f4se-loading-or-error-text;
+                f4se-unknown-game-detail <=> root.f4se-unknown-game-detail;
+                f4se-rows <=> root.f4se-rows;
+            }
         }
 
         Tab {

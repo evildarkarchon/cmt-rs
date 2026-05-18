@@ -13,6 +13,9 @@ use std::{
 
 use app::{
     about_controller::{AboutController, AboutState, AboutTransitionResult},
+    f4se_controller::{
+        F4seController, F4seScanWorkerRequest, F4seTransitionResult, f4se_scan_completed_payload,
+    },
     overview_controller::{
         OverviewController, action_target_label, overview_desktop_action_payload,
         overview_desktop_task, unavailable_action_error,
@@ -23,6 +26,8 @@ use app::{
     },
 };
 use domain::{
+    discovery::{FALLOUT4_EXECUTABLE, Fallout4InstallType},
+    f4se::{F4seDllRow, F4seGameTarget, F4seRowSeverity, F4seScanSnapshot, F4seScanStatus},
     overview::{
         ACTION_ARCHIVE_PATCHER_LABEL, ACTION_DOWNGRADE_MANAGER_LABEL, BinaryStatusRow,
         OverviewActionError, OverviewCountRow, OverviewDeferredAction, OverviewDeferredActionKind,
@@ -43,6 +48,10 @@ use platform::{
 };
 use services::{
     discovery::{DiscoveryRequest, DiscoveryService},
+    f4se::{
+        F4seScanDiagnosticKind, F4seScanDiagnostics, F4seScanRequest, F4seScanService,
+        PeliteF4seDllInspector,
+    },
     overview::{
         OverviewDesktopActionFeedback, OverviewDesktopActionOutcome, OverviewDiagnostics,
         OverviewDiagnosticsInput, OverviewUpdateCheckState,
@@ -103,6 +112,14 @@ struct AboutUiProjection {
     github_copy_enabled: bool,
 }
 
+struct F4seUiProjection {
+    status_text: String,
+    busy: bool,
+    loading_or_error_text: String,
+    unknown_game_detail: String,
+    rows: Vec<F4seUiRow>,
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
         .enable_all()
@@ -114,6 +131,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let app = MainWindow::new()?;
     let settings_controller = Rc::new(RefCell::new(load_settings_controller()));
     let overview_controller = Arc::new(Mutex::new(OverviewController::new()));
+    let f4se_controller = Arc::new(Mutex::new(F4seController::new()));
     let tools_controller = Arc::new(Mutex::new(ToolsController::new()));
     let about_controller = Arc::new(Mutex::new(AboutController::new()));
     let worker_runtime = WorkerRuntime::new();
@@ -121,10 +139,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     app.set_update_source(settings_controller.borrow().visible_update_source().into());
     app.set_log_level(settings_controller.borrow().visible_log_level().into());
     apply_current_overview_snapshot(&app, &overview_controller);
+    apply_current_f4se_snapshot(&app, &f4se_controller);
     apply_current_tools_state(&app, &tools_controller);
     apply_current_about_state(&app, &about_controller);
 
     let overview_sink = bind_overview_worker_sink(&app, Arc::clone(&overview_controller));
+    let f4se_sink = bind_f4se_worker_sink(&app, Arc::clone(&f4se_controller));
     let tools_sink = bind_tools_worker_sink(&app, Arc::clone(&tools_controller));
     let about_sink = bind_about_worker_sink(&app, Arc::clone(&about_controller));
     bind_settings_callbacks(&app, Rc::clone(&settings_controller));
@@ -139,6 +159,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         Arc::clone(&about_controller),
         worker_runtime,
         about_sink,
+    );
+    bind_f4se_callbacks(
+        &app,
+        Arc::clone(&f4se_controller),
+        worker_runtime,
+        f4se_sink,
     );
     bind_overview_callbacks(
         &app,
@@ -542,6 +568,301 @@ fn bind_overview_callbacks(
             }
         }
     });
+}
+
+fn bind_f4se_worker_sink(
+    app: &MainWindow,
+    controller: Arc<Mutex<F4seController>>,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let Some(app) = app.upgrade() else {
+            tracing::warn!(
+                event = "s06-f4se-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "F4SE worker event arrived after the Slint window was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_f4se_controller_mut(&controller, |controller| {
+            handle_f4se_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        match result {
+            F4seTransitionResult::Applied => apply_current_f4se_snapshot(&app, &controller),
+            F4seTransitionResult::StaleIgnored => tracing::debug!(
+                event = "s06-f4se-worker-stale-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "F4SE worker event was stale and ignored"
+            ),
+            F4seTransitionResult::Ignored => tracing::debug!(
+                event = "s06-f4se-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Ignoring non-F4SE worker event on F4SE sink"
+            ),
+        }
+    })
+}
+
+fn bind_f4se_callbacks(
+    app: &MainWindow,
+    controller: Arc<Mutex<F4seController>>,
+    worker_runtime: WorkerRuntime,
+    f4se_sink: SlintEventLoopSink,
+) {
+    app.on_f4se_tab_activated({
+        let app = app.as_weak();
+        let controller = Arc::clone(&controller);
+        let f4se_sink = f4se_sink.clone();
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                request_f4se_initial_scan(&app, &controller, worker_runtime, f4se_sink.clone());
+            }
+        }
+    });
+}
+
+fn request_f4se_initial_scan(
+    app: &MainWindow,
+    controller: &Arc<Mutex<F4seController>>,
+    worker_runtime: WorkerRuntime,
+    f4se_sink: SlintEventLoopSink,
+) {
+    let Some(request) = take_f4se_initial_scan_request(controller) else {
+        tracing::debug!(
+            event = "s06-f4se-lazy-activation-ignored",
+            "F4SE tab activation did not schedule a duplicate scan"
+        );
+        return;
+    };
+
+    let scan_id = request.scan_id;
+    let task = request.task.clone();
+    tracing::info!(
+        event = "s06-f4se-scan-schedule",
+        scan_id,
+        task_id = %task.id,
+        "Scheduling lazy F4SE DLL scan worker"
+    );
+
+    if let Err(error) = worker_runtime.spawn_blocking_task(task, f4se_sink, move |_context| {
+        build_f4se_scan_payload(scan_id)
+    }) {
+        tracing::error!(
+            event = "s06-f4se-scan-spawn-failed",
+            scan_id,
+            error = %error,
+            "F4SE scan worker could not be scheduled"
+        );
+        with_f4se_controller_mut(controller, |controller| {
+            controller.spawn_failed(scan_id, error);
+        });
+        apply_current_f4se_snapshot(app, controller);
+        return;
+    }
+
+    with_f4se_controller_mut(controller, |controller| {
+        controller.scan_started(scan_id);
+    });
+    apply_current_f4se_snapshot(app, controller);
+}
+
+fn take_f4se_initial_scan_request(
+    controller: &Arc<Mutex<F4seController>>,
+) -> Option<F4seScanWorkerRequest> {
+    with_f4se_controller_mut(controller, F4seController::request_initial_scan).flatten()
+}
+
+fn build_f4se_scan_payload(scan_id: u64) -> BlockingWorkerResult {
+    let snapshot = build_f4se_scan_snapshot(scan_id);
+    Ok(WorkerTaskOutcome::Completed(f4se_scan_completed_payload(
+        scan_id, snapshot,
+    )))
+}
+
+fn build_f4se_scan_snapshot(scan_id: u64) -> F4seScanSnapshot {
+    let span = tracing::info_span!("f4se_scan_worker", scan_id);
+    let _guard = span.enter();
+    tracing::info!(
+        event = "s06-f4se-scan-started",
+        scan_id,
+        "F4SE scan worker started"
+    );
+
+    let filesystem = RealFilesystem::new();
+    let registry = RealRegistry::new();
+    let process = RealProcessInspector::new();
+    let current_working_directory = current_working_directory();
+    let local_appdata = std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
+
+    let mut discovery_request = DiscoveryRequest::new(current_working_directory);
+    discovery_request = discovery_request.with_current_process_id(std::process::id());
+    if let Some(path) = local_appdata.clone() {
+        discovery_request = discovery_request.with_local_appdata(path);
+    }
+
+    let discovery =
+        DiscoveryService::new(&filesystem, &registry, &process).discover(&discovery_request);
+    if let Err(error) = &discovery.game {
+        tracing::warn!(
+            event = "s06-f4se-discovery-failure",
+            scan_id,
+            safe_message = %error.user_message(),
+            "F4SE discovery did not find a usable Fallout 4 installation"
+        );
+    }
+    if let Err(error) = &discovery.mod_manager {
+        tracing::warn!(
+            event = "s06-f4se-manager-discovery-failure",
+            scan_id,
+            safe_message = %error.user_message(),
+            "F4SE mod-manager discovery failed safely"
+        );
+    }
+
+    let mut collection_environment = OverviewCollectionEnvironment::new();
+    if let Some(path) = local_appdata {
+        collection_environment = collection_environment.with_local_appdata(path);
+    }
+
+    let collected = match &discovery.game {
+        Ok(installation) => {
+            let collector = OverviewCollector::new(&filesystem, &process);
+            collector.collect(OverviewCollectionRequest::new(
+                installation,
+                &collection_environment,
+            ))
+        }
+        Err(_) => OverviewCollectedFacts::default(),
+    };
+    let current_game = f4se_current_game_from_overview_facts(&collected);
+    tracing::info!(
+        event = "s06-f4se-current-game-classified",
+        scan_id,
+        current_game = ?current_game,
+        binaries = collected.binaries.len(),
+        "F4SE current-game target classified from Overview Fallout4.exe facts"
+    );
+
+    let mod_manager_detected = matches!(&discovery.mod_manager, Ok(Some(_)));
+    let inspector = PeliteF4seDllInspector::new();
+    let scan_service = F4seScanService::new(&filesystem, &inspector);
+    let report = scan_service.scan(F4seScanRequest::new(
+        discovery.game.as_ref().ok(),
+        current_game,
+        mod_manager_detected,
+    ));
+    trace_f4se_scan_diagnostics(scan_id, current_game, &report.diagnostics);
+
+    report.snapshot
+}
+
+fn f4se_current_game_from_overview_facts(collected: &OverviewCollectedFacts) -> F4seGameTarget {
+    let install_type = collected
+        .binaries
+        .iter()
+        .find(|fact| is_fallout4_executable_fact(&fact.file_name))
+        .map(|fact| fact.install_type)
+        .unwrap_or(Fallout4InstallType::Unknown);
+    F4seGameTarget::from_install_type(install_type)
+}
+
+fn is_fallout4_executable_fact(file_name: &str) -> bool {
+    file_name
+        .rsplit(['\\', '/'])
+        .next()
+        .unwrap_or(file_name)
+        .eq_ignore_ascii_case(FALLOUT4_EXECUTABLE)
+}
+
+fn trace_f4se_scan_diagnostics(
+    scan_id: u64,
+    current_game: F4seGameTarget,
+    diagnostics: &F4seScanDiagnostics,
+) {
+    tracing::info!(
+        event = "s06-f4se-scan-counts",
+        scan_id,
+        current_game = ?current_game,
+        enumerated_entries = diagnostics.enumerated_entry_count,
+        dll_candidates = diagnostics.dll_candidate_count,
+        inspected = diagnostics.inspected_dll_count,
+        f4se = diagnostics.f4se_dll_count,
+        non_f4se = diagnostics.non_f4se_dll_count,
+        skipped = diagnostics.skipped_entry_count,
+        unreadable = diagnostics.unreadable_dll_count,
+        malformed = diagnostics.malformed_dll_count,
+        version_warnings = diagnostics.version_data_warning_count,
+        "F4SE scan diagnostics collected"
+    );
+
+    for detail in &diagnostics.details {
+        match detail.kind {
+            F4seScanDiagnosticKind::MissingDataFolder
+            | F4seScanDiagnosticKind::MissingPluginsFolder => tracing::warn!(
+                event = "s06-f4se-scan-missing-folder",
+                scan_id,
+                kind = ?detail.kind,
+                path = detail
+                    .path
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .unwrap_or_default(),
+                safe_message = detail.safe_message.as_str(),
+                "F4SE scan prerequisite folder is unavailable"
+            ),
+            F4seScanDiagnosticKind::DirectoryReadFailed => tracing::warn!(
+                event = "s06-f4se-scan-directory-read-failed",
+                scan_id,
+                kind = ?detail.kind,
+                path = detail
+                    .path
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .unwrap_or_default(),
+                safe_message = detail.safe_message.as_str(),
+                "F4SE scan directory enumeration failed safely"
+            ),
+            F4seScanDiagnosticKind::FileReadFailed
+            | F4seScanDiagnosticKind::DllInspectionFailed
+            | F4seScanDiagnosticKind::VersionDataUnreadable => tracing::warn!(
+                event = "s06-f4se-scan-dll-inspection-issue",
+                scan_id,
+                kind = ?detail.kind,
+                path = detail
+                    .path
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .unwrap_or_default(),
+                safe_message = detail.safe_message.as_str(),
+                "F4SE DLL inspection produced a visible safe diagnostic"
+            ),
+            F4seScanDiagnosticKind::SkippedEntry => tracing::debug!(
+                event = "s06-f4se-scan-entry-skipped",
+                scan_id,
+                path = detail
+                    .path
+                    .as_ref()
+                    .map(|path| path.display().to_string())
+                    .unwrap_or_default(),
+                safe_message = detail.safe_message.as_str(),
+                "F4SE scan skipped a direct child outside DLL scope"
+            ),
+        }
+    }
 }
 
 fn request_tools_action(
@@ -1085,6 +1406,13 @@ fn apply_about_feedback(
     apply_current_about_state(app, controller);
 }
 
+fn handle_f4se_worker_event(
+    controller: &mut F4seController,
+    event: WorkerEvent,
+) -> F4seTransitionResult {
+    controller.handle_worker_event(event)
+}
+
 fn handle_tools_worker_event(
     controller: &mut ToolsController,
     event: WorkerEvent,
@@ -1182,6 +1510,23 @@ fn with_overview_controller_mut<T>(
     }
 }
 
+fn with_f4se_controller_mut<T>(
+    controller: &Arc<Mutex<F4seController>>,
+    action: impl FnOnce(&mut F4seController) -> T,
+) -> Option<T> {
+    match controller.lock() {
+        Ok(mut controller) => Some(action(&mut controller)),
+        Err(error) => {
+            tracing::error!(
+                event = "s06-f4se-controller-lock-poisoned",
+                diagnostic = %error,
+                "F4SE controller state is unavailable"
+            );
+            None
+        }
+    }
+}
+
 fn with_tools_controller_mut<T>(
     controller: &Arc<Mutex<ToolsController>>,
     action: impl FnOnce(&mut ToolsController) -> T,
@@ -1232,6 +1577,82 @@ fn apply_current_about_state(app: &MainWindow, controller: &Arc<Mutex<AboutContr
         return;
     };
     apply_about_projection(app, &projection);
+}
+
+fn apply_current_f4se_snapshot(app: &MainWindow, controller: &Arc<Mutex<F4seController>>) {
+    let Some(projection) = with_f4se_controller_mut(controller, |controller| {
+        project_f4se_snapshot(controller.snapshot())
+    }) else {
+        return;
+    };
+    apply_f4se_projection(app, projection);
+}
+
+fn project_f4se_snapshot(snapshot: &F4seScanSnapshot) -> F4seUiProjection {
+    F4seUiProjection {
+        status_text: f4se_status_text(snapshot),
+        busy: snapshot.status == F4seScanStatus::Loading,
+        loading_or_error_text: f4se_loading_or_error_text(snapshot),
+        unknown_game_detail: f4se_unknown_game_detail(&snapshot.rows),
+        rows: format_f4se_rows(&snapshot.rows),
+    }
+}
+
+fn f4se_status_text(snapshot: &F4seScanSnapshot) -> String {
+    match snapshot.status {
+        F4seScanStatus::Idle => "F4SE scan has not run yet.".to_owned(),
+        F4seScanStatus::Loading => "Scanning DLLs...".to_owned(),
+        F4seScanStatus::Ready => format!("F4SE scan complete. DLLs: {}", snapshot.rows.len()),
+        F4seScanStatus::Error => "F4SE scan failed.".to_owned(),
+    }
+}
+
+fn f4se_loading_or_error_text(snapshot: &F4seScanSnapshot) -> String {
+    match snapshot.status {
+        F4seScanStatus::Loading | F4seScanStatus::Error => snapshot.status_message.clone(),
+        F4seScanStatus::Idle | F4seScanStatus::Ready => String::new(),
+    }
+}
+
+fn f4se_unknown_game_detail(rows: &[F4seDllRow]) -> String {
+    rows.iter()
+        .flat_map(|row| row.details.iter())
+        .find(|detail| detail.contains("could not be classified"))
+        .cloned()
+        .unwrap_or_default()
+}
+
+fn format_f4se_rows(rows: &[F4seDllRow]) -> Vec<F4seUiRow> {
+    rows.iter().map(format_f4se_row).collect()
+}
+
+fn format_f4se_row(row: &F4seDllRow) -> F4seUiRow {
+    F4seUiRow {
+        dll: row.dll_name.as_str().into(),
+        og: row.og.icon.as_reference_str().into(),
+        ng: row.ng.icon.as_reference_str().into(),
+        ae: row.ae.icon.as_reference_str().into(),
+        your_game: row.your_game.icon.as_reference_str().into(),
+        severity: f4se_severity_label(row.severity).into(),
+        detail: row.details.join(" ").into(),
+    }
+}
+
+fn f4se_severity_label(severity: F4seRowSeverity) -> &'static str {
+    match severity {
+        F4seRowSeverity::Neutral => "neutral",
+        F4seRowSeverity::Compatible => "compatible",
+        F4seRowSeverity::Incompatible => "incompatible",
+        F4seRowSeverity::Warning => "warning",
+    }
+}
+
+fn apply_f4se_projection(app: &MainWindow, projection: F4seUiProjection) {
+    app.set_f4se_status_text(projection.status_text.as_str().into());
+    app.set_f4se_busy(projection.busy);
+    app.set_f4se_loading_or_error_text(projection.loading_or_error_text.as_str().into());
+    app.set_f4se_unknown_game_detail(projection.unknown_game_detail.as_str().into());
+    app.set_f4se_rows(model_from_vec(projection.rows));
 }
 
 fn project_tools_state(state: &ToolsState) -> ToolsUiProjection {
@@ -1619,15 +2040,22 @@ mod tests {
         services::ServiceLayer,
         workers::WorkerRuntime,
     };
-    use crate::domain::tools::{
-        ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
-        ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, AboutActionId, AboutLinkId,
-        IMAGE_RESOURCE_PATHS, TOOL_GROUPS, ToolActionId,
+    use crate::domain::{
+        f4se::{
+            F4SE_HEADING, F4SE_LEGEND_TEXT, F4SE_LOADING_TEXT, F4SE_TABLE_COLUMNS, F4seDllFacts,
+            render_f4se_dll_row,
+        },
+        tools::{
+            ABOUT_COPY_INVITE_LABEL, ABOUT_COPY_LINK_LABEL, ABOUT_COPY_SUCCESS_LABEL,
+            ABOUT_CREDIT_LABEL, ABOUT_LINKS, ABOUT_TITLE_LABEL, AboutActionId, AboutLinkId,
+            IMAGE_RESOURCE_PATHS, TOOL_GROUPS, ToolActionId,
+        },
     };
 
     const MAIN_SLINT: &str = include_str!("../ui/main.slint");
     const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
     const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
+    const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
     const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
     const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
     const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
@@ -1637,12 +2065,7 @@ mod tests {
             "Overview",
             OVERVIEW_SLINT,
         ),
-        (
-            "ui/f4se_tab.slint",
-            "F4seTab",
-            "F4SE",
-            include_str!("../ui/f4se_tab.slint"),
-        ),
+        ("ui/f4se_tab.slint", "F4seTab", "F4SE", F4SE_SLINT),
         (
             "ui/scanner_tab.slint",
             "ScannerTab",
@@ -1658,8 +2081,7 @@ mod tests {
         ),
         ("ui/about_tab.slint", "AboutTab", "About", ABOUT_SLINT),
     ];
-    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 2] =
-        [TAB_COMPONENTS[1], TAB_COMPONENTS[2]];
+    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 1] = [TAB_COMPONENTS[2]];
 
     fn slint_string_property_values(source: &str, property: &str) -> Vec<String> {
         let prefix = format!("{property}:");
@@ -1804,6 +2226,243 @@ mod tests {
                 );
             }
         }
+    }
+
+    #[test]
+    fn s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend() {
+        assert!(F4SE_SLINT.contains("export struct F4seUiRow"));
+        for field in [
+            "dll: string",
+            "og: string",
+            "ng: string",
+            "ae: string",
+            "your_game: string",
+            "severity: string",
+            "detail: string",
+        ] {
+            assert!(
+                F4SE_SLINT.contains(field),
+                "F4SE UI row should expose field {field:?}"
+            );
+        }
+        assert!(F4SE_SLINT.contains("background: #202020;"));
+        assert!(F4SE_SLINT.contains("in-out property <string> f4se-status-text"));
+        assert!(F4SE_SLINT.contains("in-out property <bool> f4se-busy"));
+        assert!(F4SE_SLINT.contains("in-out property <string> f4se-loading-or-error-text"));
+        assert!(F4SE_SLINT.contains("in-out property <string> f4se-unknown-game-detail"));
+        assert!(F4SE_SLINT.contains("in-out property <[F4seUiRow]> f4se-rows"));
+        assert!(!F4SE_SLINT.contains("F4SE behavior is reserved for a later port phase."));
+        assert!(!F4SE_SLINT.contains("Button {"));
+        assert!(!F4SE_SLINT.contains("text: \"Refresh\""));
+
+        assert_source_contains_in_order(
+            F4SE_SLINT,
+            &[
+                "title: \"DLL Compatibility\"",
+                "text: \"F4SE\"",
+                "text: \"DLL\"",
+                "text: \"OG\"",
+                "text: \"NG\"",
+                "text: \"AE\"",
+                "text: \"Your Game\"",
+                "for row in root.f4se-rows",
+                "title: \"F4SE DLLs\"",
+            ],
+        );
+        assert_eq!(F4SE_TABLE_COLUMNS, ["DLL", "OG", "NG", "AE", "Your Game"]);
+        assert!(F4SE_SLINT.contains(&slint_assignment("title", F4SE_HEADING)));
+        assert!(F4SE_SLINT.contains(&slint_assignment("text", F4SE_LEGEND_TEXT)));
+        assert!(F4SE_SLINT.contains(F4SE_LOADING_TEXT));
+    }
+
+    #[test]
+    fn s06_f4se_slint_contract_main_window_forwards_properties_and_lazy_activation() {
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "import { F4seTab, F4seUiRow }",
+                "in-out property <string> f4se-status-text",
+                "in-out property <bool> f4se-busy",
+                "in-out property <string> f4se-loading-or-error-text",
+                "in-out property <string> f4se-unknown-game-detail",
+                "in-out property <[F4seUiRow]> f4se-rows",
+                "property <int> active-tab-index: 0",
+                "property <bool> f4se-tab-activation-observed: false",
+                "callback f4se-tab-activated()",
+                "f4se-tab-lazy-activation := Timer",
+                "running: root.active-tab-index == 1 && !root.f4se-tab-activation-observed",
+                "root.f4se-tab-activation-observed = true",
+                "root.f4se-tab-activated()",
+                "TabWidget {",
+                "current-index <=> root.active-tab-index",
+            ],
+        );
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "title: \"Overview\"",
+                "title: \"F4SE\"",
+                "F4seTab {",
+                "f4se-status-text <=> root.f4se-status-text",
+                "f4se-busy <=> root.f4se-busy",
+                "f4se-loading-or-error-text <=> root.f4se-loading-or-error-text",
+                "f4se-unknown-game-detail <=> root.f4se-unknown-game-detail",
+                "f4se-rows <=> root.f4se-rows",
+                "title: \"Scanner\"",
+                "title: \"Tools\"",
+                "title: \"Settings\"",
+                "title: \"About\"",
+            ],
+        );
+        assert!(!MAIN_SLINT.contains("f4se-refresh"));
+        assert_eq!(
+            shell_tab_labels(),
+            ["Overview", "F4SE", "Scanner", "Tools", "Settings", "About"]
+        );
+    }
+
+    #[test]
+    fn s06_f4se_runtime_wiring_projects_controller_snapshots_to_slint_rows() {
+        let facts = F4seDllFacts::f4se("modern.dll", true, true, Some(true), Some(false));
+        let row = render_f4se_dll_row(&facts, F4seGameTarget::NextGen);
+        let snapshot = F4seScanSnapshot::ready(vec![row]);
+
+        let projection = project_f4se_snapshot(&snapshot);
+
+        assert_eq!(projection.status_text, "F4SE scan complete. DLLs: 1");
+        assert!(!projection.busy);
+        assert_eq!(projection.loading_or_error_text, "");
+        assert_eq!(projection.unknown_game_detail, "");
+        assert_eq!(projection.rows.len(), 1);
+        assert_eq!(projection.rows[0].dll.as_str(), "modern.dll");
+        assert_eq!(projection.rows[0].og.as_str(), "✔");
+        assert_eq!(projection.rows[0].ng.as_str(), "✔");
+        assert_eq!(projection.rows[0].ae.as_str(), "");
+        assert_eq!(projection.rows[0].your_game.as_str(), "✔");
+        assert_eq!(projection.rows[0].severity.as_str(), "compatible");
+        assert!(
+            projection.rows[0]
+                .detail
+                .as_str()
+                .contains("Version is supported")
+        );
+    }
+
+    #[test]
+    fn s06_f4se_runtime_wiring_first_activation_schedules_once() {
+        let controller = Arc::new(Mutex::new(F4seController::new()));
+
+        let first = take_f4se_initial_scan_request(&controller)
+            .expect("first F4SE tab activation should request a worker");
+        let second = take_f4se_initial_scan_request(&controller);
+
+        assert_eq!(first.scan_id, 1);
+        assert_eq!(first.task.kind, WorkerTaskKind::Scan);
+        assert_eq!(first.task.id.as_str(), "s06-f4se-scan:1");
+        assert!(second.is_none());
+    }
+
+    #[test]
+    fn s06_f4se_runtime_wiring_spawn_failure_maps_to_safe_projection() {
+        let mut controller = F4seController::new();
+        let request = controller
+            .request_initial_scan()
+            .expect("initial activation should produce work");
+
+        let result = controller.spawn_failed(
+            request.scan_id,
+            WorkerSpawnError::NoActiveRuntime {
+                task_id: request.task.id.clone(),
+            },
+        );
+        let projection = project_f4se_snapshot(controller.snapshot());
+
+        assert_eq!(result, F4seTransitionResult::Applied);
+        assert_eq!(projection.status_text, "F4SE scan failed.");
+        assert!(!projection.busy);
+        assert_eq!(
+            projection.loading_or_error_text,
+            "F4SE scan could not be started."
+        );
+        assert!(!projection.loading_or_error_text.contains("Tokio"));
+        assert!(projection.rows.is_empty());
+    }
+
+    #[test]
+    fn s06_f4se_runtime_wiring_worker_completion_application_and_unrelated_ignore() {
+        let mut controller = F4seController::new();
+        let request = controller.request_scan();
+        assert_eq!(
+            controller.scan_started(request.scan_id),
+            F4seTransitionResult::Applied
+        );
+        assert!(project_f4se_snapshot(controller.snapshot()).busy);
+
+        let facts = F4seDllFacts::f4se("complete.dll", true, true, Some(true), Some(true));
+        let snapshot = F4seScanSnapshot::ready(vec![render_f4se_dll_row(
+            &facts,
+            F4seGameTarget::Anniversary,
+        )]);
+        let event = WorkerEvent::completed(
+            request.task.clone(),
+            f4se_scan_completed_payload(request.scan_id, snapshot),
+        );
+
+        assert_eq!(
+            handle_f4se_worker_event(&mut controller, event),
+            F4seTransitionResult::Applied
+        );
+        let projection = project_f4se_snapshot(controller.snapshot());
+        assert_eq!(projection.status_text, "F4SE scan complete. DLLs: 1");
+        assert!(!projection.busy);
+        assert_eq!(projection.rows[0].dll.as_str(), "complete.dll");
+        assert_eq!(projection.rows[0].your_game.as_str(), "✔");
+
+        let before = controller.snapshot().clone();
+        let unrelated = WorkerEvent::completed(
+            WorkerTask::new("other-worker", WorkerTaskKind::Generic),
+            WorkerPayload::Generic(workers::WorkerMessage::new("Other complete.")),
+        );
+        assert_eq!(
+            handle_f4se_worker_event(&mut controller, unrelated),
+            F4seTransitionResult::Ignored
+        );
+        assert_eq!(controller.snapshot(), &before);
+    }
+
+    #[test]
+    fn s06_f4se_runtime_wiring_error_empty_and_unknown_game_warning_states_are_visible() {
+        let idle_projection = project_f4se_snapshot(&F4seScanSnapshot::idle());
+        assert_eq!(idle_projection.status_text, "F4SE scan has not run yet.");
+        assert!(idle_projection.rows.is_empty());
+
+        let error_projection =
+            project_f4se_snapshot(&F4seScanSnapshot::missing_plugins_folder(false));
+        assert_eq!(error_projection.status_text, "F4SE scan failed.");
+        assert!(
+            error_projection
+                .loading_or_error_text
+                .contains("Data/F4SE/Plugins folder not found")
+        );
+        assert!(
+            error_projection
+                .loading_or_error_text
+                .contains("Try launching via your mod manager.")
+        );
+        assert!(error_projection.rows.is_empty());
+
+        let facts = F4seDllFacts::f4se("unknown-game.dll", false, true, Some(true), Some(true));
+        let warning =
+            F4seScanSnapshot::ready(vec![render_f4se_dll_row(&facts, F4seGameTarget::Unknown)]);
+        let warning_projection = project_f4se_snapshot(&warning);
+        assert_eq!(warning_projection.rows[0].dll.as_str(), "unknown-game.dll");
+        assert_eq!(warning_projection.rows[0].your_game.as_str(), "⚠");
+        assert_eq!(warning_projection.rows[0].severity.as_str(), "warning");
+        assert!(
+            warning_projection
+                .unknown_game_detail
+                .contains("could not be classified")
+        );
     }
 
     #[test]

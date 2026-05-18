@@ -1,20 +1,242 @@
-export component F4seTab inherits Rectangle {
-    VerticalLayout {
-        padding: 24px;
-        spacing: 16px;
-        alignment: center;
+import { GroupBox, ScrollView } from "std-widgets.slint";
 
-        Text {
-            text: "F4SE";
-            font-size: 18px;
-            font-weight: 600;
-            horizontal-alignment: center;
+export struct F4seUiRow {
+    dll: string,
+    og: string,
+    ng: string,
+    ae: string,
+    your_game: string,
+    severity: string,
+    detail: string,
+}
+
+component SeverityCell inherits Text {
+    in property <string> severity: "neutral";
+    in property <bool> important: false;
+
+    color: root.severity == "compatible" ? #8fdc8f :
+        root.severity == "warning" ? #ffd166 :
+        root.severity == "incompatible" ? #ff7b7b :
+        #d8d8d8;
+    font-weight: root.important ? 600 : 400;
+    vertical-alignment: center;
+}
+
+component F4seHeaderCell inherits Text {
+    in property <length> cell-width: 72px;
+
+    width: root.cell-width;
+    color: #f3f3f3;
+    font-size: 12px;
+    font-weight: 700;
+    horizontal-alignment: center;
+}
+
+component F4seRow inherits Rectangle {
+    in property <F4seUiRow> entry;
+
+    min-height: root.entry.detail == "" ? 28px : 56px;
+    background: root.entry.severity == "compatible" ? #1f3325 :
+        root.entry.severity == "warning" ? #3a3118 :
+        root.entry.severity == "incompatible" ? #3a2020 :
+        #262626;
+    border-color: root.entry.severity == "compatible" ? #3f7d4b :
+        root.entry.severity == "warning" ? #8a6c21 :
+        root.entry.severity == "incompatible" ? #8a3d3d :
+        #383838;
+    border-width: 1px;
+    border-radius: 3px;
+
+    VerticalLayout {
+        padding: 5px;
+        spacing: 2px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+
+            SeverityCell {
+                text: root.entry.dll;
+                severity: root.entry.severity;
+                important: true;
+                width: 232px;
+                font-size: 12px;
+                horizontal-alignment: left;
+            }
+
+            SeverityCell {
+                text: root.entry.og;
+                severity: root.entry.severity;
+                width: 54px;
+                font-size: 15px;
+                horizontal-alignment: center;
+            }
+
+            SeverityCell {
+                text: root.entry.ng;
+                severity: root.entry.severity;
+                width: 54px;
+                font-size: 15px;
+                horizontal-alignment: center;
+            }
+
+            SeverityCell {
+                text: root.entry.ae;
+                severity: root.entry.severity;
+                width: 54px;
+                font-size: 15px;
+                horizontal-alignment: center;
+            }
+
+            SeverityCell {
+                text: root.entry.your_game;
+                severity: root.entry.severity;
+                width: 78px;
+                font-size: 15px;
+                horizontal-alignment: center;
+            }
         }
 
-        Text {
-            text: "F4SE behavior is reserved for a later port phase.";
-            font-size: 14px;
-            horizontal-alignment: center;
+        if root.entry.detail != "": Text {
+            text: root.entry.detail;
+            color: #c8c8c8;
+            font-size: 11px;
+            wrap: word-wrap;
+        }
+    }
+}
+
+component F4seStatusBanner inherits Rectangle {
+    in property <string> message;
+    in property <bool> error: false;
+
+    height: 34px;
+    background: root.error ? #4a2424 : #263447;
+    border-color: root.error ? #d36b6b : #5e8fc2;
+    border-width: 1px;
+    border-radius: 4px;
+
+    Text {
+        text: root.message;
+        color: root.error ? #ffd6d6 : #d9ebff;
+        font-size: 13px;
+        x: 8px;
+        y: 8px;
+        wrap: word-wrap;
+    }
+}
+
+export component F4seTab inherits Rectangle {
+    in-out property <string> f4se-status-text: "F4SE scan has not run yet.";
+    in-out property <bool> f4se-busy: false;
+    in-out property <string> f4se-loading-or-error-text: "";
+    in-out property <string> f4se-unknown-game-detail: "";
+    in-out property <[F4seUiRow]> f4se-rows;
+
+    background: #202020;
+
+    HorizontalLayout {
+        padding: 20px;
+        spacing: 12px;
+        alignment: start;
+
+        GroupBox {
+            title: "DLL Compatibility";
+            width: 540px;
+
+            VerticalLayout {
+                padding: 8px;
+                spacing: 8px;
+                alignment: start;
+
+                HorizontalLayout {
+                    spacing: 8px;
+                    alignment: start;
+
+                    Text {
+                        text: "F4SE";
+                        font-size: 18px;
+                        font-weight: 600;
+                        color: #f3f3f3;
+                        vertical-alignment: center;
+                    }
+
+                    Text {
+                        text: root.f4se-status-text;
+                        color: root.f4se-busy ? #8ecbff : #d8d8d8;
+                        font-size: 13px;
+                        vertical-alignment: center;
+                        wrap: word-wrap;
+                    }
+                }
+
+                if root.f4se-loading-or-error-text != "": F4seStatusBanner {
+                    message: root.f4se-loading-or-error-text;
+                    error: !root.f4se-busy;
+                }
+
+                if root.f4se-unknown-game-detail != "": F4seStatusBanner {
+                    message: root.f4se-unknown-game-detail;
+                    error: false;
+                }
+
+                Rectangle {
+                    height: 28px;
+                    background: #303030;
+                    border-color: #484848;
+                    border-width: 1px;
+                    border-radius: 3px;
+
+                    HorizontalLayout {
+                        padding-left: 5px;
+                        padding-right: 5px;
+                        spacing: 6px;
+                        alignment: start;
+
+                        F4seHeaderCell { text: "DLL"; cell-width: 232px; horizontal-alignment: left; }
+                        F4seHeaderCell { text: "OG"; cell-width: 54px; }
+                        F4seHeaderCell { text: "NG"; cell-width: 54px; }
+                        F4seHeaderCell { text: "AE"; cell-width: 54px; }
+                        F4seHeaderCell { text: "Your Game"; cell-width: 78px; }
+                    }
+                }
+
+                ScrollView {
+                    min-height: 390px;
+
+                    VerticalLayout {
+                        padding: 0px;
+                        spacing: 4px;
+                        alignment: start;
+
+                        if root.f4se-rows.length == 0: Text {
+                            text: root.f4se-busy ? "Scanning DLLs..." : "No F4SE DLL rows to display.";
+                            color: #a8a8a8;
+                            font-size: 12px;
+                            wrap: word-wrap;
+                        }
+
+                        for row in root.f4se-rows: F4seRow {
+                            entry: row;
+                        }
+                    }
+                }
+            }
+        }
+
+        GroupBox {
+            title: "F4SE DLLs";
+            width: 260px;
+
+            ScrollView {
+                Text {
+                    text: "This checks all DLLs in\nData/F4SE/Plugins/ for\nversion-specific code to\ndetermine OG/NG support.\n\n✔ Version is supported\n\n❌ Version not supported\n\n❓ Not an F4SE DLL.\nMay still be loaded by\nother DLLs.\n\n⚠ Consult mod page to\nverify version support if\nyou see this icon.\nSome DLLs' version support\ncannot be reliably\ndetermined.";
+                    color: #d8d8d8;
+                    font-size: 12px;
+                    wrap: word-wrap;
+                }
+            }
         }
     }
 }
