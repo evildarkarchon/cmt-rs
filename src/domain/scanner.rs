@@ -12,7 +12,11 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::domain::{overview::OverviewProblem, settings::ScannerSettings};
+use crate::domain::{
+    autofix::{AutoFixOperationKey, AutoFixSelectionIdentity},
+    overview::OverviewProblem,
+    settings::ScannerSettings,
+};
 
 /// Reference notebook tab title.
 pub const SCANNER_TAB_TITLE: &str = "Scanner";
@@ -42,8 +46,6 @@ pub const PROGRESS_COMPLETE_PERCENT: f32 = 100.0;
 pub const PROGRESS_CHECK_DELAY_MS: u64 = 100;
 /// S07 intentionally renders scan settings from persisted state without editing them inline.
 pub const SCANNER_SETTINGS_READ_ONLY_IN_S07: bool = true;
-/// S07 read-only status for write-capable Auto-Fix behavior deferred to a later slice.
-pub const AUTO_FIX_DEFERRED_STATUS: &str = "Auto-Fix is reserved for a later port phase.";
 
 /// Reference race-subgraph threshold from `CMT/src/globals.py`.
 pub const RACE_SUBGRAPH_THRESHOLD: usize = 100;
@@ -83,8 +85,6 @@ pub const MOD_NOT_AVAILABLE_LABEL: &str = "N/A";
 pub const ACTION_COPY_DETAILS_LABEL: &str = "Copy Details";
 /// Reference file-list action button label.
 pub const ACTION_FILE_LIST_LABEL: &str = "File List";
-/// Reference Auto-Fix button label for future write-capable scanner actions.
-pub const ACTION_AUTO_FIX_LABEL: &str = "Auto-Fix";
 /// Read-only action label for opening a problem location.
 pub const ACTION_OPEN_LOCATION_LABEL: &str = "Open Location";
 /// Read-only action label for opening a solution URL.
@@ -464,6 +464,26 @@ impl ScannerSolutionKind {
             other => other.as_reference_text().to_owned(),
         }
     }
+
+    /// Returns the typed Auto-Fix operation key represented by this solution kind.
+    ///
+    /// Custom solution text has no reference `SolutionType` registry key and must
+    /// therefore stay display-only and ineligible for Auto-Fix by string matching.
+    pub fn auto_fix_operation_key(&self) -> Option<AutoFixOperationKey> {
+        match self {
+            Self::ArchiveOrDeleteFile => Some(AutoFixOperationKey::ArchiveOrDeleteFile),
+            Self::ArchiveFolder => Some(AutoFixOperationKey::ArchiveFolder),
+            Self::DeleteFile => Some(AutoFixOperationKey::DeleteFile),
+            Self::ConvertDeleteOrIgnoreFile => Some(AutoFixOperationKey::ConvertDeleteOrIgnoreFile),
+            Self::DeleteOrIgnoreFile => Some(AutoFixOperationKey::DeleteOrIgnoreFile),
+            Self::DeleteOrIgnoreFolder => Some(AutoFixOperationKey::DeleteOrIgnoreFolder),
+            Self::RenameArchive => Some(AutoFixOperationKey::RenameArchive),
+            Self::DownloadMod => Some(AutoFixOperationKey::DownloadMod),
+            Self::VerifyFiles => Some(AutoFixOperationKey::VerifyFiles),
+            Self::UnknownFormat => Some(AutoFixOperationKey::UnknownFormat),
+            Self::Custom(_) => None,
+        }
+    }
 }
 
 /// Optional mod attribution shown when a mod-manager staging path is active.
@@ -645,8 +665,6 @@ pub enum ScannerActionKind {
     CopySolutionUrl,
     /// Show the selected result's file list.
     ShowFileList,
-    /// Write-capable Auto-Fix action reserved for future slices.
-    AutoFixDeferred,
 }
 
 impl ScannerActionKind {
@@ -658,7 +676,6 @@ impl ScannerActionKind {
             Self::OpenSolutionUrl => "open-solution-url",
             Self::CopySolutionUrl => "copy-solution-url",
             Self::ShowFileList => "show-file-list",
-            Self::AutoFixDeferred => "auto-fix",
         }
     }
 
@@ -670,7 +687,6 @@ impl ScannerActionKind {
             "open-solution-url" => Some(Self::OpenSolutionUrl),
             "copy-solution-url" => Some(Self::CopySolutionUrl),
             "show-file-list" => Some(Self::ShowFileList),
-            "auto-fix" => Some(Self::AutoFixDeferred),
             _ => None,
         }
     }
@@ -687,8 +703,6 @@ pub enum ScannerActionTarget {
     Url(String),
     /// The selected result's attached file-list metadata should be shown.
     FileList,
-    /// The action intentionally has no executable target in S07.
-    Deferred,
 }
 
 /// UI-safe scanner action descriptor; executing it belongs outside the domain module.
@@ -717,17 +731,6 @@ impl ScannerActionDescriptor {
             enabled: true,
             read_only: true,
             status_text: None,
-        }
-    }
-
-    fn deferred_auto_fix() -> Self {
-        Self {
-            kind: ScannerActionKind::AutoFixDeferred,
-            label: ACTION_AUTO_FIX_LABEL,
-            target: ScannerActionTarget::Deferred,
-            enabled: false,
-            read_only: false,
-            status_text: Some(AUTO_FIX_DEFERRED_STATUS),
         }
     }
 }
@@ -807,12 +810,12 @@ pub struct ScannerResult {
     pub summary: String,
     /// Optional solution text before fallback/extra-data rendering.
     pub solution: Option<String>,
+    /// Typed reference solution identity retained separately from display text.
+    pub solution_kind: Option<ScannerSolutionKind>,
     /// Extra URL/text/detail data appended beneath solution text.
     pub extra_data: Vec<ScannerExtraData>,
     /// Optional file-list metadata.
     pub file_list: Option<ScannerFileList>,
-    /// Whether a future Auto-Fix action exists but is deferred by this slice.
-    pub auto_fix_deferred: bool,
 }
 
 impl ScannerResult {
@@ -832,9 +835,9 @@ impl ScannerResult {
             mod_attribution: None,
             summary: summary.into(),
             solution,
+            solution_kind: None,
             extra_data: Vec::new(),
             file_list: None,
-            auto_fix_deferred: false,
         }
     }
 
@@ -848,7 +851,7 @@ impl ScannerResult {
     ) -> Self {
         let absolute_path = absolute_path.into();
         let relative_path = relative_path.into();
-        let detail_path = relative_path.display().to_string();
+        let detail_path = path_display_slash(&relative_path);
         let tree_label = leaf_name(&detail_path)
             .filter(|leaf| !leaf.is_empty())
             .map(str::to_owned)
@@ -861,9 +864,9 @@ impl ScannerResult {
             mod_attribution: None,
             summary: summary.into(),
             solution,
+            solution_kind: None,
             extra_data: Vec::new(),
             file_list: None,
-            auto_fix_deferred: false,
         }
     }
 
@@ -885,10 +888,64 @@ impl ScannerResult {
         self
     }
 
-    /// Marks this result as having a future Auto-Fix action that is disabled in S07.
-    pub const fn with_deferred_auto_fix(mut self) -> Self {
-        self.auto_fix_deferred = true;
+    /// Attaches a typed reference solution and derives the display text from it.
+    pub fn with_solution_kind(mut self, solution_kind: ScannerSolutionKind) -> Self {
+        self.solution = Some(solution_kind.as_reference_text().to_owned());
+        self.solution_kind = Some(solution_kind);
         self
+    }
+
+    /// Returns the typed Auto-Fix operation key for this result, if one was retained.
+    pub fn auto_fix_operation_key(&self) -> Option<AutoFixOperationKey> {
+        self.solution_kind
+            .as_ref()
+            .and_then(ScannerSolutionKind::auto_fix_operation_key)
+    }
+
+    /// Returns a deterministic owned identity for the selected result facts.
+    ///
+    /// The identity is computed from already-owned/displayed data only and never
+    /// performs filesystem I/O. Later write-capable Auto-Fix requests can carry
+    /// this value to reject stale or tampered selections before mutation.
+    pub fn selection_identity(&self) -> AutoFixSelectionIdentity {
+        AutoFixSelectionIdentity::from_parts(self.selection_identity_parts())
+    }
+
+    fn selection_identity_parts(&self) -> Vec<String> {
+        let mut parts = vec![
+            self.problem_type.label().to_owned(),
+            self.tree_label.clone(),
+            self.detail_path.clone(),
+            self.absolute_path
+                .as_ref()
+                .map(|path| path_display_slash(path))
+                .unwrap_or_default(),
+            self.mod_attribution
+                .as_ref()
+                .map(|attribution| attribution.name.clone())
+                .unwrap_or_default(),
+            self.summary.clone(),
+            self.solution.clone().unwrap_or_default(),
+            self.solution_kind
+                .as_ref()
+                .and_then(ScannerSolutionKind::auto_fix_operation_key)
+                .map(|key| key.as_id().to_owned())
+                .unwrap_or_default(),
+        ];
+        for extra in &self.extra_data {
+            parts.push(extra.display_text());
+        }
+        if let Some(file_list) = &self.file_list {
+            parts.push(file_list.title.clone());
+            parts.push(file_list.description.clone());
+            parts.push(file_list.columns[0].clone());
+            parts.push(file_list.columns[1].clone());
+            for entry in &file_list.entries {
+                parts.push(entry.value.clone());
+                parts.push(path_display_slash(&entry.path));
+            }
+        }
+        parts
     }
 
     /// Returns the solution text with reference fallback and extra-data appending semantics.
@@ -985,10 +1042,6 @@ impl ScannerResult {
                 ACTION_FILE_LIST_LABEL,
                 ScannerActionTarget::FileList,
             ));
-        }
-
-        if self.auto_fix_deferred {
-            actions.push(ScannerActionDescriptor::deferred_auto_fix());
         }
 
         actions
@@ -1178,6 +1231,10 @@ fn mod_sort_key(result: &ScannerResult) -> &str {
         .as_ref()
         .map(ModAttribution::display_name)
         .unwrap_or("")
+}
+
+fn path_display_slash(path: &Path) -> String {
+    path.to_string_lossy().replace('\\', "/")
 }
 
 fn path_leaf_display(path: &Path) -> String {
@@ -1500,8 +1557,7 @@ mod scanner_domain {
         .with_extra_data(vec![ScannerExtraData::url("https://example.invalid/mod")])
         .with_file_list(ScannerFileList::race_subgraph_records(vec![
             ScannerFileListEntry::new(101, "C:/Games/Fallout 4/Data/Example.esp"),
-        ]))
-        .with_deferred_auto_fix();
+        ]));
 
         let actions = with_url.read_only_actions();
         assert!(
@@ -1519,12 +1575,8 @@ mod scanner_domain {
                 .iter()
                 .any(|action| action.kind == ScannerActionKind::ShowFileList)
         );
-        let deferred = actions
-            .iter()
-            .find(|action| action.kind == ScannerActionKind::AutoFixDeferred)
-            .expect("deferred Auto-Fix metadata should be present when requested");
-        assert!(!deferred.enabled);
-        assert_eq!(deferred.status_text, Some(AUTO_FIX_DEFERRED_STATUS));
+        assert_eq!(ScannerActionKind::from_id("auto-fix"), None);
+        assert!(actions.iter().all(|action| action.label != "Auto-Fix"));
         assert_eq!(
             with_url
                 .file_list
@@ -1532,5 +1584,131 @@ mod scanner_domain {
                 .map(|file_list| file_list.title.as_str()),
             Some(RACE_SUBGRAPH_FILE_LIST_TITLE)
         );
+    }
+
+    #[test]
+    fn scanner_autofix_domain_typed_solution_identity_drives_operation_key() {
+        let result = ScannerResult::with_path(
+            ScannerProblemType::JunkFile,
+            "C:/Games/Fallout 4/Data/desktop.ini",
+            "desktop.ini",
+            "This is a junk file not used by the game or mod managers.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::DeleteOrIgnoreFile);
+
+        assert_eq!(
+            result.solution.as_deref(),
+            Some(ScannerSolutionKind::DeleteOrIgnoreFile.as_reference_text())
+        );
+        assert_eq!(
+            result.solution_kind,
+            Some(ScannerSolutionKind::DeleteOrIgnoreFile)
+        );
+        assert_eq!(
+            result.auto_fix_operation_key(),
+            Some(AutoFixOperationKey::DeleteOrIgnoreFile)
+        );
+    }
+
+    #[test]
+    fn scanner_autofix_domain_string_only_solutions_are_not_eligible_by_matching() {
+        let same_display_text = ScannerSolutionKind::DeleteOrIgnoreFile
+            .as_reference_text()
+            .to_owned();
+        let display_only = ScannerResult::with_path(
+            ScannerProblemType::JunkFile,
+            "C:/Games/Fallout 4/Data/desktop.ini",
+            "desktop.ini",
+            "This is a junk file not used by the game or mod managers.",
+            Some(same_display_text),
+        );
+        assert_eq!(display_only.solution_kind, None);
+        assert_eq!(display_only.auto_fix_operation_key(), None);
+
+        let custom_kind = ScannerResult::simple(
+            ScannerProblemType::Custom("Future Problem".to_owned()),
+            "future.dat",
+            "Future scanner output.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::Custom("Custom guidance".to_owned()));
+        assert_eq!(custom_kind.solution.as_deref(), Some("Custom guidance"));
+        assert_eq!(custom_kind.auto_fix_operation_key(), None);
+    }
+
+    #[test]
+    fn scanner_autofix_domain_selection_identity_is_stable_and_changes_with_facts() {
+        let baseline = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            "C:/Games/Fallout 4/Data/Sound/example.mp3",
+            "Sound/example.mp3",
+            "Format not in whitelist for sound.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::ConvertDeleteOrIgnoreFile);
+        let same = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            "C:/Games/Fallout 4/Data/Sound/example.mp3",
+            "Sound/example.mp3",
+            "Format not in whitelist for sound.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::ConvertDeleteOrIgnoreFile);
+        let changed_summary = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            "C:/Games/Fallout 4/Data/Sound/example.mp3",
+            "Sound/example.mp3",
+            "Format not in whitelist for meshes.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::ConvertDeleteOrIgnoreFile);
+        let changed_solution = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            "C:/Games/Fallout 4/Data/Sound/example.mp3",
+            "Sound/example.mp3",
+            "Format not in whitelist for sound.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::DeleteOrIgnoreFile);
+        let changed_path = ScannerResult::with_path(
+            ScannerProblemType::UnexpectedFormat,
+            "C:/Games/Fallout 4/Data/Sound/other.mp3",
+            "Sound/other.mp3",
+            "Format not in whitelist for sound.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::ConvertDeleteOrIgnoreFile);
+
+        assert_eq!(baseline.selection_identity(), same.selection_identity());
+        assert_ne!(
+            baseline.selection_identity(),
+            changed_summary.selection_identity()
+        );
+        assert_ne!(
+            baseline.selection_identity(),
+            changed_solution.selection_identity()
+        );
+        assert_ne!(
+            baseline.selection_identity(),
+            changed_path.selection_identity()
+        );
+    }
+
+    #[test]
+    fn scanner_autofix_domain_old_deferred_read_only_action_is_absent() {
+        let result = ScannerResult::with_path(
+            ScannerProblemType::JunkFile,
+            "C:/Games/Fallout 4/Data/desktop.ini",
+            "desktop.ini",
+            "This is a junk file not used by the game or mod managers.",
+            None,
+        )
+        .with_solution_kind(ScannerSolutionKind::DeleteOrIgnoreFile);
+        let actions = result.read_only_actions();
+
+        assert_eq!(ScannerActionKind::from_id("auto-fix"), None);
+        assert!(actions.iter().all(|action| action.label != "Auto-Fix"));
+        assert!(actions.iter().all(|action| action.read_only));
     }
 }

@@ -4,6 +4,7 @@
 //! typed settings, scan results, game metadata, archive information, and other
 //! pure domain state here without putting that logic in Slint markup.
 
+pub mod autofix;
 pub mod discovery;
 pub mod f4se;
 pub mod mod_manager;
@@ -40,8 +41,23 @@ mod tests {
         assert_type::<crate::domain::overview::OverviewSnapshot>();
         assert_type::<crate::domain::overview::OverviewProblem>();
         assert_type::<crate::domain::overview::UpdateBannerState>();
+        assert_type::<crate::domain::autofix::AutoFixButtonState>();
+        assert_type::<crate::domain::autofix::AutoFixCompletion>();
+        assert_type::<crate::domain::autofix::AutoFixOperationKey>();
+        assert_type::<crate::domain::autofix::AutoFixPlanPreview>();
+        assert_type::<crate::domain::autofix::AutoFixRejection>();
+        assert_type::<crate::domain::autofix::AutoFixRequest>();
+        assert_type::<crate::domain::autofix::AutoFixResultDetail>();
+        assert_type::<crate::domain::autofix::AutoFixSelectionIdentity>();
+        assert_type::<crate::domain::autofix::AutoFixStatus>();
+        let _ = crate::domain::autofix::AUTO_FIX_BUTTON_LABEL;
+        let _ = crate::domain::autofix::AUTO_FIXING_BUTTON_LABEL;
+        let _ = crate::domain::autofix::AUTO_FIX_FIXED_BUTTON_LABEL;
+        let _ = crate::domain::autofix::AUTO_FIX_FAILED_BUTTON_LABEL;
+        let _ = crate::domain::autofix::AUTO_FIX_RESULTS_TITLE;
         assert_type::<crate::domain::scanner::ScannerResult>();
         assert_type::<crate::domain::scanner::ScannerProblemType>();
+        assert_type::<crate::domain::scanner::ScannerSolutionKind>();
         assert_type::<crate::domain::scanner::ScannerActionDescriptor>();
         assert_type::<crate::domain::f4se::F4seGameTarget>();
         assert_type::<crate::domain::f4se::F4seDllFacts>();

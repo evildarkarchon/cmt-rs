@@ -1207,13 +1207,13 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
             }
 
             if request.settings.junk_files && folder_lower == "fomod" {
-                results.push(path_result(
+                results.push(path_result_with_solution_kind(
                     ScannerProblemType::JunkFile,
                     &folder.path,
                     &folder_relative,
                     mod_index.folder(&folder_relative),
                     JUNK_FOLDER_SUMMARY,
-                    Some(ScannerSolutionKind::DeleteOrIgnoreFolder.into_solution_text()),
+                    ScannerSolutionKind::DeleteOrIgnoreFolder,
                 ));
                 diagnostics.skipped_directory_count += 1;
                 continue;
@@ -1225,13 +1225,13 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
             }
 
             if request.settings.loose_previs && folder_lower == "vis" {
-                results.push(path_result(
+                results.push(path_result_with_solution_kind(
                     ScannerProblemType::LoosePrevis,
                     &folder.path,
                     &folder_relative,
                     mod_index.folder(&folder_relative),
                     LOOSE_PREVIS_SUMMARY,
-                    Some(ScannerSolutionKind::ArchiveFolder.into_solution_text()),
+                    ScannerSolutionKind::ArchiveFolder,
                 ));
                 diagnostics.skipped_directory_count += 1;
                 continue;
@@ -1301,26 +1301,26 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
 
             if data_root_lower == "meshes" {
                 if request.settings.loose_previs && folder_lower == "precombined" {
-                    results.push(path_result(
+                    results.push(path_result_with_solution_kind(
                         ScannerProblemType::LoosePrevis,
                         &folder.path,
                         &folder_relative,
                         mod_index.folder(&folder_relative),
                         LOOSE_PREVIS_SUMMARY,
-                        Some(ScannerSolutionKind::ArchiveFolder.into_solution_text()),
+                        ScannerSolutionKind::ArchiveFolder,
                     ));
                     diagnostics.skipped_directory_count += 1;
                     continue;
                 }
 
                 if request.settings.problem_overrides && folder_lower == "animtextdata" {
-                    results.push(path_result(
+                    results.push(path_result_with_solution_kind(
                         ScannerProblemType::LooseAnimTextData,
                         &folder.path,
                         &folder_relative,
                         mod_index.folder(&folder_relative),
                         LOOSE_ANIM_TEXT_DATA_SUMMARY,
-                        Some(ScannerSolutionKind::ArchiveFolder.into_solution_text()),
+                        ScannerSolutionKind::ArchiveFolder,
                     ));
                     diagnostics.skipped_directory_count += 1;
                     continue;
@@ -1399,13 +1399,13 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
                     .iter()
                     .any(|suffix| file_lower.ends_with(suffix)))
         {
-            results.push(path_result(
+            results.push(path_result_with_solution_kind(
                 ScannerProblemType::JunkFile,
                 &file.path,
                 &file_relative,
                 attribution,
                 JUNK_FILE_SUMMARY,
-                Some(ScannerSolutionKind::DeleteOrIgnoreFile.into_solution_text()),
+                ScannerSolutionKind::DeleteOrIgnoreFile,
             ));
             return;
         }
@@ -1452,13 +1452,13 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
                     archive_name_suffix_valid(&stem_lower, archive_suffixes);
                 if !suffix_valid {
                     results.push(
-                        path_result(
+                        path_result_with_solution_kind(
                             ScannerProblemType::InvalidArchiveName,
                             &file.path,
                             &file_relative,
                             attribution,
                             INVALID_ARCHIVE_NAME_SUMMARY,
-                            Some(ScannerSolutionKind::RenameArchive.into_solution_text()),
+                            ScannerSolutionKind::RenameArchive,
                         )
                         .with_extra_data(vec![
                             ScannerExtraData::text(format!(
@@ -1506,7 +1506,7 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
                         "Format not in whitelist for {data_root_lower}.\nA file with the expected format was NOT found ({}).",
                         expected_formats.join(", ")
                     ),
-                    ScannerSolutionKind::ConvertDeleteOrIgnoreFile.into_solution_text(),
+                    ScannerSolutionKind::ConvertDeleteOrIgnoreFile,
                 )
             } else {
                 (
@@ -1514,7 +1514,7 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
                         "Format not in whitelist for {data_root_lower}.\nA file with the expected format was found ({}).",
                         proper_found.join(", ")
                     ),
-                    ScannerSolutionKind::DeleteOrIgnoreFile.into_solution_text(),
+                    ScannerSolutionKind::DeleteOrIgnoreFile,
                 )
             }
         } else {
@@ -1522,17 +1522,17 @@ impl<'a, F: Filesystem + ?Sized> ScannerScanService<'a, F> {
                 format!(
                     "Format not in whitelist for {data_root_lower}.\nUnable to determine whether the game will use this file."
                 ),
-                ScannerSolutionKind::UnknownFormat.into_solution_text(),
+                ScannerSolutionKind::UnknownFormat,
             )
         };
 
-        path_result(
+        path_result_with_solution_kind(
             ScannerProblemType::UnexpectedFormat,
             absolute_path,
             relative_path,
             attribution,
             summary,
-            Some(solution),
+            solution,
         )
     }
 
@@ -1739,6 +1739,25 @@ fn path_result(
         result = result.with_mod_attribution(attribution.mod_name.clone());
     }
     result
+}
+
+fn path_result_with_solution_kind(
+    problem_type: ScannerProblemType,
+    absolute_path: &Path,
+    relative_path: &Path,
+    attribution: Option<&ModIndexedPath>,
+    summary: impl Into<String>,
+    solution_kind: ScannerSolutionKind,
+) -> ScannerResult {
+    path_result(
+        problem_type,
+        absolute_path,
+        relative_path,
+        attribution,
+        summary,
+        None,
+    )
+    .with_solution_kind(solution_kind)
 }
 
 fn scanner_error_row(
@@ -1950,6 +1969,7 @@ mod scanner_scan_service {
 
     use crate::{
         domain::{
+            autofix::AutoFixOperationKey,
             discovery::{
                 ArchiveFormat, ArchiveVersion, Fallout4Installation, ModuleHeaderVersion,
                 ModuleKind, SemanticVersion,
@@ -2338,6 +2358,61 @@ mod scanner_scan_service {
                 .results
                 .iter()
                 .any(|result| result.detail_path.contains("UnknownRoot"))
+        );
+    }
+
+    #[test]
+    fn scanner_autofix_domain_scan_service_preserves_typed_keys_without_string_matching() {
+        let fs = FakeFilesystem::default().with_file("Game/Data/desktop.ini", b"junk");
+        let overview = vec![OverviewProblem::with_path(
+            OverviewProblemSource::Scanner,
+            "Game/Data/overview-desktop.ini",
+            Some(PathBuf::from("overview-desktop.ini")),
+            OverviewProblemType::Custom("Junk File".to_owned()),
+            "Overview supplied display-only problem.",
+            Some(
+                ScannerSolutionKind::DeleteOrIgnoreFile
+                    .as_reference_text()
+                    .to_owned(),
+            ),
+        )];
+        let settings = ScannerSettings {
+            overview_issues: true,
+            errors: false,
+            wrong_format: false,
+            loose_previs: false,
+            junk_files: true,
+            problem_overrides: false,
+            race_subgraphs: false,
+        };
+        let request = ScannerScanRequest::new(909, &settings).with_overview_problems(&overview);
+
+        let output = service_scan(&fs, &settings, request);
+
+        let scanner_owned = output
+            .results
+            .iter()
+            .find(|result| result.summary == JUNK_FILE_SUMMARY)
+            .expect("scanner-owned junk-file result should be present");
+        assert_eq!(
+            scanner_owned.solution_kind,
+            Some(ScannerSolutionKind::DeleteOrIgnoreFile)
+        );
+        assert_eq!(
+            scanner_owned.auto_fix_operation_key(),
+            Some(AutoFixOperationKey::DeleteOrIgnoreFile)
+        );
+
+        let overview_owned = output
+            .results
+            .iter()
+            .find(|result| result.summary == "Overview supplied display-only problem.")
+            .expect("overview handoff result should be present");
+        assert_eq!(overview_owned.solution_kind, None);
+        assert_eq!(overview_owned.auto_fix_operation_key(), None);
+        assert_eq!(
+            overview_owned.solution.as_deref(),
+            Some(ScannerSolutionKind::DeleteOrIgnoreFile.as_reference_text())
         );
     }
 
