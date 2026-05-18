@@ -8,6 +8,7 @@
 pub mod about_controller;
 pub mod f4se_controller;
 pub mod overview_controller;
+pub mod scanner_controller;
 pub mod settings_controller;
 pub mod tools_controller;
 

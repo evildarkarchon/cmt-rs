@@ -649,6 +649,33 @@ pub enum ScannerActionKind {
     AutoFixDeferred,
 }
 
+impl ScannerActionKind {
+    /// Returns the stable UI/controller action id used by scanner intent handlers.
+    pub const fn as_id(self) -> &'static str {
+        match self {
+            Self::CopyDetails => "copy-details",
+            Self::OpenLocation => "open-location",
+            Self::OpenSolutionUrl => "open-solution-url",
+            Self::CopySolutionUrl => "copy-solution-url",
+            Self::ShowFileList => "show-file-list",
+            Self::AutoFixDeferred => "auto-fix",
+        }
+    }
+
+    /// Parses a stable UI/controller action id into a scanner action kind.
+    pub fn from_id(action_id: &str) -> Option<Self> {
+        match action_id {
+            "copy-details" => Some(Self::CopyDetails),
+            "open-location" => Some(Self::OpenLocation),
+            "open-solution-url" => Some(Self::OpenSolutionUrl),
+            "copy-solution-url" => Some(Self::CopySolutionUrl),
+            "show-file-list" => Some(Self::ShowFileList),
+            "auto-fix" => Some(Self::AutoFixDeferred),
+            _ => None,
+        }
+    }
+}
+
 /// Target payload for a read-only scanner detail action.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ScannerActionTarget {
@@ -702,6 +729,64 @@ impl ScannerActionDescriptor {
             read_only: false,
             status_text: Some(AUTO_FIX_DEFERRED_STATUS),
         }
+    }
+}
+
+/// Safe scanner action feedback produced by copy/open/file-list workers.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannerActionFeedback {
+    /// Optional scan id the action belonged to; stale ids are ignored by controllers.
+    pub scan_id: Option<u64>,
+    /// Scanner action that completed or was rejected.
+    pub action: ScannerActionKind,
+    /// True when the action completed successfully.
+    pub succeeded: bool,
+    /// User-safe feedback suitable for the Scanner status surface.
+    pub safe_message: String,
+    /// Optional diagnostic detail for logs/tests; not displayed as primary text.
+    pub diagnostic: Option<String>,
+}
+
+impl ScannerActionFeedback {
+    /// Creates successful action feedback with user-safe text.
+    pub fn succeeded(
+        scan_id: Option<u64>,
+        action: ScannerActionKind,
+        safe_message: impl Into<String>,
+    ) -> Self {
+        Self {
+            scan_id,
+            action,
+            succeeded: true,
+            safe_message: safe_message.into(),
+            diagnostic: None,
+        }
+    }
+
+    /// Creates failed action feedback with user-safe text.
+    pub fn failed(
+        scan_id: Option<u64>,
+        action: ScannerActionKind,
+        safe_message: impl Into<String>,
+    ) -> Self {
+        Self {
+            scan_id,
+            action,
+            succeeded: false,
+            safe_message: safe_message.into(),
+            diagnostic: None,
+        }
+    }
+
+    /// Adds optional diagnostic detail while preserving the safe message.
+    pub fn with_diagnostic(mut self, diagnostic: impl Into<String>) -> Self {
+        self.diagnostic = Some(diagnostic.into());
+        self
+    }
+
+    /// Returns the safe user-facing feedback message.
+    pub fn safe_message(&self) -> &str {
+        self.safe_message.as_str()
     }
 }
 
@@ -946,6 +1031,59 @@ impl ScannerResultGroup {
     }
 }
 
+/// Owned scanner completion snapshot that can cross worker/UI boundaries.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannerScanSnapshot {
+    /// Scan id copied from the request that produced this snapshot.
+    pub scan_id: u64,
+    /// Safe final status text for the Scanner status surface.
+    pub status_text: String,
+    /// Reference-shaped result-count text.
+    pub result_count_text: String,
+    /// Flat scanner results in deterministic display order.
+    pub results: Vec<ScannerResult>,
+    /// Grouped scanner results in deterministic reference problem order.
+    pub groups: Vec<ScannerResultGroup>,
+}
+
+impl ScannerScanSnapshot {
+    /// Creates an empty scanner snapshot with the supplied safe status text.
+    pub fn empty(scan_id: u64, status_text: impl Into<String>) -> Self {
+        Self::from_grouped(scan_id, Vec::new(), Vec::new(), status_text)
+    }
+
+    /// Creates a snapshot from flat results, computing deterministic groups.
+    pub fn from_results(
+        scan_id: u64,
+        results: Vec<ScannerResult>,
+        status_text: impl Into<String>,
+    ) -> Self {
+        let groups = group_scanner_results(&results);
+        Self::from_grouped(scan_id, results, groups, status_text)
+    }
+
+    /// Creates a snapshot from already-grouped results.
+    pub fn from_grouped(
+        scan_id: u64,
+        results: Vec<ScannerResult>,
+        groups: Vec<ScannerResultGroup>,
+        status_text: impl Into<String>,
+    ) -> Self {
+        Self {
+            scan_id,
+            result_count_text: scanner_result_count_text(results.len()),
+            status_text: status_text.into(),
+            results,
+            groups,
+        }
+    }
+
+    /// Returns the number of flat result rows in the snapshot.
+    pub fn result_count(&self) -> usize {
+        self.results.len()
+    }
+}
+
 /// Groups scanner results by deterministic problem order and sorted row keys.
 pub fn group_scanner_results(results: &[ScannerResult]) -> Vec<ScannerResultGroup> {
     let mut sorted = results.to_vec();
@@ -1054,9 +1192,7 @@ fn path_leaf_display(path: &Path) -> String {
 }
 
 fn leaf_name(value: &str) -> Option<&str> {
-    value
-        .rsplit(|ch| ch == '\\' || ch == '/')
-        .find(|part| !part.is_empty())
+    value.rsplit(['\\', '/']).find(|part| !part.is_empty())
 }
 
 #[cfg(test)]

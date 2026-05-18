@@ -1,9 +1,25 @@
 use std::io;
 
 use crate::{
-    domain::settings::{AppSettings, LogLevel, UpdateSource},
+    domain::settings::{AppSettings, LogLevel, ScannerSettings, UpdateSource},
     platform::settings_store::{AssetResolver, SettingsStore},
 };
+
+/// Result of persisting Scanner toggles at Scan Game start.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ScannerSettingsSaveResult {
+    /// Scanner settings snapshot Slint should display after the save attempt.
+    pub visible_settings: ScannerSettings,
+    /// True when the candidate scanner settings were successfully persisted.
+    pub saved: bool,
+}
+
+impl ScannerSettingsSaveResult {
+    /// Returns true when callers may schedule a scan with the visible settings snapshot.
+    pub const fn should_schedule_scan(&self) -> bool {
+        self.saved
+    }
+}
 
 /// Coordinates Settings-tab UI selections with persisted application settings.
 ///
@@ -44,6 +60,52 @@ impl<R: AssetResolver> SettingsController<R> {
     /// Returns a read-only snapshot of the last successfully persisted settings.
     pub fn current_settings(&self) -> &AppSettings {
         &self.last_persisted
+    }
+
+    /// Returns the last successfully persisted scanner settings.
+    pub fn current_scanner_settings(&self) -> &ScannerSettings {
+        &self.last_persisted.scanner
+    }
+
+    /// Persists scanner settings when the Scanner tab starts `Scan Game`.
+    ///
+    /// Individual Scanner checkbox toggles are transient controller state. They
+    /// are intentionally not written by this Settings controller until scan
+    /// start; if the write fails, the previous persisted scanner settings are
+    /// returned so Slint can revert the visible checkboxes and skip scheduling
+    /// a scan with unpersisted state.
+    pub fn save_scanner_settings_for_scan(
+        &mut self,
+        scanner: ScannerSettings,
+    ) -> ScannerSettingsSaveResult {
+        let mut candidate = self.last_persisted.clone();
+        candidate.scanner = scanner;
+
+        match self.store.save(&candidate) {
+            Ok(()) => {
+                self.last_persisted = candidate;
+                tracing::info!(
+                    event = "scanner-settings-save-succeeded",
+                    "Scanner settings persisted at scan start"
+                );
+                ScannerSettingsSaveResult {
+                    visible_settings: self.last_persisted.scanner.clone(),
+                    saved: true,
+                }
+            }
+            Err(error) => {
+                tracing::error!(
+                    event = "scanner-settings-save-failed",
+                    path = %self.store.settings_path().display(),
+                    %error,
+                    "Scanner settings failed to save at scan start; reverting visible toggles"
+                );
+                ScannerSettingsSaveResult {
+                    visible_settings: self.last_persisted.scanner.clone(),
+                    saved: false,
+                }
+            }
+        }
     }
 
     /// Returns the typed update-source value from the current settings snapshot.
@@ -297,6 +359,51 @@ mod tests {
         let persisted = fs::read_to_string(settings_path).expect("settings should persist");
         let persisted_json = persisted_json(&persisted);
         assert_eq!(persisted_json["log_level"], "INFO");
+    }
+
+    #[test]
+    fn settings_controller_saves_scanner_snapshot_for_scan_start() {
+        let (_root, settings_path) = isolated_settings_path("scanner-save-on-start");
+        let store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(store).expect("controller should load");
+        let mut scanner = controller.current_scanner_settings().clone();
+        scanner.wrong_format = false;
+        scanner.race_subgraphs = false;
+
+        let result = controller.save_scanner_settings_for_scan(scanner.clone());
+
+        assert!(result.should_schedule_scan());
+        assert_eq!(result.visible_settings, scanner);
+        assert_eq!(controller.current_scanner_settings(), &scanner);
+        let persisted = fs::read_to_string(settings_path).expect("settings should persist");
+        let persisted_json = persisted_json(&persisted);
+        assert_eq!(persisted_json["scanner_WrongFormat"], false);
+        assert_eq!(persisted_json["scanner_RaceSubgraphs"], false);
+    }
+
+    #[test]
+    fn settings_controller_saves_scanner_reverts_visible_toggles_on_scan_start_save_failure() {
+        let (_root, settings_path) = isolated_settings_path("scanner-save-failure-revert");
+        let setup_store = SettingsStore::with_asset_resolver(
+            settings_path.clone(),
+            StaticAssetResolver::new(Some("nexus")),
+        );
+        let mut controller = SettingsController::load(setup_store).expect("controller should load");
+        let persisted_scanner = controller.current_scanner_settings().clone();
+        fs::remove_file(&settings_path).expect("settings file should be removable");
+        fs::create_dir_all(&settings_path).expect("directory should block future saves");
+        let mut candidate = persisted_scanner.clone();
+        candidate.errors = false;
+        candidate.junk_files = false;
+
+        let result = controller.save_scanner_settings_for_scan(candidate);
+
+        assert!(!result.should_schedule_scan());
+        assert_eq!(result.visible_settings, persisted_scanner);
+        assert_eq!(controller.current_scanner_settings(), &persisted_scanner);
     }
 
     fn isolated_settings_path(case_name: &str) -> (PathBuf, PathBuf) {

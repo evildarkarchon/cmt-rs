@@ -19,6 +19,7 @@ use crate::{
         overview::{
             OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
         },
+        scanner::{ScannerActionFeedback, ScannerScanSnapshot},
     },
     platform::{
         PlatformError, PlatformErrorKind, PlatformOperation,
@@ -384,6 +385,8 @@ pub enum WorkerPayload {
     Discovery(WorkerMessage),
     /// Scanner-specific status or result text.
     Scan(WorkerMessage),
+    /// Scanner-specific snapshot or read-only action payload.
+    Scanner(ScannerWorkerPayload),
     /// F4SE diagnostics-specific scan completion payload.
     F4se(F4seWorkerPayload),
     /// Patcher-specific status or result text.
@@ -404,6 +407,54 @@ pub enum WorkerPayload {
     Error(WorkerFailure),
     /// Generic status or result text.
     Generic(WorkerMessage),
+}
+
+/// Scanner-specific worker payloads that must cross the UI handoff boundary intact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum ScannerWorkerPayload {
+    /// A full Scanner scan produced a render-ready snapshot.
+    ScanCompleted {
+        /// Scan request id used to reject stale worker results.
+        scan_id: u64,
+        /// Owned snapshot produced off the UI thread.
+        snapshot: Box<ScannerScanSnapshot>,
+    },
+    /// A read-only Scanner action completed with safe visible feedback.
+    ActionCompleted {
+        /// Owned action feedback produced by a copy/open/file-list worker.
+        feedback: ScannerActionFeedback,
+    },
+}
+
+impl ScannerWorkerPayload {
+    /// Creates a successful Scanner scan payload.
+    pub fn scan_completed(scan_id: u64, snapshot: ScannerScanSnapshot) -> Self {
+        Self::ScanCompleted {
+            scan_id,
+            snapshot: Box::new(snapshot),
+        }
+    }
+
+    /// Creates a Scanner read-only action completion payload.
+    pub fn action_completed(feedback: ScannerActionFeedback) -> Self {
+        Self::ActionCompleted { feedback }
+    }
+
+    /// Returns the scan id attached to this payload when one is present.
+    pub fn scan_id(&self) -> Option<u64> {
+        match self {
+            Self::ScanCompleted { scan_id, .. } => Some(*scan_id),
+            Self::ActionCompleted { feedback } => feedback.scan_id,
+        }
+    }
+
+    /// Returns the owned scan snapshot by shared reference when this is a scan payload.
+    pub fn snapshot(&self) -> Option<&ScannerScanSnapshot> {
+        match self {
+            Self::ScanCompleted { snapshot, .. } => Some(snapshot),
+            Self::ActionCompleted { .. } => None,
+        }
+    }
 }
 
 /// F4SE-specific worker payloads that must cross the UI handoff boundary intact.
@@ -778,6 +829,49 @@ mod tests {
                 snapshot: ref actual,
             }) if actual.as_ref() == &snapshot
         ));
+    }
+
+    #[test]
+    fn scanner_worker_payload_round_trips_owned_scan_snapshot_and_action_feedback() {
+        use crate::domain::scanner::{
+            ScannerActionFeedback, ScannerActionKind, ScannerScanSnapshot,
+        };
+
+        let task = WorkerTask::new("s07-scanner-scan:11", WorkerTaskKind::Scan);
+        let snapshot = ScannerScanSnapshot::empty(11, "No scanner issues found.");
+        let event = WorkerEvent::completed(
+            task,
+            WorkerPayload::Scanner(ScannerWorkerPayload::scan_completed(11, snapshot.clone())),
+        );
+
+        assert!(matches!(
+            event.payload,
+            WorkerPayload::Scanner(ScannerWorkerPayload::ScanCompleted {
+                scan_id: 11,
+                snapshot: ref actual,
+            }) if actual.as_ref() == &snapshot
+        ));
+
+        let feedback = ScannerActionFeedback::failed(
+            Some(11),
+            ScannerActionKind::OpenLocation,
+            "Location could not be opened.",
+        )
+        .with_diagnostic("raw platform detail kept out of safe text");
+        let action_event = WorkerEvent::completed(
+            WorkerTask::new(
+                "s07-scanner-action:open-location",
+                WorkerTaskKind::DesktopAction,
+            ),
+            WorkerPayload::Scanner(ScannerWorkerPayload::action_completed(feedback.clone())),
+        );
+
+        assert!(matches!(
+            action_event.payload,
+            WorkerPayload::Scanner(ScannerWorkerPayload::ActionCompleted { feedback: ref actual })
+                if actual == &feedback
+        ));
+        assert!(!feedback.safe_message().contains("raw platform"));
     }
 
     #[test]
