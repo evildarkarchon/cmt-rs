@@ -30,6 +30,14 @@ pub enum PlatformOperation {
     ReadDirectory,
     /// Recursively traverse a directory tree.
     WalkDirectory,
+    /// Write bytes to a file.
+    WriteFile,
+    /// Copy one file to another path.
+    CopyFile,
+    /// Rename or move one file to another path.
+    RenameFile,
+    /// Remove a file from the filesystem.
+    RemoveFile,
     /// Query a string value from the platform registry.
     ReadRegistry,
     /// Inspect the process table.
@@ -56,6 +64,10 @@ impl PlatformOperation {
             Self::ReadFile => "File read",
             Self::ReadDirectory => "Directory read",
             Self::WalkDirectory => "Directory traversal",
+            Self::WriteFile => "File write",
+            Self::CopyFile => "File copy",
+            Self::RenameFile => "File rename",
+            Self::RemoveFile => "File removal",
             Self::ReadRegistry => "Registry access",
             Self::ListProcesses => "Process inspection",
             Self::ReadVersionMetadata => "Version metadata read",
@@ -74,7 +86,18 @@ impl PlatformOperation {
             Self::OpenPath => "Opened path.",
             Self::CopyToClipboard => "Copied to clipboard.",
             Self::LaunchTool => "Launched tool.",
-            _ => "Operation completed.",
+            Self::WriteFile
+            | Self::CopyFile
+            | Self::RenameFile
+            | Self::RemoveFile
+            | Self::ReadMetadata
+            | Self::ReadFile
+            | Self::ReadDirectory
+            | Self::WalkDirectory
+            | Self::ReadRegistry
+            | Self::ListProcesses
+            | Self::ReadVersionMetadata
+            | Self::ReadSystemMetadata => "Operation completed.",
         }
     }
 }

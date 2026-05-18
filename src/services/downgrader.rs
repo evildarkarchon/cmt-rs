@@ -8,8 +8,10 @@
 //! later worker can execute through separate mutation/download/apply seams.
 
 use std::{
+    io::{Cursor, Read},
     path::{Component, Path, PathBuf},
     sync::OnceLock,
+    time::Duration,
 };
 
 use thiserror::Error;
@@ -19,14 +21,19 @@ use crate::{
     domain::{
         discovery::{FALLOUT4_NOT_FOUND_MESSAGE, Fallout4Installation},
         downgrader::{
-            DOWNGRADER_FILE_DEFINITIONS, DowngraderFileDefinition, DowngraderFileGroup,
-            DowngraderInstallStatus, DowngraderOptionsSnapshot, DowngraderPlanAction,
-            DowngraderPlanRow, DowngraderPlanStep, DowngraderPlanStepKind, DowngraderStatusRow,
-            DowngraderTarget, accepted_source_crcs_for_target, crcs_for_status,
-            skipped_already_message, skipped_not_found_message, skipped_unsupported_message,
+            DOWNGRADER_FILE_DEFINITIONS, DowngraderExecutionLogRow, DowngraderFileDefinition,
+            DowngraderFileGroup, DowngraderInstallStatus, DowngraderOptionsSnapshot,
+            DowngraderPlanAction, DowngraderPlanRow, DowngraderPlanStep, DowngraderPlanStepKind,
+            DowngraderProgress, DowngraderStatusRow, DowngraderTarget,
+            accepted_source_crcs_for_target, crcs_for_status, failed_patching_log_row,
+            patched_log_row, skipped_already_message, skipped_not_found_message,
+            skipped_unsupported_message,
         },
     },
-    platform::{PlatformErrorKind, filesystem::Filesystem},
+    platform::{
+        PlatformErrorKind,
+        filesystem::{Filesystem, WritableFilesystem},
+    },
 };
 
 const UNSAFE_ROOT_MESSAGE: &str = "Fallout 4 installation path is unsafe.";
@@ -36,6 +43,12 @@ const CURRENT_FILE_READ_FAILURE_MESSAGE: &str =
     "Current file could not be read; patching is disabled for this file.";
 const BACKUP_READ_FAILURE_MESSAGE: &str =
     "Backup file could not be read; patching is disabled for this file.";
+const DOWNLOAD_FAILURE_MESSAGE: &str = "Delta patch could not be downloaded.";
+const APPLY_FAILURE_MESSAGE: &str = "Delta patch could not be applied.";
+const MAX_DELTA_PATCH_BYTES: u64 = 128 * 1024 * 1024;
+const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(10);
+const DOWNLOAD_CHUNK_BYTES: usize = 64 * 1024;
+const MIN_PROGRESS_DELTA_PERCENT: f32 = 1.0;
 
 /// Request input for a read-only Downgrader status snapshot.
 #[derive(Debug, Clone, Copy)]
@@ -118,6 +131,306 @@ impl DowngraderServiceError {
             | Self::UnsafeManagedPath { safe_message, .. } => safe_message,
         }
     }
+}
+
+/// Safe failure returned by a delta downloader before a patch can be applied.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum DowngraderDownloadError {
+    /// HTTP client setup, request, stream, or status failure.
+    #[error("{safe_message}")]
+    Request {
+        /// User-safe failure text.
+        safe_message: String,
+        /// Diagnostic detail for tracing/tests.
+        diagnostic: String,
+    },
+    /// The response advertised or exceeded the configured patch byte cap.
+    #[error("{safe_message}")]
+    TooLarge {
+        /// User-safe failure text.
+        safe_message: String,
+        /// Maximum bytes accepted by the production downloader.
+        limit_bytes: u64,
+    },
+}
+
+impl DowngraderDownloadError {
+    /// Creates a safe request/download failure with diagnostic detail separated.
+    pub fn request(diagnostic: impl Into<String>) -> Self {
+        Self::Request {
+            safe_message: DOWNLOAD_FAILURE_MESSAGE.to_owned(),
+            diagnostic: diagnostic.into(),
+        }
+    }
+
+    /// Creates a safe patch-size failure.
+    pub fn too_large(limit_bytes: u64) -> Self {
+        Self::TooLarge {
+            safe_message: DOWNLOAD_FAILURE_MESSAGE.to_owned(),
+            limit_bytes,
+        }
+    }
+
+    /// Returns safe text suitable for the modal log fallback.
+    pub fn user_message(&self) -> &str {
+        match self {
+            Self::Request { safe_message, .. } | Self::TooLarge { safe_message, .. } => {
+                safe_message
+            }
+        }
+    }
+
+    /// Returns diagnostic detail suitable for logs/tests.
+    pub fn diagnostic(&self) -> Option<&str> {
+        match self {
+            Self::Request { diagnostic, .. } => Some(diagnostic),
+            Self::TooLarge { .. } => Some("delta patch exceeds configured size limit"),
+        }
+    }
+}
+
+/// Fakeable seam for fetching one xdelta patch asset.
+pub trait DeltaDownloader {
+    /// Downloads a delta patch and reports bounded progress percentages.
+    fn download_delta(
+        &self,
+        url: &str,
+        progress: &mut dyn FnMut(DowngraderProgress),
+    ) -> Result<Vec<u8>, DowngraderDownloadError>;
+}
+
+/// Reqwest-backed delta downloader intended to run on a background worker thread.
+#[derive(Clone)]
+pub struct ReqwestDeltaDownloader {
+    client: reqwest::blocking::Client,
+    max_bytes: u64,
+}
+
+impl ReqwestDeltaDownloader {
+    /// Creates a downloader with the reference 10 second timeout and a bounded patch size.
+    pub fn new() -> Result<Self, DowngraderDownloadError> {
+        Self::with_limits(DOWNLOAD_TIMEOUT, MAX_DELTA_PATCH_BYTES)
+    }
+
+    /// Creates a downloader with explicit timeout and byte cap for tests or alternate workers.
+    pub fn with_limits(timeout: Duration, max_bytes: u64) -> Result<Self, DowngraderDownloadError> {
+        let client = reqwest::blocking::Client::builder()
+            .timeout(timeout)
+            .build()
+            .map_err(|error| DowngraderDownloadError::request(error.to_string()))?;
+        Ok(Self { client, max_bytes })
+    }
+}
+
+impl DeltaDownloader for ReqwestDeltaDownloader {
+    fn download_delta(
+        &self,
+        url: &str,
+        progress: &mut dyn FnMut(DowngraderProgress),
+    ) -> Result<Vec<u8>, DowngraderDownloadError> {
+        progress(DowngraderProgress::idle());
+        let mut response = self
+            .client
+            .get(url)
+            .send()
+            .map_err(|error| DowngraderDownloadError::request(error.to_string()))?;
+        let status = response.status();
+        if !status.is_success() {
+            return Err(DowngraderDownloadError::request(format!(
+                "HTTP status {status}"
+            )));
+        }
+
+        let content_length = response.content_length();
+        if content_length.is_some_and(|length| length > self.max_bytes) {
+            return Err(DowngraderDownloadError::too_large(self.max_bytes));
+        }
+
+        let initial_capacity = content_length
+            .unwrap_or(0)
+            .min(self.max_bytes)
+            .min(usize::MAX as u64) as usize;
+        let mut bytes = Vec::with_capacity(initial_capacity);
+        let mut buffer = vec![0_u8; DOWNLOAD_CHUNK_BYTES];
+        let mut downloaded = 0_u64;
+        let mut last_progress = 0.0_f32;
+
+        loop {
+            let read = response
+                .read(&mut buffer)
+                .map_err(|error| DowngraderDownloadError::request(error.to_string()))?;
+            if read == 0 {
+                break;
+            }
+            downloaded += read as u64;
+            if downloaded > self.max_bytes {
+                return Err(DowngraderDownloadError::too_large(self.max_bytes));
+            }
+            bytes.extend_from_slice(&buffer[..read]);
+
+            if let Some(total) = content_length.filter(|total| *total > 0) {
+                let percent = (downloaded as f32 / total as f32) * 100.0;
+                if percent >= 100.0 || percent - last_progress >= MIN_PROGRESS_DELTA_PERCENT {
+                    let progress_value = DowngraderProgress::new(percent);
+                    last_progress = progress_value.percent;
+                    progress(progress_value);
+                }
+            }
+        }
+
+        progress(DowngraderProgress::complete());
+        Ok(bytes)
+    }
+}
+
+/// Safe failure returned when a delta patch cannot transform source bytes.
+#[derive(Debug, Error, Clone, PartialEq, Eq)]
+pub enum DowngraderDeltaApplyError {
+    /// The patch decoder rejected the payload or failed to produce output.
+    #[error("{safe_message}")]
+    Failed {
+        /// User-safe failure text.
+        safe_message: String,
+        /// Diagnostic detail for tracing/tests.
+        diagnostic: String,
+    },
+}
+
+impl DowngraderDeltaApplyError {
+    /// Creates a safe apply failure with diagnostic detail separated.
+    pub fn failed(diagnostic: impl Into<String>) -> Self {
+        Self::Failed {
+            safe_message: APPLY_FAILURE_MESSAGE.to_owned(),
+            diagnostic: diagnostic.into(),
+        }
+    }
+
+    /// Returns safe text suitable for modal fallback logs.
+    pub fn user_message(&self) -> &str {
+        match self {
+            Self::Failed { safe_message, .. } => safe_message,
+        }
+    }
+
+    /// Returns diagnostic detail suitable for logs/tests.
+    pub fn diagnostic(&self) -> &str {
+        match self {
+            Self::Failed { diagnostic, .. } => diagnostic,
+        }
+    }
+}
+
+/// Fakeable seam for applying an xdelta/VCDIFF patch to source bytes.
+pub trait DeltaApplier {
+    /// Applies `patch_bytes` to `source_bytes` and returns the desired-version bytes.
+    fn apply_delta(
+        &self,
+        source_bytes: &[u8],
+        patch_bytes: &[u8],
+    ) -> Result<Vec<u8>, DowngraderDeltaApplyError>;
+}
+
+/// Pure-Rust VCDIFF applier for xdelta-compatible patch payloads.
+#[derive(Debug, Default, Clone, Copy)]
+pub struct VcdiffDeltaApplier;
+
+impl DeltaApplier for VcdiffDeltaApplier {
+    fn apply_delta(
+        &self,
+        source_bytes: &[u8],
+        patch_bytes: &[u8],
+    ) -> Result<Vec<u8>, DowngraderDeltaApplyError> {
+        let mut source = Cursor::new(source_bytes.to_vec());
+        let mut patch = Cursor::new(patch_bytes.to_vec());
+        let mut output = Vec::new();
+        vcdiff_decoder::apply_patch(&mut patch, Some(&mut source), &mut output)
+            .map_err(|error| DowngraderDeltaApplyError::failed(error.to_string()))?;
+        Ok(output)
+    }
+}
+
+/// Request input for a confirmed Downgrader run after inline user confirmation.
+#[derive(Debug, Clone, Copy)]
+pub struct DowngraderExecutionRequest<'a> {
+    /// Monotonic request id assigned by the caller for stale-event rejection and tracing.
+    pub request_id: u64,
+    /// Optional discovered Fallout 4 installation.
+    pub installation: Option<&'a Fallout4Installation>,
+    /// Confirmed target and cleanup preferences.
+    pub options: DowngraderOptionsSnapshot,
+}
+
+impl<'a> DowngraderExecutionRequest<'a> {
+    /// Creates a confirmed execution request from discovery facts and options.
+    pub const fn new(
+        request_id: u64,
+        installation: Option<&'a Fallout4Installation>,
+        options: DowngraderOptionsSnapshot,
+    ) -> Self {
+        Self {
+            request_id,
+            installation,
+            options,
+        }
+    }
+}
+
+/// Final per-file outcome for a confirmed Downgrader run.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum DowngraderExecutionOutcome {
+    /// File was intentionally skipped with a reference informational row.
+    Skipped,
+    /// File was restored or patched successfully.
+    Patched,
+    /// File failed safely and execution continued with later files.
+    Failed,
+}
+
+/// Bounded progress event emitted while downloading a patch for one file.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DowngraderExecutionProgressEvent {
+    /// Request id copied from the execution request.
+    pub request_id: u64,
+    /// Managed relative path whose patch is being downloaded.
+    pub relative_path: &'static str,
+    /// Patch asset name being downloaded.
+    pub patch_name: String,
+    /// Clamped reference progress value.
+    pub progress: DowngraderProgress,
+}
+
+/// Per-file execution result and diagnostics.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct DowngraderExecutionFileResult {
+    /// Managed relative path from the Fallout 4 root.
+    pub relative_path: &'static str,
+    /// Basename displayed in modal logs.
+    pub display_name: &'static str,
+    /// Final outcome for this file.
+    pub outcome: DowngraderExecutionOutcome,
+    /// User-visible log row emitted for this file.
+    pub log_row: DowngraderExecutionLogRow,
+    /// Safe diagnostics for tracing/tests, not modal text.
+    pub diagnostics: Vec<String>,
+}
+
+/// Complete confirmed execution result.
+#[derive(Debug, Clone, PartialEq)]
+pub struct DowngraderExecutionResult {
+    /// Request id copied from the execution request.
+    pub request_id: u64,
+    /// Validated game root used for all managed files.
+    pub game_root: PathBuf,
+    /// Confirmed options used for execution.
+    pub options: DowngraderOptionsSnapshot,
+    /// Six per-file results in reference patch order.
+    pub rows: Vec<DowngraderExecutionFileResult>,
+    /// User-visible modal log rows in emission order.
+    pub log_rows: Vec<DowngraderExecutionLogRow>,
+    /// Bounded download progress events emitted during the run.
+    pub progress_events: Vec<DowngraderExecutionProgressEvent>,
+    /// Aggregate safe diagnostics for tracing/tests.
+    pub diagnostics: Vec<String>,
 }
 
 /// A per-file read diagnostic captured while building a status snapshot.
@@ -822,6 +1135,659 @@ impl<'a, F: Filesystem + ?Sized> DowngraderService<'a, F> {
     }
 }
 
+impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
+    /// Executes a freshly revalidated Downgrader plan after the user confirms the inline preview.
+    ///
+    /// The executor processes each of the six managed files independently and
+    /// records reference-style log rows while keeping diagnostics separate for
+    /// tracing/tests. It assumes callers run it off the Slint UI thread.
+    pub fn execute_confirmed<D, A>(
+        &self,
+        request: DowngraderExecutionRequest<'_>,
+        downloader: &D,
+        applier: &A,
+    ) -> Result<DowngraderExecutionResult, DowngraderServiceError>
+    where
+        D: DeltaDownloader + ?Sized,
+        A: DeltaApplier + ?Sized,
+    {
+        let span = info_span!(
+            "downgrader.execute_confirmed",
+            request_id = request.request_id,
+            target = request.options.target.as_reference_str(),
+            keep_backups = request.options.keep_backups,
+            delete_deltas = request.options.delete_deltas,
+            has_installation = request.installation.is_some(),
+        );
+        let _guard = span.enter();
+        info!(
+            event = "downgrader-execute-request",
+            "Downgrader confirmed execution requested"
+        );
+
+        let plan = self.preview_plan(DowngraderPlanRequest::new(
+            request.request_id,
+            request.installation,
+            request.options,
+        ))?;
+        let mut result = DowngraderExecutionResult {
+            request_id: request.request_id,
+            game_root: plan.game_root.clone(),
+            options: request.options,
+            rows: Vec::with_capacity(plan.rows.len()),
+            log_rows: Vec::with_capacity(plan.rows.len()),
+            progress_events: Vec::new(),
+            diagnostics: Vec::new(),
+        };
+
+        for row in &plan.rows {
+            let file_result = self.execute_row(
+                request.request_id,
+                &plan.game_root,
+                row,
+                downloader,
+                applier,
+                &mut result.progress_events,
+            );
+            debug!(
+                event = "downgrader-execute-row-complete",
+                request_id = request.request_id,
+                relative_path = row.plan.relative_path,
+                outcome = ?file_result.outcome,
+                diagnostic_count = file_result.diagnostics.len(),
+                "Downgrader execution row completed"
+            );
+            result.log_rows.push(file_result.log_row.clone());
+            result.diagnostics.extend(file_result.diagnostics.clone());
+            result.rows.push(file_result);
+        }
+
+        let patched_rows = result
+            .rows
+            .iter()
+            .filter(|row| row.outcome == DowngraderExecutionOutcome::Patched)
+            .count();
+        let failed_rows = result
+            .rows
+            .iter()
+            .filter(|row| row.outcome == DowngraderExecutionOutcome::Failed)
+            .count();
+        let skipped_rows = result
+            .rows
+            .iter()
+            .filter(|row| row.outcome == DowngraderExecutionOutcome::Skipped)
+            .count();
+        info!(
+            event = "downgrader-execute-complete",
+            request_id = result.request_id,
+            patched_rows,
+            failed_rows,
+            skipped_rows,
+            progress_event_count = result.progress_events.len(),
+            diagnostic_count = result.diagnostics.len(),
+            "Downgrader confirmed execution completed"
+        );
+
+        Ok(result)
+    }
+
+    fn execute_row<D, A>(
+        &self,
+        request_id: u64,
+        game_root: &Path,
+        row: &DowngraderPreviewPlanRow,
+        downloader: &D,
+        applier: &A,
+        progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+    ) -> DowngraderExecutionFileResult
+    where
+        D: DeltaDownloader + ?Sized,
+        A: DeltaApplier + ?Sized,
+    {
+        if let Some(log_row) = row.plan.skip_log_row() {
+            return execution_file_result(
+                row,
+                DowngraderExecutionOutcome::Skipped,
+                log_row,
+                Vec::new(),
+            );
+        }
+
+        if let Some(failure) = row.failure.clone() {
+            return failed_execution_file_result(row, vec![failure]);
+        }
+
+        match self.execute_mutating_row(
+            request_id,
+            game_root,
+            row,
+            downloader,
+            applier,
+            progress_events,
+        ) {
+            RowExecutionStatus::Patched { diagnostics } => execution_file_result(
+                row,
+                DowngraderExecutionOutcome::Patched,
+                patched_log_row(row.plan.display_name),
+                diagnostics,
+            ),
+            RowExecutionStatus::SkippedUnsupported { diagnostics } => execution_file_result(
+                row,
+                DowngraderExecutionOutcome::Skipped,
+                row.plan.skip_log_row().unwrap_or_else(|| {
+                    crate::domain::downgrader::skipped_unsupported_log_row(row.plan.display_name)
+                }),
+                diagnostics,
+            ),
+            RowExecutionStatus::Failed { diagnostics } => {
+                failed_execution_file_result(row, diagnostics)
+            }
+        }
+    }
+
+    fn execute_mutating_row<D, A>(
+        &self,
+        request_id: u64,
+        game_root: &Path,
+        row: &DowngraderPreviewPlanRow,
+        downloader: &D,
+        applier: &A,
+        progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+    ) -> RowExecutionStatus
+    where
+        D: DeltaDownloader + ?Sized,
+        A: DeltaApplier + ?Sized,
+    {
+        let mut diagnostics = Vec::new();
+        let current_crc = match self.read_required_crc(&row.current_path) {
+            Ok(crc32) => crc32,
+            Err(diagnostic) => {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        };
+        if !crc_is_supported_source_for_target(&current_crc, row.plan.target) {
+            diagnostics.push(format!(
+                "{} current CRC {current_crc} is unsupported for target {}.",
+                row.plan.display_name,
+                row.plan.target.as_reference_str()
+            ));
+            warn!(
+                event = "downgrader-execute-unsupported-source",
+                request_id,
+                relative_path = row.plan.relative_path,
+                crc32 = current_crc,
+                target = row.plan.target.as_reference_str(),
+                "Downgrader execution skipped unsupported source"
+            );
+            return RowExecutionStatus::SkippedUnsupported { diagnostics };
+        }
+
+        let current_backup_path = backup_path_for(&row.current_path, &row.plan.current_backup_name);
+        let desired_backup_path = backup_path_for(&row.current_path, &row.plan.desired_backup_name);
+
+        if let Err(diagnostic) =
+            self.prepare_current_backup(row, &current_backup_path, &current_crc)
+        {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![diagnostic],
+            };
+        }
+
+        match self.read_crc(&desired_backup_path) {
+            CrcProbe::Readable { crc32 }
+                if crc_is_desired_target_for_plan(&crc32, row.plan.target) =>
+            {
+                match self.restore_desired_backup(row, &current_backup_path, &desired_backup_path) {
+                    Ok(restore_diagnostics) => {
+                        diagnostics.extend(restore_diagnostics);
+                        RowExecutionStatus::Patched { diagnostics }
+                    }
+                    Err(diagnostic) => RowExecutionStatus::Failed {
+                        diagnostics: vec![diagnostic],
+                    },
+                }
+            }
+            CrcProbe::Readable { crc32 } => {
+                diagnostics.push(format!(
+                    "{} desired backup CRC {crc32} is invalid for target {}.",
+                    row.plan.display_name,
+                    row.plan.target.as_reference_str()
+                ));
+                if let Err(diagnostic) = self.remove_file_with_context(
+                    &desired_backup_path,
+                    row,
+                    DowngraderPlanStepKind::DeleteInvalidDesiredBackup,
+                ) {
+                    return RowExecutionStatus::Failed {
+                        diagnostics: vec![diagnostic],
+                    };
+                }
+                self.download_apply_and_cleanup(
+                    PatchApplyContext {
+                        request_id,
+                        game_root,
+                        row,
+                        current_backup_path: &current_backup_path,
+                        progress_events,
+                        diagnostics,
+                    },
+                    downloader,
+                    applier,
+                )
+            }
+            CrcProbe::Missing => self.download_apply_and_cleanup(
+                PatchApplyContext {
+                    request_id,
+                    game_root,
+                    row,
+                    current_backup_path: &current_backup_path,
+                    progress_events,
+                    diagnostics,
+                },
+                downloader,
+                applier,
+            ),
+            CrcProbe::Unreadable { safe_message } => RowExecutionStatus::Failed {
+                diagnostics: vec![format!("{} {}", BACKUP_READ_FAILURE_MESSAGE, safe_message)],
+            },
+        }
+    }
+
+    fn prepare_current_backup(
+        &self,
+        row: &DowngraderPreviewPlanRow,
+        current_backup_path: &Path,
+        initial_current_crc: &str,
+    ) -> Result<(), String> {
+        match self.read_crc(current_backup_path) {
+            CrcProbe::Readable { crc32 } if crc32.eq_ignore_ascii_case(initial_current_crc) => {
+                let current_crc = self.read_required_crc(&row.current_path)?;
+                let backup_crc = self.read_required_crc(current_backup_path)?;
+                if !current_crc.eq_ignore_ascii_case(&backup_crc) {
+                    return Err(format!(
+                        "{} current file changed before current backup reuse.",
+                        row.plan.display_name
+                    ));
+                }
+                self.remove_file_with_context(
+                    &row.current_path,
+                    row,
+                    DowngraderPlanStepKind::ReuseCurrentBackup,
+                )
+            }
+            CrcProbe::Readable { crc32 } => {
+                debug!(
+                    event = "downgrader-execute-delete-invalid-current-backup",
+                    relative_path = row.plan.relative_path,
+                    backup_crc = crc32,
+                    "Downgrader deleting invalid current backup"
+                );
+                self.remove_file_with_context(
+                    current_backup_path,
+                    row,
+                    DowngraderPlanStepKind::DeleteInvalidCurrentBackup,
+                )?;
+                self.create_current_backup(row, current_backup_path)
+            }
+            CrcProbe::Missing => self.create_current_backup(row, current_backup_path),
+            CrcProbe::Unreadable { safe_message } => {
+                Err(format!("{} {}", BACKUP_READ_FAILURE_MESSAGE, safe_message))
+            }
+        }
+    }
+
+    fn create_current_backup(
+        &self,
+        row: &DowngraderPreviewPlanRow,
+        current_backup_path: &Path,
+    ) -> Result<(), String> {
+        let current_crc = self.read_required_crc(&row.current_path)?;
+        if !crc_is_supported_source_for_target(&current_crc, row.plan.target) {
+            return Err(format!(
+                "{} current CRC {current_crc} changed to an unsupported source before backup creation.",
+                row.plan.display_name
+            ));
+        }
+        self.filesystem
+            .rename_file(&row.current_path, current_backup_path)
+            .map_err(|error| {
+                mutation_diagnostic(
+                    row,
+                    DowngraderPlanStepKind::CreateCurrentBackup,
+                    error.user_message(),
+                )
+            })
+    }
+
+    fn restore_desired_backup(
+        &self,
+        row: &DowngraderPreviewPlanRow,
+        current_backup_path: &Path,
+        desired_backup_path: &Path,
+    ) -> Result<Vec<String>, String> {
+        let desired_crc = self.read_required_crc(desired_backup_path)?;
+        if !crc_is_desired_target_for_plan(&desired_crc, row.plan.target) {
+            return Err(format!(
+                "{} desired backup changed before restore.",
+                row.plan.display_name
+            ));
+        }
+        self.read_required_crc(current_backup_path)?;
+
+        let mut diagnostics = Vec::new();
+        if row.options().keep_backups {
+            self.filesystem
+                .copy_file(desired_backup_path, &row.current_path)
+                .map_err(|error| {
+                    mutation_diagnostic(
+                        row,
+                        DowngraderPlanStepKind::RestoreDesiredBackup,
+                        error.user_message(),
+                    )
+                })?;
+        } else {
+            self.filesystem
+                .rename_file(desired_backup_path, &row.current_path)
+                .map_err(|error| {
+                    mutation_diagnostic(
+                        row,
+                        DowngraderPlanStepKind::RestoreDesiredBackup,
+                        error.user_message(),
+                    )
+                })?;
+            self.remove_file_with_context(
+                current_backup_path,
+                row,
+                DowngraderPlanStepKind::DeleteCurrentBackup,
+            )?;
+        }
+        diagnostics.push(format!(
+            "{} restored from {}.",
+            row.plan.display_name, row.plan.desired_backup_name
+        ));
+        Ok(diagnostics)
+    }
+
+    fn download_apply_and_cleanup<D, A>(
+        &self,
+        mut context: PatchApplyContext<'_>,
+        downloader: &D,
+        applier: &A,
+    ) -> RowExecutionStatus
+    where
+        D: DeltaDownloader + ?Sized,
+        A: DeltaApplier + ?Sized,
+    {
+        let row = context.row;
+        let source_bytes = match self.filesystem.read_bytes(context.current_backup_path) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![mutation_diagnostic(
+                        row,
+                        DowngraderPlanStepKind::ApplyDeltaPatch,
+                        error.user_message(),
+                    )],
+                };
+            }
+        };
+        let patch_path = context.game_root.join(&row.plan.patch_name);
+        let patch_bytes = match self.read_or_download_patch(
+            context.request_id,
+            row,
+            &patch_path,
+            downloader,
+            context.progress_events,
+        ) {
+            Ok(bytes) => bytes,
+            Err(diagnostic) => {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        };
+        let output_bytes = match applier.apply_delta(&source_bytes, &patch_bytes) {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                warn!(
+                    event = "downgrader-execute-apply-failed",
+                    request_id = context.request_id,
+                    relative_path = row.plan.relative_path,
+                    diagnostic = error.diagnostic(),
+                    "Downgrader delta apply failed"
+                );
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![format!("{} {}", error.user_message(), error.diagnostic())],
+                };
+            }
+        };
+        let output_crc = crc32_hex(&output_bytes);
+        if !crc_is_desired_target_for_plan(&output_crc, row.plan.target) {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![format!(
+                    "{} patch output CRC {output_crc} did not match target {}.",
+                    row.plan.display_name,
+                    row.plan.target.as_reference_str()
+                )],
+            };
+        }
+
+        if let Err(error) = self
+            .filesystem
+            .write_bytes(&row.current_path, &output_bytes)
+        {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![mutation_diagnostic(
+                    row,
+                    DowngraderPlanStepKind::ApplyDeltaPatch,
+                    error.user_message(),
+                )],
+            };
+        }
+        if !row.options().keep_backups {
+            if let Err(diagnostic) = self.remove_file_with_context(
+                context.current_backup_path,
+                row,
+                DowngraderPlanStepKind::DeleteCurrentBackup,
+            ) {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        }
+        if row.options().delete_deltas {
+            if let Err(diagnostic) = self.remove_file_with_context(
+                &patch_path,
+                row,
+                DowngraderPlanStepKind::DeleteDeltaPatch,
+            ) {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        }
+
+        context.diagnostics.push(format!(
+            "{} patched with {}.",
+            row.plan.display_name, row.plan.patch_name
+        ));
+        RowExecutionStatus::Patched {
+            diagnostics: context.diagnostics,
+        }
+    }
+
+    fn read_or_download_patch<D>(
+        &self,
+        request_id: u64,
+        row: &DowngraderPreviewPlanRow,
+        patch_path: &Path,
+        downloader: &D,
+        progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+    ) -> Result<Vec<u8>, String>
+    where
+        D: DeltaDownloader + ?Sized,
+    {
+        match self.filesystem.metadata(patch_path) {
+            Ok(metadata) if metadata.is_file() => {
+                self.filesystem.read_bytes(patch_path).map_err(|error| {
+                    mutation_diagnostic(
+                        row,
+                        DowngraderPlanStepKind::DownloadDelta,
+                        error.user_message(),
+                    )
+                })
+            }
+            Ok(_) => Err(mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::DownloadDelta,
+                "Delta patch path is not a file.",
+            )),
+            Err(error) if error.kind == PlatformErrorKind::NotFound => {
+                let mut progress = |progress: DowngraderProgress| {
+                    progress_events.push(DowngraderExecutionProgressEvent {
+                        request_id,
+                        relative_path: row.plan.relative_path,
+                        patch_name: row.plan.patch_name.clone(),
+                        progress,
+                    });
+                };
+                let bytes = downloader
+                    .download_delta(&row.plan.patch_url, &mut progress)
+                    .map_err(|error| {
+                        warn!(
+                            event = "downgrader-execute-download-failed",
+                            request_id,
+                            relative_path = row.plan.relative_path,
+                            patch_name = row.plan.patch_name,
+                            diagnostic = error.diagnostic(),
+                            "Downgrader delta download failed"
+                        );
+                        format!(
+                            "{} {}",
+                            error.user_message(),
+                            error.diagnostic().unwrap_or("")
+                        )
+                    })?;
+                self.filesystem
+                    .write_bytes(patch_path, &bytes)
+                    .map_err(|error| {
+                        mutation_diagnostic(
+                            row,
+                            DowngraderPlanStepKind::DownloadDelta,
+                            error.user_message(),
+                        )
+                    })?;
+                Ok(bytes)
+            }
+            Err(error) => Err(mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::DownloadDelta,
+                error.user_message(),
+            )),
+        }
+    }
+
+    fn remove_file_with_context(
+        &self,
+        path: &Path,
+        row: &DowngraderPreviewPlanRow,
+        step: DowngraderPlanStepKind,
+    ) -> Result<(), String> {
+        self.filesystem
+            .remove_file(path)
+            .map_err(|error| mutation_diagnostic(row, step, error.user_message()))
+    }
+
+    fn read_required_crc(&self, path: &Path) -> Result<String, String> {
+        match self.read_crc(path) {
+            CrcProbe::Readable { crc32 } => Ok(crc32),
+            CrcProbe::Missing => Err(format!("{} target was not found.", path.display())),
+            CrcProbe::Unreadable { safe_message } => Err(safe_message),
+        }
+    }
+}
+
+struct PatchApplyContext<'a> {
+    request_id: u64,
+    game_root: &'a Path,
+    row: &'a DowngraderPreviewPlanRow,
+    current_backup_path: &'a Path,
+    progress_events: &'a mut Vec<DowngraderExecutionProgressEvent>,
+    diagnostics: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+enum RowExecutionStatus {
+    Patched { diagnostics: Vec<String> },
+    SkippedUnsupported { diagnostics: Vec<String> },
+    Failed { diagnostics: Vec<String> },
+}
+
+fn execution_file_result(
+    row: &DowngraderPreviewPlanRow,
+    outcome: DowngraderExecutionOutcome,
+    log_row: DowngraderExecutionLogRow,
+    diagnostics: Vec<String>,
+) -> DowngraderExecutionFileResult {
+    DowngraderExecutionFileResult {
+        relative_path: row.plan.relative_path,
+        display_name: row.plan.display_name,
+        outcome,
+        log_row,
+        diagnostics,
+    }
+}
+
+fn failed_execution_file_result(
+    row: &DowngraderPreviewPlanRow,
+    diagnostics: Vec<String>,
+) -> DowngraderExecutionFileResult {
+    warn!(
+        event = "downgrader-execute-row-failed",
+        relative_path = row.plan.relative_path,
+        diagnostic_count = diagnostics.len(),
+        "Downgrader execution row failed safely"
+    );
+    execution_file_result(
+        row,
+        DowngraderExecutionOutcome::Failed,
+        failed_patching_log_row(row.plan.display_name),
+        diagnostics,
+    )
+}
+
+fn mutation_diagnostic(
+    row: &DowngraderPreviewPlanRow,
+    step: DowngraderPlanStepKind,
+    safe_message: &str,
+) -> String {
+    format!(
+        "{} failed during {}: {safe_message}",
+        row.plan.display_name,
+        step.as_str()
+    )
+}
+
+trait DowngraderPreviewPlanRowExt {
+    fn options(&self) -> DowngraderOptionsSnapshot;
+}
+
+impl DowngraderPreviewPlanRowExt for DowngraderPreviewPlanRow {
+    fn options(&self) -> DowngraderOptionsSnapshot {
+        DowngraderOptionsSnapshot::new(
+            self.plan.target,
+            self.steps
+                .iter()
+                .all(|step| step.kind != DowngraderPlanStepKind::DeleteCurrentBackup),
+            self.steps
+                .iter()
+                .any(|step| step.kind == DowngraderPlanStepKind::DeleteDeltaPatch),
+        )
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 enum CrcProbe {
     Readable { crc32: String },
@@ -1015,8 +1981,8 @@ mod tests {
             },
         },
         platform::{
-            PlatformError, PlatformErrorKind, PlatformOperation,
-            filesystem::{DirectoryEntry, FileMetadata, FileType, Filesystem},
+            PlatformError, PlatformErrorKind, PlatformOperation, PlatformResult,
+            filesystem::{DirectoryEntry, FileMetadata, FileType, Filesystem, WritableFilesystem},
         },
     };
 
@@ -1602,5 +2568,603 @@ mod tests {
         let error = resolve_managed_relative_path(root, "C:\\Fallout4.exe")
             .expect_err("drive-qualified managed path should be rejected");
         assert_eq!(error.user_message(), UNSAFE_MANAGED_PATH_MESSAGE);
+    }
+
+    #[derive(Debug, Clone, PartialEq, Eq)]
+    enum RecordedWriteOp {
+        Write(PathBuf),
+        Copy { from: PathBuf, to: PathBuf },
+        Rename { from: PathBuf, to: PathBuf },
+        Remove(PathBuf),
+    }
+
+    #[derive(Debug, Default)]
+    struct RecordingWritableFilesystem {
+        nodes: RefCell<BTreeMap<PathBuf, FakeNode>>,
+        operations: RefCell<Vec<RecordedWriteOp>>,
+        failures: RefCell<BTreeMap<(PlatformOperation, PathBuf), PlatformErrorKind>>,
+    }
+
+    impl RecordingWritableFilesystem {
+        fn with_dir(self, path: impl Into<PathBuf>) -> Self {
+            self.nodes
+                .borrow_mut()
+                .insert(path.into(), FakeNode::Directory);
+            self
+        }
+
+        fn with_file(self, path: impl Into<PathBuf>, bytes: impl Into<Vec<u8>>) -> Self {
+            let path = path.into();
+            self.ensure_parent_dirs(&path);
+            self.nodes
+                .borrow_mut()
+                .insert(path, FakeNode::File(bytes.into()));
+            self
+        }
+
+        fn with_crc_file(self, path: impl Into<PathBuf>, crc32: &str) -> Self {
+            self.with_file(path, bytes_with_crc(crc32))
+        }
+
+        fn with_failure(
+            self,
+            operation: PlatformOperation,
+            path: impl Into<PathBuf>,
+            kind: PlatformErrorKind,
+        ) -> Self {
+            self.failures
+                .borrow_mut()
+                .insert((operation, path.into()), kind);
+            self
+        }
+
+        fn ensure_parent_dirs(&self, path: &Path) {
+            let mut parents = Vec::new();
+            let mut current = path.parent();
+            while let Some(parent) = current {
+                if parent.as_os_str().is_empty() {
+                    break;
+                }
+                parents.push(parent.to_path_buf());
+                current = parent.parent();
+            }
+            let mut nodes = self.nodes.borrow_mut();
+            for parent in parents.into_iter().rev() {
+                nodes.entry(parent).or_insert(FakeNode::Directory);
+            }
+        }
+
+        fn maybe_fail(
+            &self,
+            operation: PlatformOperation,
+            path: &Path,
+        ) -> Result<(), PlatformError> {
+            if let Some(kind) = self
+                .failures
+                .borrow()
+                .get(&(operation, path.to_path_buf()))
+                .copied()
+            {
+                return Err(PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    kind,
+                    format!(
+                        "{} target could not be accessed because permission was denied.",
+                        operation.label()
+                    ),
+                ));
+            }
+            Ok(())
+        }
+
+        fn node(
+            &self,
+            path: &Path,
+            operation: PlatformOperation,
+        ) -> Result<FakeNode, PlatformError> {
+            self.nodes.borrow().get(path).cloned().ok_or_else(|| {
+                PlatformError::new(
+                    operation,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    format!("{} target was not found.", operation.label()),
+                )
+            })
+        }
+
+        fn has_file(&self, path: impl AsRef<Path>) -> bool {
+            matches!(
+                self.nodes.borrow().get(path.as_ref()),
+                Some(FakeNode::File(_))
+            )
+        }
+
+        fn file_crc(&self, path: impl AsRef<Path>) -> Option<String> {
+            match self.nodes.borrow().get(path.as_ref()) {
+                Some(FakeNode::File(bytes)) => Some(crc32_hex(bytes)),
+                _ => None,
+            }
+        }
+
+        fn operations(&self) -> Vec<RecordedWriteOp> {
+            self.operations.borrow().clone()
+        }
+    }
+
+    impl Filesystem for RecordingWritableFilesystem {
+        fn metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
+            self.maybe_fail(PlatformOperation::ReadMetadata, path)?;
+            match self.node(path, PlatformOperation::ReadMetadata)? {
+                FakeNode::File(bytes) => Ok(FileMetadata {
+                    file_type: FileType::File,
+                    len: bytes.len() as u64,
+                }),
+                FakeNode::Directory => Ok(FileMetadata {
+                    file_type: FileType::Directory,
+                    len: 0,
+                }),
+                FakeNode::UnreadableFile => Ok(FileMetadata {
+                    file_type: FileType::File,
+                    len: 0,
+                }),
+            }
+        }
+
+        fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
+            self.maybe_fail(PlatformOperation::ReadFile, path)?;
+            match self.node(path, PlatformOperation::ReadFile)? {
+                FakeNode::File(bytes) => Ok(bytes),
+                FakeNode::Directory => Err(PlatformError::new(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File read target is invalid.",
+                )),
+                FakeNode::UnreadableFile => Err(safe_platform_error(
+                    path,
+                    PlatformOperation::ReadFile,
+                    PlatformErrorKind::PermissionDenied,
+                )),
+            }
+        }
+
+        fn read_to_string(&self, path: &Path) -> Result<String, PlatformError> {
+            String::from_utf8(self.read_bytes(path)?).map_err(|error| {
+                PlatformError::parse_error(
+                    PlatformOperation::ReadFile,
+                    path.display().to_string(),
+                    error.to_string(),
+                )
+            })
+        }
+
+        fn read_dir(&self, path: &Path) -> Result<Vec<DirectoryEntry>, PlatformError> {
+            self.node(path, PlatformOperation::ReadDirectory)?;
+            Ok(Vec::new())
+        }
+
+        fn walk_dir(&self, path: &Path) -> Result<Vec<DirectoryEntry>, PlatformError> {
+            self.node(path, PlatformOperation::WalkDirectory)?;
+            Ok(Vec::new())
+        }
+    }
+
+    impl WritableFilesystem for RecordingWritableFilesystem {
+        fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::WriteFile, path)?;
+            self.ensure_parent_dirs(path);
+            self.nodes
+                .borrow_mut()
+                .insert(path.to_path_buf(), FakeNode::File(bytes.to_vec()));
+            self.operations
+                .borrow_mut()
+                .push(RecordedWriteOp::Write(path.to_path_buf()));
+            Ok(())
+        }
+
+        fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::CopyFile, to)?;
+            let bytes = match self.node(from, PlatformOperation::CopyFile)? {
+                FakeNode::File(bytes) => bytes,
+                FakeNode::Directory | FakeNode::UnreadableFile => {
+                    return Err(PlatformError::new(
+                        PlatformOperation::CopyFile,
+                        from.display().to_string(),
+                        PlatformErrorKind::InvalidInput,
+                        "File copy target is invalid.",
+                    ));
+                }
+            };
+            self.ensure_parent_dirs(to);
+            self.nodes
+                .borrow_mut()
+                .insert(to.to_path_buf(), FakeNode::File(bytes));
+            self.operations.borrow_mut().push(RecordedWriteOp::Copy {
+                from: from.to_path_buf(),
+                to: to.to_path_buf(),
+            });
+            Ok(())
+        }
+
+        fn rename_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::RenameFile, to)?;
+            let node = self.node(from, PlatformOperation::RenameFile)?;
+            if !matches!(node, FakeNode::File(_)) {
+                return Err(PlatformError::new(
+                    PlatformOperation::RenameFile,
+                    from.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File rename target is invalid.",
+                ));
+            }
+            self.ensure_parent_dirs(to);
+            let mut nodes = self.nodes.borrow_mut();
+            nodes.remove(from);
+            nodes.insert(to.to_path_buf(), node);
+            self.operations.borrow_mut().push(RecordedWriteOp::Rename {
+                from: from.to_path_buf(),
+                to: to.to_path_buf(),
+            });
+            Ok(())
+        }
+
+        fn remove_file(&self, path: &Path) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::RemoveFile, path)?;
+            match self.nodes.borrow_mut().remove(path) {
+                Some(FakeNode::File(_)) | Some(FakeNode::UnreadableFile) => {
+                    self.operations
+                        .borrow_mut()
+                        .push(RecordedWriteOp::Remove(path.to_path_buf()));
+                    Ok(())
+                }
+                Some(FakeNode::Directory) => Err(PlatformError::new(
+                    PlatformOperation::RemoveFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File removal target is invalid.",
+                )),
+                None => Err(PlatformError::new(
+                    PlatformOperation::RemoveFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    "File removal target was not found.",
+                )),
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    struct RecordingDownloader {
+        calls: RefCell<Vec<String>>,
+        result: Result<Vec<u8>, DowngraderDownloadError>,
+        progress: Vec<f32>,
+    }
+
+    impl RecordingDownloader {
+        fn ok(bytes: impl Into<Vec<u8>>) -> Self {
+            Self {
+                calls: RefCell::new(Vec::new()),
+                result: Ok(bytes.into()),
+                progress: vec![0.0, 50.0, 100.0],
+            }
+        }
+
+        fn failing() -> Self {
+            Self {
+                calls: RefCell::new(Vec::new()),
+                result: Err(DowngraderDownloadError::request("network unavailable")),
+                progress: vec![0.0],
+            }
+        }
+
+        fn calls(&self) -> Vec<String> {
+            self.calls.borrow().clone()
+        }
+    }
+
+    impl DeltaDownloader for RecordingDownloader {
+        fn download_delta(
+            &self,
+            url: &str,
+            progress: &mut dyn FnMut(DowngraderProgress),
+        ) -> Result<Vec<u8>, DowngraderDownloadError> {
+            self.calls.borrow_mut().push(url.to_owned());
+            for percent in &self.progress {
+                progress(DowngraderProgress::new(*percent));
+            }
+            self.result.clone()
+        }
+    }
+
+    #[derive(Debug)]
+    struct RecordingApplier {
+        calls: RefCell<Vec<(Vec<u8>, Vec<u8>)>>,
+        result: Result<Vec<u8>, DowngraderDeltaApplyError>,
+    }
+
+    impl RecordingApplier {
+        fn ok(bytes: impl Into<Vec<u8>>) -> Self {
+            Self {
+                calls: RefCell::new(Vec::new()),
+                result: Ok(bytes.into()),
+            }
+        }
+
+        fn failing() -> Self {
+            Self {
+                calls: RefCell::new(Vec::new()),
+                result: Err(DowngraderDeltaApplyError::failed("malformed patch")),
+            }
+        }
+
+        fn calls(&self) -> Vec<(Vec<u8>, Vec<u8>)> {
+            self.calls.borrow().clone()
+        }
+    }
+
+    impl DeltaApplier for RecordingApplier {
+        fn apply_delta(
+            &self,
+            source_bytes: &[u8],
+            patch_bytes: &[u8],
+        ) -> Result<Vec<u8>, DowngraderDeltaApplyError> {
+            self.calls
+                .borrow_mut()
+                .push((source_bytes.to_vec(), patch_bytes.to_vec()));
+            self.result.clone()
+        }
+    }
+
+    fn executor_request(
+        request_id: u64,
+        keep_backups: bool,
+        delete_deltas: bool,
+    ) -> DowngraderExecutionRequest<'static> {
+        let installation = Box::leak(Box::new(installation()));
+        DowngraderExecutionRequest::new(
+            request_id,
+            Some(installation),
+            options(DowngraderTarget::OldGen, keep_backups, delete_deltas),
+        )
+    }
+
+    fn next_gen_fallout4_executor_fs() -> RecordingWritableFilesystem {
+        RecordingWritableFilesystem::default()
+            .with_dir(game_root())
+            .with_crc_file("Game/Fallout4.exe", "C5965A2E")
+    }
+
+    #[test]
+    fn downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups() {
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_upgradeBackup.exe", "C6053902")
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E");
+        let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(30, true, false), &downloader, &applier)
+            .expect("restore with kept backups");
+
+        assert_eq!(result.rows.len(), 6);
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Patched);
+        assert_eq!(result.log_rows[0], patched_log_row("Fallout4.exe"));
+        assert_eq!(downloader.calls(), Vec::<String>::new());
+        assert!(applier.calls().is_empty());
+        assert_eq!(
+            fs.file_crc("Game/Fallout4.exe").as_deref(),
+            Some("C6053902")
+        );
+        assert!(fs.has_file("Game/Fallout4_upgradeBackup.exe"));
+        assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert_eq!(
+            fs.operations(),
+            vec![
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4.exe")),
+                RecordedWriteOp::Copy {
+                    from: PathBuf::from("Game/Fallout4_upgradeBackup.exe"),
+                    to: PathBuf::from("Game/Fallout4.exe"),
+                },
+            ]
+        );
+
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_upgradeBackup.exe", "C6053902")
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E");
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(31, false, false), &downloader, &applier)
+            .expect("restore without kept backups");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Patched);
+        assert_eq!(
+            fs.file_crc("Game/Fallout4.exe").as_deref(),
+            Some("C6053902")
+        );
+        assert!(!fs.has_file("Game/Fallout4_upgradeBackup.exe"));
+        assert!(!fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert_eq!(
+            fs.operations(),
+            vec![
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4.exe")),
+                RecordedWriteOp::Rename {
+                    from: PathBuf::from("Game/Fallout4_upgradeBackup.exe"),
+                    to: PathBuf::from("Game/Fallout4.exe"),
+                },
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_downgradeBackup.exe")),
+            ]
+        );
+    }
+
+    #[test]
+    fn downgrader_executor_deletes_invalid_backups_downloads_applies_and_cleans_deltas() {
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_upgradeBackup.exe", "C5965A2E")
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C6053902");
+        let downloader = RecordingDownloader::ok(b"delta bytes".to_vec());
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(32, false, true), &downloader, &applier)
+            .expect("download/apply path");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Patched);
+        assert_eq!(downloader.calls().len(), 1);
+        assert!(downloader.calls()[0].ends_with("NG-to-OG-Fallout4.exe.xdelta"));
+        assert_eq!(applier.calls().len(), 1);
+        assert_eq!(result.progress_events.len(), 3);
+        assert_eq!(
+            fs.file_crc("Game/Fallout4.exe").as_deref(),
+            Some("C6053902")
+        );
+        assert!(!fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert!(!fs.has_file("Game/NG-to-OG-Fallout4.exe.xdelta"));
+        assert_eq!(
+            fs.operations(),
+            vec![
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_downgradeBackup.exe")),
+                RecordedWriteOp::Rename {
+                    from: PathBuf::from("Game/Fallout4.exe"),
+                    to: PathBuf::from("Game/Fallout4_downgradeBackup.exe"),
+                },
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_upgradeBackup.exe")),
+                RecordedWriteOp::Write(PathBuf::from("Game/NG-to-OG-Fallout4.exe.xdelta")),
+                RecordedWriteOp::Write(PathBuf::from("Game/Fallout4.exe")),
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_downgradeBackup.exe")),
+                RecordedWriteOp::Remove(PathBuf::from("Game/NG-to-OG-Fallout4.exe.xdelta")),
+            ]
+        );
+    }
+
+    #[test]
+    fn downgrader_executor_reuses_existing_patch_and_does_not_download_for_skipped_rows() {
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
+            .with_file(
+                "Game/NG-to-OG-Fallout4.exe.xdelta",
+                b"existing patch".to_vec(),
+            );
+        let downloader = RecordingDownloader::ok(b"download should not be used".to_vec());
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(33, true, false), &downloader, &applier)
+            .expect("existing patch path");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Patched);
+        assert!(downloader.calls().is_empty());
+        assert_eq!(applier.calls().len(), 1);
+        assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert!(fs.has_file("Game/NG-to-OG-Fallout4.exe.xdelta"));
+
+        let fs = RecordingWritableFilesystem::default()
+            .with_dir(game_root())
+            .with_file("Game/Fallout4.exe", b"unsupported source".to_vec());
+        let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(34, true, true), &downloader, &applier)
+            .expect("unsupported source skip");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Skipped);
+        assert_eq!(
+            result.log_rows[0],
+            crate::domain::downgrader::skipped_unsupported_log_row("Fallout4.exe")
+        );
+        assert!(downloader.calls().is_empty());
+        assert!(applier.calls().is_empty());
+        assert!(fs.operations().is_empty());
+    }
+
+    #[test]
+    fn downgrader_executor_preserves_source_backup_after_download_or_apply_failures() {
+        let fs = next_gen_fallout4_executor_fs();
+        let downloader = RecordingDownloader::failing();
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(35, false, true), &downloader, &applier)
+            .expect("failed download still returns per-row result");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Failed);
+        assert_eq!(result.log_rows[0], failed_patching_log_row("Fallout4.exe"));
+        assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert!(!fs.has_file("Game/Fallout4.exe"));
+        assert!(applier.calls().is_empty());
+
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
+            .with_file("Game/NG-to-OG-Fallout4.exe.xdelta", b"bad patch".to_vec());
+        let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let applier = RecordingApplier::failing();
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(36, false, true), &downloader, &applier)
+            .expect("failed apply still returns per-row result");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Failed);
+        assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+        assert!(fs.has_file("Game/NG-to-OG-Fallout4.exe.xdelta"));
+        assert!(!fs.has_file("Game/Fallout4.exe"));
+        assert_eq!(applier.calls().len(), 1);
+        assert!(downloader.calls().is_empty());
+    }
+
+    #[test]
+    fn downgrader_executor_logs_permission_failures_and_continues_safely() {
+        let fs = next_gen_fallout4_executor_fs()
+            .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
+            .with_crc_file("Game/Fallout4Launcher.exe", "02445570")
+            .with_failure(
+                PlatformOperation::RemoveFile,
+                "Game/Fallout4.exe",
+                PlatformErrorKind::PermissionDenied,
+            );
+        let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
+
+        let result = DowngraderService::new(&fs)
+            .execute_confirmed(executor_request(37, false, false), &downloader, &applier)
+            .expect("permission failure should not abort full executor");
+
+        assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Failed);
+        assert_eq!(result.log_rows[0], failed_patching_log_row("Fallout4.exe"));
+        assert_eq!(result.rows[1].outcome, DowngraderExecutionOutcome::Skipped);
+        assert!(
+            result.rows[0]
+                .diagnostics
+                .iter()
+                .any(|message| message.contains("permission was denied"))
+        );
+        assert!(downloader.calls().is_empty());
+        assert!(applier.calls().is_empty());
+        assert!(fs.has_file("Game/Fallout4.exe"));
+        assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+    }
+
+    #[test]
+    fn downgrader_executor_vcdiff_applier_fixture_decodes_source_patch() {
+        let patch = vec![
+            214, 195, 196, 0,  // magic
+            0,  // header indicator
+            1,  // VCD_SOURCE
+            4,  // source segment size
+            1,  // source segment position
+            12, // delta window size
+            13, // target window size
+            0,  // delta indicator
+            3,  // data length
+            2,  // instruction length
+            2,  // address length
+            72, 33, 32,  // "H! "
+            235, // ADD1 COPY4_mode6
+            183, // ADD2 COPY6_mode0
+            0, 4,
+        ];
+
+        let output = VcdiffDeltaApplier
+            .apply_delta(b"hello", &patch)
+            .expect("VCDIFF fixture should decode");
+
+        assert_eq!(output, b"Hello! Hello!".to_vec());
     }
 }

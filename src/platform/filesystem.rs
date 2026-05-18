@@ -137,6 +137,24 @@ pub trait Filesystem {
     fn walk_dir(&self, path: &Path) -> PlatformResult<Vec<DirectoryEntry>>;
 }
 
+/// Filesystem mutation operations needed by confirmed patch/download workflows.
+///
+/// This trait is intentionally separate from [`Filesystem`] so read-only discovery,
+/// scan, and preview-plan code cannot accidentally gain write capabilities.
+pub trait WritableFilesystem {
+    /// Writes a whole file from bytes.
+    fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()>;
+
+    /// Copies one file to another path.
+    fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()>;
+
+    /// Renames or moves one file to another path.
+    fn rename_file(&self, from: &Path, to: &Path) -> PlatformResult<()>;
+
+    /// Removes a single file.
+    fn remove_file(&self, path: &Path) -> PlatformResult<()>;
+}
+
 /// Production filesystem adapter backed by `std::fs` and deterministic `walkdir` traversal.
 #[derive(Debug, Default, Clone, Copy)]
 pub struct RealFilesystem;
@@ -259,6 +277,48 @@ impl Filesystem for RealFilesystem {
             entries.push(DirectoryEntry::new(entry.path().to_path_buf(), file_type));
         }
         Ok(entries)
+    }
+}
+
+impl WritableFilesystem for RealFilesystem {
+    fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
+        fs::write(path, bytes).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::WriteFile,
+                path.display().to_string(),
+                &error,
+            )
+        })
+    }
+
+    fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
+        fs::copy(from, to).map(|_| ()).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::CopyFile,
+                format!("{} -> {}", from.display(), to.display()),
+                &error,
+            )
+        })
+    }
+
+    fn rename_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
+        fs::rename(from, to).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::RenameFile,
+                format!("{} -> {}", from.display(), to.display()),
+                &error,
+            )
+        })
+    }
+
+    fn remove_file(&self, path: &Path) -> PlatformResult<()> {
+        fs::remove_file(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::RemoveFile,
+                path.display().to_string(),
+                &error,
+            )
+        })
     }
 }
 

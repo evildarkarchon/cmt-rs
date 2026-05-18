@@ -11,7 +11,7 @@ arboard = "3.6.1"
 crc32fast = "1.5.0"
 directories = "6.0.0"
 pelite = "0.10.0"
-reqwest = {version = "0.13.3", default-features = false, features = ["json", "rustls"]}
+reqwest = {version = "0.13.3", default-features = false, features = ["json", "rustls", "blocking"]}
 serde = {version = "1.0.228", features = ["derive"]}
 serde_json = "1.0.149"
 slint = "1.16.1"
@@ -21,6 +21,7 @@ tokio = {version = "1.52.3", features = ["rt-multi-thread", "macros", "sync"]}
 toml = "1.1.2"
 tracing = "0.1.44"
 tracing-subscriber = {version = "0.3.23", features = ["env-filter"]}
+vcdiff-decoder = "1.0.0"
 walkdir = "2.5.0"
 
 [target.'cfg(windows)'.dependencies]
