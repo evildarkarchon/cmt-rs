@@ -8,6 +8,7 @@ pub mod discovery;
 pub mod f4se;
 pub mod mod_manager;
 pub mod overview;
+pub mod scanner;
 pub mod settings;
 pub mod tools;
 
@@ -39,6 +40,9 @@ mod tests {
         assert_type::<crate::domain::overview::OverviewSnapshot>();
         assert_type::<crate::domain::overview::OverviewProblem>();
         assert_type::<crate::domain::overview::UpdateBannerState>();
+        assert_type::<crate::domain::scanner::ScannerResult>();
+        assert_type::<crate::domain::scanner::ScannerProblemType>();
+        assert_type::<crate::domain::scanner::ScannerActionDescriptor>();
         assert_type::<crate::domain::f4se::F4seGameTarget>();
         assert_type::<crate::domain::f4se::F4seDllFacts>();
         assert_type::<crate::domain::f4se::F4seCompatibilityCell>();
