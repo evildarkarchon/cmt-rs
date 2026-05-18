@@ -20,9 +20,11 @@ use app::{
 };
 use domain::{
     overview::{
+        ACTION_ARCHIVE_PATCHER_LABEL, ACTION_DOWNGRADE_MANAGER_LABEL, BinaryStatusRow,
         OverviewActionError, OverviewCountRow, OverviewDeferredAction, OverviewDeferredActionKind,
-        OverviewRefreshState, OverviewSnapshot, StatusSeverity, UpdateBannerState,
-        UpdateCheckFailure, UpdateProvider,
+        OverviewDeferredActionTarget, OverviewProblem, OverviewRefreshState, OverviewSnapshot,
+        OverviewTopStatusRow, StatusSeverity, UpdateBannerState, UpdateCheckFailure,
+        UpdateProvider,
     },
     settings::{AppSettings, UpdateSource},
 };
@@ -45,7 +47,7 @@ use services::{
     },
     update::{OverviewLinkService, RealUpdateCheckClient, UpdateCheckService},
 };
-use slint::ComponentHandle;
+use slint::{ComponentHandle, ModelRc, SharedString, VecModel};
 use workers::{
     BlockingWorkerResult, SlintEventLoopSink, WorkerEvent, WorkerEventSink, WorkerFailure,
     WorkerPayload, WorkerRuntime, WorkerTaskOutcome,
@@ -242,6 +244,38 @@ fn bind_overview_callbacks(
                     OverviewDeferredActionKind::OpenUpdateProvider(UpdateProvider::Github),
                     "GitHub update link is not available.",
                     |controller| controller.update_provider_action(UpdateProvider::Github),
+                );
+            }
+        }
+    });
+
+    app.on_overview_open_downgrade_manager_requested({
+        let app = app.as_weak();
+        let overview_controller = Arc::clone(&overview_controller);
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                apply_action_error(
+                    &app,
+                    &overview_controller,
+                    OverviewDeferredActionKind::OpenDowngradeManager,
+                    "Downgrade Manager is reserved for a later port phase.".to_owned(),
+                );
+            }
+        }
+    });
+
+    app.on_overview_open_archive_patcher_requested({
+        let app = app.as_weak();
+        let overview_controller = Arc::clone(&overview_controller);
+
+        move || {
+            if let Some(app) = app.upgrade() {
+                apply_action_error(
+                    &app,
+                    &overview_controller,
+                    OverviewDeferredActionKind::OpenArchivePatcher,
+                    "Archive Patcher is reserved for a later port phase.".to_owned(),
                 );
             }
         }
@@ -604,15 +638,54 @@ fn apply_current_overview_snapshot(app: &MainWindow, controller: &Arc<Mutex<Over
 fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
     app.set_overview_refresh_message(refresh_message(&snapshot.refresh).into());
     app.set_overview_refresh_busy(snapshot.refresh.is_busy());
-    app.set_overview_top_status(format_top_status(snapshot).into());
-    app.set_overview_binary_status(format_binary_status(snapshot).into());
-    app.set_overview_archive_status(format_count_rows(&snapshot.archives.rows).into());
-    app.set_overview_module_status(format_count_rows(&snapshot.modules.rows).into());
+    app.set_overview_top_rows(model_from_vec(format_top_rows(snapshot)));
+    app.set_overview_binary_rows(model_from_vec(format_binary_rows(snapshot)));
+    app.set_overview_archive_rows(model_from_vec(format_count_panel_rows(
+        &snapshot.archives.rows,
+    )));
+    app.set_overview_module_rows(model_from_vec(format_count_panel_rows(
+        &snapshot.modules.rows,
+    )));
     app.set_overview_problems_summary(format_problem_summary(snapshot).into());
+    app.set_overview_problem_rows(model_from_vec(format_problem_rows(snapshot)));
     app.set_overview_game_path_enabled(matches!(
         snapshot.top.game_path,
         domain::overview::OverviewGamePathStatus::Found(_)
     ));
+    app.set_overview_downgrade_label(
+        deferred_action_label(
+            &snapshot.binaries.actions,
+            OverviewDeferredActionKind::OpenDowngradeManager,
+            ACTION_DOWNGRADE_MANAGER_LABEL,
+        )
+        .into(),
+    );
+    app.set_overview_downgrade_enabled(false);
+    app.set_overview_downgrade_status(
+        deferred_action_status(
+            &snapshot.binaries.actions,
+            OverviewDeferredActionKind::OpenDowngradeManager,
+            "Downgrade Manager",
+        )
+        .into(),
+    );
+    app.set_overview_archive_patcher_label(
+        deferred_action_label(
+            &snapshot.archives.actions,
+            OverviewDeferredActionKind::OpenArchivePatcher,
+            ACTION_ARCHIVE_PATCHER_LABEL,
+        )
+        .into(),
+    );
+    app.set_overview_archive_patcher_enabled(false);
+    app.set_overview_archive_patcher_status(
+        deferred_action_status(
+            &snapshot.archives.actions,
+            OverviewDeferredActionKind::OpenArchivePatcher,
+            "Archive Patcher",
+        )
+        .into(),
+    );
     app.set_overview_last_action_error(
         snapshot
             .last_action_error
@@ -622,6 +695,10 @@ fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
             .into(),
     );
     apply_update_banner(app, &snapshot.update_banner);
+}
+
+fn model_from_vec<T: Clone + 'static>(rows: Vec<T>) -> ModelRc<T> {
+    ModelRc::new(VecModel::from(rows))
 }
 
 fn refresh_message(refresh: &OverviewRefreshState) -> String {
@@ -641,66 +718,141 @@ fn refresh_message(refresh: &OverviewRefreshState) -> String {
         })
 }
 
-fn format_top_status(snapshot: &OverviewSnapshot) -> String {
+fn format_top_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
     snapshot
         .top
         .rows()
         .into_iter()
-        .map(|row| format!("{}: {}", row.label, row.value))
-        .collect::<Vec<_>>()
-        .join("\n")
+        .map(format_top_row)
+        .collect()
 }
 
-fn format_binary_status(snapshot: &OverviewSnapshot) -> String {
-    let mut lines = snapshot
+fn format_top_row(row: OverviewTopStatusRow) -> OverviewUiRow {
+    overview_ui_row(row.label, row.value, "", row.severity)
+}
+
+fn format_binary_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
+    let mut rows = snapshot
         .binaries
         .rows
         .iter()
-        .map(|row| format!("{}: {}", row.label, row.install_type))
+        .map(format_binary_row)
         .collect::<Vec<_>>();
-    lines.push(format!(
-        "Address Library: {}",
-        snapshot.binaries.address_library.display_text()
-    ));
-    if lines.is_empty() {
-        "No binary facts collected yet.".to_owned()
-    } else {
-        lines.join("\n")
+
+    if rows.is_empty() {
+        rows.push(overview_ui_row(
+            "Binaries",
+            "No binary facts collected yet.",
+            "",
+            StatusSeverity::Unknown,
+        ));
     }
+
+    rows.push(overview_ui_row(
+        "Address Library",
+        snapshot.binaries.address_library.display_text(),
+        "",
+        snapshot.binaries.address_library.severity(),
+    ));
+    rows
 }
 
-fn format_count_rows(rows: &[OverviewCountRow]) -> String {
+fn format_binary_row(row: &BinaryStatusRow) -> OverviewUiRow {
+    overview_ui_row(
+        row.label.as_str(),
+        row.install_type.to_string(),
+        binary_detail(row),
+        row.severity,
+    )
+}
+
+fn binary_detail(row: &BinaryStatusRow) -> String {
+    let mut parts = Vec::new();
+    if let Some(version) = row.version.as_deref().filter(|value| !value.is_empty()) {
+        parts.push(format!("Version: {version}"));
+    }
+    if let Some(hash) = row.hash.as_deref().filter(|value| !value.is_empty()) {
+        parts.push(format!("CRC32: {hash}"));
+    }
+    parts.join(" · ")
+}
+
+fn format_count_panel_rows(rows: &[OverviewCountRow]) -> Vec<OverviewUiRow> {
     if rows.is_empty() {
-        return "No facts collected yet.".to_owned();
+        return vec![overview_ui_row(
+            "Counts",
+            "No facts collected yet.",
+            "",
+            StatusSeverity::Unknown,
+        )];
     }
 
     rows.iter()
-        .map(|row| match row.limit {
-            Some(limit) => format!("{}: {} / {}", row.label, row.value, limit),
-            None => format!("{}: {}", row.label, row.value),
+        .map(|row| {
+            overview_ui_row(
+                row.label,
+                row.value.to_string(),
+                row.limit
+                    .map(|limit| format!("Limit: {limit}"))
+                    .unwrap_or_default(),
+                row.severity,
+            )
         })
-        .collect::<Vec<_>>()
-        .join("\n")
+        .collect()
 }
 
 fn format_problem_summary(snapshot: &OverviewSnapshot) -> String {
+    format!("Problems: {}", snapshot.problems.len())
+}
+
+fn format_problem_rows(snapshot: &OverviewSnapshot) -> Vec<OverviewUiRow> {
     if snapshot.problems.is_empty() {
-        return "Problems: 0".to_owned();
+        return vec![overview_ui_row(
+            "Problems",
+            "0",
+            "No problems detected.",
+            StatusSeverity::Good,
+        )];
     }
 
-    let mut lines = vec![format!("Problems: {}", snapshot.problems.len())];
-    lines.extend(snapshot.problems.iter().take(5).map(|problem| {
-        format!(
-            "{}: {} ({})",
-            problem.problem.label(),
-            problem.display_path,
-            severity_label(problem.severity)
-        )
-    }));
+    let mut rows = snapshot
+        .problems
+        .iter()
+        .take(5)
+        .map(format_problem_row)
+        .collect::<Vec<_>>();
     if snapshot.problems.len() > 5 {
-        lines.push(format!("+{} more", snapshot.problems.len() - 5));
+        rows.push(overview_ui_row(
+            "More",
+            format!("+{} more", snapshot.problems.len() - 5),
+            "Open Scanner details in a later port slice.",
+            StatusSeverity::Info,
+        ));
     }
-    lines.join("\n")
+    rows
+}
+
+fn format_problem_row(problem: &OverviewProblem) -> OverviewUiRow {
+    overview_ui_row(
+        problem.problem.label(),
+        problem.display_path.as_str(),
+        problem.summary.as_str(),
+        problem.severity,
+    )
+}
+
+fn overview_ui_row(
+    label: impl Into<SharedString>,
+    value: impl Into<SharedString>,
+    detail: impl Into<SharedString>,
+    severity: StatusSeverity,
+) -> OverviewUiRow {
+    OverviewUiRow {
+        label: label.into(),
+        value: value.into(),
+        detail: detail.into(),
+        severity: severity_label(severity).into(),
+    }
 }
 
 fn severity_label(severity: StatusSeverity) -> &'static str {
@@ -711,6 +863,41 @@ fn severity_label(severity: StatusSeverity) -> &'static str {
         StatusSeverity::Info => "info",
         StatusSeverity::Neutral => "neutral",
         StatusSeverity::Unknown => "unknown",
+    }
+}
+
+fn deferred_action_label(
+    actions: &[OverviewDeferredAction],
+    kind: OverviewDeferredActionKind,
+    fallback: &'static str,
+) -> String {
+    actions
+        .iter()
+        .find(|action| action.kind == kind)
+        .map(|action| action.label.clone())
+        .unwrap_or_else(|| fallback.to_owned())
+}
+
+fn deferred_action_status(
+    actions: &[OverviewDeferredAction],
+    kind: OverviewDeferredActionKind,
+    workflow_name: &'static str,
+) -> String {
+    let Some(action) = actions.iter().find(|action| action.kind == kind) else {
+        return "Not available for the current Overview state.".to_owned();
+    };
+
+    match &action.target {
+        OverviewDeferredActionTarget::Internal => {
+            format!("Deferred until the {workflow_name} workflow is ported.")
+        }
+        OverviewDeferredActionTarget::Path(_) | OverviewDeferredActionTarget::Url(_) => {
+            if action.enabled {
+                "Ready.".to_owned()
+            } else {
+                "Action is disabled for the current Overview state.".to_owned()
+            }
+        }
     }
 }
 
@@ -750,6 +937,7 @@ fn update_release_label(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use super::{
         app::{SHELL_TAB_LABELS, ShellController, shell_tab_labels},
         domain::DomainState,
@@ -915,10 +1103,18 @@ mod tests {
         assert_source_contains_in_order(
             OVERVIEW_SLINT,
             &[
+                "export struct OverviewUiRow",
+                "in-out property <[OverviewUiRow]> overview-top-rows",
+                "in-out property <[OverviewUiRow]> overview-binary-rows",
+                "in-out property <[OverviewUiRow]> overview-archive-rows",
+                "in-out property <[OverviewUiRow]> overview-module-rows",
+                "in-out property <[OverviewUiRow]> overview-problem-rows",
                 "callback refresh-requested()",
                 "callback open-game-path-requested()",
                 "callback open-nexus-update-requested()",
                 "callback open-github-update-requested()",
+                "callback open-downgrade-manager-requested()",
+                "callback open-archive-patcher-requested()",
                 "text: \"Refresh\"",
                 "text: \"Open Game Path\"",
                 "title: \"Status\"",
@@ -930,6 +1126,78 @@ mod tests {
         );
         assert!(OVERVIEW_SLINT.contains("overview-last-action-error"));
         assert!(OVERVIEW_SLINT.contains("overview-refresh-busy"));
+        assert!(OVERVIEW_SLINT.contains("overview-downgrade-enabled: false"));
+        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
+        assert!(
+            OVERVIEW_SLINT.contains("Deferred until the Downgrade Manager workflow is ported.")
+        );
+        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+        assert!(!OVERVIEW_SLINT.contains("Overview behavior is reserved for a later port phase."));
+    }
+
+    #[test]
+    fn overview_projection_rows_lock_reference_order_and_deferred_status() {
+        let snapshot = OverviewSnapshot::empty();
+
+        let top_labels = format_top_rows(&snapshot)
+            .into_iter()
+            .map(|row| row.label.to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(top_labels, domain::overview::TOP_STATUS_LABELS.to_vec());
+
+        let archive_labels = format_count_panel_rows(&snapshot.archives.rows)
+            .into_iter()
+            .map(|row| row.label.to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            archive_labels,
+            domain::overview::ARCHIVE_COUNT_LABELS.to_vec()
+        );
+
+        let module_labels = format_count_panel_rows(&snapshot.modules.rows)
+            .into_iter()
+            .map(|row| row.label.to_string())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            module_labels,
+            domain::overview::MODULE_COUNT_LABELS.to_vec()
+        );
+
+        let binary_rows = format_binary_rows(&snapshot);
+        assert!(
+            binary_rows
+                .iter()
+                .any(|row| row.label.as_str() == "Address Library")
+        );
+        assert_eq!(
+            deferred_action_label(
+                &snapshot.binaries.actions,
+                OverviewDeferredActionKind::OpenDowngradeManager,
+                ACTION_DOWNGRADE_MANAGER_LABEL,
+            ),
+            "Downgrade Manager..."
+        );
+        assert_eq!(
+            deferred_action_label(
+                &snapshot.archives.actions,
+                OverviewDeferredActionKind::OpenArchivePatcher,
+                ACTION_ARCHIVE_PATCHER_LABEL,
+            ),
+            "Archive Patcher..."
+        );
+        assert_eq!(
+            deferred_action_status(
+                &snapshot.binaries.actions,
+                OverviewDeferredActionKind::OpenDowngradeManager,
+                "Downgrade Manager",
+            ),
+            "Deferred until the Downgrade Manager workflow is ported."
+        );
+        assert_eq!(format_problem_summary(&snapshot), "Problems: 0");
+        assert_eq!(
+            format_problem_rows(&snapshot)[0].detail.as_str(),
+            "No problems detected."
+        );
     }
 
     #[test]
@@ -1022,9 +1290,16 @@ mod tests {
                 "in-out property <string> update-source",
                 "in-out property <string> log-level",
                 "in-out property <string> overview-refresh-message",
+                "in-out property <[OverviewUiRow]> overview-top-rows",
+                "in-out property <[OverviewUiRow]> overview-binary-rows",
+                "in-out property <[OverviewUiRow]> overview-archive-rows",
+                "in-out property <[OverviewUiRow]> overview-module-rows",
+                "in-out property <[OverviewUiRow]> overview-problem-rows",
                 "callback update-source-selected(string)",
                 "callback log-level-selected(string)",
                 "callback overview-refresh-requested()",
+                "callback overview-open-downgrade-manager-requested()",
+                "callback overview-open-archive-patcher-requested()",
                 "SettingsTab {",
                 "update-source <=> root.update-source",
                 "log-level <=> root.log-level",
@@ -1037,11 +1312,20 @@ mod tests {
             &[
                 "OverviewTab {",
                 "overview-refresh-message <=> root.overview-refresh-message",
+                "overview-top-rows <=> root.overview-top-rows",
+                "overview-binary-rows <=> root.overview-binary-rows",
+                "overview-archive-rows <=> root.overview-archive-rows",
+                "overview-module-rows <=> root.overview-module-rows",
+                "overview-problem-rows <=> root.overview-problem-rows",
+                "overview-downgrade-enabled <=> root.overview-downgrade-enabled",
+                "overview-archive-patcher-enabled <=> root.overview-archive-patcher-enabled",
                 "overview-last-action-error <=> root.overview-last-action-error",
                 "root.overview-refresh-requested()",
                 "root.overview-open-game-path-requested()",
                 "root.overview-open-nexus-update-requested()",
                 "root.overview-open-github-update-requested()",
+                "root.overview-open-downgrade-manager-requested()",
+                "root.overview-open-archive-patcher-requested()",
             ],
         );
     }

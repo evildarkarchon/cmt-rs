@@ -1,23 +1,130 @@
-import { Button, GroupBox } from "std-widgets.slint";
+import { Button, GroupBox, ScrollView } from "std-widgets.slint";
 
-component OverviewStatusBlock inherits Rectangle {
+export struct OverviewUiRow {
+    label: string,
+    value: string,
+    detail: string,
+    severity: string,
+}
+
+component SeverityText inherits Text {
+    in property <string> severity: "neutral";
+
+    color: root.severity == "good" ? #8fdc8f :
+        root.severity == "warning" ? #ffd166 :
+        root.severity == "error" ? #ff7b7b :
+        root.severity == "info" ? #8ecbff :
+        root.severity == "unknown" ? #a8a8a8 :
+        #d8d8d8;
+}
+
+component OverviewRows inherits Rectangle {
+    in property <[OverviewUiRow]> rows;
+    in property <length> label-width: 118px;
+
+    min-height: 28px;
+
+    VerticalLayout {
+        padding: 0px;
+        spacing: 5px;
+        alignment: start;
+
+        for row in root.rows: VerticalLayout {
+            padding: 0px;
+            spacing: 1px;
+            alignment: start;
+
+            HorizontalLayout {
+                spacing: 6px;
+                alignment: start;
+
+                Text {
+                    text: row.label + ":";
+                    width: root.label-width;
+                    font-size: 13px;
+                    color: #f3f3f3;
+                    horizontal-alignment: right;
+                    vertical-alignment: top;
+                }
+
+                SeverityText {
+                    text: row.value;
+                    severity: row.severity;
+                    font-size: 13px;
+                    wrap: word-wrap;
+                }
+            }
+
+            if row.detail != "": HorizontalLayout {
+                spacing: 6px;
+                alignment: start;
+
+                Text {
+                    text: "";
+                    width: root.label-width;
+                    font-size: 11px;
+                }
+
+                Text {
+                    text: row.detail;
+                    color: #a8a8a8;
+                    font-size: 11px;
+                    wrap: word-wrap;
+                }
+            }
+        }
+    }
+}
+
+component OverviewPanel inherits Rectangle {
     in property <string> title;
-    in property <string> body;
+    in property <[OverviewUiRow]> rows;
+    in property <length> label-width: 118px;
+    in property <string> action-label: "";
+    in property <bool> action-enabled: false;
+    in property <string> action-status: "";
 
-    min-height: 116px;
+    callback action-requested();
+
+    min-height: 188px;
 
     GroupBox {
         title: root.title;
 
         VerticalLayout {
             padding: 8px;
-            spacing: 4px;
+            spacing: 8px;
             alignment: start;
 
-            Text {
-                text: root.body;
-                font-size: 13px;
-                color: #f3f3f3;
+            OverviewRows {
+                rows: root.rows;
+                label-width: root.label-width;
+            }
+
+            if root.action-label != "": Rectangle {
+                height: 1px;
+                background: #3a3a3a;
+            }
+
+            if root.action-label != "": HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                Button {
+                    text: root.action-label;
+                    enabled: root.action-enabled;
+                    clicked => {
+                        root.action-requested();
+                    }
+                }
+
+                Text {
+                    text: root.action-status;
+                    color: root.action-enabled ? #c8c8c8 : #a8a8a8;
+                    font-size: 12px;
+                    vertical-alignment: center;
+                    wrap: word-wrap;
+                }
             }
         }
     }
@@ -26,150 +133,185 @@ component OverviewStatusBlock inherits Rectangle {
 export component OverviewTab inherits Rectangle {
     in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
     in-out property <bool> overview-refresh-busy: false;
-    in-out property <string> overview-top-status: "Mod Manager: Unknown\nGame Path: Unknown\nVersion: Unknown\nPC Specs: Unknown";
-    in-out property <string> overview-binary-status: "No binary facts collected yet.";
-    in-out property <string> overview-archive-status: "No archive facts collected yet.";
-    in-out property <string> overview-module-status: "No module facts collected yet.";
+    in-out property <[OverviewUiRow]> overview-top-rows;
+    in-out property <[OverviewUiRow]> overview-binary-rows;
+    in-out property <[OverviewUiRow]> overview-archive-rows;
+    in-out property <[OverviewUiRow]> overview-module-rows;
     in-out property <string> overview-problems-summary: "Problems: 0";
+    in-out property <[OverviewUiRow]> overview-problem-rows;
     in-out property <string> overview-update-heading: "";
     in-out property <string> overview-nexus-update-label: "Nexus Mods";
     in-out property <bool> overview-nexus-update-enabled: false;
     in-out property <string> overview-github-update-label: "GitHub";
     in-out property <bool> overview-github-update-enabled: false;
     in-out property <bool> overview-game-path-enabled: false;
+    in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+    in-out property <bool> overview-downgrade-enabled: false;
+    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+    in-out property <bool> overview-archive-patcher-enabled: false;
+    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
     in-out property <string> overview-last-action-error: "";
 
     callback refresh-requested();
     callback open-game-path-requested();
     callback open-nexus-update-requested();
     callback open-github-update-requested();
+    callback open-downgrade-manager-requested();
+    callback open-archive-patcher-requested();
 
     background: #202020;
 
-    VerticalLayout {
-        padding: 20px;
-        spacing: 12px;
-        alignment: start;
-
-        HorizontalLayout {
+    ScrollView {
+        VerticalLayout {
+            padding: 20px;
             spacing: 12px;
             alignment: start;
 
-            Text {
-                text: "Overview";
-                font-size: 18px;
-                font-weight: 600;
-                color: #f3f3f3;
-                vertical-alignment: center;
-            }
-
-            Text {
-                text: root.overview-refresh-message;
-                font-size: 13px;
-                color: root.overview-refresh-busy ? #4da3ff : #c8c8c8;
-                vertical-alignment: center;
-            }
-
-            Button {
-                text: "Refresh";
-                enabled: !root.overview-refresh-busy;
-                clicked => {
-                    root.refresh-requested();
-                }
-            }
-
-            Button {
-                text: "Open Game Path";
-                enabled: root.overview-game-path-enabled;
-                clicked => {
-                    root.open-game-path-requested();
-                }
-            }
-        }
-
-        Rectangle {
-            visible: root.overview-last-action-error != "";
-            height: root.overview-last-action-error != "" ? 28px : 0px;
-            background: #4a2424;
-            border-color: #d36b6b;
-            border-width: 1px;
-            border-radius: 4px;
-
-            Text {
-                text: root.overview-last-action-error;
-                color: #ffd6d6;
-                font-size: 13px;
-                x: 8px;
-                y: 5px;
-            }
-        }
-
-        Rectangle {
-            visible: root.overview-update-heading != "";
-            height: root.overview-update-heading != "" ? 42px : 0px;
-            background: #26364a;
-            border-color: #4da3ff;
-            border-width: 1px;
-            border-radius: 4px;
-
             HorizontalLayout {
-                padding: 6px;
-                spacing: 8px;
+                spacing: 12px;
                 alignment: start;
 
                 Text {
-                    text: root.overview-update-heading;
+                    text: "Overview";
+                    font-size: 18px;
+                    font-weight: 600;
                     color: #f3f3f3;
-                    font-size: 13px;
                     vertical-alignment: center;
                 }
 
+                SeverityText {
+                    text: root.overview-refresh-message;
+                    severity: root.overview-refresh-busy ? "info" : "neutral";
+                    font-size: 13px;
+                    vertical-alignment: center;
+                    wrap: word-wrap;
+                }
+
                 Button {
-                    text: root.overview-nexus-update-label;
-                    enabled: root.overview-nexus-update-enabled;
+                    text: "Refresh";
+                    enabled: !root.overview-refresh-busy;
                     clicked => {
-                        root.open-nexus-update-requested();
+                        root.refresh-requested();
                     }
                 }
 
                 Button {
-                    text: root.overview-github-update-label;
-                    enabled: root.overview-github-update-enabled;
+                    text: "Open Game Path";
+                    enabled: root.overview-game-path-enabled;
                     clicked => {
-                        root.open-github-update-requested();
+                        root.open-game-path-requested();
                     }
                 }
             }
-        }
 
-        OverviewStatusBlock {
-            title: "Status";
-            body: root.overview-top-status;
-        }
+            if root.overview-last-action-error != "": Rectangle {
+                height: 32px;
+                background: #4a2424;
+                border-color: #d36b6b;
+                border-width: 1px;
+                border-radius: 4px;
 
-        HorizontalLayout {
-            spacing: 12px;
-            alignment: start;
-
-            OverviewStatusBlock {
-                title: "Binaries (EXE/DLL/BIN)";
-                body: root.overview-binary-status;
+                Text {
+                    text: root.overview-last-action-error;
+                    color: #ffd6d6;
+                    font-size: 13px;
+                    x: 8px;
+                    y: 7px;
+                    wrap: word-wrap;
+                }
             }
 
-            OverviewStatusBlock {
-                title: "Archives (BA2)";
-                body: root.overview-archive-status;
+            if root.overview-update-heading != "": Rectangle {
+                height: 44px;
+                background: #24452a;
+                border-color: #83c56f;
+                border-width: 1px;
+                border-radius: 4px;
+
+                HorizontalLayout {
+                    padding: 6px;
+                    spacing: 8px;
+                    alignment: start;
+
+                    Text {
+                        text: root.overview-update-heading;
+                        color: #eaffdf;
+                        font-size: 13px;
+                        vertical-alignment: center;
+                    }
+
+                    Button {
+                        text: root.overview-nexus-update-label;
+                        enabled: root.overview-nexus-update-enabled;
+                        clicked => {
+                            root.open-nexus-update-requested();
+                        }
+                    }
+
+                    Button {
+                        text: root.overview-github-update-label;
+                        enabled: root.overview-github-update-enabled;
+                        clicked => {
+                            root.open-github-update-requested();
+                        }
+                    }
+                }
             }
 
-            OverviewStatusBlock {
-                title: "Modules (ESM/ESL/ESP)";
-                body: root.overview-module-status;
+            OverviewPanel {
+                title: "Status";
+                rows: root.overview-top-rows;
+                label-width: 92px;
             }
-        }
 
-        OverviewStatusBlock {
-            title: "Problems";
-            body: root.overview-problems-summary;
+            HorizontalLayout {
+                spacing: 12px;
+                alignment: start;
+
+                OverviewPanel {
+                    title: "Binaries (EXE/DLL/BIN)";
+                    rows: root.overview-binary-rows;
+                    label-width: 112px;
+                    action-label: root.overview-downgrade-label;
+                    action-enabled: root.overview-downgrade-enabled;
+                    action-status: root.overview-downgrade-status;
+                    action-requested => {
+                        root.open-downgrade-manager-requested();
+                    }
+                }
+
+                OverviewPanel {
+                    title: "Archives (BA2)";
+                    rows: root.overview-archive-rows;
+                    label-width: 104px;
+                    action-label: root.overview-archive-patcher-label;
+                    action-enabled: root.overview-archive-patcher-enabled;
+                    action-status: root.overview-archive-patcher-status;
+                    action-requested => {
+                        root.open-archive-patcher-requested();
+                    }
+                }
+
+                OverviewPanel {
+                    title: "Modules (ESM/ESL/ESP)";
+                    rows: root.overview-module-rows;
+                    label-width: 104px;
+                }
+            }
+
+            Text {
+                text: root.overview-problems-summary;
+                color: #f3f3f3;
+                font-size: 14px;
+                font-weight: 600;
+            }
+
+            OverviewPanel {
+                title: "Problems";
+                rows: root.overview-problem-rows;
+                label-width: 132px;
+            }
         }
     }
 }

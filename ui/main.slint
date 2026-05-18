@@ -1,5 +1,5 @@
 import { TabWidget } from "std-widgets.slint";
-import { OverviewTab } from "overview_tab.slint";
+import { OverviewTab, OverviewUiRow } from "overview_tab.slint";
 import { F4seTab } from "f4se_tab.slint";
 import { ScannerTab } from "scanner_tab.slint";
 import { ToolsTab } from "tools_tab.slint";
@@ -11,17 +11,24 @@ export component MainWindow inherits Window {
     in-out property <string> log-level: "info";
     in-out property <string> overview-refresh-message: "Overview has not been refreshed.";
     in-out property <bool> overview-refresh-busy: false;
-    in-out property <string> overview-top-status: "Mod Manager: Unknown\nGame Path: Unknown\nVersion: Unknown\nPC Specs: Unknown";
-    in-out property <string> overview-binary-status: "No binary facts collected yet.";
-    in-out property <string> overview-archive-status: "No archive facts collected yet.";
-    in-out property <string> overview-module-status: "No module facts collected yet.";
+    in-out property <[OverviewUiRow]> overview-top-rows;
+    in-out property <[OverviewUiRow]> overview-binary-rows;
+    in-out property <[OverviewUiRow]> overview-archive-rows;
+    in-out property <[OverviewUiRow]> overview-module-rows;
     in-out property <string> overview-problems-summary: "Problems: 0";
+    in-out property <[OverviewUiRow]> overview-problem-rows;
     in-out property <string> overview-update-heading: "";
     in-out property <string> overview-nexus-update-label: "Nexus Mods";
     in-out property <bool> overview-nexus-update-enabled: false;
     in-out property <string> overview-github-update-label: "GitHub";
     in-out property <bool> overview-github-update-enabled: false;
     in-out property <bool> overview-game-path-enabled: false;
+    in-out property <string> overview-downgrade-label: "Downgrade Manager...";
+    in-out property <bool> overview-downgrade-enabled: false;
+    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+    in-out property <bool> overview-archive-patcher-enabled: false;
+    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
     in-out property <string> overview-last-action-error: "";
     callback update-source-selected(string);
     callback log-level-selected(string);
@@ -29,6 +36,8 @@ export component MainWindow inherits Window {
     callback overview-open-game-path-requested();
     callback overview-open-nexus-update-requested();
     callback overview-open-github-update-requested();
+    callback overview-open-downgrade-manager-requested();
+    callback overview-open-archive-patcher-requested();
 
     title: "Collective Modding Toolkit";
     width: 900px;
@@ -41,17 +50,24 @@ export component MainWindow inherits Window {
             OverviewTab {
                 overview-refresh-message <=> root.overview-refresh-message;
                 overview-refresh-busy <=> root.overview-refresh-busy;
-                overview-top-status <=> root.overview-top-status;
-                overview-binary-status <=> root.overview-binary-status;
-                overview-archive-status <=> root.overview-archive-status;
-                overview-module-status <=> root.overview-module-status;
+                overview-top-rows <=> root.overview-top-rows;
+                overview-binary-rows <=> root.overview-binary-rows;
+                overview-archive-rows <=> root.overview-archive-rows;
+                overview-module-rows <=> root.overview-module-rows;
                 overview-problems-summary <=> root.overview-problems-summary;
+                overview-problem-rows <=> root.overview-problem-rows;
                 overview-update-heading <=> root.overview-update-heading;
                 overview-nexus-update-label <=> root.overview-nexus-update-label;
                 overview-nexus-update-enabled <=> root.overview-nexus-update-enabled;
                 overview-github-update-label <=> root.overview-github-update-label;
                 overview-github-update-enabled <=> root.overview-github-update-enabled;
                 overview-game-path-enabled <=> root.overview-game-path-enabled;
+                overview-downgrade-label <=> root.overview-downgrade-label;
+                overview-downgrade-enabled <=> root.overview-downgrade-enabled;
+                overview-downgrade-status <=> root.overview-downgrade-status;
+                overview-archive-patcher-label <=> root.overview-archive-patcher-label;
+                overview-archive-patcher-enabled <=> root.overview-archive-patcher-enabled;
+                overview-archive-patcher-status <=> root.overview-archive-patcher-status;
                 overview-last-action-error <=> root.overview-last-action-error;
                 refresh-requested => {
                     root.overview-refresh-requested();
@@ -64,6 +80,12 @@ export component MainWindow inherits Window {
                 }
                 open-github-update-requested => {
                     root.overview-open-github-update-requested();
+                }
+                open-downgrade-manager-requested => {
+                    root.overview-open-downgrade-manager-requested();
+                }
+                open-archive-patcher-requested => {
+                    root.overview-open-archive-patcher-requested();
                 }
             }
         }
