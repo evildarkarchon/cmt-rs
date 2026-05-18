@@ -14,8 +14,11 @@ use std::{
 };
 
 use crate::{
-    domain::overview::{
-        OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
+    domain::{
+        f4se::F4seScanSnapshot,
+        overview::{
+            OverviewActionError, OverviewDeferredActionKind, OverviewSnapshot, UpdateBannerState,
+        },
     },
     platform::{
         PlatformError, PlatformErrorKind, PlatformOperation,
@@ -381,6 +384,8 @@ pub enum WorkerPayload {
     Discovery(WorkerMessage),
     /// Scanner-specific status or result text.
     Scan(WorkerMessage),
+    /// F4SE diagnostics-specific scan completion payload.
+    F4se(F4seWorkerPayload),
     /// Patcher-specific status or result text.
     Patch(WorkerMessage),
     /// Download-specific status or result text.
@@ -399,6 +404,42 @@ pub enum WorkerPayload {
     Error(WorkerFailure),
     /// Generic status or result text.
     Generic(WorkerMessage),
+}
+
+/// F4SE-specific worker payloads that must cross the UI handoff boundary intact.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum F4seWorkerPayload {
+    /// A full F4SE scan produced a render-ready snapshot.
+    ScanCompleted {
+        /// Scan request id used to reject stale worker results.
+        scan_id: u64,
+        /// Owned snapshot produced off the UI thread.
+        snapshot: Box<F4seScanSnapshot>,
+    },
+}
+
+impl F4seWorkerPayload {
+    /// Creates a successful F4SE scan payload.
+    pub fn scan_completed(scan_id: u64, snapshot: F4seScanSnapshot) -> Self {
+        Self::ScanCompleted {
+            scan_id,
+            snapshot: Box::new(snapshot),
+        }
+    }
+
+    /// Returns the scan request id attached to this payload.
+    pub const fn scan_id(&self) -> u64 {
+        match self {
+            Self::ScanCompleted { scan_id, .. } => *scan_id,
+        }
+    }
+
+    /// Returns the owned scan snapshot by shared reference.
+    pub fn snapshot(&self) -> &F4seScanSnapshot {
+        match self {
+            Self::ScanCompleted { snapshot, .. } => snapshot,
+        }
+    }
 }
 
 /// Overview-specific worker payloads that must cross the UI handoff boundary intact.
@@ -718,6 +759,24 @@ mod tests {
                 refresh_id: 1,
                 update_banner: UpdateBannerState::Disabled,
             })
+        ));
+    }
+
+    #[test]
+    fn f4se_worker_payload_round_trips_owned_scan_snapshot() {
+        let task = WorkerTask::new("s06-f4se-scan:7", WorkerTaskKind::Scan);
+        let snapshot = F4seScanSnapshot::ready(Vec::new());
+        let event = WorkerEvent::completed(
+            task,
+            WorkerPayload::F4se(F4seWorkerPayload::scan_completed(7, snapshot.clone())),
+        );
+
+        assert!(matches!(
+            event.payload,
+            WorkerPayload::F4se(F4seWorkerPayload::ScanCompleted {
+                scan_id: 7,
+                snapshot: ref actual,
+            }) if actual.as_ref() == &snapshot
         ));
     }
 
