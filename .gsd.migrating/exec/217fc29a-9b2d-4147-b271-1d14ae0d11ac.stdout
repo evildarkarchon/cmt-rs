@@ -1,6 +1,0 @@
-SymlinkFile 10
-ReparseFile 10
-RecordingWritableFilesystem 7
-with_failure 2
-has_file 17
-file_crc 4

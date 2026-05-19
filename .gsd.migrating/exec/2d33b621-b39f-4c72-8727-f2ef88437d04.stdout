@@ -1,2 +1,0 @@
-./ui/main.slint:1:import { TabWidget } from "std-widgets.slint";
-./ui/main.slint:60:    TabWidget {

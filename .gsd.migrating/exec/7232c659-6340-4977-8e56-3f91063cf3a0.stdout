@@ -1,6 +1,0 @@
-   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
-src/services/downgrader.rs:814:14: warning: associated function `with_patch_integrity_manifest` is never used
-src/services/downgrader.rs:2537:9: warning: variants `SymlinkFile` and `ReparseFile` are never constructed
-warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 52.27s
-  Executable unittests src/main.rs (target/debug/deps/cmt_rs-677af665d081adb5)

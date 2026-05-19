@@ -1,8 +1,0 @@
-src/domain/mod.rs:        assert_type::<crate::domain::autofix::AutoFixCompletion>();
-src/domain/mod.rs:        assert_type::<crate::domain::autofix::AutoFixRejection>();
-src/domain/autofix.rs:pub struct AutoFixCompletion {
-src/domain/autofix.rs:pub enum AutoFixRejectionReason {
-src/domain/autofix.rs:pub struct AutoFixRejection {
-src/domain/autofix.rs:    pub reason: AutoFixRejectionReason,
-src/domain/autofix.rs:impl AutoFixRejection {
-src/domain/autofix.rs:    pub fn new(reason: AutoFixRejectionReason, safe_message: impl Into<String>) -> Self {

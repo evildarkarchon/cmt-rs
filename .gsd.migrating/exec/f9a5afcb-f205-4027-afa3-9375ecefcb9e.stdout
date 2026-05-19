@@ -1,3 +1,0 @@
-3250:    const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
-3273:    const INERT_TAB_COMPONENTS: [(&str, &str, &str, &str); 0] = [];
-3390:        for (file, component, label, source) in INERT_TAB_COMPONENTS {

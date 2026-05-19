@@ -1,8 +1,0 @@
-
-running 3 tests
-test tests::s05_slint_contract_main_window_forwards_tools_and_about_properties_and_callbacks ... ok
-test tests::s05_slint_contract_about_tab_replaces_placeholder_with_reference_assets_and_copy_state ... ok
-test tests::s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups ... ok
-
-test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 164 filtered out; finished in 0.01s
-

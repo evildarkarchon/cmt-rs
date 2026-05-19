@@ -1,9 +1,0 @@
-   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
-error[E0433]: cannot find type `AutoFure` in this scope
-    --> src/services/autofix.rs:1202:44
-     |
-1202 | ...rr(AutoFure::new(
-     |       ^^^^^^^^ use of undeclared type `AutoFure`
-
-For more information about this error, try `rustc --explain E0433`.
-error: could not compile `cmt-rs` (bin "cmt-rs" test) due to 1 previous error

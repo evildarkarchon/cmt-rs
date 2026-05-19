@@ -1,3 +1,0 @@
-malformed dll: 1
-  - services::f4se::tests::f4se_dll_inspector_malformed_bytes_return_typed_parse_failure: test
-missing folder: 0

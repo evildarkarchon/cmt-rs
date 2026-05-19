@@ -1,4 +1,0 @@
-  File "<stdin>", line 7
-    if 'CMT/' in line or 'CMT\' in line:
-                         ^
-SyntaxError: unterminated string literal (detected at line 7)

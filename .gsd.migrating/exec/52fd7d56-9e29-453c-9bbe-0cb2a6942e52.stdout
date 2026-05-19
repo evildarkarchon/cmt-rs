@@ -1,7 +1,0 @@
-
-running 2 tests
-test app::settings_controller::tests::settings_controller_saves_scanner_reverts_visible_toggles_on_scan_start_save_failure ... ok
-test app::settings_controller::tests::settings_controller_saves_scanner_snapshot_for_scan_start ... ok
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 249 filtered out; finished in 0.01s
-

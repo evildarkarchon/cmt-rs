@@ -1,4 +1,0 @@
-error: failed to parse manifest at `/mnt/j/cmt-rs/Cargo.toml`
-
-Caused by:
-  rust-version 1.80 is incompatible with the version (1.85.0) required by the specified edition (2024)

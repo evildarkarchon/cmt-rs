@@ -1,7 +1,0 @@
-
-running 2 tests
-test tests::s08_scanner_autofix_slint_contract_main_window_forwards_properties_models_and_callbacks ... ok
-test tests::s08_scanner_autofix_slint_contract_replaces_placeholder_with_gated_auto_fix_surface ... ok
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 285 filtered out; finished in 0.01s
-

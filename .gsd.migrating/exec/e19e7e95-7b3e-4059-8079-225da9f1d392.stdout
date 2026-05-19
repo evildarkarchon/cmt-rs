@@ -1,8 +1,0 @@
-   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
-src/services/downgrader.rs:2555:9: warning: variants `SymlinkFile` and `ReparseFile` are never constructed
-src/services/scanner.rs:1118:5: warning: this function has too many arguments (8/7)
-src/main.rs:698:1: warning: this function has too many arguments (8/7)
-src/main.rs:1110:1: warning: this function has too many arguments (9/7)
-warning: `cmt-rs` (bin "cmt-rs") generated 3 warnings
-warning: `cmt-rs` (bin "cmt-rs" test) generated 4 warnings (3 duplicates)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 39.95s

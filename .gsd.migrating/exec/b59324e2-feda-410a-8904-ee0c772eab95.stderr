@@ -1,3 +1,0 @@
-provenance check failed:
-- S07 summary is missing S01 as the shell/tab-wiring dependency
-- S07 summary still attributes main shell/tab wiring provenance to S02

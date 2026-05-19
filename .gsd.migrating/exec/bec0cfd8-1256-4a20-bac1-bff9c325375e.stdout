@@ -1,9 +1,0 @@
-src/services/archive_patcher.rs: CMT reference hits=0
-src/app/archive_patcher_controller.rs: CMT reference hits=0
-src/platform/filesystem.rs: CMT reference hits=0
-src/main.rs: CMT reference hits=0
-ui/archive_patcher_window.slint: CMT reference hits=0
-ui/main.slint: CMT reference hits=1
-  122: // The tab labels and order mirror CMT/src/cm_checker.py and CMT/src/enums.py.
-ui/overview_tab.slint: CMT reference hits=0
-ui/tools_tab.slint: CMT reference hits=0

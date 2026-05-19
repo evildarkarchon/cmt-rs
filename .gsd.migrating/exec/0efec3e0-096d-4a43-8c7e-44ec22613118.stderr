@@ -1,3 +1,0 @@
-   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 43.05s
-     Running unittests src/main.rs (target/debug/deps/cmt_rs-55702d1382f9d1b1)

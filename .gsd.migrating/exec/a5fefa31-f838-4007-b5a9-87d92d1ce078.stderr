@@ -1,4 +1,0 @@
-   Compiling cmt-rs v0.1.0 (/mnt/j/cmt-rs)
-src/services/discovery.rs:26:19: warning: unused import: `ProcessInfo`
-warning: `cmt-rs` (bin "cmt-rs") generated 1 warning (run `cargo fix --bin "cmt-rs" -p cmt-rs` to apply 1 suggestion)
-    Finished `dev` profile [unoptimized + debuginfo] target(s) in 24.28s

@@ -1,7 +1,0 @@
-src/main.rs: 0/5 markers present
-  missing: overview_refresh_scheduled, overview_refresh_started, overview_refresh_finished, overview_update_failed_silently, overview_desktop_action_failed
-src/services/overview_collector.rs: 4/4 markers present
-ui/overview_tab.slint: 7/10 markers present
-  missing: Mod Manager, Version, PC Specs
-src/app/overview_controller.rs: 2/5 markers present
-  missing: apply_refresh_started, apply_refresh_completed, apply_desktop_action_completed

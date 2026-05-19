@@ -1,5 +1,0 @@
-src/main.rs: 8/9 expected closeout markers present
-  missing: overview-desktop-action-failed
-src/app/overview_controller.rs: 6/6 expected closeout markers present
-src/domain/overview.rs: 10/10 expected closeout markers present
-ui/overview_tab.slint: 9/9 expected closeout markers present

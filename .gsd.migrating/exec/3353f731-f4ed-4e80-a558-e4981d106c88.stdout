@@ -1,4 +1,0 @@
-src\platform\filesystem.rs
-  283 impl WritableFilesystem for RealFilesystem {
-src\services\downgrader.rs
-  2753 impl WritableFilesystem for RecordingWritableFilesystem {

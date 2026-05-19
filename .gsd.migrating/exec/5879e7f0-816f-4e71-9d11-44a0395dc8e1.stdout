@@ -1,8 +1,0 @@
-OverviewDesktopActionOutcome 3
-39         OverviewDesktopActionFeedback, OverviewDesktopActionOutcome, OverviewDiagnostics,
-537         OverviewDesktopActionOutcome::Succeeded => (feedback.action, None),
-538         OverviewDesktopActionOutcome::Failed { safe_message } => (
-WorkerTask 4
-51     WorkerPayload, WorkerRuntime, WorkerTask, WorkerTaskOutcome,
-297         WorkerTaskOutcome::Completed(WorkerPayload::Overview(
-528     Ok(WorkerTaskOutcome::Completed(

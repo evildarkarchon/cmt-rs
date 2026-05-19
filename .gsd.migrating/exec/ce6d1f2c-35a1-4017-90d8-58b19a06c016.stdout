@@ -1,6 +1,0 @@
-765:// Keep owned rejection diagnostics available without changing the public service payload shape.
-766:#[allow(clippy::result_large_err)]
-880:// Keep owned rejection diagnostics available without changing the public service payload shape.
-881:#[allow(clippy::result_large_err)]
-981:// Centralizes context-rich rejection construction for observability and tests.
-982:#[allow(clippy::too_many_arguments)]

@@ -1,9 +1,0 @@
-warning: unused import: `ArchivePatcherArchiveFormat`
-  --> src/main.rs:52:52
-   |
-52 | ...E, ArchivePatcherArchiveFormat,
-   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   |
-   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
-
-error: test failed, to rerun pass `--bin cmt-rs`

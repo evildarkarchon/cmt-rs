@@ -1,7 +1,0 @@
-src\platform\filesystem.rs 5
-src\services\autofix.rs 1
-src\services\discovery.rs 2
-src\services\downgrader.rs 6
-src\services\f4se.rs 3
-src\services\overview_collector.rs 3
-src\services\scanner.rs 3

@@ -1,4 +1,0 @@
-302:    let downgrader_sink = bind_downgrader_worker_sink(
-411:fn bind_downgrader_worker_sink(
-463:                    schedule_downgrader_completion_refresh(
-1753:fn schedule_downgrader_completion_refresh(

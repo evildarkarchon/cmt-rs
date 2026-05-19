@@ -1,7 +1,0 @@
-
-running 2 tests
-test tests::s06_f4se_slint_contract_main_window_forwards_properties_and_lazy_activation ... ok
-test tests::s06_f4se_slint_contract_replaces_placeholder_with_reference_table_and_legend ... ok
-
-test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 212 filtered out; finished in 0.00s
-
