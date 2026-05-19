@@ -4,6 +4,7 @@
 //! typed settings, scan results, game metadata, archive information, and other
 //! pure domain state here without putting that logic in Slint markup.
 
+pub mod archive_patcher;
 pub mod autofix;
 pub mod discovery;
 pub mod downgrader;
@@ -27,6 +28,28 @@ mod tests {
     fn settings_domain_types_are_publicly_importable() {
         fn assert_type<T>() {}
 
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherArchiveFormat>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherCandidateRow>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherCandidateSnapshot>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherHeader>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherLatestManifest>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherLogLevel>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherLogRow>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherPlanAction>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherPreviewPlan>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherPreviewPlanCounts>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherPreviewPlanRow>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherProgress>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherRestoreManifestEntry>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherSummaryCounts>();
+        assert_type::<crate::domain::archive_patcher::ArchivePatcherTarget>();
+        let _ = crate::domain::archive_patcher::ARCHIVE_PATCHER_MODAL_TITLE;
+        let _ = crate::domain::archive_patcher::TARGET_OLD_GEN_LABEL;
+        let _ = crate::domain::archive_patcher::TARGET_NEXT_GEN_LABEL;
+        let _ = crate::domain::archive_patcher::PATCHER_FILTER_OLD_GEN;
+        let _ = crate::domain::archive_patcher::PATCHER_FILTER_NEXT_GEN;
+        let _ = crate::domain::archive_patcher::ABOUT_ARCHIVES_TITLE;
+        let _ = crate::domain::archive_patcher::ABOUT_ARCHIVES_BODY;
         assert_type::<crate::domain::settings::AppSettings>();
         assert_type::<crate::domain::settings::LogLevel>();
         assert_type::<crate::domain::settings::UpdateSource>();

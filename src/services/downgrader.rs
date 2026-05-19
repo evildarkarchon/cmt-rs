@@ -2659,6 +2659,7 @@ fn unsafe_managed_path(relative_path: &'static str) -> Result<PathBuf, Downgrade
 }
 
 #[cfg(test)]
+#[allow(dead_code)]
 mod tests {
     use std::{
         cell::RefCell,
