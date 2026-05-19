@@ -4607,6 +4607,17 @@ mod tests {
         workers::{WorkerRuntime, WorkerTaskStatus},
     };
     use crate::domain::{
+        archive_patcher::{
+            ABOUT_ARCHIVES_BODY as ARCHIVE_PATCHER_ABOUT_BODY,
+            ABOUT_ARCHIVES_TITLE as ARCHIVE_PATCHER_ABOUT_TITLE,
+            ABOUT_BUTTON_LABEL as ARCHIVE_PATCHER_ABOUT_BUTTON_LABEL, ARCHIVE_PATCHER_MODAL_HEIGHT,
+            ARCHIVE_PATCHER_MODAL_TITLE, ARCHIVE_PATCHER_MODAL_WIDTH,
+            DESIRED_VERSION_GROUP_LABEL as ARCHIVE_PATCHER_DESIRED_VERSION_GROUP_LABEL,
+            NAME_FILTER_LABEL, PATCH_ALL_BUTTON_LABEL as ARCHIVE_PATCHER_PATCH_ALL_BUTTON_LABEL,
+            PATCHER_FILTER_NEXT_GEN, PATCHER_FILTER_OLD_GEN,
+            TARGET_NEXT_GEN_LABEL as ARCHIVE_PATCHER_TARGET_NEXT_GEN_LABEL,
+            TARGET_OLD_GEN_LABEL as ARCHIVE_PATCHER_TARGET_OLD_GEN_LABEL,
+        },
         autofix::{
             AUTO_FIX_BUTTON_LABEL, AUTO_FIX_FAILED_BUTTON_LABEL, AUTO_FIX_FIXED_BUTTON_LABEL,
             AUTO_FIX_RESULTS_TITLE, AUTO_FIXING_BUTTON_LABEL, AutoFixOperationKey,
@@ -4648,6 +4659,7 @@ mod tests {
     const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
     const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
     const DOWNGRADER_SLINT: &str = include_str!("../ui/downgrader_window.slint");
+    const ARCHIVE_PATCHER_SLINT: &str = include_str!("../ui/archive_patcher_window.slint");
     const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
     const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");
     const TAB_COMPONENTS: [(&str, &str, &str, &str); 6] = [
@@ -6527,6 +6539,219 @@ mod tests {
         assert!(DOWNGRADER_SLINT.contains("root.confirm-requested()"));
         assert!(DOWNGRADER_SLINT.contains("root.patch-requested()"));
         assert!(DOWNGRADER_SLINT.contains("close/Escape"));
+    }
+
+    #[test]
+    fn s10_archive_patcher_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+        assert!(ARCHIVE_PATCHER_SLINT.contains("export struct ArchivePatcherCandidateUiRow"));
+        assert!(ARCHIVE_PATCHER_SLINT.contains("export struct ArchivePatcherPlanUiRow"));
+        assert!(ARCHIVE_PATCHER_SLINT.contains("export struct ArchivePatcherLogUiRow"));
+        assert!(
+            ARCHIVE_PATCHER_SLINT.contains("export component ArchivePatcherWindow inherits Window")
+        );
+        assert!(MAIN_SLINT.contains(
+            "import { ArchivePatcherWindow, ArchivePatcherCandidateUiRow, ArchivePatcherPlanUiRow, ArchivePatcherLogUiRow }"
+        ));
+        assert!(MAIN_SLINT.contains(
+            "export { ArchivePatcherWindow, ArchivePatcherCandidateUiRow, ArchivePatcherPlanUiRow, ArchivePatcherLogUiRow }"
+        ));
+
+        assert!(
+            ARCHIVE_PATCHER_SLINT.contains(&slint_assignment("title", ARCHIVE_PATCHER_MODAL_TITLE))
+        );
+        assert!(
+            ARCHIVE_PATCHER_SLINT.contains(&format!("width: {}px", ARCHIVE_PATCHER_MODAL_WIDTH))
+        );
+        assert!(
+            ARCHIVE_PATCHER_SLINT.contains(&format!("height: {}px", ARCHIVE_PATCHER_MODAL_HEIGHT))
+        );
+
+        for label in [
+            ARCHIVE_PATCHER_DESIRED_VERSION_GROUP_LABEL,
+            ARCHIVE_PATCHER_TARGET_OLD_GEN_LABEL,
+            ARCHIVE_PATCHER_TARGET_NEXT_GEN_LABEL,
+            NAME_FILTER_LABEL,
+            ARCHIVE_PATCHER_PATCH_ALL_BUTTON_LABEL,
+            "Restore Last Run",
+            ARCHIVE_PATCHER_ABOUT_BUTTON_LABEL,
+            ARCHIVE_PATCHER_ABOUT_TITLE,
+            "Candidates",
+            "Plan",
+            "Log",
+        ] {
+            assert!(
+                ARCHIVE_PATCHER_SLINT.contains(&slint_assignment("text", label))
+                    || ARCHIVE_PATCHER_SLINT.contains(&slint_assignment("title", label))
+                    || ARCHIVE_PATCHER_SLINT.contains(label),
+                "Archive Patcher Slint should contain reference label {label:?}"
+            );
+        }
+        assert!(ARCHIVE_PATCHER_SLINT.contains(&slint_string_literal(PATCHER_FILTER_NEXT_GEN)));
+        assert!(ARCHIVE_PATCHER_SLINT.contains(&slint_string_literal(PATCHER_FILTER_OLD_GEN)));
+
+        assert_source_contains_in_order(
+            ARCHIVE_PATCHER_SLINT,
+            &[
+                "title: \"Desired Version\"",
+                "text: \"v1 (OG)\"",
+                "target-id: \"old_gen\"",
+                "text: \"v8 (NG)\"",
+                "target-id: \"next_gen\"",
+                "Showing all v1\\n(Includes Base Game/DLC/CC)",
+                "Showing all v7 & v8\\n(Includes Base Game/DLC/CC)",
+                "text: \"Patch All\"",
+                "text: \"Restore Last Run\"",
+                "text: \"About\"",
+                "text: \"Name Filter:\"",
+                "title: \"Candidates\"",
+                "title: \"Plan\"",
+                "title: \"Log\"",
+            ],
+        );
+    }
+
+    #[test]
+    fn s10_archive_patcher_slint_contract_declares_models_callbacks_and_fail_closed_defaults() {
+        for field in [
+            "display-name: string",
+            "path: string",
+            "version: string",
+            "format: string",
+            "detail: string",
+            "action: string",
+            "severity: string",
+            "level: string",
+            "message: string",
+        ] {
+            assert!(
+                ARCHIVE_PATCHER_SLINT.contains(field),
+                "Archive Patcher UI structs should expose field {field:?}"
+            );
+        }
+
+        assert_source_contains_in_order(
+            ARCHIVE_PATCHER_SLINT,
+            &[
+                "in-out property <string> selected-target: \"old_gen\"",
+                "in-out property <string> name-filter",
+                "in-out property <[ArchivePatcherCandidateUiRow]> candidate-rows",
+                "in-out property <[ArchivePatcherPlanUiRow]> plan-rows",
+                "in-out property <bool> confirmation-visible: false",
+                "in-out property <[ArchivePatcherLogUiRow]> log-rows",
+                "in-out property <float> progress-percent",
+                "in-out property <string> progress-text",
+                "in-out property <string> status-text",
+                "in-out property <bool> patch-enabled: false",
+                "in-out property <bool> restore-enabled: false",
+                "in-out property <bool> about-enabled: true",
+                "in-out property <bool> controls-enabled: true",
+                "in-out property <bool> close-blocked: false",
+                "in-out property <bool> about-dialog-visible: false",
+                "in-out property <string> about-title: \"Bethesda Archive (BA2) Formats & Versions\"",
+                "in-out property <string> about-body",
+            ],
+        );
+
+        for callback in [
+            "callback target-selected(string)",
+            "callback name-filter-edited(string)",
+            "callback patch-requested()",
+            "callback restore-last-run-requested()",
+            "callback about-requested()",
+            "callback about-close-requested()",
+            "callback modal-close-requested()",
+        ] {
+            assert!(
+                ARCHIVE_PATCHER_SLINT.contains(callback),
+                "Archive Patcher window should expose callback {callback:?}"
+            );
+        }
+
+        assert!(ARCHIVE_PATCHER_SLINT.contains("checked: root.selected-target == \"old_gen\""));
+        assert!(
+            ARCHIVE_PATCHER_SLINT.contains("enabled: root.controls-enabled && root.patch-enabled")
+        );
+        assert!(
+            ARCHIVE_PATCHER_SLINT
+                .contains("enabled: root.controls-enabled && root.restore-enabled")
+        );
+        assert!(ARCHIVE_PATCHER_SLINT.contains("enabled: root.controls-enabled"));
+        assert!(ARCHIVE_PATCHER_SLINT.contains("No archives match the selected version/filter."));
+    }
+
+    #[test]
+    fn s10_archive_patcher_slint_contract_negative_state_surfaces_are_model_driven() {
+        assert_source_contains_in_order(
+            ARCHIVE_PATCHER_SLINT,
+            &[
+                "LineEdit {",
+                "text <=> root.name-filter",
+                "edited(value) =>",
+                "root.name-filter-edited(value)",
+                "if root.candidate-rows.length == 0: Text",
+                "text: root.candidate-empty-text",
+                "for row in root.candidate-rows: ArchivePatcherCandidateRowItem",
+                "if root.confirmation-visible: GroupBox",
+                "for row in root.plan-rows: ArchivePatcherPlanRowItem",
+                "if root.log-rows.length == 0: ArchivePatcherLogRowItem",
+                "for row in root.log-rows: ArchivePatcherLogRowItem",
+                "if root.about-dialog-visible: Rectangle",
+                "text: root.about-title",
+                "text: root.about-body",
+                "text: \"Close\"",
+                "root.about-close-requested()",
+            ],
+        );
+
+        assert!(
+            ARCHIVE_PATCHER_SLINT
+                .contains("root.close-blocked ? root.close-blocked-text : root.status-text")
+        );
+        assert!(ARCHIVE_PATCHER_SLINT.contains("close/Escape"));
+        assert!(ARCHIVE_PATCHER_SLINT.contains("modal-close-requested()"));
+        assert!(!ARCHIVE_PATCHER_SLINT.contains(ARCHIVE_PATCHER_ABOUT_BODY));
+
+        for prohibited_marker in [
+            "std::fs",
+            "filesystem",
+            "Command",
+            "spawn",
+            "read_prefix",
+            "write_version",
+        ] {
+            assert!(
+                !ARCHIVE_PATCHER_SLINT.contains(prohibited_marker),
+                "Archive Patcher Slint should not contain runtime/filesystem marker {prohibited_marker:?}"
+            );
+        }
+        assert_no_direct_urls_or_reference_tree(
+            "ui/archive_patcher_window.slint",
+            ARCHIVE_PATCHER_SLINT,
+        );
+    }
+
+    #[test]
+    fn s10_archive_patcher_slint_contract_main_window_exports_modal_and_entrypoint_surfaces() {
+        assert_source_contains_in_order(
+            MAIN_SLINT,
+            &[
+                "import { ArchivePatcherWindow, ArchivePatcherCandidateUiRow, ArchivePatcherPlanUiRow, ArchivePatcherLogUiRow }",
+                "export { ArchivePatcherWindow, ArchivePatcherCandidateUiRow, ArchivePatcherPlanUiRow, ArchivePatcherLogUiRow }",
+                "callback overview-open-archive-patcher-requested()",
+                "OverviewTab {",
+                "root.overview-open-archive-patcher-requested()",
+                "ToolsTab {",
+                "root.tool-action-requested(action_id)",
+            ],
+        );
+        assert_source_contains_in_order(
+            TOOLS_SLINT,
+            &[
+                "label: \"Archive Patcher\"",
+                "action-id: \"tools.archive_patcher\"",
+                "root.tool-action-requested(action_id)",
+            ],
+        );
     }
 
     #[test]

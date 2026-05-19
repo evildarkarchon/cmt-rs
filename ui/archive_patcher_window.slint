@@ -1,0 +1,508 @@
+import { Button, GroupBox, LineEdit, ScrollView } from "std-widgets.slint";
+
+export struct ArchivePatcherCandidateUiRow {
+    display-name: string,
+    path: string,
+    version: string,
+    format: string,
+    detail: string,
+}
+
+export struct ArchivePatcherPlanUiRow {
+    display-name: string,
+    action: string,
+    detail: string,
+    severity: string,
+}
+
+export struct ArchivePatcherLogUiRow {
+    level: string,
+    message: string,
+}
+
+component ArchivePatcherTargetRadio inherits Rectangle {
+    in property <string> text;
+    in property <string> target-id;
+    in property <bool> checked;
+    in property <bool> enabled: true;
+    callback selected(string);
+
+    height: 22px;
+    min-width: 84px;
+    opacity: root.enabled ? 1 : 0.55;
+
+    HorizontalLayout {
+        spacing: 8px;
+        alignment: start;
+
+        Rectangle {
+            width: 13px;
+            height: 13px;
+            border-radius: 7px;
+            border-width: 1px;
+            border-color: root.checked ? #4da3ff : #9a9a9a;
+
+            Rectangle {
+                width: 7px;
+                height: 7px;
+                x: 3px;
+                y: 3px;
+                border-radius: 4px;
+                background: root.checked ? #4da3ff : transparent;
+            }
+        }
+
+        Text {
+            text: root.text;
+            color: #f3f3f3;
+            font-size: 13px;
+            vertical-alignment: center;
+        }
+    }
+
+    TouchArea {
+        clicked => {
+            if (root.enabled) {
+                root.selected(root.target-id);
+            }
+        }
+    }
+}
+
+component ArchivePatcherCandidateRowItem inherits Rectangle {
+    in property <ArchivePatcherCandidateUiRow> entry;
+
+    min-height: root.entry.detail == "" ? 26px : 42px;
+    background: #252525;
+    border-color: #383838;
+    border-width: 1px;
+    border-radius: 3px;
+
+    VerticalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        spacing: 1px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 8px;
+            alignment: start;
+
+            Text {
+                text: root.entry.display-name;
+                color: #f3f3f3;
+                font-size: 12px;
+                width: 260px;
+                vertical-alignment: center;
+            }
+
+            Text {
+                text: root.entry.version;
+                color: #d8d8d8;
+                font-size: 11px;
+                width: 44px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+
+            Text {
+                text: root.entry.format;
+                color: #a8a8a8;
+                font-size: 11px;
+                width: 54px;
+                horizontal-alignment: center;
+                vertical-alignment: center;
+            }
+        }
+
+        if root.entry.detail != "": Text {
+            text: root.entry.detail;
+            color: #a8a8a8;
+            font-size: 10px;
+            wrap: word-wrap;
+        }
+    }
+}
+
+component ArchivePatcherPlanRowItem inherits Rectangle {
+    in property <ArchivePatcherPlanUiRow> entry;
+
+    min-height: root.entry.detail == "" ? 22px : 40px;
+    background: root.entry.severity == "error" ? #3a2020 : #252525;
+    border-color: root.entry.severity == "error" ? #8a4545 : #383838;
+    border-width: 1px;
+    border-radius: 3px;
+
+    VerticalLayout {
+        padding-left: 6px;
+        padding-right: 6px;
+        padding-top: 3px;
+        padding-bottom: 3px;
+        spacing: 1px;
+        alignment: start;
+
+        HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+
+            Text {
+                text: root.entry.display-name + ":";
+                width: 180px;
+                color: #f3f3f3;
+                font-size: 11px;
+                horizontal-alignment: right;
+                vertical-alignment: top;
+            }
+
+            Text {
+                text: root.entry.action;
+                color: root.entry.severity == "error" ? #ffb8b8 : #d8d8d8;
+                font-size: 11px;
+                wrap: word-wrap;
+            }
+        }
+
+        if root.entry.detail != "": HorizontalLayout {
+            spacing: 6px;
+            alignment: start;
+
+            Text {
+                text: "";
+                width: 180px;
+                font-size: 10px;
+            }
+
+            Text {
+                text: root.entry.detail;
+                color: #a8a8a8;
+                font-size: 10px;
+                wrap: word-wrap;
+            }
+        }
+    }
+}
+
+component ArchivePatcherLogRowItem inherits Rectangle {
+    in property <ArchivePatcherLogUiRow> entry;
+
+    min-height: 18px;
+
+    Text {
+        text: root.entry.message;
+        color: root.entry.level == "good" ? #8fdc8f :
+            root.entry.level == "bad" ? #ff7b7b :
+            #8ecbff;
+        font-size: 11px;
+        wrap: word-wrap;
+    }
+}
+
+component ArchivePatcherProgressBar inherits Rectangle {
+    in property <float> percent: 0;
+
+    height: 10px;
+    background: #303030;
+    border-color: #484848;
+    border-width: 1px;
+
+    Rectangle {
+        x: 1px;
+        y: 1px;
+        height: parent.height - 2px;
+        width: (parent.width - 2px) * root.percent / 100;
+        background: #4da3ff;
+    }
+}
+
+// The Tk reference uses a modal Toplevel and disables closing while mutation is active.
+// Runtime code must route close/Escape into modal-close-requested() and honor close-blocked.
+export component ArchivePatcherWindow inherits Window {
+    in-out property <string> selected-target: "old_gen";
+    in-out property <string> name-filter: "";
+    in-out property <[ArchivePatcherCandidateUiRow]> candidate-rows;
+    in-out property <string> candidate-empty-text: "No archives match the selected version/filter.";
+    in-out property <[ArchivePatcherPlanUiRow]> plan-rows;
+    in-out property <bool> confirmation-visible: false;
+    in-out property <string> confirmation-text: "Review the plan, then click Patch All again to confirm.";
+    in-out property <[ArchivePatcherLogUiRow]> log-rows;
+    in-out property <string> log-text: "Archive Patcher has not run yet.";
+    in-out property <float> progress-percent: 0;
+    in-out property <string> progress-text: "Ready";
+    in-out property <string> status-text: "";
+    in-out property <bool> patch-enabled: false;
+    in-out property <bool> restore-enabled: false;
+    in-out property <bool> about-enabled: true;
+    in-out property <bool> controls-enabled: true;
+    in-out property <bool> close-blocked: false;
+    in-out property <string> close-blocked-text: "Patching or restore is in progress. Close is disabled until the operation finishes.";
+    in-out property <bool> about-dialog-visible: false;
+    in-out property <string> about-title: "Bethesda Archive (BA2) Formats & Versions";
+    in-out property <string> about-body: "";
+
+    callback target-selected(string);
+    callback name-filter-edited(string);
+    callback patch-requested();
+    callback restore-last-run-requested();
+    callback about-requested();
+    callback about-close-requested();
+    callback modal-close-requested();
+
+    title: "Archive Patcher";
+    width: 700px;
+    height: 600px;
+
+    Rectangle {
+        background: #202020;
+
+        VerticalLayout {
+            padding: 8px;
+            spacing: 6px;
+            alignment: start;
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                GroupBox {
+                    title: "Desired Version";
+                    width: 184px;
+                    height: 66px;
+
+                    HorizontalLayout {
+                        padding: 6px;
+                        spacing: 10px;
+                        alignment: start;
+
+                        ArchivePatcherTargetRadio {
+                            text: "v1 (OG)";
+                            target-id: "old_gen";
+                            checked: root.selected-target == "old_gen";
+                            enabled: root.controls-enabled;
+                            selected(target_id) => {
+                                root.selected-target = target_id;
+                                root.target-selected(target_id);
+                            }
+                        }
+
+                        ArchivePatcherTargetRadio {
+                            text: "v8 (NG)";
+                            target-id: "next_gen";
+                            checked: root.selected-target == "next_gen";
+                            enabled: root.controls-enabled;
+                            selected(target_id) => {
+                                root.selected-target = target_id;
+                                root.target-selected(target_id);
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: root.selected-target == "next_gen" ? "Showing all v1\n(Includes Base Game/DLC/CC)" : "Showing all v7 & v8\n(Includes Base Game/DLC/CC)";
+                    color: #d8c8a8;
+                    font-size: 11px;
+                    width: 222px;
+                    height: 66px;
+                    vertical-alignment: center;
+                    wrap: word-wrap;
+                }
+
+                Rectangle { horizontal-stretch: 1; }
+
+                Button {
+                    text: "Patch All";
+                    enabled: root.controls-enabled && root.patch-enabled;
+                    height: 34px;
+                    clicked => {
+                        root.patch-requested();
+                    }
+                }
+
+                Button {
+                    text: "Restore Last Run";
+                    enabled: root.controls-enabled && root.restore-enabled;
+                    height: 34px;
+                    clicked => {
+                        root.restore-last-run-requested();
+                    }
+                }
+
+                Button {
+                    text: "About";
+                    enabled: root.about-enabled;
+                    height: 34px;
+                    clicked => {
+                        root.about-requested();
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 6px;
+                alignment: start;
+
+                Text {
+                    text: "Name Filter:";
+                    color: #f3f3f3;
+                    font-size: 12px;
+                    width: 86px;
+                    vertical-alignment: center;
+                }
+
+                LineEdit {
+                    text <=> root.name-filter;
+                    enabled: root.controls-enabled;
+                    edited(value) => {
+                        root.name-filter-edited(value);
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Candidates";
+                height: root.confirmation-visible ? 222px : 318px;
+
+                ScrollView {
+                    VerticalLayout {
+                        padding: 5px;
+                        spacing: 3px;
+                        alignment: start;
+
+                        if root.candidate-rows.length == 0: Text {
+                            text: root.candidate-empty-text;
+                            color: #a8a8a8;
+                            font-size: 12px;
+                            wrap: word-wrap;
+                        }
+
+                        for row in root.candidate-rows: ArchivePatcherCandidateRowItem {
+                            entry: row;
+                        }
+                    }
+                }
+            }
+
+            if root.confirmation-visible: GroupBox {
+                title: "Plan";
+                height: 96px;
+
+                VerticalLayout {
+                    padding: 5px;
+                    spacing: 4px;
+                    alignment: start;
+
+                    Text {
+                        text: root.confirmation-text;
+                        color: #f3f3f3;
+                        font-size: 11px;
+                        wrap: word-wrap;
+                    }
+
+                    ScrollView {
+                        height: 58px;
+
+                        VerticalLayout {
+                            spacing: 3px;
+                            alignment: start;
+
+                            for row in root.plan-rows: ArchivePatcherPlanRowItem {
+                                entry: row;
+                            }
+                        }
+                    }
+                }
+            }
+
+            GroupBox {
+                title: "Log";
+                height: root.confirmation-visible ? 116px : 138px;
+
+                ScrollView {
+                    VerticalLayout {
+                        padding: 5px;
+                        spacing: 2px;
+                        alignment: start;
+
+                        if root.log-rows.length == 0: ArchivePatcherLogRowItem {
+                            entry: { level: "info", message: root.log-text };
+                        }
+
+                        for row in root.log-rows: ArchivePatcherLogRowItem {
+                            entry: row;
+                        }
+                    }
+                }
+            }
+
+            HorizontalLayout {
+                spacing: 8px;
+                alignment: start;
+
+                ArchivePatcherProgressBar {
+                    percent: root.progress-percent;
+                }
+
+                Text {
+                    text: root.progress-text;
+                    color: #a8a8a8;
+                    font-size: 11px;
+                    width: 128px;
+                    vertical-alignment: center;
+                }
+            }
+
+            if root.status-text != "" || root.close-blocked: Text {
+                text: root.close-blocked ? root.close-blocked-text : root.status-text;
+                color: root.close-blocked ? #ffd166 : #a8a8a8;
+                font-size: 11px;
+                wrap: word-wrap;
+            }
+        }
+
+        if root.about-dialog-visible: Rectangle {
+            x: 32px;
+            y: 34px;
+            width: parent.width - 64px;
+            height: parent.height - 68px;
+            background: #252525;
+            border-color: #5a5a5a;
+            border-width: 1px;
+            border-radius: 4px;
+
+            VerticalLayout {
+                padding: 10px;
+                spacing: 8px;
+                alignment: start;
+
+                Text {
+                    text: root.about-title;
+                    color: #f3f3f3;
+                    font-size: 15px;
+                    font-weight: 700;
+                    wrap: word-wrap;
+                }
+
+                ScrollView {
+                    height: 412px;
+
+                    Text {
+                        text: root.about-body;
+                        color: #d8d8d8;
+                        font-size: 12px;
+                        wrap: word-wrap;
+                    }
+                }
+
+                Button {
+                    text: "Close";
+                    height: 28px;
+                    clicked => {
+                        root.about-close-requested();
+                    }
+                }
+            }
+        }
+    }
+}
