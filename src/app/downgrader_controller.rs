@@ -17,7 +17,8 @@ use crate::{
         settings::DowngraderSettings,
     },
     services::downgrader::{
-        DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderStatusSnapshot,
+        CONFIRMED_PLAN_CHANGED_MESSAGE, DowngraderExecutionResult, DowngraderPreviewPlan,
+        DowngraderStatusSnapshot,
     },
     workers::{
         DowngraderWorkerPayload, DowngraderWorkerStage, WorkerEvent, WorkerPayload,
@@ -194,6 +195,8 @@ pub struct DowngraderRunWorkerRequest {
     pub request_id: DowngraderRequestId,
     /// Plan request id that was visible when the user confirmed the run.
     pub confirmed_plan_request_id: DowngraderRequestId,
+    /// Stable digest of the reviewed plan, used to fail closed if files/backups change.
+    pub confirmed_plan_digest: String,
     /// Owned discovered installation facts, if available.
     pub installation: Option<Fallout4Installation>,
     /// User-selected target and cleanup options captured at run start.
@@ -207,12 +210,14 @@ impl DowngraderRunWorkerRequest {
     pub fn new(
         request_id: DowngraderRequestId,
         confirmed_plan_request_id: DowngraderRequestId,
+        confirmed_plan_digest: String,
         installation: Option<Fallout4Installation>,
         options: DowngraderOptionsSnapshot,
     ) -> Self {
         Self {
             request_id,
             confirmed_plan_request_id,
+            confirmed_plan_digest,
             installation,
             options,
             task: downgrader_run_task(request_id),
@@ -634,6 +639,7 @@ impl DowngraderController {
                     return None;
                 }
                 let confirmed_plan_request_id = plan.request_id;
+                let confirmed_plan_digest = plan.stable_digest();
                 let request_id = self.assign_request_id();
                 self.phase = DowngraderControllerPhase::Running;
                 self.active_run_request_id = Some(request_id);
@@ -645,6 +651,7 @@ impl DowngraderController {
                 let request = DowngraderRunWorkerRequest::new(
                     request_id,
                     confirmed_plan_request_id,
+                    confirmed_plan_digest,
                     self.installation.clone(),
                     self.options,
                 );
@@ -993,7 +1000,15 @@ impl DowngraderController {
                 self.run_log_row_count = 0;
             }
         }
-        self.phase = DowngraderControllerPhase::SafeError;
+        let plan_changed = stage == DowngraderWorkerStage::Run
+            && safe_message == CONFIRMED_PLAN_CHANGED_MESSAGE
+            && self.status.is_some();
+        if plan_changed {
+            self.plan = None;
+            self.phase = DowngraderControllerPhase::Ready;
+        } else {
+            self.phase = DowngraderControllerPhase::SafeError;
+        }
         self.safe_error = Some(safe_message.clone());
         self.progress = DowngraderProgress::idle();
         self.pending_status_refresh = None;

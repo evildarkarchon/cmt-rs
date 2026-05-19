@@ -52,6 +52,9 @@ const MAX_DELTA_PATCH_BYTES: u64 = 128 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(10);
 const DOWNLOAD_CHUNK_BYTES: usize = 64 * 1024;
 const MIN_PROGRESS_DELTA_PERCENT: f32 = 1.0;
+/// Safe message shown when the confirmed filesystem state no longer matches the reviewed plan.
+pub const CONFIRMED_PLAN_CHANGED_MESSAGE: &str =
+    "Downgrader files changed after preview. Refresh the plan and try again.";
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 struct DowngraderPatchIntegrity {
@@ -201,6 +204,16 @@ pub enum DowngraderServiceError {
         /// User-facing safe failure text.
         safe_message: String,
     },
+    /// A confirmed run observed file or backup state that no longer matches the preview plan.
+    #[error("{safe_message}")]
+    ConfirmedPlanChanged {
+        /// User-facing safe failure text.
+        safe_message: String,
+        /// Stable digest captured when the user reviewed the plan.
+        expected_digest: String,
+        /// Stable digest built immediately before execution.
+        actual_digest: String,
+    },
     /// A managed relative path was malformed or escaped the game root.
     #[error("{safe_message}")]
     UnsafeManagedPath {
@@ -217,6 +230,7 @@ impl DowngraderServiceError {
         match self {
             Self::MissingGameRoot { safe_message }
             | Self::InvalidGameRoot { safe_message, .. }
+            | Self::ConfirmedPlanChanged { safe_message, .. }
             | Self::UnsafeManagedPath { safe_message, .. } => safe_message,
         }
     }
@@ -479,7 +493,7 @@ impl Write for BoundedVecWriter {
 }
 
 /// Request input for a confirmed Downgrader run after inline user confirmation.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct DowngraderExecutionRequest<'a> {
     /// Monotonic request id assigned by the caller for stale-event rejection and tracing.
     pub request_id: u64,
@@ -487,6 +501,8 @@ pub struct DowngraderExecutionRequest<'a> {
     pub installation: Option<&'a Fallout4Installation>,
     /// Confirmed target and cleanup preferences.
     pub options: DowngraderOptionsSnapshot,
+    /// Stable digest of the inline preview that the user reviewed before confirming.
+    pub confirmed_plan_digest: Option<String>,
 }
 
 impl<'a> DowngraderExecutionRequest<'a> {
@@ -500,7 +516,14 @@ impl<'a> DowngraderExecutionRequest<'a> {
             request_id,
             installation,
             options,
+            confirmed_plan_digest: None,
         }
+    }
+
+    /// Binds execution to the exact read-only preview plan the user confirmed.
+    pub fn with_confirmed_plan_digest(mut self, digest: impl Into<String>) -> Self {
+        self.confirmed_plan_digest = Some(digest.into());
+        self
     }
 }
 
@@ -791,6 +814,67 @@ impl DowngraderPreviewPlan {
             counts,
             can_execute,
         }
+    }
+
+    /// Returns a stable digest for the material file, backup, option, and step state in this plan.
+    ///
+    /// Request ids are intentionally excluded so a fresh revalidation can be compared with
+    /// the exact preview the user reviewed before any destructive work starts.
+    pub fn stable_digest(&self) -> String {
+        let mut digest = Sha256::new();
+        update_plan_digest_value(&mut digest, "cmt-rs-downgrader-preview-plan-v1");
+        update_plan_digest_value(&mut digest, self.game_root.to_string_lossy().as_ref());
+        update_plan_digest_value(&mut digest, self.options.target.as_reference_str());
+        update_plan_digest_value(&mut digest, bool_digest_value(self.options.keep_backups));
+        update_plan_digest_value(&mut digest, bool_digest_value(self.options.delete_deltas));
+        update_plan_digest_value(&mut digest, bool_digest_value(self.can_execute));
+
+        for row in &self.rows {
+            update_plan_digest_value(&mut digest, row.plan.relative_path);
+            update_plan_digest_value(&mut digest, row.plan.display_name);
+            update_plan_digest_value(&mut digest, row.display_status.as_reference_str());
+            update_plan_digest_value(&mut digest, row.current_crc32.as_deref().unwrap_or(""));
+            update_plan_digest_value(&mut digest, row.current_path.to_string_lossy().as_ref());
+            update_plan_digest_value(&mut digest, row.plan.target.as_reference_str());
+            update_plan_digest_value(&mut digest, format!("{:?}", row.plan.action));
+            update_plan_digest_value(&mut digest, &row.plan.current_backup_name);
+            update_plan_digest_value(&mut digest, &row.plan.desired_backup_name);
+            update_plan_digest_value(&mut digest, &row.plan.patch_name);
+            update_plan_digest_value(&mut digest, &row.plan.patch_url);
+            update_plan_digest_backup(&mut digest, row.desired_backup.as_ref());
+            update_plan_digest_backup(&mut digest, row.current_backup.as_ref());
+            update_plan_digest_value(&mut digest, row.failure.as_deref().unwrap_or(""));
+            for step in &row.steps {
+                update_plan_digest_value(&mut digest, step.kind.as_str());
+                update_plan_digest_value(&mut digest, &step.message);
+            }
+        }
+
+        format!("{:x}", digest.finalize())
+    }
+}
+
+fn bool_digest_value(value: bool) -> &'static str {
+    if value { "true" } else { "false" }
+}
+
+fn update_plan_digest_value(digest: &mut Sha256, value: impl AsRef<str>) {
+    let value = value.as_ref().as_bytes();
+    digest.update((value.len() as u64).to_le_bytes());
+    digest.update(value);
+}
+
+fn update_plan_digest_backup(digest: &mut Sha256, backup: Option<&DowngraderBackupProbe>) {
+    match backup {
+        Some(backup) => {
+            update_plan_digest_value(digest, "backup:some");
+            update_plan_digest_value(digest, backup.path.to_string_lossy().as_ref());
+            update_plan_digest_value(digest, &backup.file_name);
+            update_plan_digest_value(digest, bool_digest_value(backup.exists));
+            update_plan_digest_value(digest, backup.crc32.as_deref().unwrap_or(""));
+            update_plan_digest_value(digest, backup.read_error.as_deref().unwrap_or(""));
+        }
+        None => update_plan_digest_value(digest, "backup:none"),
     }
 }
 
@@ -1333,6 +1417,24 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         D: DeltaDownloader + ?Sized,
         A: DeltaApplier + ?Sized,
     {
+        self.execute_confirmed_with_events(request, downloader, applier, |_| {}, |_| {})
+    }
+
+    /// Executes a confirmed plan while emitting per-row logs and download progress as they happen.
+    pub fn execute_confirmed_with_events<D, A, L, P>(
+        &self,
+        request: DowngraderExecutionRequest<'_>,
+        downloader: &D,
+        applier: &A,
+        mut log_callback: L,
+        mut progress_callback: P,
+    ) -> Result<DowngraderExecutionResult, DowngraderServiceError>
+    where
+        D: DeltaDownloader + ?Sized,
+        A: DeltaApplier + ?Sized,
+        L: FnMut(&DowngraderExecutionLogRow),
+        P: FnMut(&DowngraderExecutionProgressEvent),
+    {
         let span = info_span!(
             "downgrader.execute_confirmed",
             request_id = request.request_id,
@@ -1352,6 +1454,23 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             request.installation,
             request.options,
         ))?;
+        if let Some(expected_digest) = request.confirmed_plan_digest.as_deref() {
+            let actual_digest = plan.stable_digest();
+            if actual_digest != expected_digest {
+                warn!(
+                    event = "downgrader-confirmed-plan-changed",
+                    request_id = request.request_id,
+                    expected_digest,
+                    actual_digest = actual_digest.as_str(),
+                    "Downgrader confirmed run aborted because the preview plan changed"
+                );
+                return Err(DowngraderServiceError::ConfirmedPlanChanged {
+                    safe_message: CONFIRMED_PLAN_CHANGED_MESSAGE.to_owned(),
+                    expected_digest: expected_digest.to_owned(),
+                    actual_digest,
+                });
+            }
+        }
         let execution_root = self.validated_execution_game_root(&plan.game_root)?;
         let mut result = DowngraderExecutionResult {
             request_id: request.request_id,
@@ -1371,6 +1490,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 downloader,
                 applier,
                 &mut result.progress_events,
+                &mut progress_callback,
             );
             debug!(
                 event = "downgrader-execute-row-complete",
@@ -1381,6 +1501,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 "Downgrader execution row completed"
             );
             result.log_rows.push(file_result.log_row.clone());
+            log_callback(&file_result.log_row);
             result.diagnostics.extend(file_result.diagnostics.clone());
             result.rows.push(file_result);
         }
@@ -1414,7 +1535,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         Ok(result)
     }
 
-    fn execute_row<D, A>(
+    fn execute_row<D, A, P>(
         &self,
         request_id: u64,
         game_root: &Path,
@@ -1422,10 +1543,12 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         downloader: &D,
         applier: &A,
         progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+        progress_callback: &mut P,
     ) -> DowngraderExecutionFileResult
     where
         D: DeltaDownloader + ?Sized,
         A: DeltaApplier + ?Sized,
+        P: FnMut(&DowngraderExecutionProgressEvent),
     {
         if let Some(log_row) = row.plan.skip_log_row() {
             return execution_file_result(
@@ -1447,6 +1570,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             downloader,
             applier,
             progress_events,
+            progress_callback,
         ) {
             RowExecutionStatus::Patched { diagnostics } => execution_file_result(
                 row,
@@ -1468,7 +1592,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         }
     }
 
-    fn execute_mutating_row<D, A>(
+    fn execute_mutating_row<D, A, P>(
         &self,
         request_id: u64,
         game_root: &Path,
@@ -1476,10 +1600,12 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         downloader: &D,
         applier: &A,
         progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+        progress_callback: &mut P,
     ) -> RowExecutionStatus
     where
         D: DeltaDownloader + ?Sized,
         A: DeltaApplier + ?Sized,
+        P: FnMut(&DowngraderExecutionProgressEvent),
     {
         let mut diagnostics = Vec::new();
         let paths = match self.revalidated_execution_paths(game_root, row) {
@@ -1573,6 +1699,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                         patch_path: &paths.patch_path,
                         integrity: paths.integrity,
                         progress_events,
+                        progress_callback,
                         diagnostics,
                     },
                     downloader,
@@ -1589,6 +1716,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                     patch_path: &paths.patch_path,
                     integrity: paths.integrity,
                     progress_events,
+                    progress_callback,
                     diagnostics,
                 },
                 downloader,
@@ -1936,15 +2064,16 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         Ok(diagnostics)
     }
 
-    fn download_apply_and_cleanup<D, A>(
+    fn download_apply_and_cleanup<D, A, P>(
         &self,
-        mut context: PatchApplyContext<'_>,
+        mut context: PatchApplyContext<'_, P>,
         downloader: &D,
         applier: &A,
     ) -> RowExecutionStatus
     where
         D: DeltaDownloader + ?Sized,
         A: DeltaApplier + ?Sized,
+        P: FnMut(&DowngraderExecutionProgressEvent),
     {
         let row = context.row;
         if let Err(diagnostic) = self.ensure_existing_file_within_root(
@@ -1976,6 +2105,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             context.integrity,
             downloader,
             context.progress_events,
+            context.progress_callback,
         ) {
             Ok(bytes) => bytes,
             Err(diagnostic) => {
@@ -2097,7 +2227,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         }
     }
 
-    fn read_or_download_patch<D>(
+    fn read_or_download_patch<D, P>(
         &self,
         request_id: u64,
         row: &DowngraderPreviewPlanRow,
@@ -2105,9 +2235,11 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         integrity: DowngraderPatchIntegrity,
         downloader: &D,
         progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
+        progress_callback: &mut P,
     ) -> Result<Vec<u8>, String>
     where
         D: DeltaDownloader + ?Sized,
+        P: FnMut(&DowngraderExecutionProgressEvent),
     {
         match self.filesystem.metadata(patch_path) {
             Ok(metadata) if metadata.is_file() => {
@@ -2143,12 +2275,14 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             )),
             Err(error) if error.kind == PlatformErrorKind::NotFound => {
                 let mut progress = |progress: DowngraderProgress| {
-                    progress_events.push(DowngraderExecutionProgressEvent {
+                    let event = DowngraderExecutionProgressEvent {
                         request_id,
                         relative_path: row.plan.relative_path,
                         patch_name: row.plan.patch_name.clone(),
                         progress,
-                    });
+                    };
+                    progress_callback(&event);
+                    progress_events.push(event);
                 };
                 let bytes = downloader
                     .download_delta(&row.plan.patch_url, &mut progress)
@@ -2233,7 +2367,7 @@ struct ManagedExecutionPaths {
     integrity: DowngraderPatchIntegrity,
 }
 
-struct PatchApplyContext<'a> {
+struct PatchApplyContext<'a, P> {
     request_id: u64,
     game_root: &'a Path,
     row: &'a DowngraderPreviewPlanRow,
@@ -2242,6 +2376,7 @@ struct PatchApplyContext<'a> {
     patch_path: &'a Path,
     integrity: DowngraderPatchIntegrity,
     progress_events: &'a mut Vec<DowngraderExecutionProgressEvent>,
+    progress_callback: &'a mut P,
     diagnostics: Vec<String>,
 }
 
@@ -3755,6 +3890,45 @@ mod tests {
         assert_eq!(applier.calls().len(), 1);
         assert!(fs.has_file("Game/Fallout4.exe"));
         assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
+    }
+
+    #[test]
+    fn s09_downgrader_runtime_wiring_confirmed_plan_mismatch_fails_closed_before_mutation() {
+        let fs = next_gen_fallout4_executor_fs();
+        let service = DowngraderService::new(&fs);
+        let preview = service
+            .preview_plan(DowngraderPlanRequest::new(
+                40,
+                Some(&installation()),
+                options(DowngraderTarget::OldGen, false, true),
+            ))
+            .expect("preview should build before file drift");
+        let reviewed_digest = preview.stable_digest();
+        fs.nodes.borrow_mut().insert(
+            PathBuf::from("Game/Fallout4.exe"),
+            FakeNode::File(bytes_with_crc("C6053902")),
+        );
+
+        let error = service
+            .execute_confirmed(
+                DowngraderExecutionRequest::new(
+                    41,
+                    Some(&installation()),
+                    options(DowngraderTarget::OldGen, false, true),
+                )
+                .with_confirmed_plan_digest(reviewed_digest),
+                &RecordingDownloader::ok(b"unused".to_vec()),
+                &RecordingApplier::ok(bytes_with_crc("C6053902")),
+            )
+            .expect_err("changed file state must fail closed before execution");
+
+        match error {
+            DowngraderServiceError::ConfirmedPlanChanged { safe_message, .. } => {
+                assert_eq!(safe_message, CONFIRMED_PLAN_CHANGED_MESSAGE);
+            }
+            other => panic!("expected confirmed plan changed error, got {other:?}"),
+        }
+        assert!(fs.operations().is_empty());
     }
 
     #[test]

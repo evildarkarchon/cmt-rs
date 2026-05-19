@@ -285,12 +285,16 @@ export component DowngraderWindow inherits Window {
     in-out property <bool> controls-enabled: true;
     in-out property <bool> close-blocked: false;
     in-out property <string> close-blocked-text: "Patching is in progress. Close is disabled until patching finishes.";
+    in-out property <bool> about-dialog-visible: false;
+    in-out property <string> about-title: "";
+    in-out property <string> about-body: "";
 
     callback target-selected(string);
     callback option-toggled(string, bool);
     callback patch-requested();
     callback confirm-requested();
     callback about-requested();
+    callback about-close-requested();
     callback modal-close-requested();
 
     title: "Downgrader";
@@ -498,6 +502,50 @@ export component DowngraderWindow inherits Window {
                     font-size: 11px;
                     width: 138px;
                     vertical-alignment: center;
+                }
+            }
+        }
+
+        if root.about-dialog-visible: Rectangle {
+            x: 24px;
+            y: 22px;
+            width: parent.width - 48px;
+            height: parent.height - 44px;
+            background: #252525;
+            border-color: #5a5a5a;
+            border-width: 1px;
+            border-radius: 4px;
+
+            VerticalLayout {
+                padding: 10px;
+                spacing: 8px;
+                alignment: start;
+
+                Text {
+                    text: root.about-title;
+                    color: #f3f3f3;
+                    font-size: 15px;
+                    font-weight: 700;
+                    wrap: word-wrap;
+                }
+
+                ScrollView {
+                    height: 222px;
+
+                    Text {
+                        text: root.about-body;
+                        color: #d8d8d8;
+                        font-size: 12px;
+                        wrap: word-wrap;
+                    }
+                }
+
+                Button {
+                    text: "Close";
+                    height: 28px;
+                    clicked => {
+                        root.about-close-requested();
+                    }
                 }
             }
         }
