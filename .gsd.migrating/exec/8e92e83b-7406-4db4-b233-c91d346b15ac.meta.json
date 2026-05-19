@@ -1,0 +1,18 @@
+{
+  "id": "8e92e83b-7406-4db4-b233-c91d346b15ac",
+  "runtime": "python",
+  "purpose": "Summarize S09 code/test surfaces for closeout narrative",
+  "script_chars": 1218,
+  "started_at": "2026-05-18T23:10:23.073Z",
+  "finished_at": "2026-05-18T23:10:23.201Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 128,
+  "stdout_bytes": 10525,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8e92e83b-7406-4db4-b233-c91d346b15ac.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8e92e83b-7406-4db4-b233-c91d346b15ac.stderr"
+}

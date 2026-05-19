@@ -1,0 +1,18 @@
+{
+  "id": "de6e816d-429e-40c2-9210-19e1b8c73996",
+  "runtime": "bash",
+  "purpose": "format check after archive patcher domain/service additions",
+  "script_chars": 17,
+  "started_at": "2026-05-19T01:31:12.715Z",
+  "finished_at": "2026-05-19T01:31:13.385Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 670,
+  "stdout_bytes": 20227,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\de6e816d-429e-40c2-9210-19e1b8c73996.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\de6e816d-429e-40c2-9210-19e1b8c73996.stderr"
+}

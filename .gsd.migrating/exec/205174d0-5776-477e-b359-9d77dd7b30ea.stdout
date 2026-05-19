@@ -1,0 +1,224 @@
+Diff in /mnt/j/cmt-rs/src/platform/filesystem.rs:370:
+                 "File write target is invalid.",
+             )
+         })?;
+[31m-        let file_name = path.file_name().and_then(|name| name.to_str()).ok_or_else(|| {
+(B[m[31m-            PlatformError::new(
+(B[m[31m-                PlatformOperation::WriteFile,
+(B[m[31m-                path.display().to_string(),
+(B[m[31m-                crate::platform::PlatformErrorKind::InvalidInput,
+(B[m[31m-                "File write target is invalid.",
+(B[m[31m-            )
+(B[m[31m-        })?;
+(B[m[32m+        let file_name = path
+(B[m[32m+            .file_name()
+(B[m[32m+            .and_then(|name| name.to_str())
+(B[m[32m+            .ok_or_else(|| {
+(B[m[32m+                PlatformError::new(
+(B[m[32m+                    PlatformOperation::WriteFile,
+(B[m[32m+                    path.display().to_string(),
+(B[m[32m+                    crate::platform::PlatformErrorKind::InvalidInput,
+(B[m[32m+                    "File write target is invalid.",
+(B[m[32m+                )
+(B[m[32m+            })?;
+(B[m         let temp_path = parent.join(format!(
+             ".{file_name}.cmt-rs-{}-{}.tmp",
+             std::process::id(),
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1285:
+         planned_root: &Path,
+     ) -> Result<PathBuf, DowngraderServiceError> {
+         validate_game_root_path(planned_root)?;
+[31m-        let canonical_root = self.filesystem.canonicalize_path(planned_root).map_err(|error| {
+(B[m[31m-            warn!(
+(B[m[31m-                event = "downgrader-execute-root-canonicalize-failed",
+(B[m[31m-                root = %planned_root.display(),
+(B[m[31m-                failure_kind = ?error.kind,
+(B[m[31m-                "Downgrader execution root canonicalization failed"
+(B[m[31m-            );
+(B[m[31m-            DowngraderServiceError::InvalidGameRoot {
+(B[m[31m-                root: planned_root.to_path_buf(),
+(B[m[31m-                safe_message: error.user_message().to_owned(),
+(B[m[31m-            }
+(B[m[31m-        })?;
+(B[m[32m+        let canonical_root = self
+(B[m[32m+            .filesystem
+(B[m[32m+            .canonicalize_path(planned_root)
+(B[m[32m+            .map_err(|error| {
+(B[m[32m+                warn!(
+(B[m[32m+                    event = "downgrader-execute-root-canonicalize-failed",
+(B[m[32m+                    root = %planned_root.display(),
+(B[m[32m+                    failure_kind = ?error.kind,
+(B[m[32m+                    "Downgrader execution root canonicalization failed"
+(B[m[32m+                );
+(B[m[32m+                DowngraderServiceError::InvalidGameRoot {
+(B[m[32m+                    root: planned_root.to_path_buf(),
+(B[m[32m+                    safe_message: error.user_message().to_owned(),
+(B[m[32m+                }
+(B[m[32m+            })?;
+(B[m         match self.filesystem.metadata(&canonical_root) {
+             Ok(metadata) if metadata.is_dir() => Ok(canonical_root),
+             Ok(_) => Err(DowngraderServiceError::InvalidGameRoot {
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1622:
+             "desired backup",
+         )?;
+         self.ensure_existing_or_parent_within_root(game_root, &patch_path, row, "delta patch")?;
+[31m-        let integrity = self.patch_integrity_for(&row.plan.patch_name).ok_or_else(|| {
+(B[m[31m-            format!(
+(B[m[31m-                "{} has no pinned integrity metadata for {}.",
+(B[m[31m-                PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name
+(B[m[31m-            )
+(B[m[31m-        })?;
+(B[m[32m+        let integrity = self
+(B[m[32m+            .patch_integrity_for(&row.plan.patch_name)
+(B[m[32m+            .ok_or_else(|| {
+(B[m[32m+                format!(
+(B[m[32m+                    "{} has no pinned integrity metadata for {}.",
+(B[m[32m+                    PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name
+(B[m[32m+                )
+(B[m[32m+            })?;
+(B[m 
+         Ok(ManagedExecutionPaths {
+             current_path,
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:1860:
+         desired_backup_path: &Path,
+     ) -> Result<Vec<String>, String> {
+         self.ensure_existing_file_within_root(game_root, current_path, row, "managed target")?;
+[31m-        self.ensure_existing_file_within_root(game_root, desired_backup_path, row, "desired backup")?;
+(B[m[31m-        self.ensure_existing_file_within_root(game_root, current_backup_path, row, "current backup")?;
+(B[m[31m-        let desired_bytes = self.filesystem.read_bytes(desired_backup_path).map_err(|error| {
+(B[m[31m-            mutation_diagnostic(
+(B[m[31m-                row,
+(B[m[31m-                DowngraderPlanStepKind::RestoreDesiredBackup,
+(B[m[31m-                error.user_message(),
+(B[m[31m-            )
+(B[m[31m-        })?;
+(B[m[32m+        self.ensure_existing_file_within_root(
+(B[m[32m+            game_root,
+(B[m[32m+            desired_backup_path,
+(B[m[32m+            row,
+(B[m[32m+            "desired backup",
+(B[m[32m+        )?;
+(B[m[32m+        self.ensure_existing_file_within_root(
+(B[m[32m+            game_root,
+(B[m[32m+            current_backup_path,
+(B[m[32m+            row,
+(B[m[32m+            "current backup",
+(B[m[32m+        )?;
+(B[m[32m+        let desired_bytes = self
+(B[m[32m+            .filesystem
+(B[m[32m+            .read_bytes(desired_backup_path)
+(B[m[32m+            .map_err(|error| {
+(B[m[32m+                mutation_diagnostic(
+(B[m[32m+                    row,
+(B[m[32m+                    DowngraderPlanStepKind::RestoreDesiredBackup,
+(B[m[32m+                    error.user_message(),
+(B[m[32m+                )
+(B[m[32m+            })?;
+(B[m         let desired_crc = crc32_hex(&desired_bytes);
+         if !crc_is_desired_target_for_plan(&desired_crc, row.plan.target) {
+             return Err(format!(
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:2623:
+                 FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) => {
+                     Ok(FileMetadata::new(FileType::File, bytes.len() as u64))
+                 }
+[31m-                FakeNode::ReparseFile(bytes) => {
+(B[m[31m-                    Ok(FileMetadata::reparse_point(FileType::File, bytes.len() as u64))
+(B[m[31m-                }
+(B[m[32m+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+(B[m[32m+                    FileType::File,
+(B[m[32m+                    bytes.len() as u64,
+(B[m[32m+                )),
+(B[m                 FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                 FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+             }
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:2634:
+         fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
+             self.read_files.borrow_mut().push(path.to_path_buf());
+             match self.node(path, PlatformOperation::ReadFile)? {
+[31m-                FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) | FakeNode::ReparseFile(bytes) => {
+(B[m[31m-                    Ok(bytes.clone())
+(B[m[31m-                }
+(B[m[32m+                FakeNode::File(bytes)
+(B[m[32m+                | FakeNode::SymlinkFile(bytes)
+(B[m[32m+                | FakeNode::ReparseFile(bytes) => Ok(bytes.clone()),
+(B[m                 FakeNode::Directory => Err(PlatformError::new(
+                     PlatformOperation::ReadFile,
+                     path.display().to_string(),
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:3223:
+ 
+         fn file_crc(&self, path: impl AsRef<Path>) -> Option<String> {
+             match self.nodes.borrow().get(path.as_ref()) {
+[31m-                Some(FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) | FakeNode::ReparseFile(bytes)) => {
+(B[m[31m-                    Some(crc32_hex(bytes))
+(B[m[31m-                }
+(B[m[32m+                Some(
+(B[m[32m+                    FakeNode::File(bytes)
+(B[m[32m+                    | FakeNode::SymlinkFile(bytes)
+(B[m[32m+                    | FakeNode::ReparseFile(bytes),
+(B[m[32m+                ) => Some(crc32_hex(bytes)),
+(B[m                 _ => None,
+             }
+         }
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:3242:
+                 FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) => {
+                     Ok(FileMetadata::new(FileType::File, bytes.len() as u64))
+                 }
+[31m-                FakeNode::ReparseFile(bytes) => {
+(B[m[31m-                    Ok(FileMetadata::reparse_point(FileType::File, bytes.len() as u64))
+(B[m[31m-                }
+(B[m[32m+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+(B[m[32m+                    FileType::File,
+(B[m[32m+                    bytes.len() as u64,
+(B[m[32m+                )),
+(B[m                 FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                 FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+             }
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:3257:
+                 FakeNode::SymlinkFile(bytes) => {
+                     Ok(FileMetadata::new(FileType::Symlink, bytes.len() as u64))
+                 }
+[31m-                FakeNode::ReparseFile(bytes) => {
+(B[m[31m-                    Ok(FileMetadata::reparse_point(FileType::File, bytes.len() as u64))
+(B[m[31m-                }
+(B[m[32m+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+(B[m[32m+                    FileType::File,
+(B[m[32m+                    bytes.len() as u64,
+(B[m[32m+                )),
+(B[m                 FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                 FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+             }
+Diff in /mnt/j/cmt-rs/src/services/downgrader.rs:3268:
+         fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
+             self.maybe_fail(PlatformOperation::ReadFile, path)?;
+             match self.node(path, PlatformOperation::ReadFile)? {
+[31m-                FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) | FakeNode::ReparseFile(bytes) => {
+(B[m[31m-                    Ok(bytes)
+(B[m[31m-                }
+(B[m[32m+                FakeNode::File(bytes)
+(B[m[32m+                | FakeNode::SymlinkFile(bytes)
+(B[m[32m+                | FakeNode::ReparseFile(bytes) => Ok(bytes),
+(B[m                 FakeNode::Directory => Err(PlatformError::new(
+                     PlatformOperation::ReadFile,
+                     path.display().to_string(),
+Diff in /mnt/j/cmt-rs/src/services/f4se.rs:891:
+         fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+             match self.node(path, PlatformOperation::ReadMetadata)? {
+                 FakeNode::File(bytes) => Ok(FileMetadata::new(FileType::File, bytes.len() as u64)),
+[31m-                FakeNode::Directory | FakeNode::UnreadableDirectory => Ok(FileMetadata::new(FileType::Directory, 0)),
+(B[m[32m+                FakeNode::Directory | FakeNode::UnreadableDirectory => {
+(B[m[32m+                    Ok(FileMetadata::new(FileType::Directory, 0))
+(B[m[32m+                }
+(B[m                 FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+             }
+         }
+Diff in /mnt/j/cmt-rs/src/services/scanner.rs:2076:
+         fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+             match self.node(path, PlatformOperation::ReadMetadata)? {
+                 FakeNode::File(bytes) => Ok(FileMetadata::new(FileType::File, bytes.len() as u64)),
+[31m-                FakeNode::Directory | FakeNode::UnreadableDirectory => Ok(FileMetadata::new(FileType::Directory, 0)),
+(B[m[32m+                FakeNode::Directory | FakeNode::UnreadableDirectory => {
+(B[m[32m+                    Ok(FileMetadata::new(FileType::Directory, 0))
+(B[m[32m+                }
+(B[m                 FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+             }
+         }

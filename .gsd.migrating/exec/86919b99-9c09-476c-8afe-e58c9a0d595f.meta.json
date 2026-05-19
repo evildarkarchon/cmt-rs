@@ -1,0 +1,18 @@
+{
+  "id": "86919b99-9c09-476c-8afe-e58c9a0d595f",
+  "runtime": "bash",
+  "purpose": "run downgrader executor tests after safety changes",
+  "script_chars": 45,
+  "started_at": "2026-05-18T23:51:46.284Z",
+  "finished_at": "2026-05-18T23:51:54.705Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8421,
+  "stdout_bytes": 1396,
+  "stderr_bytes": 1890,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\86919b99-9c09-476c-8afe-e58c9a0d595f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\86919b99-9c09-476c-8afe-e58c9a0d595f.stderr"
+}

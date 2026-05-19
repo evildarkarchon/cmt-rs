@@ -1,4 +1,4 @@
-# S09: Downgrade Manager Workflow
+# S09: S09
 
 **Goal:** Deliver the Downgrade Manager workflow as a faithful Slint modal opened from Overview or Tools, with reference file status, backup and delta cleanup preferences, inline plan confirmation, safe backup/download/xdelta execution, visible log/progress feedback, and non-blocking worker handoff.
 **Demo:** User can open and run Downgrade Manager from Overview or Tools with backup and delta cleanup preferences respected and visible status/errors.
@@ -25,7 +25,7 @@ Consumes S02 settings persistence, S03 discovery/platform seams, S04 Overview re
 
 ## Tasks
 
-- [x] **T01: Add Downgrader domain contract** `est:2h`
+- [x] **T01: Added a pure downgrader domain contract with reference labels, CRC maps, backup/patch helpers, and typed row payloads.** `est:2h`
   ---
   estimated_steps: 6
   estimated_files: 2
@@ -39,7 +39,7 @@ Consumes S02 settings persistence, S03 discovery/platform seams, S04 Overview re
   - Files: `src/domain/downgrader.rs`, `src/domain/mod.rs`
   - Verify: cargo test downgrader_domain
 
-- [x] **T02: Build status snapshot and preview plan service** `est:3h`
+- [x] **T02: Added a read-only DowngraderService that builds CRC status snapshots and inline preview plans without mutation.** `est:3h`
   ---
   estimated_steps: 8
   estimated_files: 3
@@ -56,26 +56,15 @@ Consumes S02 settings persistence, S03 discovery/platform seams, S04 Overview re
   - Files: `src/services/downgrader.rs`, `src/services/mod.rs`, `src/domain/downgrader.rs`
   - Verify: cargo test downgrader_service_plan
 
-- [x] **T03: Implement confirmed executor and write seams** `est:5h`
-  ---
-  estimated_steps: 9
-  estimated_files: 6
-  skills_used:
-    - rust-async-patterns
-    - tdd
-    - security-review
-    - verify-before-complete
-  ---
-  Why: After inline confirmation, S09 must safely execute the reference backup, restore, download, xdelta apply, and cleanup semantics against sandbox fixtures before real game paths are reachable.
-  Do: Add a separate writable filesystem trait to `src/platform/filesystem.rs` instead of expanding the existing read-only `Filesystem` contract. Extend `PlatformOperation` with safe write/copy/rename/remove labels. Implement real filesystem mutation methods with typed `PlatformError` mapping and local fake/recording implementations for tests. In `src/services/downgrader.rs`, add `DeltaDownloader` and `DeltaApplier` traits, a reqwest-backed downloader with bounded progress callbacks, and a production xdelta applier only after adding/proving a compatible dependency with a tiny deterministic fixture. Add confirmed execution that revalidates current file and backup CRCs immediately before each mutation, processes the six files independently, creates/reuses/removes `_downgradeBackup` and `_upgradeBackup` files according to direction and `Keep Backups`, downloads only the needed `NG-to-OG-{file}.xdelta` or `OG-to-NG-{file}.xdelta`, applies deltas with the current backup as input, honors `Delete Patches`, continues after per-file failures where safe, and never deletes the only valid source backup after a failed apply.
-  Failure Modes Q5: File write/copy/rename/remove errors log `Failed patching {file}` and continue where safe. Download timeout/request failure and malformed or failed xdelta apply log failure and preserve backups. If no proven production xdelta applier exists, fail the task and replan rather than shipping a silently non-functional production path.
-  Load Profile Q6: Fixed six-file execution, bounded patch downloads, sequential mutation, and progress events per file/download prevent unbounded concurrency or memory growth.
-  Negative Tests Q7: Cover valid desired-backup restore with and without `Keep Backups`, invalid backup deletion, current-backup creation/reuse, as-needed delta download, delete-deltas cleanup, failed download, failed apply, read-only/permission failures, unsupported source generation, and no downloader/applier calls for skipped files.
-  Done when: Executor tests prove reference log rows and mutation/download/apply calls for success and failure paths, and the production applier has a fixture proof if a dependency is added.
-  - Files: `src/platform/mod.rs`, `src/platform/filesystem.rs`, `src/services/downgrader.rs`, `Cargo.toml`, `Cargo.lock`
+- [x] **T03: Harden confirmed executor safety and delta integrity** `est:4h remediation`
+  Redo the confirmed execution safety layer before S09 closeout. Preserve the existing read-only status/plan behavior, but harden real mutation semantics: canonicalize/revalidate the game root and every managed parent/target immediately before mutation, reject symlink/junction/reparse-point target escape where the platform can detect it, and ensure resolved targets remain under the canonical root. Change replacement order so active files remain intact until replacement bytes are produced, cryptographically/integrity-checked, CRC-checked against the desired target, and ready for atomic/same-directory replace; on download/apply/write failure, leave the active file in place and preserve usable backups. Add SHA-256 or stronger pinned integrity checks for downloaded patch assets and/or expected output files, enforce the same size cap on existing local delta files as downloaded deltas, and cap VCDIFF output to the expected target size. Update `DeltaDownloader`/`DeltaApplier`/filesystem seams and fake-backed tests accordingly, including rollback/no-active-file-loss, symlink/junction escape, pinned-hash failure, oversized local patch, and expansion-bomb failures.
+  - Files: `src/services/downgrader.rs`, `src/platform/filesystem.rs`, `src/platform/mod.rs`, `Cargo.toml`, `Cargo.lock`
   - Verify: cargo test downgrader_executor
+cargo test downgrader_service_plan
+cargo test
+cargo clippy --all-targets --all-features
 
-- [x] **T04: Add controller and worker payloads** `est:4h`
+- [x] **T04: Added a Slint-free Downgrader modal controller with owned worker payloads and stale-safe lifecycle tests.** `est:4h`
   ---
   estimated_steps: 8
   estimated_files: 4
@@ -93,7 +82,7 @@ Consumes S02 settings persistence, S03 discovery/platform seams, S04 Overview re
   - Verify: cargo test downgrader_controller
 cargo test downgrader_worker_payload
 
-- [ ] **T05: Create Slint modal source contract** `est:3h`
+- [x] **T05: Verified the Downgrader Slint modal source contract, generated-component import, Overview/Tools entrypoint callbacks, and source-contract tests for reference labels and deferred Archive Patcher behavior.** `est:3h`
   ---
   estimated_steps: 7
   estimated_files: 5
@@ -111,23 +100,12 @@ cargo test downgrader_worker_payload
   - Verify: cargo test s09_downgrader_slint_contract
 cargo check
 
-- [ ] **T06: Wire runtime entrypoints and closeout checks** `est:6h`
-  ---
-  estimated_steps: 10
-  estimated_files: 10
-  skills_used:
-    - rust-async-patterns
-    - tdd
-    - verify-before-complete
-  ---
-  Why: The slice is only complete when the Overview and Tools entrypoints open the real Downgrader modal, persist workflow options safely, schedule background status/plan/run workers, refresh Overview after completion, and leave Archive Patcher deferred.
-  Do: Wire `src/main.rs` to own a `DowngraderController`, create/show the generated `DowngraderWindow`, bind modal callbacks, project controller state into Slint properties/models, and route worker events back through the existing event-loop sink pattern. Add `SettingsController::save_downgrader_settings_for_workflow` so `Keep Backups` and `Delete Patches` are persisted at workflow start; on save failure, revert visible options and do not plan or run with unpersisted preferences. Update Tools domain/service/controller behavior so `tools.downgrade_manager` opens the modal instead of returning a deferred rejection, while `tools.archive_patcher` remains disabled/deferred until S10. Update Overview downgrade projection so the button is enabled when the workflow can be opened and still fails closed in the modal if discovery cannot establish a safe game root. Schedule status, plan, and confirmed run work on worker threads using owned request payloads, real discovery and filesystem adapters, the downloader/applier seams from T03, and no Slint handles in closures. On completion, refresh/redraw Downgrader status and request an Overview refresh; keep `Patch\n All` disabled and close/Escape blocked while running. Add runtime wiring tests that use fakes or source-level assertions to prove callback routing, settings-save failure, worker spawn failure, stale completion, Overview refresh request after completion, and Archive Patcher still deferred.
-  Failure Modes Q5: Discovery unsupported/missing root shows safe modal log/status and disables mutation. Settings save failure reverts options and suppresses workers. Worker spawn failure shows a safe error. Download/apply failures remain per-file log rows. Off-Windows real discovery/platform failures stay safe and fake-backed tests remain cross-platform.
-  Load Profile Q6: Background workers own fixed-size plan/status payloads and emit bounded log/progress events; no UI-thread blocking is allowed for CRC, filesystem, network, or xdelta work.
-  Negative Tests Q7: Cover Overview open, Tools open, unknown Tools action, Archive Patcher deferred, missing game path, settings-save failure, close blocked while running, run completion refreshing status, and no Slint handle/model captured by worker closures.
-  Done when: Targeted runtime tests pass, full closeout checks pass, and the modal is live from both entrypoints without regressing settings, overview, tools, worker, scanner, or auto-fix behavior.
-  - Files: `src/main.rs`, `src/app/settings_controller.rs`, `src/domain/tools.rs`, `src/services/tools.rs`, `src/app/tools_controller.rs`, `src/services/downgrader.rs`, `src/workers/events.rs`, `ui/main.slint`, `ui/overview_tab.slint`, `ui/tools_tab.slint`
+- [x] **T06: Complete runtime wiring, live feedback, About action, and tests** `est:4h remediation`
+  Redo the runtime integration closeout work after executor hardening. Implement a real Downgrader modal About action that shows the preserved `ABOUT_DOWNGRADING_TITLE` and `ABOUT_DOWNGRADING` copy instead of logging a deferred no-op. Bind confirmed runs to the exact reviewed plan or a stable digest; if files/backups materially change after preview, abort with a safe message and require a new preview. Emit progress/log events live from the worker while downloads/apply work are running rather than buffering everything until `execute_confirmed` returns. Refresh Overview after completion with the current persisted settings snapshot or a Send-safe settings access pattern, not `AppSettings::default()`. Add substantive runtime wiring tests under the required `s09_downgrader_runtime_wiring` filter for Overview and Tools open, settings-save failure/revert, worker spawn failure, stale completion, close blocked while running, live progress/log projection, About action, post-run Overview refresh settings, Archive Patcher still deferred, and confirmed-plan mismatch fail-closed behavior.
+  - Files: `src/main.rs`, `src/app/downgrader_controller.rs`, `src/app/settings_controller.rs`, `src/services/downgrader.rs`, `src/domain/downgrader.rs`, `src/domain/tools.rs`, `src/services/tools.rs`, `ui/main.slint`, `ui/downgrader_window.slint`
   - Verify: cargo test s09_downgrader_runtime_wiring
+cargo test downgrader_controller
+cargo test downgrader_worker_payload
 cargo test settings
 cargo test overview
 cargo test tools
@@ -143,8 +121,8 @@ cargo clippy --all-targets --all-features
 - src/domain/mod.rs
 - src/services/downgrader.rs
 - src/services/mod.rs
-- src/platform/mod.rs
 - src/platform/filesystem.rs
+- src/platform/mod.rs
 - Cargo.toml
 - Cargo.lock
 - src/app/downgrader_controller.rs
@@ -159,4 +137,3 @@ cargo clippy --all-targets --all-features
 - src/app/settings_controller.rs
 - src/domain/tools.rs
 - src/services/tools.rs
-- src/app/tools_controller.rs

@@ -1,0 +1,18 @@
+{
+  "id": "371de2b0-b643-4547-8848-1240ac6054cd",
+  "runtime": "bash",
+  "purpose": "run s09 downgrader runtime wiring tests",
+  "script_chars": 40,
+  "started_at": "2026-05-19T00:31:16.214Z",
+  "finished_at": "2026-05-19T00:31:47.620Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 31406,
+  "stdout_bytes": 0,
+  "stderr_bytes": 8729,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\371de2b0-b643-4547-8848-1240ac6054cd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\371de2b0-b643-4547-8848-1240ac6054cd.stderr"
+}

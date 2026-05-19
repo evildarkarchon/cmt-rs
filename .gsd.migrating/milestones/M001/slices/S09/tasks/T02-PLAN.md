@@ -4,7 +4,7 @@ estimated_files: 3
 skills_used: []
 ---
 
-# T02: Build status snapshot and preview plan service
+# T02: Added a read-only DowngraderService that builds CRC status snapshots and inline preview plans without mutation.
 
 ---
 estimated_steps: 8

@@ -1,0 +1,18 @@
+{
+  "id": "291aacde-38b7-414e-96f3-090c7b52be83",
+  "runtime": "bash",
+  "purpose": "full cargo test after Archive Patcher Slint contract tests",
+  "script_chars": 18,
+  "started_at": "2026-05-19T02:38:44.013Z",
+  "finished_at": "2026-05-19T02:39:26.870Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 42857,
+  "stdout_bytes": 516,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\291aacde-38b7-414e-96f3-090c7b52be83.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\291aacde-38b7-414e-96f3-090c7b52be83.stderr"
+}

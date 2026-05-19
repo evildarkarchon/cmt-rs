@@ -1,0 +1,59 @@
+## Slint skills
+
+[38;5;250m███████╗██╗  ██╗██╗██╗     ██╗     ███████╗[0m
+[38;5;248m██╔════╝██║ ██╔╝██║██║     ██║     ██╔════╝[0m
+[38;5;245m███████╗█████╔╝ ██║██║     ██║     ███████╗[0m
+[38;5;243m╚════██║██╔═██╗ ██║██║     ██║     ╚════██║[0m
+[38;5;240m███████║██║  ██╗██║███████╗███████╗███████║[0m
+[38;5;238m╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝[0m
+
+[38;5;102mInstall with[0m npx skills add <owner/repo@skill>
+
+[38;5;145mpatricio0312rev/skills@eslint-prettier-config[0m [36m584 installs[0m
+[38;5;102m└ https://skills.sh/patricio0312rev/skills/eslint-prettier-config[0m
+
+[38;5;145mmcollina/skills@linting-neostandard-eslint9[0m [36m537 installs[0m
+[38;5;102m└ https://skills.sh/mcollina/skills/linting-neostandard-eslint9[0m
+
+[38;5;145maccesslint/claude-marketplace@contrast-checker[0m [36m286 installs[0m
+[38;5;102m└ https://skills.sh/accesslint/claude-marketplace/contrast-checker[0m
+
+[38;5;145maccesslint/claude-marketplace@refactor[0m [36m257 installs[0m
+[38;5;102m└ https://skills.sh/accesslint/claude-marketplace/refactor[0m
+
+[38;5;145maccesslint/claude-marketplace@use-of-color[0m [36m245 installs[0m
+[38;5;102m└ https://skills.sh/accesslint/claude-marketplace/use-of-color[0m
+
+[38;5;145maccesslint/claude-marketplace@link-purpose[0m [36m241 installs[0m
+[38;5;102m└ https://skills.sh/accesslint/claude-marketplace/link-purpose[0m
+
+
+## Rust skills
+
+[38;5;250m███████╗██╗  ██╗██╗██╗     ██╗     ███████╗[0m
+[38;5;248m██╔════╝██║ ██╔╝██║██║     ██║     ██╔════╝[0m
+[38;5;245m███████╗█████╔╝ ██║██║     ██║     ███████╗[0m
+[38;5;243m╚════██║██╔═██╗ ██║██║     ██║     ╚════██║[0m
+[38;5;240m███████║██║  ██╗██║███████╗███████╗███████║[0m
+[38;5;238m╚══════╝╚═╝  ╚═╝╚═╝╚══════╝╚══════╝╚══════╝[0m
+
+[38;5;102mInstall with[0m npx skills add <owner/repo@skill>
+
+[38;5;145mwshobson/agents@rust-async-patterns[0m [36m12.5K installs[0m
+[38;5;102m└ https://skills.sh/wshobson/agents/rust-async-patterns[0m
+
+[38;5;145mapollographql/skills@rust-best-practices[0m [36m10.2K installs[0m
+[38;5;102m└ https://skills.sh/apollographql/skills/rust-best-practices[0m
+
+[38;5;145mgithub/awesome-copilot@rust-mcp-server-generator[0m [36m8.7K installs[0m
+[38;5;102m└ https://skills.sh/github/awesome-copilot/rust-mcp-server-generator[0m
+
+[38;5;145mzhanghandong/rust-skills@m15-anti-pattern[0m [36m5.4K installs[0m
+[38;5;102m└ https://skills.sh/zhanghandong/rust-skills/m15-anti-pattern[0m
+
+[38;5;145maffaan-m/everything-claude-code@rust-testing[0m [36m3.7K installs[0m
+[38;5;102m└ https://skills.sh/affaan-m/everything-claude-code/rust-testing[0m
+
+[38;5;145maffaan-m/everything-claude-code@rust-patterns[0m [36m3.5K installs[0m
+[38;5;102m└ https://skills.sh/affaan-m/everything-claude-code/rust-patterns[0m
+

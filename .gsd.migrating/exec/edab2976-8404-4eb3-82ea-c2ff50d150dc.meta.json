@@ -1,0 +1,18 @@
+{
+  "id": "edab2976-8404-4eb3-82ea-c2ff50d150dc",
+  "runtime": "bash",
+  "purpose": "run downgrader service plan tests for T03 recovery",
+  "script_chars": 74,
+  "started_at": "2026-05-18T23:57:22.083Z",
+  "finished_at": "2026-05-18T23:57:30.361Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8278,
+  "stdout_bytes": 1316,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\edab2976-8404-4eb3-82ea-c2ff50d150dc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\edab2976-8404-4eb3-82ea-c2ff50d150dc.stderr"
+}

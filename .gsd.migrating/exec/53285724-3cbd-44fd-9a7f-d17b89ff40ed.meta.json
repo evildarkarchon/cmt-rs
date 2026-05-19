@@ -1,0 +1,18 @@
+{
+  "id": "53285724-3cbd-44fd-9a7f-d17b89ff40ed",
+  "runtime": "bash",
+  "purpose": "clippy gate after archive patcher executor changes",
+  "script_chars": 49,
+  "started_at": "2026-05-19T02:02:13.199Z",
+  "finished_at": "2026-05-19T02:02:45.497Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 32298,
+  "stdout_bytes": 0,
+  "stderr_bytes": 5265,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\53285724-3cbd-44fd-9a7f-d17b89ff40ed.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\53285724-3cbd-44fd-9a7f-d17b89ff40ed.stderr"
+}

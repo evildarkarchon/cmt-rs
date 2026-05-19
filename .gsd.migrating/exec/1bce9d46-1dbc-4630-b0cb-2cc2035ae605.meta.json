@@ -1,0 +1,18 @@
+{
+  "id": "1bce9d46-1dbc-4630-b0cb-2cc2035ae605",
+  "runtime": "python",
+  "purpose": "S09 closeout targeted downgrader verification",
+  "script_chars": 916,
+  "started_at": "2026-05-18T23:08:40.384Z",
+  "finished_at": "2026-05-18T23:08:44.153Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 3769,
+  "stdout_bytes": 6143,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1bce9d46-1dbc-4630-b0cb-2cc2035ae605.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1bce9d46-1dbc-4630-b0cb-2cc2035ae605.stderr"
+}

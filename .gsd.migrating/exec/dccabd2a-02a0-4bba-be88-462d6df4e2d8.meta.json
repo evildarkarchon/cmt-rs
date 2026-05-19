@@ -1,0 +1,18 @@
+{
+  "id": "dccabd2a-02a0-4bba-be88-462d6df4e2d8",
+  "runtime": "python",
+  "purpose": "parse VCDIFF target output sizes from downgrader patches using delta length",
+  "script_chars": 3195,
+  "started_at": "2026-05-18T23:31:07.509Z",
+  "finished_at": "2026-05-18T23:31:16.959Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9450,
+  "stdout_bytes": 759,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\dccabd2a-02a0-4bba-be88-462d6df4e2d8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\dccabd2a-02a0-4bba-be88-462d6df4e2d8.stderr"
+}

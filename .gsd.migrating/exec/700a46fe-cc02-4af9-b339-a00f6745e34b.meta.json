@@ -1,0 +1,18 @@
+{
+  "id": "700a46fe-cc02-4af9-b339-a00f6745e34b",
+  "runtime": "bash",
+  "purpose": "T06 final cargo test archive_patcher_domain",
+  "script_chars": 57,
+  "started_at": "2026-05-19T03:28:55.087Z",
+  "finished_at": "2026-05-19T03:29:57.487Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 62400,
+  "stdout_bytes": 119,
+  "stderr_bytes": 247,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\700a46fe-cc02-4af9-b339-a00f6745e34b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\700a46fe-cc02-4af9-b339-a00f6745e34b.stderr"
+}

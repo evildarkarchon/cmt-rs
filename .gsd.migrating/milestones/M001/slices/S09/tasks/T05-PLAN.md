@@ -4,7 +4,7 @@ estimated_files: 5
 skills_used: []
 ---
 
-# T05: Create Slint modal source contract
+# T05: Verified the Downgrader Slint modal source contract, generated-component import, Overview/Tools entrypoint callbacks, and source-contract tests for reference labels and deferred Archive Patcher behavior.
 
 ---
 estimated_steps: 7

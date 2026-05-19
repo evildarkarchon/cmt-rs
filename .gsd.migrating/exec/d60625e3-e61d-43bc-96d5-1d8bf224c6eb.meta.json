@@ -1,0 +1,18 @@
+{
+  "id": "d60625e3-e61d-43bc-96d5-1d8bf224c6eb",
+  "runtime": "bash",
+  "purpose": "T06 final cargo test worker after runtime wiring test",
+  "script_chars": 41,
+  "started_at": "2026-05-19T03:38:38.526Z",
+  "finished_at": "2026-05-19T03:38:47.075Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8549,
+  "stdout_bytes": 155,
+  "stderr_bytes": 247,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d60625e3-e61d-43bc-96d5-1d8bf224c6eb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d60625e3-e61d-43bc-96d5-1d8bf224c6eb.stderr"
+}

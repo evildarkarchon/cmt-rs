@@ -1,0 +1,18 @@
+{
+  "id": "bd47b63a-d58a-4ee1-9a0c-7272b9eec195",
+  "runtime": "bash",
+  "purpose": "T06 check stale archive patcher deferred markers after test update",
+  "script_chars": 184,
+  "started_at": "2026-05-19T03:18:39.452Z",
+  "finished_at": "2026-05-19T03:18:39.565Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 113,
+  "stdout_bytes": 316,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bd47b63a-d58a-4ee1-9a0c-7272b9eec195.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bd47b63a-d58a-4ee1-9a0c-7272b9eec195.stderr"
+}

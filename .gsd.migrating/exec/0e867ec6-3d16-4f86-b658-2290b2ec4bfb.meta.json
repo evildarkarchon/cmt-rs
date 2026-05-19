@@ -1,0 +1,18 @@
+{
+  "id": "0e867ec6-3d16-4f86-b658-2290b2ec4bfb",
+  "runtime": "bash",
+  "purpose": "surface current compile errors after downgrader safety edits",
+  "script_chars": 39,
+  "started_at": "2026-05-18T23:46:05.594Z",
+  "finished_at": "2026-05-18T23:46:21.840Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 16246,
+  "stdout_bytes": 0,
+  "stderr_bytes": 8722,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0e867ec6-3d16-4f86-b658-2290b2ec4bfb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0e867ec6-3d16-4f86-b658-2290b2ec4bfb.stderr"
+}

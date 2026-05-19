@@ -1,0 +1,18 @@
+{
+  "id": "1ef88ba7-ca39-4818-88dc-0d265193c217",
+  "runtime": "bash",
+  "purpose": "cargo check after downgrader runtime edits",
+  "script_chars": 11,
+  "started_at": "2026-05-19T00:22:50.654Z",
+  "finished_at": "2026-05-19T00:23:11.511Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 20857,
+  "stdout_bytes": 0,
+  "stderr_bytes": 7252,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1ef88ba7-ca39-4818-88dc-0d265193c217.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1ef88ba7-ca39-4818-88dc-0d265193c217.stderr"
+}

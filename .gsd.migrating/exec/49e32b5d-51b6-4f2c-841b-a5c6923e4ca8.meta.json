@@ -1,0 +1,18 @@
+{
+  "id": "49e32b5d-51b6-4f2c-841b-a5c6923e4ca8",
+  "runtime": "python",
+  "purpose": "find FileMetadata literal formatting issues after seam update",
+  "script_chars": 224,
+  "started_at": "2026-05-18T23:35:06.803Z",
+  "finished_at": "2026-05-18T23:35:06.933Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 130,
+  "stdout_bytes": 4058,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\49e32b5d-51b6-4f2c-841b-a5c6923e4ca8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\49e32b5d-51b6-4f2c-841b-a5c6923e4ca8.stderr"
+}

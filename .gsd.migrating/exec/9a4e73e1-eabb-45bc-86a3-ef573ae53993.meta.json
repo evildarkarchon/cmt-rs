@@ -1,0 +1,18 @@
+{
+  "id": "9a4e73e1-eabb-45bc-86a3-ef573ae53993",
+  "runtime": "bash",
+  "purpose": "T06 locate test source constants",
+  "script_chars": 68,
+  "started_at": "2026-05-19T03:34:20.094Z",
+  "finished_at": "2026-05-19T03:34:20.241Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 147,
+  "stdout_bytes": 710,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9a4e73e1-eabb-45bc-86a3-ef573ae53993.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9a4e73e1-eabb-45bc-86a3-ef573ae53993.stderr"
+}

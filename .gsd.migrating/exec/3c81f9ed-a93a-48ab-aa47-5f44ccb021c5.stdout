@@ -1,0 +1,421 @@
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:709:
+         };
+         let plan_request_id = plan.request_id;
+         let plan_can_execute = plan.can_execute;
+[31m-        if !plan_can_execute || plan.target != self.target || plan.name_filter != self.effective_name_filter()
+(B[m[32m+        if !plan_can_execute
+(B[m[32m+            || plan.target != self.target
+(B[m[32m+            || plan.name_filter != self.effective_name_filter()
+(B[m         {
+             self.fail_visible(ARCHIVE_PATCHER_PLAN_NOT_EXECUTABLE_MESSAGE.to_owned());
+             tracing::warn!(
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:910:
+         self.candidate_rows = plan.candidates.rows.clone();
+         self.log_rows.clear();
+         self.log_rows.push(plan.summary_log_row.clone());
+[31m-        self.log_rows
+(B[m[31m-            .extend(plan.rows.iter().filter_map(ArchivePatcherPreviewPlanRow::failure_log_row));
+(B[m[32m+        self.log_rows.extend(
+(B[m[32m+            plan.rows
+(B[m[32m+                .iter()
+(B[m[32m+                .filter_map(ArchivePatcherPreviewPlanRow::failure_log_row),
+(B[m[32m+        );
+(B[m         self.plan = Some(plan);
+         self.phase = ArchivePatcherControllerPhase::PlanReady;
+         self.safe_error = None;
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1180:
+         self.safe_error = None;
+         self.about_open = false;
+         self.run_log_row_count = 0;
+[31m-        tracing::info!(event = "s10-archive-patcher-closed", "Archive Patcher modal closed");
+(B[m[32m+        tracing::info!(
+(B[m[32m+            event = "s10-archive-patcher-closed",
+(B[m[32m+            "Archive Patcher modal closed"
+(B[m[32m+        );
+(B[m         ArchivePatcherTransitionResult::Applied
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1397:
+     stage: ArchivePatcherWorkerStage,
+     row: ArchivePatcherLogRow,
+ ) -> WorkerPayload {
+[31m-    WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::log_row(
+(B[m[31m-        request_id, stage, row,
+(B[m[31m-    ))
+(B[m[32m+    WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::log_row(request_id, stage, row))
+(B[m }
+ 
+ /// Converts patch or restore progress into the Archive Patcher worker payload shape.
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1486:
+         ArchivePatcherWorkerPayload::CandidatesLoaded { .. }
+         | ArchivePatcherWorkerPayload::PlanReady { .. }
+         | ArchivePatcherWorkerPayload::PatchCompleted { .. }
+[31m-        | ArchivePatcherWorkerPayload::RestoreCompleted { .. } => status == WorkerTaskStatus::Completed,
+(B[m[32m+        | ArchivePatcherWorkerPayload::RestoreCompleted { .. } => {
+(B[m[32m+            status == WorkerTaskStatus::Completed
+(B[m[32m+        }
+(B[m         ArchivePatcherWorkerPayload::LogRow { .. }
+         | ArchivePatcherWorkerPayload::Progress { .. } => status == WorkerTaskStatus::Progress,
+         ArchivePatcherWorkerPayload::SafeFailure { .. } => status == WorkerTaskStatus::Failed,
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1568:
+             request_id,
+             target,
+             filter.map(str::to_owned),
+[31m-            names.iter().map(|name| candidate_row(name, target)).collect(),
+(B[m[32m+            names
+(B[m[32m+                .iter()
+(B[m[32m+                .map(|name| candidate_row(name, target))
+(B[m[32m+                .collect(),
+(B[m         )
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1589:
+             ArchivePatcherTarget::OldGen => 8,
+             ArchivePatcherTarget::NextGen => 1,
+         };
+[31m-        let header = ArchivePatcherHeader::new(current_version, ArchivePatcherArchiveFormat::General);
+(B[m[32m+        let header =
+(B[m[32m+            ArchivePatcherHeader::new(current_version, ArchivePatcherArchiveFormat::General);
+(B[m         let manifest_entry = ArchivePatcherRestoreManifestEntry::new(
+             candidate.path.clone(),
+             "A.ba2",
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1600:
+         )
+         .with_header_prefixes(
+             ba2_header_prefix(current_version, ArchivePatcherArchiveFormat::General),
+[31m-            ba2_header_prefix(target.target_header_value(), ArchivePatcherArchiveFormat::General),
+(B[m[32m+            ba2_header_prefix(
+(B[m[32m+                target.target_header_value(),
+(B[m[32m+                ArchivePatcherArchiveFormat::General,
+(B[m[32m+            ),
+(B[m         );
+         let row = if can_execute {
+             ArchivePatcherPreviewPlanRow::patch(candidate, header, manifest_entry)
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1672:
+         }
+     }
+ 
+[31m-    fn open_controller(manifest_available: bool) -> (ArchivePatcherController, ArchivePatcherCandidateWorkerRequest) {
+(B[m[32m+    fn open_controller(
+(B[m[32m+        manifest_available: bool,
+(B[m[32m+    ) -> (
+(B[m[32m+        ArchivePatcherController,
+(B[m[32m+        ArchivePatcherCandidateWorkerRequest,
+(B[m[32m+    ) {
+(B[m         let mut controller = ArchivePatcherController::new();
+         let request = controller
+             .open(
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1685:
+         (controller, request)
+     }
+ 
+[31m-    fn load_default_candidates(controller: &mut ArchivePatcherController, request: &ArchivePatcherCandidateWorkerRequest) {
+(B[m[32m+    fn load_default_candidates(
+(B[m[32m+        controller: &mut ArchivePatcherController,
+(B[m[32m+        request: &ArchivePatcherCandidateWorkerRequest,
+(B[m[32m+    ) {
+(B[m         assert_eq!(
+             controller.handle_worker_event(WorkerEvent::completed(
+                 request.task.clone(),
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1715:
+             )
+             .expect("second open should replace candidate request");
+ 
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::LoadingCandidates);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::LoadingCandidates
+(B[m[32m+        );
+(B[m         assert_eq!(controller.active_request_id(), Some(second.request_id));
+[31m-        assert_eq!(controller.latest_candidate_request_id(), Some(second.request_id));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.latest_candidate_request_id(),
+(B[m[32m+            Some(second.request_id)
+(B[m[32m+        );
+(B[m         assert_eq!(controller.next_request_id(), 3);
+         assert_eq!(second.task.id.as_str(), "s10-archive-patcher-candidates:2");
+         assert_eq!(second.task.kind, WorkerTaskKind::Patch);
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1729:
+                 first.task,
+                 archive_patcher_candidates_loaded_payload(
+                     first.request_id,
+[31m-                    candidate_snapshot(first.request_id, ArchivePatcherTarget::OldGen, None, &["Old.ba2"]),
+(B[m[32m+                    candidate_snapshot(
+(B[m[32m+                        first.request_id,
+(B[m[32m+                        ArchivePatcherTarget::OldGen,
+(B[m[32m+                        None,
+(B[m[32m+                        &["Old.ba2"]
+(B[m[32m+                    ),
+(B[m                 ),
+             )),
+             ArchivePatcherTransitionResult::StaleIgnored
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1741:
+         assert_eq!(controller.active_request_id(), None);
+         assert_eq!(controller.candidate_rows().len(), 2);
+         assert_eq!(controller.log_rows().len(), 1);
+[31m-        assert_eq!(controller.log_rows()[0].message, "Showing 2 files to be patched.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.log_rows()[0].message,
+(B[m[32m+            "Showing 2 files to be patched."
+(B[m[32m+        );
+(B[m         assert!(controller.patch_button_enabled());
+         assert!(!controller.restore_button_enabled());
+     }
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1756:
+ 
+         let plan_request = match controller.request_patch_all().expect("first click plans") {
+             ArchivePatcherPatchAllRequest::PreviewPlan(request) => request,
+[31m-            ArchivePatcherPatchAllRequest::ConfirmedPatch(_) => panic!("first click must not mutate"),
+(B[m[32m+            ArchivePatcherPatchAllRequest::ConfirmedPatch(_) => {
+(B[m[32m+                panic!("first click must not mutate")
+(B[m[32m+            }
+(B[m         };
+         assert_eq!(plan_request.request_id, 2);
+         assert_eq!(controller.phase(), ArchivePatcherControllerPhase::Planning);
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1763:
+[31m-        assert_eq!(controller.active_stage(), Some(ArchivePatcherWorkerStage::Plan));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.active_stage(),
+(B[m[32m+            Some(ArchivePatcherWorkerStage::Plan)
+(B[m[32m+        );
+(B[m         assert!(!controller.patch_button_enabled());
+         assert!(controller.confirm_plan().is_none());
+ 
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1787:
+         assert_eq!(patch_request.request_id, 3);
+         assert_eq!(patch_request.confirmed_plan_request_id, 2);
+         assert_eq!(patch_request.confirmed_plan_digest, expected_digest);
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::PatchRunning);
+(B[m[31m-        assert_eq!(controller.active_stage(), Some(ArchivePatcherWorkerStage::Patch));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::PatchRunning
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.active_stage(),
+(B[m[32m+            Some(ArchivePatcherWorkerStage::Patch)
+(B[m[32m+        );
+(B[m         assert!(!controller.close_enabled());
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1813:
+             controller.request_close(),
+             ArchivePatcherTransitionResult::CloseBlocked
+         );
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::PatchRunning);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::PatchRunning
+(B[m[32m+        );
+(B[m 
+         assert_eq!(
+             controller.handle_worker_event(WorkerEvent::completed(
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1853:
+         assert!(controller.restore_button_enabled());
+         assert!(controller.manifest_available());
+         assert_eq!(controller.progress().percent, 100.0);
+[31m-        assert_eq!(controller.progress().text, "Patching complete. 1 Successful, 0 Failed.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.progress().text,
+(B[m[32m+            "Patching complete. 1 Successful, 0 Failed."
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1874:
+             .expect("filter change should request candidates");
+         assert_eq!(filter_request.request_id, 3);
+         assert_eq!(filter_request.name_filter.as_deref(), Some("A"));
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::LoadingCandidates);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::LoadingCandidates
+(B[m[32m+        );
+(B[m         assert!(controller.plan().is_none());
+         assert!(controller.candidate_rows().is_empty());
+         assert_eq!(
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1889:
+                 filter_request.task.clone(),
+                 archive_patcher_candidates_loaded_payload(
+                     filter_request.request_id,
+[31m-                    candidate_snapshot(filter_request.request_id, ArchivePatcherTarget::OldGen, Some("A"), &["A.ba2"]),
+(B[m[32m+                    candidate_snapshot(
+(B[m[32m+                        filter_request.request_id,
+(B[m[32m+                        ArchivePatcherTarget::OldGen,
+(B[m[32m+                        Some("A"),
+(B[m[32m+                        &["A.ba2"]
+(B[m[32m+                    ),
+(B[m                 ),
+             )),
+             ArchivePatcherTransitionResult::Applied
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1908:
+                 target_request.task.clone(),
+                 archive_patcher_candidates_loaded_payload(
+                     target_request.request_id,
+[31m-                    candidate_snapshot(target_request.request_id, ArchivePatcherTarget::NextGen, Some("A"), &["Old.ba2"]),
+(B[m[32m+                    candidate_snapshot(
+(B[m[32m+                        target_request.request_id,
+(B[m[32m+                        ArchivePatcherTarget::NextGen,
+(B[m[32m+                        Some("A"),
+(B[m[32m+                        &["Old.ba2"]
+(B[m[32m+                    ),
+(B[m                 ),
+             )),
+             ArchivePatcherTransitionResult::Applied
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1915:
+         );
+         assert_eq!(controller.candidate_rows().len(), 1);
+[31m-        assert_eq!(parse_target_value(TARGET_OLD_GEN_LABEL), Some(ArchivePatcherTarget::OldGen));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            parse_target_value(TARGET_OLD_GEN_LABEL),
+(B[m[32m+            Some(ArchivePatcherTarget::OldGen)
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1925:
+         let restore_request = controller
+             .request_restore_last_run()
+             .expect("available manifest should request restore");
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::RestoreRunning);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::RestoreRunning
+(B[m[32m+        );
+(B[m         assert!(!controller.write_controls_enabled());
+ 
+         let result = controller.spawn_failed(
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1953:
+             .request_restore_last_run()
+             .expect("safe error state should allow restore retry");
+         assert_eq!(retry.request_id, restore_request.request_id + 1);
+[31m-        assert_eq!(controller.phase(), ArchivePatcherControllerPhase::RestoreRunning);
+(B[m         assert_eq!(
+[32m+            controller.phase(),
+(B[m[32m+            ArchivePatcherControllerPhase::RestoreRunning
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             controller.handle_worker_event(WorkerEvent::completed(
+                 retry.task.clone(),
+[31m-                archive_patcher_restore_completed_payload(retry.request_id, restore_result(retry.request_id)),
+(B[m[32m+                archive_patcher_restore_completed_payload(
+(B[m[32m+                    retry.request_id,
+(B[m[32m+                    restore_result(retry.request_id)
+(B[m[32m+                ),
+(B[m             )),
+             ArchivePatcherTransitionResult::Applied
+         );
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1964:
+         assert_eq!(controller.phase(), ArchivePatcherControllerPhase::Completed);
+[31m-        assert_eq!(controller.progress().text, "Restore complete. 1 Successful, 0 Skipped, 0 Failed.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.progress().text,
+(B[m[32m+            "Restore complete. 1 Successful, 0 Skipped, 0 Failed."
+(B[m[32m+        );
+(B[m     }
+ 
+     #[test]
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1986:
+         assert_eq!(controller.phase(), ArchivePatcherControllerPhase::SafeError);
+ 
+         let bad_plan = plan(100, ArchivePatcherTarget::OldGen, None, false);
+[31m-        assert_eq!(bad_plan.rows[0].action, ArchivePatcherPlanAction::PlanFailure);
+(B[m[31m-        assert_eq!(bad_plan.summary_log_row.message, "Showing 1 files to be patched.");
+(B[m[32m+        assert_eq!(
+(B[m[32m+            bad_plan.rows[0].action,
+(B[m[32m+            ArchivePatcherPlanAction::PlanFailure
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m[32m+            bad_plan.summary_log_row.message,
+(B[m[32m+            "Showing 1 files to be patched."
+(B[m[32m+        );
+(B[m         assert_eq!(nothing_to_do_log_row().message, "Nothing to do!");
+     }
+ 
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:1998:
+         let patch = archive_patcher_patch_task(9);
+         let restore = archive_patcher_restore_task(10);
+ 
+[31m-        assert_eq!(archive_patcher_request_id_from_task_id(&candidates.id), Some(7));
+(B[m         assert_eq!(
+[32m+            archive_patcher_request_id_from_task_id(&candidates.id),
+(B[m[32m+            Some(7)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             archive_patcher_stage_from_task_id(&candidates.id),
+             Some(ArchivePatcherWorkerStage::Candidates)
+         );
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:2006:
+[31m-        assert_eq!(archive_patcher_request_id_from_task_id(&plan_task.id), Some(8));
+(B[m         assert_eq!(
+[32m+            archive_patcher_request_id_from_task_id(&plan_task.id),
+(B[m[32m+            Some(8)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             archive_patcher_stage_from_task_id(&plan_task.id),
+             Some(ArchivePatcherWorkerStage::Plan)
+         );
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:2013:
+             archive_patcher_stage_from_task_id(&patch.id),
+             Some(ArchivePatcherWorkerStage::Patch)
+         );
+[31m-        assert_eq!(archive_patcher_request_id_from_task_id(&restore.id), Some(10));
+(B[m         assert_eq!(
+[32m+            archive_patcher_request_id_from_task_id(&restore.id),
+(B[m[32m+            Some(10)
+(B[m[32m+        );
+(B[m[32m+        assert_eq!(
+(B[m             archive_patcher_stage_from_task_id(&restore.id),
+             Some(ArchivePatcherWorkerStage::Restore)
+         );
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:2025:
+                 ArchivePatcherWorkerStage::Patch,
+                 ArchivePatcherLogRow::new(ArchivePatcherLogLevel::Info, "hello"),
+             ),
+[31m-            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::LogRow { request_id: 9, .. })
+(B[m[32m+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::LogRow {
+(B[m[32m+                request_id: 9,
+(B[m[32m+                ..
+(B[m[32m+            })
+(B[m         ));
+[31m-        assert_eq!(parse_target_value(TARGET_NEXT_GEN_LABEL), Some(ArchivePatcherTarget::NextGen));
+(B[m[32m+        assert_eq!(
+(B[m[32m+            parse_target_value(TARGET_NEXT_GEN_LABEL),
+(B[m[32m+            Some(ArchivePatcherTarget::NextGen)
+(B[m[32m+        );
+(B[m     }
+ }
+ 
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:16:
+ use crate::{
+     domain::{
+         archive_patcher::{
+[31m-            ArchivePatcherCandidateSnapshot, ArchivePatcherExecutionResult,
+(B[m[31m-            ArchivePatcherLogRow, ArchivePatcherPreviewPlan, ArchivePatcherProgress,
+(B[m[32m+            ArchivePatcherCandidateSnapshot, ArchivePatcherExecutionResult, ArchivePatcherLogRow,
+(B[m[32m+            ArchivePatcherPreviewPlan, ArchivePatcherProgress,
+(B[m         },
+         autofix::AutoFixCompletion,
+         downgrader::{DowngraderExecutionLogRow, DowngraderProgress},
+Diff in /mnt/j/cmt-rs/src/workers/events.rs:1430:
+ 
+     #[test]
+     fn archive_patcher_worker_payload_round_trips_owned_candidates_plan_log_progress_patch_restore_and_failure()
+[31m-    {
+(B[m[32m+     {
+(B[m         use std::path::PathBuf;
+ 
+         use crate::{
+Diff in /mnt/j/cmt-rs/src/workers/mod.rs:18:
+     AboutActionWorkerPayload, ArchivePatcherWorkerPayload, ArchivePatcherWorkerStage,
+     CancellationToken, DowngraderWorkerPayload, DowngraderWorkerStage, ExternalActionKind,
+     ExternalActionOutcome, ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload,
+[31m-    ScannerWorkerPayload, ToolsActionWorkerPayload, WorkerCancellation, WorkerEvent,
+(B[m[31m-    WorkerFailure, WorkerMessage, WorkerPayload, WorkerProgress, WorkerTask, WorkerTaskId,
+(B[m[31m-    WorkerTaskKind, WorkerTaskStatus,
+(B[m[32m+    ScannerWorkerPayload, ToolsActionWorkerPayload, WorkerCancellation, WorkerEvent, WorkerFailure,
+(B[m[32m+    WorkerMessage, WorkerPayload, WorkerProgress, WorkerTask, WorkerTaskId, WorkerTaskKind,
+(B[m[32m+    WorkerTaskStatus,
+(B[m };
+ pub use handoff::{
+     RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,

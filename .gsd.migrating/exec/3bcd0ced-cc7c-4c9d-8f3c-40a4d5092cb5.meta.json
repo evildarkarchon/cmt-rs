@@ -1,0 +1,18 @@
+{
+  "id": "3bcd0ced-cc7c-4c9d-8f3c-40a4d5092cb5",
+  "runtime": "bash",
+  "purpose": "cargo check after adding Archive Patcher Slint modal",
+  "script_chars": 19,
+  "started_at": "2026-05-19T02:32:24.505Z",
+  "finished_at": "2026-05-19T02:32:58.129Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 33624,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3bcd0ced-cc7c-4c9d-8f3c-40a4d5092cb5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3bcd0ced-cc7c-4c9d-8f3c-40a4d5092cb5.stderr"
+}

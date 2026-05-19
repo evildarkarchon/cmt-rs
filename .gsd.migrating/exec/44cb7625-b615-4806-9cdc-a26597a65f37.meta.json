@@ -1,0 +1,18 @@
+{
+  "id": "44cb7625-b615-4806-9cdc-a26597a65f37",
+  "runtime": "bash",
+  "purpose": "reference overview archive patcher entrypoint and archive classification snippets",
+  "script_chars": 523,
+  "started_at": "2026-05-19T00:47:17.980Z",
+  "finished_at": "2026-05-19T00:47:18.088Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 108,
+  "stdout_bytes": 10584,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\44cb7625-b615-4806-9cdc-a26597a65f37.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\44cb7625-b615-4806-9cdc-a26597a65f37.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "217fc29a-9b2d-4147-b271-1d14ae0d11ac",
+  "runtime": "bash",
+  "purpose": "find potentially dead test helpers causing rustc ICE in downgrader tests",
+  "script_chars": 259,
+  "started_at": "2026-05-19T01:24:42.637Z",
+  "finished_at": "2026-05-19T01:24:42.751Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 114,
+  "stdout_bytes": 98,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\217fc29a-9b2d-4147-b271-1d14ae0d11ac.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\217fc29a-9b2d-4147-b271-1d14ae0d11ac.stderr"
+}

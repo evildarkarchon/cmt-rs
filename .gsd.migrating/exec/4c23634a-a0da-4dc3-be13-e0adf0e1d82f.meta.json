@@ -1,0 +1,18 @@
+{
+  "id": "4c23634a-a0da-4dc3-be13-e0adf0e1d82f",
+  "runtime": "bash",
+  "purpose": "List S09 plan and task summary artifacts",
+  "script_chars": 411,
+  "started_at": "2026-05-18T23:06:43.257Z",
+  "finished_at": "2026-05-18T23:06:43.360Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 103,
+  "stdout_bytes": 761,
+  "stderr_bytes": 204,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4c23634a-a0da-4dc3-be13-e0adf0e1d82f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4c23634a-a0da-4dc3-be13-e0adf0e1d82f.stderr"
+}

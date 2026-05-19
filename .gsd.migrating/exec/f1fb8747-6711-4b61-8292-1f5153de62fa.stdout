@@ -1,0 +1,76 @@
+
+=== cargo test settings ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+test platform::settings_store::tests::settings_missing_file_defaults ... ok
+test platform::settings_store::tests::settings_persist_reference_keys ... ok
+test app::settings_controller::tests::settings_controller_preserves_loaded_warning_log_level_until_user_selection ... ok
+test app::settings_controller::tests::settings_controller_saves_lowercase_log_level_as_uppercase_wire_value ... ok
+test app::settings_controller::tests::settings_controller_saves_downgrader_snapshot_for_workflow_start ... ok
+test app::settings_controller::tests::settings_controller_rejects_invalid_log_level_selection_to_info ... ok
+test app::settings_controller::tests::settings_controller_saves_scanner_snapshot_for_scan_start ... ok
+test platform::settings_store::tests::settings_repair_malformed_json_resets_to_defaults ... ok
+test platform::settings_store::tests::file_asset_resolver_reads_valid_download_source_file_values ... ok
+test app::settings_controller::tests::settings_controller_saves_warning_log_level_as_uppercase_wire_value ... ok
+test platform::settings_store::tests::settings_repair_partial_json_preserves_valid_fields_and_removes_unknown_keys ... ok
+
+test result: ok. 33 passed; 0 failed; 0 ignored; 0 measured; 287 filtered out; finished in 0.02s
+
+
+=== cargo test overview ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+test services::update::overview_update_tests::overview_update_timeout_and_http_failure_are_silent_with_diagnostics ... ok
+test services::update::overview_update_tests::overview_update_malformed_github_json_is_silent_with_diagnostics ... ok
+test services::update::overview_update_tests::overview_update_equal_or_older_versions_are_silent_no_update ... ok
+test services::update::overview_update_tests::overview_update_invalid_version_string_is_silent_with_diagnostics ... ok
+test services::update::overview_update_tests::overview_update_github_only_calls_github_and_reports_newer_version ... ok
+test services::update::overview_update_tests::overview_update_both_sources_checks_nexus_then_github_without_retries ... ok
+test services::update::overview_update_tests::overview_update_source_none_skips_all_clients ... ok
+test tests::overview_projection_rows_lock_reference_order_and_deferred_status ... ok
+test workers::events::tests::overview_payload_carries_owned_snapshot_and_update_state ... ok
+test tests::overview_tab_exposes_refresh_action_status_panels_and_safe_error_state ... ok
+test services::update::overview_update_tests::overview_update_newer_version_creates_visible_banner_metadata ... ok
+
+test result: ok. 59 passed; 0 failed; 0 ignored; 0 measured; 261 filtered out; finished in 0.00s
+
+
+=== cargo test tools ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+test services::tools::tests::s05_actions_tools_open_success_uses_static_url ... ok
+test services::tools::tests::s05_actions_tools_desktop_open_failure_returns_safe_message_and_diagnostic ... ok
+test domain::tools::tests::s05_reference_contract_about_title_credit_links_and_copy_labels_match_reference ... ok
+test services::tools::tests::s05_actions_unsupported_clipboard_adapter_failure_is_safe ... ok
+test services::tools::tests::s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred ... ok
+test services::tools::tests::s05_actions_about_clipboard_success_copies_only_reference_url ... ok
+test services::discovery::tests::mo2_discovery_parses_paths_flags_skip_rules_and_custom_tools ... ok
+test tests::s05_runtime_wiring_tools_projection_uses_initial_status_and_safe_errors ... ok
+test workers::events::tests::s05_actions_worker_payload_round_trips_tools_and_about_feedback ... ok
+test tests::s05_slint_contract_tools_tab_replaces_placeholder_with_reference_groups ... ok
+test tests::s05_slint_contract_main_window_forwards_tools_and_about_properties_and_callbacks ... ok
+
+test result: ok. 21 passed; 0 failed; 0 ignored; 0 measured; 299 filtered out; finished in 0.00s
+
+
+=== cargo test worker ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+test workers::events::tests::s05_actions_worker_payload_round_trips_tools_and_about_feedback ... ok
+test workers::events::tests::scanner_worker_payload_autofix_round_trips_owned_completion ... ok
+test workers::events::tests::scanner_worker_payload_round_trips_owned_scan_snapshot_and_action_feedback ... ok
+test workers::events::tests::task_kinds_cover_required_background_categories ... ok
+test workers::handoff::tests::recording_sink_stores_owned_events ... ok
+test workers::handoff::tests::slint_event_loop_sink_is_constructible_without_a_window ... ok
+test tests::s08_scanner_autofix_runtime_wiring_fake_worker_success_shows_inline_results ... ok
+test workers::tests::spawning_without_tokio_runtime_returns_typed_error ... ok
+test workers::tests::blocking_facade_runs_work_off_calling_thread_and_records_events ... ok
+test workers::tests::cancellation_request_acknowledgement_and_final_cancelled_flow_through_facade ... ok
+test workers::tests::worker_failures_emit_safe_failure_events ... ok
+
+test result: ok. 36 passed; 0 failed; 0 ignored; 0 measured; 284 filtered out; finished in 0.00s
+

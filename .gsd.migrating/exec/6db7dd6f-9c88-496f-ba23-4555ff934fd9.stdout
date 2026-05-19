@@ -1,0 +1,15 @@
+496:        self.patch_button_enabled() || self.restore_button_enabled()
+500:    pub fn patch_button_enabled(&self) -> bool {
+518:    pub fn restore_button_enabled(&self) -> bool {
+1798:        assert!(!controller.patch_button_enabled());
+1827:        assert!(controller.patch_button_enabled());
+1828:        assert!(!controller.restore_button_enabled());
+1851:        assert!(!controller.patch_button_enabled());
+1870:        assert!(controller.patch_button_enabled());
+1903:        assert!(!controller.patch_button_enabled());
+1904:        assert!(!controller.restore_button_enabled());
+1948:        assert!(controller.patch_button_enabled());
+1949:        assert!(controller.restore_button_enabled());
+2039:        assert!(controller.restore_button_enabled());
+2064:        assert!(controller.restore_button_enabled());
+2106:        assert!(!controller.restore_button_enabled());

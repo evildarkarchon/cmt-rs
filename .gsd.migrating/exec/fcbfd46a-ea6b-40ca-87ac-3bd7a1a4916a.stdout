@@ -1,0 +1,8 @@
+src/domain/tools.rs:246:/// Metadata for a utility entry that must remain disabled until its workflow is ported.
+src/main.rs:5651:            format!("Deferred until the {workflow_name} workflow is ported.")
+src/main.rs:7892:        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 0);
+src/main.rs:7942:        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 0);
+src/main.rs:8430:            "Deferred until the Downgrade Manager workflow is ported."
+ui/scanner_tab.slint:394:    in-out property <bool> scanner-auto-fix-button-enabled: false;
+ui/main.slint:32:    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
+ui/main.slint:77:    in-out property <bool> scanner-auto-fix-button-enabled: false;

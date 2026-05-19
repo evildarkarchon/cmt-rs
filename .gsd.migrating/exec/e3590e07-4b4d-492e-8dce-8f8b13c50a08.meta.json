@@ -1,0 +1,18 @@
+{
+  "id": "e3590e07-4b4d-492e-8dce-8f8b13c50a08",
+  "runtime": "bash",
+  "purpose": "final focused archive_patcher_domain verification",
+  "script_chars": 41,
+  "started_at": "2026-05-19T01:31:50.697Z",
+  "finished_at": "2026-05-19T01:32:33.674Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 42977,
+  "stdout_bytes": 119,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e3590e07-4b4d-492e-8dce-8f8b13c50a08.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e3590e07-4b4d-492e-8dce-8f8b13c50a08.stderr"
+}

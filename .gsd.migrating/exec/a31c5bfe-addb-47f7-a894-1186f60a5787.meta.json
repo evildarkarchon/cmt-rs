@@ -1,0 +1,18 @@
+{
+  "id": "a31c5bfe-addb-47f7-a894-1186f60a5787",
+  "runtime": "bash",
+  "purpose": "extract BA2 header parser from overview_collector",
+  "script_chars": 377,
+  "started_at": "2026-05-19T01:10:05.532Z",
+  "finished_at": "2026-05-19T01:10:05.638Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 106,
+  "stdout_bytes": 8226,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a31c5bfe-addb-47f7-a894-1186f60a5787.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a31c5bfe-addb-47f7-a894-1186f60a5787.stderr"
+}

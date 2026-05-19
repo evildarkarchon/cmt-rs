@@ -1,0 +1,21 @@
+
+running 8 tests
+....... 7/8
+services::archive_patcher::archive_patcher_service_plan::archive_patcher_service_plan_selects_target_inversion_filters_and_sorted_candidates --- FAILED
+
+failures:
+
+---- services::archive_patcher::archive_patcher_service_plan::archive_patcher_service_plan_selects_target_inversion_filters_and_sorted_candidates stdout ----
+
+thread 'services::archive_patcher::archive_patcher_service_plan::archive_patcher_service_plan_selects_target_inversion_filters_and_sorted_candidates' (187539) panicked at src/services/archive_patcher.rs:619:9:
+assertion `left == right` failed
+  left: ["Zeta.ba2", "alpha.ba2"]
+ right: ["alpha.ba2", "Zeta.ba2"]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    services::archive_patcher::archive_patcher_service_plan::archive_patcher_service_plan_selects_target_inversion_filters_and_sorted_candidates
+
+test result: FAILED. 7 passed; 1 failed; 0 ignored; 0 measured; 334 filtered out; finished in 0.02s
+

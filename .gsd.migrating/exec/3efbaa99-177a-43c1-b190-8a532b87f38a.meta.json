@@ -1,0 +1,18 @@
+{
+  "id": "3efbaa99-177a-43c1-b190-8a532b87f38a",
+  "runtime": "bash",
+  "purpose": "full test regression after WritableFilesystem trait extension",
+  "script_chars": 18,
+  "started_at": "2026-05-19T02:02:00.302Z",
+  "finished_at": "2026-05-19T02:02:08.948Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8646,
+  "stdout_bytes": 504,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3efbaa99-177a-43c1-b190-8a532b87f38a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3efbaa99-177a-43c1-b190-8a532b87f38a.stderr"
+}

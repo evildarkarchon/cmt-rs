@@ -1,0 +1,140 @@
+== src/main.rs ==
+2904: let scan_id = controller.latest_scan_id();
+== src/app/downgrader_controller.rs ==
+245: latest_status_request_id: Option<DowngraderRequestId>,
+246: latest_plan_request_id: Option<DowngraderRequestId>,
+247: latest_run_request_id: Option<DowngraderRequestId>,
+274: latest_status_request_id: None,
+275: latest_plan_request_id: None,
+276: latest_run_request_id: None,
+322: /// Returns the latest status request id assigned by this controller.
+323: pub const fn latest_status_request_id(&self) -> Option<DowngraderRequestId> {
+324: self.latest_status_request_id
+327: /// Returns the latest plan request id assigned by this controller.
+328: pub const fn latest_plan_request_id(&self) -> Option<DowngraderRequestId> {
+329: self.latest_plan_request_id
+332: /// Returns the latest run request id assigned by this controller.
+333: pub const fn latest_run_request_id(&self) -> Option<DowngraderRequestId> {
+334: self.latest_run_request_id
+434: self.latest_status_request_id = Some(request_id);
+609: self.latest_plan_request_id = Some(request_id);
+646: self.latest_run_request_id = Some(request_id);
+1071: self.latest_status_request_id = Some(request_id);
+1350: assert_eq!(controller.latest_status_request_id(), Some(1));
+1681: assert_eq!(controller.latest_status_request_id(), Some(4));
+== src/app/f4se_controller.rs ==
+427: fn f4se_controller_worker_payload_applies_latest_ready_rows() {
+453: let latest = WorkerEvent::completed(
+458: controller.handle_worker_event(latest),
+== src/app/overview_controller.rs ==
+83: latest_refresh_id: Option<OverviewRefreshId>,
+99: latest_refresh_id: None,
+123: self.latest_refresh_id = Some(refresh_id);
+144: /// Applies a successful refresh snapshot if it belongs to the latest request.
+150: if !self.is_latest_refresh(refresh_id) {
+154: latest_refresh_id = ?self.latest_refresh_id,
+180: /// Applies a safe refresh failure if it belongs to the latest request.
+186: if !self.is_latest_refresh(refresh_id) {
+190: latest_refresh_id = ?self.latest_refresh_id,
+222: /// Applies an update-check banner if it belongs to the latest refresh.
+228: if !self.is_latest_refresh(refresh_id) {
+232: latest_refresh_id = ?self.latest_refresh_id,
+287: .or(self.latest_refresh_id)
+344: fn is_latest_refresh(&self, refresh_id: OverviewRefreshId) -> bool {
+345: self.latest_refresh_id == Some(refresh_id)
+472: fn overview_controller_refresh_success_applies_latest_snapshot() {
+530: let latest = controller.refresh_completed(second.refresh_id, ready_snapshot("second"));
+533: assert_eq!(latest, OverviewTransitionResult::Applied);
+== src/app/scanner_controller.rs ==
+273: latest_scan_id: Option<ScannerScanId>,
+317: latest_scan_id: None,
+367: /// Returns the latest scan id assigned by this controller.
+368: pub const fn latest_scan_id(&self) -> Option<ScannerScanId> {
+369: self.latest_scan_id
+465: let scan_id = self.latest_scan_id?;
+524: self.latest_scan_id = Some(scan_id);
+748: latest_scan_id = ?self.latest_scan_id,
+785: if self.latest_scan_id != Some(scan_id) {
+916: if self.latest_scan_id != Some(scan_id)
+1017: if self.latest_scan_id != Some(scan_id)
+1121: self.latest_scan_id,
+1139: self.latest_scan_id,
+1163: self.latest_scan_id,
+1182: self.latest_scan_id,
+1193: .is_some_and(|scan_id| Some(scan_id) != self.latest_scan_id)
+1198: latest_scan_id = ?self.latest_scan_id,
+1318: let scan_id = self.latest_scan_id?;
+1393: latest_scan_id = ?self.latest_scan_id,
+1777: controller.latest_scan_id(),
+== src/domain/archive_patcher.rs ==
+6: //! preview rows, progress state, summary counts, and JSON manifest payloads as
+64: /// JSON manifest schema version for latest Archive Patcher restore metadata.
+65: pub const ARCHIVE_PATCHER_MANIFEST_SCHEMA_VERSION: u32 = 1;
+339: pub struct ArchivePatcherRestoreManifestEntry {
+354: impl ArchivePatcherRestoreManifestEntry {
+355: /// Creates a manifest entry from validated preview facts.
+386: /// Manifest metadata needed to restore this row later, only present for writable rows.
+387: pub restore_manifest_entry: Option<ArchivePatcherRestoreManifestEntry>,
+397: manifest_entry: ArchivePatcherRestoreManifestEntry,
+405: restore_manifest_entry: Some(manifest_entry),
+422: restore_manifest_entry: None,
+431: && self.restore_manifest_entry.is_some()
+511: /// Returns a stable digest for target, filter, candidate, header, and manifest state.
+557: if let Some(entry) = &row.restore_manifest_entry {
+558: update_digest_value(&mut digest, "manifest:some");
+569: update_digest_value(&mut digest, "manifest:none");
+577: /// JSON-serializable latest restore manifest for a future confirmed patch run.
+579: pub struct ArchivePatcherLatestManifest {
+580: /// Manifest schema version for forwards-compatible parsing.
+582: /// Stable digest of the preview plan that produced this manifest.
+584: /// Target selected for the patch run that produced this manifest.
+587: pub entries: Vec<ArchivePatcherRestoreManifestEntry>,
+590: impl ArchivePatcherLatestManifest {
+591: /// Creates a latest-manifest payload from a preview plan and its writable entries.
+595: entries: Vec<ArchivePatcherRestoreManifestEntry>,
+598: schema_version: ARCHIVE_PATCHER_MANIFEST_SCHEMA_VERSION,
+640: /// Number of archives successfully restored from manifest metadata.
+868: fn archive_patcher_domain_progress_counts_and_manifest_are_typed() {
+878: let entry = ArchivePatcherRestoreManifestEntry::new(
+886: let manifest = ArchivePatcherLatestManifest::new(
+891: let json = serde_json::to_string(&manifest).expect("manifest should serialize");
+894: let round_trip: ArchivePatcherLatestManifest =
+895: serde_json::from_str(&json).expect("manifest should deserialize");
+== src/domain/mod.rs ==
+35: assert_type::<crate::domain::archive_patcher::ArchivePatcherLatestManifest>();
+43: assert_type::<crate::domain::archive_patcher::ArchivePatcherRestoreManifestEntry>();
+== src/domain/tools.rs ==
+842: let absolute_path = Path::new(env!("CARGO_MANIFEST_DIR")).join(resource_path);
+== src/services/archive_patcher.rs ==
+20: ArchivePatcherRestoreManifestEntry, ArchivePatcherTarget, BA2_FORMAT_DIRECTX10,
+265: let manifest_entry = ArchivePatcherRestoreManifestEntry::new(
+273: ArchivePatcherPreviewPlanRow::patch(candidate, header, manifest_entry)
+692: fn archive_patcher_service_plan_reads_bounded_header_and_builds_manifest_entry() {
+729: .restore_manifest_entry
+731: .expect("manifest entry should exist");
+== src/services/downgrader.rs ==
+70: const PATCH_INTEGRITY_MANIFEST: [DowngraderPatchIntegrity; 12] = [
+885: patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
+893: patch_integrity_manifest: &PATCH_INTEGRITY_MANIFEST,
+898: const fn with_patch_integrity_manifest(
+900: patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
+904: patch_integrity_manifest,
+2325: self.patch_integrity_manifest
+3752: let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+3755: let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+3794: let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+3797: let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+3847: let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+3849: let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+3874: let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+3877: let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+== src/services/update.rs ==
+27: /// Reference GitHub latest-release API endpoint.
+28: pub const GITHUB_LATEST_RELEASE_URL: &str =
+29: "https://api.github.com/repos/wxMichael/Collective-Modding-Toolkit/releases/latest";
+135: /// Fetches the GitHub latest-release API response.
+136: fn fetch_github_latest_release(&self) -> UpdateClientFuture<'_>;
+193: fn fetch_github_latest_release(&self) -> UpdateClientFuture<'_> {
+204: self.fetch_text(GITHUB_LATEST_RELEASE_URL, Some(headers))
+524: UpdateProvider::Github => self.client.fetch_github_latest_release().await,
+882: fn fetch_github_latest_release(&self) -> UpdateClientFuture<'_> {

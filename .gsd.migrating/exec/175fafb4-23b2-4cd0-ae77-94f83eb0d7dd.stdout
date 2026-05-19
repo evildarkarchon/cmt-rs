@@ -1,0 +1,130 @@
+src/main.rs:910:                    "Archive Patcher is reserved for a later port phase.".to_owned(),
+src/main.rs:3240:            "Archive Patcher",
+src/main.rs:3542:    const DOWNGRADER_SLINT: &str = include_str!("../ui/downgrader_window.slint");
+src/main.rs:3902:            F4seGameTarget::Anniversary,
+src/main.rs:5096:    fn s09_downgrader_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+src/main.rs:5100:        assert!(DOWNGRADER_SLINT.contains("export component DowngraderWindow inherits Window"));
+src/main.rs:5102:            "import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow }"
+src/main.rs:5193:    fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred()
+src/main.rs:5196:        assert!(!DOWNGRADER_SLINT.contains("text: \"Anniversary\""));
+src/main.rs:5210:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:5220:                "label: \"Archive Patcher\"",
+src/main.rs:5223:                "Deferred until S10 Archive Patcher workflow is ported.",
+src/main.rs:5231:                "callback overview-open-downgrade-manager-requested()",
+src/main.rs:5232:                "callback tools-open-downgrade-manager-requested()",
+src/main.rs:5234:                "root.overview-open-downgrade-manager-requested()",
+src/main.rs:5236:                "root.tools-open-downgrade-manager-requested()",
+src/main.rs:5270:                "label: \"Archive Patcher\"",
+src/main.rs:5273:                "Deferred until S10 Archive Patcher workflow is ported.",
+src/main.rs:5697:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:5749:            "Archive Patcher..."
+src/main.rs:5864:                "callback overview-open-downgrade-manager-requested()",
+src/main.rs:5890:                "root.overview-open-downgrade-manager-requested()",
+ui/tools_tab.slint:57:    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+ui/tools_tab.slint:100:                        label: "Archive Patcher";
+ui/tools_tab.slint:103:                        helper-text: "Deferred until S10 Archive Patcher workflow is ported.";
+ui/overview_tab.slint:151:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/overview_tab.slint:153:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/downgrader_window.slint:269:export component DowngraderWindow inherits Window {
+ui/main.slint:5:import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+ui/main.slint:30:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/main.slint:32:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/main.slint:83:    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+ui/main.slint:97:    callback overview-open-downgrade-manager-requested();
+ui/main.slint:110:    callback tools-open-downgrade-manager-requested();
+ui/main.slint:168:                    root.overview-open-downgrade-manager-requested();
+ui/main.slint:270:                    root.tools-open-downgrade-manager-requested();
+src/app/tools_controller.rs:13:pub const TOOLS_DEFAULT_DISABLED_UTILITY_STATUS: &str = "Archive Patcher is deferred until S10.";
+src/app/tools_controller.rs:180:            "Archive Patcher is not available in this Rust port yet.",
+src/app/tools_controller.rs:190:            Some("Archive Patcher is not available in this Rust port yet.")
+src/workers/events.rs:1283:            "Archive Patcher is not available in this Rust port yet.",
+src/domain/tools.rs:68:    /// Deferred Archive Patcher utility entry.
+src/domain/tools.rs:294:        label: "Archive Patcher",
+src/domain/tools.rs:297:            status_text: "Archive Patcher is not available in this Rust port yet.",
+src/domain/tools.rs:496:            ["Downgrade Manager", "Archive Patcher"]
+src/domain/tools.rs:759:                    "Archive Patcher",
+src/domain/tools.rs:762:                        status_text: "Archive Patcher is not available in this Rust port yet.",
+src/services/f4se.rs:1220:            F4seGameTarget::Anniversary,
+src/domain/discovery.rs:72:    /// Reference `Anniversary` state.
+src/domain/discovery.rs:73:    Anniversary,
+src/domain/discovery.rs:74:    /// Reference `Next-Gen & Anniversary` state.
+src/domain/discovery.rs:75:    NextGenAnniversary,
+src/domain/discovery.rs:91:            Self::Anniversary => "Anniversary",
+src/domain/discovery.rs:92:            Self::NextGenAnniversary => "Next-Gen & Anniversary",
+src/domain/discovery.rs:590:            Fallout4InstallType::NextGenAnniversary.to_string(),
+src/domain/discovery.rs:591:            "Next-Gen & Anniversary"
+src/domain/downgrader.rs:94:    /// Reference `Anniversary` state.
+src/domain/downgrader.rs:95:    Anniversary,
+src/domain/downgrader.rs:96:    /// Reference `Next-Gen & Anniversary` state used by shared Steam API files.
+src/domain/downgrader.rs:97:    NextGenAnniversary,
+src/domain/downgrader.rs:112:            Self::Anniversary => "Anniversary",
+src/domain/downgrader.rs:113:            Self::NextGenAnniversary => "Next-Gen & Anniversary",
+src/domain/downgrader.rs:121:    /// `Next-Gen & Anniversary` CRCs are inserted into both NG and AE buckets by
+src/domain/downgrader.rs:124:        matches!(self, Self::NextGen | Self::NextGenAnniversary)
+src/domain/downgrader.rs:129:    /// `Next-Gen & Anniversary` CRCs are inserted into both NG and AE buckets by
+src/domain/downgrader.rs:132:        matches!(self, Self::Anniversary | Self::NextGenAnniversary)
+src/domain/downgrader.rs:353:            DowngraderInstallStatus::Anniversary | DowngraderInstallStatus::Obsolete
+src/domain/downgrader.rs:582:    DowngraderCrcMapping::new("CF47788D", DowngraderInstallStatus::Anniversary),
+src/domain/downgrader.rs:592:    DowngraderCrcMapping::new("720BB9C3", DowngraderInstallStatus::Anniversary),
+src/domain/downgrader.rs:597:    DowngraderCrcMapping::new("E36E7B4D", DowngraderInstallStatus::NextGenAnniversary),
+src/domain/downgrader.rs:603:    DowngraderCrcMapping::new("49E45284", DowngraderInstallStatus::Anniversary),
+src/domain/downgrader.rs:609:    DowngraderCrcMapping::new("C867674F", DowngraderInstallStatus::Anniversary),
+src/domain/downgrader.rs:615:    DowngraderCrcMapping::new("7B893B0D", DowngraderInstallStatus::Anniversary),
+src/domain/downgrader.rs:686:/// For parity with `CRCs_by_type`, `Next-Gen & Anniversary` entries are included
+src/domain/downgrader.rs:687:/// in both the `NextGen` and `Anniversary` bucket queries.
+src/domain/downgrader.rs:695:                DowngraderInstallStatus::Anniversary => mapping.status.counts_as_anniversary_crc(),
+src/domain/downgrader.rs:908:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/downgrader.rs:924:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/downgrader.rs:935:            Some(DowngraderInstallStatus::NextGenAnniversary)
+src/domain/downgrader.rs:949:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/downgrader.rs:963:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/downgrader.rs:978:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/downgrader.rs:989:        let anniversary_crcs = crcs_for_status(DowngraderInstallStatus::Anniversary);
+src/domain/downgrader.rs:1018:            DowngraderInstallStatus::Anniversary.as_reference_str(),
+src/domain/downgrader.rs:1019:            "Anniversary"
+src/domain/downgrader.rs:1022:            DowngraderInstallStatus::NextGenAnniversary.as_reference_str(),
+src/domain/downgrader.rs:1023:            "Next-Gen & Anniversary"
+src/domain/downgrader.rs:1140:                DowngraderInstallStatus::Anniversary,
+src/services/downgrader.rs:1840:        || detected_status != DowngraderInstallStatus::NextGenAnniversary
+src/services/downgrader.rs:1846:        DowngraderInstallStatus::Anniversary => DowngraderInstallStatus::Anniversary,
+src/services/downgrader.rs:1848:        _ => DowngraderInstallStatus::NextGenAnniversary,
+src/services/downgrader.rs:2254:            Some(DowngraderInstallStatus::NextGenAnniversary)
+src/services/downgrader.rs:2274:            Some(DowngraderInstallStatus::NextGenAnniversary)
+src/services/downgrader.rs:2285:            Some(DowngraderInstallStatus::Anniversary)
+src/domain/f4se.rs:56:    /// Fallout 4 Anniversary runtime.
+src/domain/f4se.rs:57:    Anniversary,
+src/domain/f4se.rs:66:    /// `NextGenAnniversary` is intentionally mapped to [`F4seGameTarget::Unknown`]
+src/domain/f4se.rs:74:            Fallout4InstallType::Anniversary => Self::Anniversary,
+src/domain/f4se.rs:76:            | Fallout4InstallType::NextGenAnniversary
+src/domain/f4se.rs:533:        F4seGameTarget::Anniversary => render_current_ngae_cell(facts, facts.supports_ae),
+src/domain/f4se.rs:660:        let row = render_f4se_dll_row(&facts, F4seGameTarget::Anniversary);
+src/domain/f4se.rs:692:            render_f4se_dll_row(&facts, F4seGameTarget::Anniversary)
+src/domain/f4se.rs:706:            F4seGameTarget::from_install_type(Fallout4InstallType::Anniversary),
+src/domain/f4se.rs:707:            F4seGameTarget::Anniversary
+src/domain/f4se.rs:710:            F4seGameTarget::from_install_type(Fallout4InstallType::NextGenAnniversary),
+src/domain/f4se.rs:765:        let row = render_f4se_dll_row(&facts, F4seGameTarget::Anniversary);
+src/domain/overview.rs:103:pub const ACTION_ARCHIVE_PATCHER_LABEL: &str = "Archive Patcher...";
+src/domain/overview.rs:1008:    /// Open the Archive Patcher utility.
+src/domain/overview.rs:1424:        | Fallout4InstallType::Anniversary
+src/domain/overview.rs:1425:        | Fallout4InstallType::NextGenAnniversary => StatusSeverity::Good,
+src/domain/overview.rs:1514:            vec!["Downgrade Manager...", "Archive Patcher..."]
+src/services/overview.rs:545:        | Fallout4InstallType::Anniversary
+src/services/overview.rs:546:        | Fallout4InstallType::NextGenAnniversary => StatusSeverity::Error,
+src/services/overview.rs:615:        || (actual == Fallout4InstallType::NextGenAnniversary
+src/services/overview.rs:618:                Fallout4InstallType::NextGen | Fallout4InstallType::Anniversary
+src/services/overview.rs:629:                    | Fallout4InstallType::Anniversary
+src/services/overview.rs:630:                    | Fallout4InstallType::NextGenAnniversary
+src/services/overview.rs:1362:            installation(Fallout4InstallType::Anniversary),
+src/services/overview.rs:1369:            Fallout4InstallType::Anniversary,
+src/services/overview.rs:1389:        assert_eq!(snapshot.top.version, Fallout4InstallType::Anniversary);
+src/services/overview_collector.rs:73:            BaseFileClassification::version("1.11.191.0", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:85:            BaseFileClassification::hash("720BB9C3", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:92:            BaseFileClassification::version("7.40.51.27", Fallout4InstallType::NextGenAnniversary),
+src/services/overview_collector.rs:104:            BaseFileClassification::version("0.0.7.7", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:120:            BaseFileClassification::version("1.11.137.0", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:128:            BaseFileClassification::hash("C867674F", Fallout4InstallType::Anniversary),
+src/services/overview_collector.rs:476:            } else if fact.install_type == Fallout4InstallType::NextGenAnniversary
+src/services/overview_collector.rs:479:                    Fallout4InstallType::NextGen | Fallout4InstallType::Anniversary
+src/services/overview_collector.rs:975:        if install_type == Fallout4InstallType::Anniversary {
+src/services/overview_collector.rs:981:                "Anniversary Edition requires Fallout4 - TexturesPatch.ba2, but it was not found.",
+src/services/overview_collector.rs:1844:            Fallout4InstallType::NextGenAnniversary

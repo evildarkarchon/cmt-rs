@@ -1,0 +1,76 @@
+src/main.rs:2496:        archives: &collected.archives,
+src/main.rs:2515:        .with_enabled_archives(&collected.archives);
+src/main.rs:3198:        archives: &collected.archives,
+src/main.rs:4288:        &snapshot.archives.rows,
+src/main.rs:4320:            &snapshot.archives.actions,
+src/main.rs:4329:            &snapshot.archives.actions,
+src/main.rs:7058:        let archive_labels = format_count_panel_rows(&snapshot.archives.rows)
+src/main.rs:7092:                &snapshot.archives.actions,
+src/domain/discovery.rs:122:    pub archives: Vec<ArchiveRecord>,
+src/domain/discovery.rs:141:            archives: Vec::new(),
+src/domain/discovery.rs:224:pub struct ArchiveRecord {
+src/domain/discovery.rs:237:impl ArchiveRecord {
+src/domain/discovery.rs:550:        installation.archives.push(ArchiveRecord::new(
+src/domain/discovery.rs:571:            installation.archives[0].format.as_reference_magic(),
+src/domain/discovery.rs:574:        assert_eq!(installation.archives[0].version.as_header_value(), 8);
+src/domain/overview.rs:14:            ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4InstallType,
+src/domain/overview.rs:676:    pub fn from_records(records: &[ArchiveRecord]) -> Self {
+src/domain/overview.rs:1304:    pub archives: ArchivePanelSummary,
+src/domain/overview.rs:1375:            snapshot.archives = ArchivePanelSummary::from_records(&installation.archives);
+src/domain/overview.rs:1412:            .chain(self.archives.actions.iter())
+src/domain/overview.rs:1508:        assert_eq!(snapshot.archives.title, "Archives (BA2)");
+src/domain/overview.rs:1510:        assert_eq!(row_labels(&snapshot.archives.rows), ARCHIVE_COUNT_LABELS);
+src/domain/overview.rs:1564:        installation.archives.push(ArchiveRecord::new(
+src/domain/overview.rs:1592:        assert_eq!(snapshot.archives.rows[1].value, 1);
+src/services/overview_collector.rs:18:        ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4IniFiles, Fallout4InstallType,
+src/services/overview_collector.rs:239:    pub archives: Vec<ArchiveRecord>,
+src/services/overview_collector.rs:1009:        enabled_archives: &BTreeSet<String>,
+src/services/overview_collector.rs:1011:    ) -> Vec<ArchiveRecord> {
+src/services/overview_collector.rs:1035:    ) -> ArchiveRecord {
+src/services/overview_collector.rs:1097:        ArchiveRecord {
+src/services/overview_collector.rs:1208:    enabled_archives: BTreeSet<String>,
+src/services/overview_collector.rs:1390:fn unreadable_archive(path: &Path, enabled: bool) -> ArchiveRecord {
+src/services/overview_collector.rs:1391:    ArchiveRecord {
+src/services/overview_collector.rs:1864:        assert_eq!(facts.archives, Vec::new());
+src/services/overview_collector.rs:1922:            .archives
+src/services/overview_collector.rs:1942:                .archives
+src/services/overview_collector.rs:2104:                .archives
+src/services/overview_collector.rs:2110:                .archives
+src/services/scanner.rs:20:            ArchiveRecord, Fallout4IniFiles, Fallout4Installation, IniDocument, ModuleRecord,
+src/services/scanner.rs:155:    pub enabled_archives: &'a [ArchiveRecord],
+src/services/scanner.rs:170:            enabled_archives: &[],
+src/services/scanner.rs:203:    pub const fn with_enabled_archives(mut self, enabled_archives: &'a [ArchiveRecord]) -> Self {
+src/services/scanner.rs:1004:        diagnostics.indexed_archive_count = index.archives.len();
+src/services/scanner.rs:1092:                    index.archives.insert(file_lower, indexed);
+src/services/scanner.rs:1266:        enabled_archives: &BTreeSet<String>,
+src/services/scanner.rs:1378:        enabled_archives: &BTreeSet<String>,
+src/services/scanner.rs:1593:    archives: BTreeMap<String, ModIndexedPath>,
+src/services/scanner.rs:1877:fn enabled_archive_keys(records: &[ArchiveRecord]) -> BTreeSet<String> {
+src/services/scanner.rs:2595:        let enabled_archives = vec![ArchiveRecord::new(
+src/services/overview.rs:14:            ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4InstallType,
+src/services/overview.rs:54:const ARCHIVE_LIMIT_SOLUTION: &str = "Archives can be unpacked or merged to reduce your total.\nNote: Do not mix texture and non-texture archives when merging.\nUnpacking is only suggested for small non-texture archives for performance reasons.\nYou can use Unpackrr to quickly unpack small archives:";
+src/services/overview.rs:73:    pub archives: &'a [ArchiveRecord],
+src/services/overview.rs:107:        let archives = ArchivePanelSummary::from_records(input.archives);
+src/services/overview.rs:115:        append_archive_problems(input.archives, effective_install_type, &mut problems);
+src/services/overview.rs:719:    records: &[ArchiveRecord],
+src/services/overview.rs:800:    record: &ArchiveRecord,
+src/services/overview.rs:893:    archives: &ArchivePanelSummary,
+src/services/overview.rs:1105:        archives: &'a [ArchiveRecord],
+src/services/overview.rs:1244:            ArchiveRecord::new(
+src/services/overview.rs:1250:            ArchiveRecord::new(
+src/services/overview.rs:1292:        assert_eq!(row_value(&snapshot.archives.rows, ARCHIVE_GENERAL_LABEL), 1);
+src/services/overview.rs:1293:        assert_eq!(row_value(&snapshot.archives.rows, ARCHIVE_TEXTURE_LABEL), 1);
+src/services/overview.rs:1295:            row_value(&snapshot.archives.rows, ARCHIVE_OLD_GEN_VERSION_LABEL),
+src/services/overview.rs:1323:        let archives = vec![ArchiveRecord::new(
+src/services/overview.rs:1347:            row_value(&snapshot.archives.rows, ARCHIVE_NEXT_GEN_VERSION_LABEL),
+src/services/overview.rs:1515:            ArchiveRecord::unreadable("C:/Games/Fallout 4/Data/Unreadable.ba2"),
+src/services/overview.rs:1516:            ArchiveRecord::new(
+src/services/overview.rs:1522:            ArchiveRecord::new(
+src/services/overview.rs:1528:            ArchiveRecord::new(
+src/services/overview.rs:1565:            row_value(&snapshot.archives.rows, COUNT_UNREADABLE_LABEL),
+src/services/overview.rs:1599:        let archives = vec![ArchiveRecord::new(
+src/services/overview.rs:1646:                ArchiveRecord::new(
+src/services/overview.rs:1688:        assert_eq!(row_value(&snapshot.archives.rows, COUNT_TOTAL_LABEL), 257);
+src/services/overview.rs:1850:            archives: &archives,
+src/services/overview.rs:1896:                ArchiveRecord::new(
+src/services/overview.rs:1920:            row_value(&snapshot.archives.rows, ARCHIVE_GENERAL_LABEL),

@@ -1,0 +1,126 @@
+Diff in /mnt/j/cmt-rs/src/main.rs:490:
+                 apply_current_downgrader_state(&window, &controller);
+                 if was_run_completion {
+                     let app_handle = app.upgrade();
+[31m-                    let overview_settings = overview_settings_for_downgrader_completion(
+(B[m[31m-                        &shared_settings_snapshot,
+(B[m[31m-                    );
+(B[m[32m+                    let overview_settings =
+(B[m[32m+                        overview_settings_for_downgrader_completion(&shared_settings_snapshot);
+(B[m                     schedule_downgrader_completion_refresh(
+                         app_handle.as_ref(),
+                         &window,
+Diff in /mnt/j/cmt-rs/src/main.rs:2061:
+ 
+ fn hide_downgrader_about_dialog(window: &DowngraderWindow) {
+     window.set_about_dialog_visible(false);
+[31m-    tracing::debug!(event = "s09-downgrader-about-hidden", "Downgrader About dialog hidden");
+(B[m[32m+    tracing::debug!(
+(B[m[32m+        event = "s09-downgrader-about-hidden",
+(B[m[32m+        "Downgrader About dialog hidden"
+(B[m[32m+    );
+(B[m }
+ 
+ fn close_downgrader_modal(
+Diff in /mnt/j/cmt-rs/src/main.rs:4613:
+             ABOUT_BUTTON_LABEL, ABOUT_DOWNGRADING_BODY, ABOUT_DOWNGRADING_TITLE,
+             CURRENT_CREATION_KIT_GROUP_LABEL, CURRENT_GAME_GROUP_LABEL,
+             DELETE_PATCHES_CHECKBOX_LABEL, DESIRED_VERSION_GROUP_LABEL, DOWNGRADER_MODAL_HEIGHT,
+[31m-            DOWNGRADER_MODAL_TITLE, DOWNGRADER_MODAL_WIDTH, DowngraderLogLevel,
+(B[m[31m-            DowngraderProgress, INITIAL_LOG_LINE, KEEP_BACKUPS_CHECKBOX_LABEL,
+(B[m[31m-            OPTIONS_GROUP_LABEL, PATCH_ALL_BUTTON_LABEL, TARGET_NEXT_GEN_LABEL,
+(B[m[31m-            TARGET_OLD_GEN_LABEL,
+(B[m[32m+            DOWNGRADER_MODAL_TITLE, DOWNGRADER_MODAL_WIDTH, DowngraderLogLevel, DowngraderProgress,
+(B[m[32m+            INITIAL_LOG_LINE, KEEP_BACKUPS_CHECKBOX_LABEL, OPTIONS_GROUP_LABEL,
+(B[m[32m+            PATCH_ALL_BUTTON_LABEL, TARGET_NEXT_GEN_LABEL, TARGET_OLD_GEN_LABEL,
+(B[m         },
+         f4se::{
+             F4SE_HEADING, F4SE_LEGEND_TEXT, F4SE_LOADING_TEXT, F4SE_TABLE_COLUMNS, F4seDllFacts,
+Diff in /mnt/j/cmt-rs/src/main.rs:6199:
+         }
+     }
+ 
+[31m-    fn s09_runtime_status_snapshot(request_id: u64) -> services::downgrader::DowngraderStatusSnapshot {
+(B[m[32m+    fn s09_runtime_status_snapshot(
+(B[m[32m+        request_id: u64,
+(B[m[32m+    ) -> services::downgrader::DowngraderStatusSnapshot {
+(B[m         services::downgrader::DowngraderStatusSnapshot {
+             request_id,
+             game_root: PathBuf::from("Game"),
+Diff in /mnt/j/cmt-rs/src/main.rs:6227:
+         }
+     }
+ 
+[31m-    fn s09_runtime_execution_result(request_id: u64) -> services::downgrader::DowngraderExecutionResult {
+(B[m[32m+    fn s09_runtime_execution_result(
+(B[m[32m+        request_id: u64,
+(B[m[32m+    ) -> services::downgrader::DowngraderExecutionResult {
+(B[m         services::downgrader::DowngraderExecutionResult {
+             request_id,
+             game_root: PathBuf::from("Game"),
+Diff in /mnt/j/cmt-rs/src/main.rs:6256:
+             )
+             .expect("open should request status");
+         assert_eq!(
+[31m-            controller.status_loaded(request.request_id, s09_runtime_status_snapshot(request.request_id)),
+(B[m[32m+            controller.status_loaded(
+(B[m[32m+                request.request_id,
+(B[m[32m+                s09_runtime_status_snapshot(request.request_id)
+(B[m[32m+            ),
+(B[m             DowngraderTransitionResult::Applied
+         );
+         controller
+Diff in /mnt/j/cmt-rs/src/main.rs:6268:
+ 
+         assert_eq!(projection.title, ABOUT_DOWNGRADING_TITLE);
+         assert_eq!(projection.body, ABOUT_DOWNGRADING_BODY);
+[31m-        assert!(projection.body.contains("Simple Downgrader's backups will also be used."));
+(B[m[32m+        assert!(
+(B[m[32m+            projection
+(B[m[32m+                .body
+(B[m[32m+                .contains("Simple Downgrader's backups will also be used.")
+(B[m[32m+        );
+(B[m         assert!(DOWNGRADER_SLINT.contains("in-out property <bool> about-dialog-visible"));
+         assert!(DOWNGRADER_SLINT.contains("in-out property <string> about-title"));
+         assert!(DOWNGRADER_SLINT.contains("in-out property <string> about-body"));
+Diff in /mnt/j/cmt-rs/src/main.rs:6339:
+         };
+         assert!(!run_request.confirmed_plan_digest.is_empty());
+ 
+[31m-        assert_eq!(controller.request_close(), DowngraderTransitionResult::CloseBlocked);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.request_close(),
+(B[m[32m+            DowngraderTransitionResult::CloseBlocked
+(B[m[32m+        );
+(B[m         assert!(project_downgrader_state(&controller).close_blocked);
+         assert_eq!(
+             controller.handle_worker_event(WorkerEvent::new(
+Diff in /mnt/j/cmt-rs/src/main.rs:6362:
+         );
+         let projection = project_downgrader_state(&controller);
+         assert_eq!(projection.progress_percent, 37.5);
+[31m-        assert!(projection
+(B[m[31m-            .log_rows
+(B[m[31m-            .iter()
+(B[m[31m-            .any(|row| row.message.as_str() == "Downloading patch."));
+(B[m[32m+        assert!(
+(B[m[32m+            projection
+(B[m[32m+                .log_rows
+(B[m[32m+                .iter()
+(B[m[32m+                .any(|row| row.message.as_str() == "Downloading patch.")
+(B[m[32m+        );
+(B[m 
+         assert_eq!(
+             controller.handle_worker_event(WorkerEvent::completed(
+Diff in /mnt/j/cmt-rs/src/main.rs:6377:
+             )),
+             DowngraderTransitionResult::StaleIgnored
+         );
+[31m-        assert_eq!(controller.phase(), app::downgrader_controller::DowngraderControllerPhase::Running);
+(B[m[32m+        assert_eq!(
+(B[m[32m+            controller.phase(),
+(B[m[32m+            app::downgrader_controller::DowngraderControllerPhase::Running
+(B[m[32m+        );
+(B[m 
+         assert_eq!(
+             controller.spawn_failed(

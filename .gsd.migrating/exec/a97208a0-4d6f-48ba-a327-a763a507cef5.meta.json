@@ -1,0 +1,18 @@
+{
+  "id": "a97208a0-4d6f-48ba-a327-a763a507cef5",
+  "runtime": "bash",
+  "purpose": "T06 final cargo check quiet",
+  "script_chars": 35,
+  "started_at": "2026-05-19T03:38:59.868Z",
+  "finished_at": "2026-05-19T03:39:33.384Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 33516,
+  "stdout_bytes": 0,
+  "stderr_bytes": 471,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a97208a0-4d6f-48ba-a327-a763a507cef5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a97208a0-4d6f-48ba-a327-a763a507cef5.stderr"
+}

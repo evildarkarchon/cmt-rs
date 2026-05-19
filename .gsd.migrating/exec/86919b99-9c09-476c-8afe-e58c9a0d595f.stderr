@@ -1,0 +1,29 @@
+src/services/downgrader.rs:814:14: warning: associated function `with_patch_integrity_manifest` is never used
+src/services/downgrader.rs:2537:9: warning: variants `SymlinkFile` and `ReparseFile` are never constructed
+warning: `cmt-rs` (bin "cmt-rs" test) generated 2 warnings
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.24s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-677af665d081adb5)
+
+thread 'services::downgrader::tests::downgrader_executor_preserves_source_backup_after_download_or_apply_failures' (156232) panicked at src/services/downgrader.rs:3675:9:
+assertion failed: !fs.has_file("Game/Fallout4.exe")
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'services::downgrader::tests::downgrader_executor_logs_permission_failures_and_continues_safely' (156231) panicked at src/services/downgrader.rs:3715:9:
+assertion failed: result.rows[0].diagnostics.iter().any(|message|
+        message.contains("permission was denied"))
+
+thread 'services::downgrader::tests::downgrader_executor_reuses_existing_patch_and_does_not_download_for_skipped_rows' (156234) panicked at src/services/downgrader.rs:3637:9:
+assertion `left == right` failed
+  left: Failed
+ right: Patched
+
+thread 'services::downgrader::tests::downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups' (156233) panicked at src/services/downgrader.rs:3544:9:
+assertion `left == right` failed
+  left: [Write("Game/Fallout4.exe")]
+ right: [Remove("Game/Fallout4.exe"), Copy { from: "Game/Fallout4_upgradeBackup.exe", to: "Game/Fallout4.exe" }]
+
+thread 'services::downgrader::tests::downgrader_executor_deletes_invalid_backups_downloads_applies_and_cleans_deltas' (156230) panicked at src/services/downgrader.rs:3594:9:
+assertion `left == right` failed
+  left: Failed
+ right: Patched
+error: test failed, to rerun pass `--bin cmt-rs`

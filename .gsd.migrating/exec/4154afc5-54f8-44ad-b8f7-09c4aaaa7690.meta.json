@@ -1,0 +1,18 @@
+{
+  "id": "4154afc5-54f8-44ad-b8f7-09c4aaaa7690",
+  "runtime": "bash",
+  "purpose": "find WritableFilesystem impls needing write_byte_range",
+  "script_chars": 339,
+  "started_at": "2026-05-19T01:56:56.746Z",
+  "finished_at": "2026-05-19T01:56:56.981Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 235,
+  "stdout_bytes": 539,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4154afc5-54f8-44ad-b8f7-09c4aaaa7690.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4154afc5-54f8-44ad-b8f7-09c4aaaa7690.stderr"
+}

@@ -1,0 +1,18 @@
+## src/workers/mod.rs
+25:     RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,
+56:     pub fn spawn_blocking_task<S, F>(
+190: pub struct WorkerTaskContext<S>
+227:     pub fn emit_payload(
+237:     pub fn emit_progress(&self, progress: WorkerProgress) -> WorkerHandoffResult {
+336:         let sink = RecordingEventSink::new();
+343:             .spawn_blocking_task(task, sink.clone(), move |context| {
+349:                     .emit_progress(
+395:         let sink = RecordingEventSink::new();
+399:             .spawn_blocking_task(task, sink.clone(), move |context| {
+432:         let sink = RecordingEventSink::new();
+436:             .spawn_blocking_task(task, sink.clone(), |_context| {
+461:         let sink = RecordingEventSink::new();
+464:         let error = match runtime.spawn_blocking_task(task, sink, |_context| {
+## src/workers/events.rs
+1107:             workers::{RecordingEventSink, WorkerEventSink},
+1140:         let sink = RecordingEventSink::new();

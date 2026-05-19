@@ -1,0 +1,18 @@
+{
+  "id": "6d463274-2229-4b02-9fc3-1e43d8dbee4c",
+  "runtime": "bash",
+  "purpose": "timeout-recovery settings tests after downgrader persistence seam",
+  "script_chars": 19,
+  "started_at": "2026-05-18T22:57:26.113Z",
+  "finished_at": "2026-05-18T22:58:05.969Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 39856,
+  "stdout_bytes": 3200,
+  "stderr_bytes": 736,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6d463274-2229-4b02-9fc3-1e43d8dbee4c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6d463274-2229-4b02-9fc3-1e43d8dbee4c.stderr"
+}

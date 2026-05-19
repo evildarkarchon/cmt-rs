@@ -1,0 +1,9 @@
+src/platform/filesystem.rs
+192: fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()>;
+354: impl WritableFilesystem for RealFilesystem {
+365: fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()> {
+src/services/archive_patcher.rs
+1927: impl WritableFilesystem for FakeFilesystem {
+1946: fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()> {
+src/services/downgrader.rs
+3468: impl WritableFilesystem for RecordingWritableFilesystem {

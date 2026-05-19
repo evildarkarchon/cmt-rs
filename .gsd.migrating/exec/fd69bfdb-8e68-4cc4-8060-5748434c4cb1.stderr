@@ -1,0 +1,66 @@
+
+thread 'rustc' (176617) panicked at /rustc-dev/59807616e1fa2540724bfbac14d7976d7e4a3860/library/core/src/slice/index.rs:1031:55:
+slice index starts at 13 but ends at 11
+stack backtrace:
+   0:     0x741e8299314b - <<std[e28293b1aa0f68bd]::sys::backtrace::BacktraceLock>::print::DisplayBacktrace as core[c1f1a4ba060b9bfa]::fmt::Display>::fmt
+   1:     0x741e8301f408 - core[c1f1a4ba060b9bfa]::fmt::write
+   2:     0x741e845683b6 - <std[e28293b1aa0f68bd]::sys::stdio::unix::Stderr as std[e28293b1aa0f68bd]::io::Write>::write_fmt
+   3:     0x741e82969238 - std[e28293b1aa0f68bd]::panicking::default_hook::{closure#0}
+   4:     0x741e829865b3 - std[e28293b1aa0f68bd]::panicking::default_hook
+   5:     0x741e8195cc30 - std[e28293b1aa0f68bd]::panicking::update_hook::<alloc[fdfd2bd8633a6659]::boxed::Box<rustc_driver_impl[e4ca9dd5dd6cf2a8]::install_ice_hook::{closure#1}>>::{closure#0}
+   6:     0x741e82986892 - std[e28293b1aa0f68bd]::panicking::panic_with_hook
+   7:     0x741e829692f8 - std[e28293b1aa0f68bd]::panicking::panic_handler::{closure#0}
+   8:     0x741e82960029 - std[e28293b1aa0f68bd]::sys::backtrace::__rust_end_short_backtrace::<std[e28293b1aa0f68bd]::panicking::panic_handler::{closure#0}, !>
+   9:     0x741e8296ad5d - __rustc[b7974e8690430dd9]::rust_begin_unwind
+  10:     0x741e7f6de82c - core[c1f1a4ba060b9bfa]::panicking::panic_fmt
+  11:     0x741e8070875d - core[c1f1a4ba060b9bfa]::slice::index::slice_index_fail
+  12:     0x741e8127fae5 - <annotate_snippets[7d52211d2f32161f]::renderer::styled_buffer::StyledBuffer>::replace
+  13:     0x741e843337b7 - annotate_snippets[7d52211d2f32161f]::renderer::render::render
+  14:     0x741e84581e06 - <rustc_errors[795cd5cf46ddce51]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter>::emit_messages_default
+  15:     0x741e84579420 - <rustc_errors[795cd5cf46ddce51]::annotate_snippet_emitter_writer::AnnotateSnippetEmitter as rustc_errors[795cd5cf46ddce51]::emitter::Emitter>::emit_diagnostic
+  16:     0x741e8457c976 - <rustc_errors[795cd5cf46ddce51]::json::Diagnostic>::from_errors_diagnostic
+  17:     0x741e8457c0ef - <rustc_errors[795cd5cf46ddce51]::json::JsonEmitter as rustc_errors[795cd5cf46ddce51]::emitter::Emitter>::emit_diagnostic
+  18:     0x741e84571661 - <rustc_errors[795cd5cf46ddce51]::DiagCtxtInner>::emit_diagnostic::{closure#3}
+  19:     0x741e8456f440 - rustc_interface[c8170c4b7b680ee8]::callbacks::track_diagnostic::<core[c1f1a4ba060b9bfa]::option::Option<rustc_span[e3c9a1967c4921fd]::ErrorGuaranteed>>
+  20:     0x741e8456e4ee - <rustc_errors[795cd5cf46ddce51]::DiagCtxtInner>::emit_diagnostic
+  21:     0x741e8456e39d - <rustc_errors[795cd5cf46ddce51]::DiagCtxtHandle>::emit_diagnostic
+  22:     0x741e8456e25b - <() as rustc_errors[795cd5cf46ddce51]::diagnostic::EmissionGuarantee>::emit_producing_guarantee
+  23:     0x741e838a7656 - rustc_middle[9956b31dc9b62104]::lint::diag_lint_level::diag_lint_level_impl
+  24:     0x741e83a2ee65 - <rustc_passes[6bf4acf08ac4e6d9]::dead::DeadVisitor>::lint_at_single_level
+  25:     0x741e83618254 - <rustc_passes[6bf4acf08ac4e6d9]::dead::DeadVisitor>::warn_multiple
+  26:     0x741e836172fd - rustc_passes[6bf4acf08ac4e6d9]::dead::check_mod_deathness
+  27:     0x741e83e4d34e - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::DefaultCache<rustc_span[e3c9a1967c4921fd]::def_id::LocalModDefId, rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 0usize]>>, true>
+  28:     0x741e83e49bbd - rustc_query_impl[b21371cac9e22a84]::query_impl::check_mod_deathness::execute_query_incr::__rust_end_short_backtrace
+  29:     0x741e83e49ca4 - rustc_interface[c8170c4b7b680ee8]::passes::analysis::{closure#0}::{closure#0}::{closure#1}
+  30:     0x741e83e48ed7 - rustc_data_structures[2c167692117eb14d]::sync::parallel::par_fns
+  31:     0x741e83e48e66 - rustc_interface[c8170c4b7b680ee8]::passes::analysis::{closure#0}::{closure#0}
+  32:     0x741e83e48ed7 - rustc_data_structures[2c167692117eb14d]::sync::parallel::par_fns
+  33:     0x741e83136ad7 - rustc_interface[c8170c4b7b680ee8]::passes::analysis
+  34:     0x741e845ec447 - rustc_query_impl[b21371cac9e22a84]::execution::try_execute_query::<rustc_middle[9956b31dc9b62104]::query::caches::SingleCache<rustc_middle[9956b31dc9b62104]::query::erase::ErasedData<[u8; 0usize]>>, true>
+  35:     0x741e845ebdb4 - rustc_query_impl[b21371cac9e22a84]::query_impl::analysis::execute_query_incr::__rust_end_short_backtrace
+  36:     0x741e8425632d - rustc_interface[c8170c4b7b680ee8]::interface::run_compiler::<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}
+  37:     0x741e8422663e - std[e28293b1aa0f68bd]::sys::backtrace::__rust_begin_short_backtrace::<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_with_globals<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_pool_with_globals<rustc_interface[c8170c4b7b680ee8]::interface::run_compiler<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>
+  38:     0x741e84226ca0 - <std[e28293b1aa0f68bd]::thread::lifecycle::spawn_unchecked<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_with_globals<rustc_interface[c8170c4b7b680ee8]::util::run_in_thread_pool_with_globals<rustc_interface[c8170c4b7b680ee8]::interface::run_compiler<(), rustc_driver_impl[e4ca9dd5dd6cf2a8]::run_compiler::{closure#0}>::{closure#1}, ()>::{closure#0}, ()>::{closure#0}::{closure#0}, ()>::{closure#1} as core[c1f1a4ba060b9bfa]::ops::function::FnOnce<()>>::call_once::{shim:vtable#0}
+  39:     0x741e84227b2c - <std[e28293b1aa0f68bd]::sys::thread::unix::Thread>::new::thread_start
+  40:     0x741e7da9caa4 - <unknown>
+  41:     0x741e7db29c6c - <unknown>
+  42:                0x0 - <unknown>
+
+error: the compiler unexpectedly panicked. This is a bug
+
+note: we would appreciate a bug report: https://github.com/rust-lang/rust/issues/new?labels=C-bug%2C+I-ICE%2C+T-compiler&template=ice.md
+
+note: rustc 1.95.0 (59807616e 2026-04-14) running on x86_64-unknown-linux-gnu
+
+note: compiler flags: -C embed-bitcode=no -C debuginfo=2 -C incremental=[REDACTED]
+
+note: some of the compiler flags provided by cargo are hidden
+
+query stack during panic:
+#0 [check_mod_deathness] checking deathness of variables in module `services::downgrader::tests`
+#1 [analysis] running analysis passes on crate `cmt_rs`
+end of query stack
+error: could not compile `cmt-rs` (bin "cmt-rs" test)
+
+Caused by:
+  process didn't exit successfully: `/home/evild/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rustc --crate-name cmt_rs --edition=2024 src/main.rs --error-format=json --json=diagnostic-rendered-ansi,artifacts,future-incompat --emit=dep-info,link -C embed-bitcode=no -C debuginfo=2 --test --check-cfg 'cfg(docsrs,test)' --check-cfg 'cfg(feature, values())' -C metadata=3a302ecaabb3ade6 -C extra-filename=-677af665d081adb5 --out-dir /mnt/j/cmt-rs/target/debug/deps -C incremental=/mnt/j/cmt-rs/target/debug/incremental -L dependency=/mnt/j/cmt-rs/target/debug/deps --extern anyhow=/mnt/j/cmt-rs/target/debug/deps/libanyhow-81e0f801a5d79612.rlib --extern arboard=/mnt/j/cmt-rs/target/debug/deps/libarboard-290f5840b23d4fdc.rlib --extern crc32fast=/mnt/j/cmt-rs/target/debug/deps/libcrc32fast-b2a67b3a037cfcf4.rlib --extern directories=/mnt/j/cmt-rs/target/debug/deps/libdirectories-cf96c899867e8500.rlib --extern pelite=/mnt/j/cmt-rs/target/debug/deps/libpelite-5a73c180acb3068e.rlib --extern reqwest=/mnt/j/cmt-rs/target/debug/deps/libreqwest-3f707da00ecf282f.rlib --extern serde=/mnt/j/cmt-rs/target/debug/deps/libserde-421b923b7a2c2cd3.rlib --extern serde_json=/mnt/j/cmt-rs/target/debug/deps/libserde_json-ca5091d7e4a55b60.rlib --extern sha2=/mnt/j/cmt-rs/target/debug/deps/libsha2-02d23781d7459a81.rlib --extern slint=/mnt/j/cmt-rs/target/debug/deps/libslint-bae0ddccad6e13e0.rlib --extern sysinfo=/mnt/j/cmt-rs/target/debug/deps/libsysinfo-b1c19522d352b99f.rlib --extern thiserror=/mnt/j/cmt-rs/target/debug/deps/libthiserror-3a33a036cbd573ae.rlib --extern tokio=/mnt/j/cmt-rs/target/debug/deps/libtokio-fc86a12c53b58545.rlib --extern toml=/mnt/j/cmt-rs/target/debug/deps/libtoml-0ceeebc90087f684.rlib --extern tracing=/mnt/j/cmt-rs/target/debug/deps/libtracing-c60ef387cd6a2adb.rlib --extern tracing_subscriber=/mnt/j/cmt-rs/target/debug/deps/libtracing_subscriber-122a5b5b07b5e2a7.rlib --extern vcdiff_decoder=/mnt/j/cmt-rs/target/debug/deps/libvcdiff_decoder-554d0c3261175dad.rlib --extern walkdir=/mnt/j/cmt-rs/target/debug/deps/libwalkdir-f83c702250a7b97f.rlib -L native=/mnt/j/cmt-rs/target/debug/build/aws-lc-sys-e380ed0b203560c5/out -L native=/usr/lib/x86_64-linux-gnu` (exit status: 101)

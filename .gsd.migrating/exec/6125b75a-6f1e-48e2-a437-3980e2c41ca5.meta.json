@@ -1,0 +1,18 @@
+{
+  "id": "6125b75a-6f1e-48e2-a437-3980e2c41ca5",
+  "runtime": "bash",
+  "purpose": "format after archive patcher executor changes",
+  "script_chars": 9,
+  "started_at": "2026-05-19T01:57:58.869Z",
+  "finished_at": "2026-05-19T01:57:59.529Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 660,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6125b75a-6f1e-48e2-a437-3980e2c41ca5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6125b75a-6f1e-48e2-a437-3980e2c41ca5.stderr"
+}

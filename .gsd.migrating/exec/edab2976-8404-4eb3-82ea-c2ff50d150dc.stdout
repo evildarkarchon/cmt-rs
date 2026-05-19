@@ -1,0 +1,17 @@
+src/services/downgrader.rs:2537:9: warning: variants `SymlinkFile` and `ReparseFile` are never constructed
+warning: `cmt-rs` (bin "cmt-rs" test) generated 1 warning
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 8.14s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-677af665d081adb5)
+
+running 8 tests
+test services::downgrader::tests::downgrader_service_plan_rejects_escaping_managed_paths_before_output ... ok
+test services::downgrader::tests::downgrader_service_plan_rejects_missing_and_unsafe_roots ... ok
+test services::downgrader::tests::downgrader_service_plan_status_classifies_rows_and_default_target ... ok
+test services::downgrader::tests::downgrader_service_plan_marks_missing_unknown_obsolete_and_anniversary_rows_safely ... ok
+test services::downgrader::tests::downgrader_service_plan_builds_restore_from_valid_desired_backup ... ok
+test services::downgrader::tests::downgrader_service_plan_fails_row_when_current_or_backup_cannot_be_read ... ok
+test services::downgrader::tests::downgrader_service_plan_skips_reference_rows_in_order ... ok
+test services::downgrader::tests::downgrader_service_plan_builds_invalid_backup_cleanup_download_patch_and_optional_cleanup ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 316 filtered out; finished in 0.01s
+

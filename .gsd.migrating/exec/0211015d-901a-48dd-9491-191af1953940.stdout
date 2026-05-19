@@ -1,0 +1,30 @@
+
+running 21 tests
+................. 17/21
+services::tools::tests::s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred --- FAILED
+domain::tools::tests::s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows --- FAILED
+..
+failures:
+
+---- services::tools::tests::s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred stdout ----
+
+thread 'services::tools::tests::s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred' (198332) panicked at src/services/tools.rs:1010:9:
+assertion `left == right` failed
+  left: Succeeded
+ right: Rejected(DisabledUtility)
+
+---- domain::tools::tests::s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows stdout ----
+
+thread 'domain::tools::tests::s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows' (198324) panicked at src/domain/tools.rs:770:9:
+assertion `left == right` failed
+  left: [("Downgrade Manager", ToolInternalUtility { key: "downgrade_manager", status_text: "Open the Downgrade Manager workflow." }), ("Archive Patcher", ToolInternalUtility { key: "archive_patcher", status_text: "Open the Archive Patcher workflow." })]
+ right: [("Downgrade Manager", ToolInternalUtility { key: "downgrade_manager", status_text: "Open the Downgrade Manager workflow." })]
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+
+failures:
+    domain::tools::tests::s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows
+    services::tools::tests::s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred
+
+test result: FAILED. 19 passed; 2 failed; 0 ignored; 0 measured; 343 filtered out; finished in 0.02s
+

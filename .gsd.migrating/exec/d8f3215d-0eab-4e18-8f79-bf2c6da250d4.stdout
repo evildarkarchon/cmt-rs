@@ -1,0 +1,7 @@
+## M001 validation gates
+
+--  --
+FAIL  exit= (s)
+stdout tail:
+stderr tail:
+environment: line 8: : command not found

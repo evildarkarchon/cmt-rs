@@ -1,0 +1,12 @@
+NG-to-OG-Archive2.exe.xdelta target_size 63488 windows 1
+NG-to-OG-Archive2Interop.dll.xdelta target_size 513024 windows 1
+NG-to-OG-CreationKit.exe.xdelta target_size 80361352 windows 10
+NG-to-OG-Fallout4.exe.xdelta target_size 65503104 windows 8
+NG-to-OG-Fallout4Launcher.exe.xdelta target_size 4522496 windows 1
+NG-to-OG-steam_api64.dll.xdelta target_size 206760 windows 1
+OG-to-NG-Archive2.exe.xdelta target_size 62976 windows 1
+OG-to-NG-Archive2Interop.dll.xdelta target_size 470016 windows 1
+OG-to-NG-CreationKit.exe.xdelta target_size 68193792 windows 9
+OG-to-NG-Fallout4.exe.xdelta target_size 52552472 windows 7
+OG-to-NG-Fallout4Launcher.exe.xdelta target_size 4520448 windows 1
+OG-to-NG-steam_api64.dll.xdelta target_size 298384 windows 1

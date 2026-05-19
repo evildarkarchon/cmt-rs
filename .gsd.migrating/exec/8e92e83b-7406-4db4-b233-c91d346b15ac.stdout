@@ -1,0 +1,227 @@
+
+### src/domain/downgrader.rs (1195 lines)
+19: pub const CURRENT_GAME_GROUP_LABEL: &str = "Current Game";
+21: pub const CURRENT_CREATION_KIT_GROUP_LABEL: &str = "Current Creation Kit";
+32: pub const KEEP_BACKUPS_CHECKBOX_LABEL: &str = "Keep Backups";
+34: pub const DELETE_PATCHES_CHECKBOX_LABEL: &str = "Delete Patches";
+36: pub const PATCH_ALL_BUTTON_LABEL: &str = "Patch\n All";
+65: pub enum DowngraderLogLevel {
+87: pub enum DowngraderInstallStatus {
+144: pub enum DowngraderTarget {
+223: pub enum DowngraderFileGroup {
+224: /// File belongs in the `Current Game` group.
+226: /// File belongs in the `Current Creation Kit` group.
+242: pub struct DowngraderCrcMapping {
+257: pub struct DowngraderFileDefinition {
+290: pub struct DowngraderStatusRow {
+310: pub struct DowngraderOptionsSnapshot {
+332: pub enum DowngraderPlanAction {
+375: pub enum DowngraderPlanStepKind {
+438: pub struct DowngraderPlanStep {
+457: pub struct DowngraderPlanRow {
+522: pub struct DowngraderExecutionLogRow {
+546: pub struct DowngraderProgress {
+824: assert_eq!(CURRENT_GAME_GROUP_LABEL, "Current Game");
+825: assert_eq!(CURRENT_CREATION_KIT_GROUP_LABEL, "Current Creation Kit");
+830: assert_eq!(KEEP_BACKUPS_CHECKBOX_LABEL, "Keep Backups");
+831: assert_eq!(DELETE_PATCHES_CHECKBOX_LABEL, "Delete Patches");
+832: assert_eq!(PATCH_ALL_BUTTON_LABEL, "Patch\n All");
+1035: assert_eq!(DowngraderFileGroup::Game.as_reference_str(), "Current Game");
+1038: "Current Creation Kit"
+
+### src/services/downgrader.rs (3170 lines)
+35: filesystem::{Filesystem, WritableFilesystem},
+55: pub struct DowngraderStatusRequest<'a> {
+74: pub struct DowngraderPlanRequest<'a> {
+100: pub enum DowngraderServiceError {
+138: pub enum DowngraderDownloadError {
+193: pub trait DeltaDownloader {
+204: pub struct ReqwestDeltaDownloader {
+209: impl ReqwestDeltaDownloader {
+225: impl DeltaDownloader for ReqwestDeltaDownloader {
+288: pub enum DowngraderDeltaApplyError {
+324: pub trait DeltaApplier {
+335: pub struct VcdiffDeltaApplier;
+337: impl DeltaApplier for VcdiffDeltaApplier {
+354: pub struct DowngraderExecutionRequest<'a> {
+380: pub enum DowngraderExecutionOutcome {
+391: pub struct DowngraderExecutionProgressEvent {
+404: pub struct DowngraderExecutionFileResult {
+419: pub struct DowngraderExecutionResult {
+438: pub struct DowngraderStatusDiagnostic {
+447: pub struct DowngraderStatusFile {
+490: pub struct DowngraderStatusSnapshot {
+519: pub struct DowngraderBackupProbe {
+546: pub struct DowngraderPreviewPlanRow {
+588: pub struct DowngraderPreviewPlanCounts {
+603: pub struct DowngraderPreviewPlan {
+670: pub struct DowngraderService<'a, F: Filesystem + ?Sized> {
+1138: impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
+1151: D: DeltaDownloader + ?Sized,
+1152: A: DeltaApplier + ?Sized,
+1244: D: DeltaDownloader + ?Sized,
+... 17 more matches
+
+### src/app/downgrader_controller.rs (1763 lines)
+7: //! typed [`DowngraderWorkerPayload`](crate::workers::DowngraderWorkerPayload)
+23: DowngraderWorkerPayload, DowngraderWorkerStage, WorkerEvent, WorkerPayload,
+61: pub enum DowngraderControllerPhase {
+83: pub enum DowngraderTransitionResult {
+105: pub enum DowngraderWorkerRequestKind {
+134: pub struct DowngraderStatusWorkerRequest {
+163: pub struct DowngraderPlanWorkerRequest {
+192: pub struct DowngraderRunWorkerRequest {
+225: pub enum DowngraderPatchWorkerRequest {
+234: pub struct DowngraderController {
+558: /// Applies a Keep Backups checkbox change and invalidates any visible confirmation plan.
+577: /// Applies a Delete Patches checkbox change and invalidates any visible confirmation plan.
+931: payload: DowngraderWorkerPayload,
+934: DowngraderWorkerPayload::StatusLoaded {
+938: DowngraderWorkerPayload::PlanReady { request_id, plan } => {
+941: DowngraderWorkerPayload::LogRow { request_id, row } => {
+944: DowngraderWorkerPayload::Progress {
+948: DowngraderWorkerPayload::RunCompleted { request_id, result } => {
+951: DowngraderWorkerPayload::SafeFailure {
+1101: WorkerPayload::Downgrader(DowngraderWorkerPayload::status_loaded(request_id, snapshot))
+1109: WorkerPayload::Downgrader(DowngraderWorkerPayload::plan_ready(request_id, plan))
+1117: WorkerPayload::Downgrader(DowngraderWorkerPayload::log_row(request_id, row))
+1125: WorkerPayload::Downgrader(DowngraderWorkerPayload::progress(request_id, progress))
+1133: WorkerPayload::Downgrader(DowngraderWorkerPayload::run_completed(request_id, result))
+1172: payload: &DowngraderWorkerPayload,
+1176: DowngraderWorkerPayload::StatusLoaded { .. }
+1177: | DowngraderWorkerPayload::PlanReady { .. }
+1178: | DowngraderWorkerPayload::RunCompleted { .. } => status == WorkerTaskStatus::Completed,
+1179: DowngraderWorkerPayload::LogRow { .. } | DowngraderWorkerPayload::Progress { .. } => {
+1182: DowngraderWorkerPayload::SafeFailure { .. } => status == WorkerTaskStatus::Failed,
+... 2 more matches
+
+### src/workers/events.rs (1349 lines)
+38: pub struct WorkerTaskId(String);
+72: pub enum WorkerTaskKind {
+118: pub struct WorkerTask {
+146: pub enum WorkerTaskStatus {
+194: pub struct WorkerEvent {
+271: pub struct WorkerProgress {
+307: pub struct WorkerMessage {
+323: pub struct WorkerFailure {
+358: pub struct WorkerCancellation {
+384: pub enum WorkerPayload {
+408: Downgrader(DowngraderWorkerPayload),
+421: pub enum ScannerWorkerPayload {
+490: pub enum F4seWorkerPayload {
+526: pub enum OverviewWorkerPayload {
+578: pub struct ToolsActionWorkerPayload {
+592: pub struct AboutActionWorkerPayload {
+606: pub enum DowngraderWorkerStage {
+628: pub enum DowngraderWorkerPayload {
+677: impl DowngraderWorkerPayload {
+757: pub enum ExternalActionKind {
+782: pub enum ExternalActionOutcome {
+791: pub struct ExternalActionPayload {
+892: pub struct CancellationToken {
+1146: WorkerPayload::Downgrader(DowngraderWorkerPayload::status_loaded(
+1153: WorkerPayload::Downgrader(DowngraderWorkerPayload::plan_ready(11, plan.clone())),
+1158: WorkerPayload::Downgrader(DowngraderWorkerPayload::log_row(12, log_row.clone())),
+1163: WorkerPayload::Downgrader(DowngraderWorkerPayload::progress(
+1170: WorkerPayload::Downgrader(DowngraderWorkerPayload::run_completed(
+1182: WorkerPayload::Downgrader(DowngraderWorkerPayload::safe_failure(
+1197: WorkerPayload::Downgrader(DowngraderWorkerPayload::StatusLoaded { request_id: 10, snapshot })
+... 5 more matches
+
+### src/platform/filesystem.rs (534 lines)
+19: pub enum FileType {
+46: pub struct FileMetadata {
+67: pub struct DirectoryEntry {
+85: pub trait Filesystem {
+144: pub trait WritableFilesystem {
+160: pub struct RealFilesystem;
+283: impl WritableFilesystem for RealFilesystem {
+
+### src/app/settings_controller.rs (541 lines)
+10: pub struct ScannerSettingsSaveResult {
+26: pub struct DowngraderSettingsSaveResult {
+47: pub struct SettingsController<R> {
+138: pub fn save_downgrader_settings_for_workflow(
+485: let result = controller.save_downgrader_settings_for_workflow(candidate.clone());
+512: let result = controller.save_downgrader_settings_for_workflow(candidate);
+
+### src/domain/tools.rs (850 lines)
+65: pub enum ToolActionId {
+98: Self::DowngradeManager => "tools.downgrade_manager",
+99: Self::ArchivePatcher => "tools.archive_patcher",
+119: pub enum AboutActionId {
+150: pub enum AboutLinkId {
+172: pub struct ToolGroup {
+181: pub struct ToolEntry {
+228: pub enum ToolEntryAction {
+239: pub struct ToolInternalUtility {
+248: pub struct ToolDeferredUtility {
+257: pub struct ToolExternalLink {
+266: pub struct AboutLink {
+309: key: "downgrade_manager",
+318: key: "archive_patcher",
+775: key: "downgrade_manager",
+797: key: "archive_patcher",
+
+### src/services/tools.rs (1027 lines)
+20: pub enum ActionSurface {
+39: pub enum ToolsActionKind {
+50: pub enum AboutActionKind {
+90: pub struct ActionPlatformFailure {
+99: pub enum ActionRejectionKind {
+114: pub enum ActionOutcome {
+132: pub struct ToolsActionFeedback {
+219: pub struct AboutActionFeedback {
+401: pub struct ToolsActionService<D, C> {
+985: fn s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred()
+
+### src/main.rs (6912 lines)
+82: DowngraderService, DowngraderStatusRequest, ReqwestDeltaDownloader, VcdiffDeltaApplier,
+283: let downgrader_window = DowngraderWindow::new()?;
+410: window: &DowngraderWindow,
+425: WorkerPayload::Downgrader(workers::DowngraderWorkerPayload::RunCompleted { .. })
+496: window: &DowngraderWindow,
+700: downgrader_window: &DowngraderWindow,
+744: app.on_tools_open_downgrade_manager_requested({
+1112: downgrader_window: &DowngraderWindow,
+1202: app.on_overview_open_downgrade_manager_requested({
+1222: app.on_overview_open_archive_patcher_requested({
+1535: window: &DowngraderWindow,
+1580: window: &DowngraderWindow,
+1593: .save_downgrader_settings_for_workflow(downgrader_settings_from_options(options));
+1640: window: &DowngraderWindow,
+1673: window: &DowngraderWindow,
+1706: window: &DowngraderWindow,
+1741: window: &DowngraderWindow,
+1779: window: &DowngraderWindow,
+1800: "s09_downgrader_status_worker",
+1822: "s09_downgrader_plan_worker",
+1851: let span = tracing::info_span!("s09_downgrader_run_worker", request_id = request.request_id);
+1857: let downloader = ReqwestDeltaDownloader::new().map_err(|error| {
+1865: let applier = VcdiffDeltaApplier;
+1966: window: &DowngraderWindow,
+3513: window: &DowngraderWindow,
+3576: fn apply_downgrader_projection(window: &DowngraderWindow, projection: DowngraderUiProjection) {
+4213: app.set_overview_archive_patcher_label(
+4221: app.set_overview_archive_patcher_enabled(false);
+4222: app.set_overview_archive_patcher_status(
+6097: fn s09_downgrader_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+... 11 more matches
+
+### ui/downgrader_window.slint (505 lines)
+269: export component DowngraderWindow inherits Window {
+317: title: "Current Game";
+323: title: "Current Creation Kit";
+377: text: "Keep Backups";
+387: text: "Delete Patches";
+405: text: "Patch\n All";
+
+### ui/main.slint (312 lines)
+5: import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+6: export { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+
+### ui/overview_tab.slint (317 lines)
+
+### ui/tools_tab.slint (233 lines)
+92: action-id: "tools.downgrade_manager";
+101: action-id: "tools.archive_patcher";

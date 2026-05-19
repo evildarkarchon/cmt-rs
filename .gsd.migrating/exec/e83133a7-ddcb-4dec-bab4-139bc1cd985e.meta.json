@@ -1,0 +1,18 @@
+{
+  "id": "e83133a7-ddcb-4dec-bab4-139bc1cd985e",
+  "runtime": "bash",
+  "purpose": "check service progress_callback occurrences",
+  "script_chars": 230,
+  "started_at": "2026-05-19T00:11:57.407Z",
+  "finished_at": "2026-05-19T00:11:57.559Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 152,
+  "stdout_bytes": 462,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\e83133a7-ddcb-4dec-bab4-139bc1cd985e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\e83133a7-ddcb-4dec-bab4-139bc1cd985e.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "6c83d7a5-f186-4602-95d7-a30608d70069",
+  "runtime": "bash",
+  "purpose": "T06 inspect archive patcher main wiring references",
+  "script_chars": 133,
+  "started_at": "2026-05-19T03:25:38.070Z",
+  "finished_at": "2026-05-19T03:25:38.174Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 104,
+  "stdout_bytes": 13797,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6c83d7a5-f186-4602-95d7-a30608d70069.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6c83d7a5-f186-4602-95d7-a30608d70069.stderr"
+}

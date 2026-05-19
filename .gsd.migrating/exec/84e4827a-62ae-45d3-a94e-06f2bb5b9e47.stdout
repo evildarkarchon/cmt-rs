@@ -1,0 +1,8 @@
+207:impl WorkerEvent {
+218:    pub fn running(task: WorkerTask) -> Self {
+223:    pub fn progress(task: WorkerTask, progress: WorkerProgress) -> Self {
+232:    pub fn completed(task: WorkerTask, payload: WorkerPayload) -> Self {
+237:    pub fn failed(task: WorkerTask, failure: WorkerFailure) -> Self {
+733:    pub fn progress(
+899:    pub fn progress(request_id: u64, progress: DowngraderProgress) -> Self {
+1021:    pub fn failed(

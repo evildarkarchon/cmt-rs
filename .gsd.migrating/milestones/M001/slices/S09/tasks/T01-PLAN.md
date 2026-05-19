@@ -4,7 +4,7 @@ estimated_files: 2
 skills_used: []
 ---
 
-# T01: Add Downgrader domain contract
+# T01: Added a pure downgrader domain contract with reference labels, CRC maps, backup/patch helpers, and typed row payloads.
 
 ---
 estimated_steps: 6

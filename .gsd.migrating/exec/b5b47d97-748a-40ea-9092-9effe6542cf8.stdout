@@ -1,0 +1,16 @@
+## M001 validation gates
+
+-- cargo fmt --check --
+PASS cargo fmt --check
+
+-- cargo check --
+PASS cargo check
+
+-- cargo test --
+PASS cargo test
+
+-- cargo clippy --all-targets --all-features --
+PASS cargo clippy --all-targets --all-features
+
+-- git status --short CMT --
+PASS git status --short CMT (clean)

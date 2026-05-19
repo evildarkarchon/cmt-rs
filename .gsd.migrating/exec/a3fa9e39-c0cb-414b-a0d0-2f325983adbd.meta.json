@@ -1,0 +1,18 @@
+{
+  "id": "a3fa9e39-c0cb-414b-a0d0-2f325983adbd",
+  "runtime": "bash",
+  "purpose": "T06 fix cargo fmt after runtime wiring test",
+  "script_chars": 25,
+  "started_at": "2026-05-19T03:36:32.588Z",
+  "finished_at": "2026-05-19T03:36:33.296Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 708,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a3fa9e39-c0cb-414b-a0d0-2f325983adbd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a3fa9e39-c0cb-414b-a0d0-2f325983adbd.stderr"
+}

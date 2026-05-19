@@ -1,0 +1,12 @@
+src/services/archive_patcher.rs: production unwrap/expect hits=0
+src/app/archive_patcher_controller.rs: production unwrap/expect hits=0
+src/platform/filesystem.rs: production unwrap/expect hits=0
+src/main.rs: production unwrap/expect hits=0
+archive_patcher service write/read calls:
+  7: //! Slint, reads only bounded BA2 header prefixes through [`Filesystem::read_prefix`],
+  376: .read_prefix(&candidate.path, BA2_HEADER_PREFIX_LEN)
+  651: .write_bytes(manifest_path, &bytes)
+  672: .read_to_string(manifest_path)
+  769: if let Err(error) = self.filesystem.write_byte_range(
+  851: if let Err(error) = self.filesystem.write_byte_range(
+  894: .read_prefix(archive_path, BA2_HEADER_PREFIX_LEN)

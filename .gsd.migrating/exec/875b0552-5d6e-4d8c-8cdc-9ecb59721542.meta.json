@@ -1,0 +1,18 @@
+{
+  "id": "875b0552-5d6e-4d8c-8cdc-9ecb59721542",
+  "runtime": "bash",
+  "purpose": "overview domain/archive functions and collector BA2 parsing details",
+  "script_chars": 756,
+  "started_at": "2026-05-19T00:47:42.205Z",
+  "finished_at": "2026-05-19T00:47:42.351Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 146,
+  "stdout_bytes": 29856,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\875b0552-5d6e-4d8c-8cdc-9ecb59721542.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\875b0552-5d6e-4d8c-8cdc-9ecb59721542.stderr"
+}

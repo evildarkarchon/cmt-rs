@@ -36,11 +36,14 @@
 - [x] **S08: S08** `risk:medium` `depends:[]`
   > After this: User sees supported auto-fix actions on Scanner results and receives Fixed or Fix Failed feedback without blocking the UI.
 
-- [ ] **S09: S09** `risk:medium` `depends:[]`
+- [x] **S09: S09** `risk:medium` `depends:[]`
   > After this: User can open and run Downgrade Manager from Overview or Tools with backup and delta cleanup preferences respected and visible status/errors.
 
-- [ ] **S10: Archive Patcher Workflow** `risk:medium` `depends:[S09]`
+- [x] **S10: S10** `risk:medium` `depends:[]`
   > After this: User can open and run Archive Patcher operations through validated, fail-closed write plans that protect user files.
+
+- [ ] **S11: Validation Traceability Remediation** `risk:medium` `depends:[S10]`
+  > After this: Validation round 1 shows requirement traceability repaired, missing assessment and UAT artifacts present, S07 integration attribution corrected, and quality gates still passing.
 
 ## Boundary Map
 

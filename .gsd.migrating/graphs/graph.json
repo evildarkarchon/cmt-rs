@@ -9,8 +9,8 @@
       "sourceFile": "STATE.md"
     },
     {
-      "id": "concept:phase:planning",
-      "label": "Phase: planning",
+      "id": "concept:phase:validating-milestone",
+      "label": "Phase: validating-milestone",
       "type": "concept",
       "confidence": "EXTRACTED",
       "sourceFile": "STATE.md"
@@ -289,10 +289,46 @@
     },
     {
       "id": "slice:M001:S09",
-      "label": "S09: Downgrade Manager Workflow",
+      "label": "S09: S09",
       "type": "slice",
       "confidence": "EXTRACTED",
       "sourceFile": "milestones/M001/slices/S09/S09-PLAN.md"
+    },
+    {
+      "id": "task:M001:S09:T01",
+      "label": "T01: Added a pure downgrader domain contract with reference labels, CRC maps, backup/patch helpers, and typed row payloads.",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S09:T02",
+      "label": "T02: Added a read-only DowngraderService that builds CRC status snapshots and inline preview plans without mutation.",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S09:T03",
+      "label": "T03: Harden confirmed executor safety and delta integrity",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S09:T04",
+      "label": "T04: Added a Slint-free Downgrader modal controller with owned worker payloads and stale-safe lifecycle tests.",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S09:T05",
+      "label": "T05: Verified the Downgrader Slint modal source contract, generated-component import, Overview/Tools entrypoint callbacks, and source-contract tests for reference labels and deferred Archive Patcher behavior.",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S09:T06",
+      "label": "T06: Complete runtime wiring, live feedback, About action, and tests",
+      "type": "task",
+      "confidence": "EXTRACTED"
     },
     {
       "id": "slice:M001:S10",
@@ -300,6 +336,42 @@
       "type": "slice",
       "confidence": "EXTRACTED",
       "sourceFile": "milestones/M001/slices/S10/S10-PLAN.md"
+    },
+    {
+      "id": "task:M001:S10:T01",
+      "label": "T01: Define Archive Patcher domain and preview plans",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S10:T02",
+      "label": "T02: Implement safe header patch and restore execution",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S10:T03",
+      "label": "T03: Add controller and worker payload lifecycle",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S10:T04",
+      "label": "T04: Build Archive Patcher Slint modal contract",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S10:T05",
+      "label": "T05: Wire entrypoints workers and Overview refresh",
+      "type": "task",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "id": "task:M001:S10:T06",
+      "label": "T06: Close with safety regression and quality gates",
+      "type": "task",
+      "confidence": "EXTRACTED"
     }
   ],
   "edges": [
@@ -574,11 +646,83 @@
       "confidence": "EXTRACTED"
     },
     {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T01",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T02",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T03",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T04",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T05",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S09",
+      "to": "task:M001:S09:T06",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
       "from": "milestone:M001",
       "to": "slice:M001:S10",
       "type": "contains",
       "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T01",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T02",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T03",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T04",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T05",
+      "type": "contains",
+      "confidence": "EXTRACTED"
+    },
+    {
+      "from": "slice:M001:S10",
+      "to": "task:M001:S10:T06",
+      "type": "contains",
+      "confidence": "EXTRACTED"
     }
   ],
-  "builtAt": "2026-05-18T09:47:38.213Z"
+  "builtAt": "2026-05-19T04:10:12.604Z"
 }

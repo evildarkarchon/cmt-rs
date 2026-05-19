@@ -1,0 +1,18 @@
+{
+  "id": "d299e656-5464-46c2-bd4f-32e3904290e9",
+  "runtime": "bash",
+  "purpose": "targeted runtime tests after formatting",
+  "script_chars": 63,
+  "started_at": "2026-05-19T00:37:52.919Z",
+  "finished_at": "2026-05-19T00:38:59.838Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 66919,
+  "stdout_bytes": 722,
+  "stderr_bytes": 2031,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d299e656-5464-46c2-bd4f-32e3904290e9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d299e656-5464-46c2-bd4f-32e3904290e9.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "4a32a93f-8638-438f-b4d6-4c2144b33cf3",
+  "runtime": "bash",
+  "purpose": "downgrader service safe plan executor pattern summary for S10 reuse",
+  "script_chars": 617,
+  "started_at": "2026-05-19T00:48:43.886Z",
+  "finished_at": "2026-05-19T00:48:44.055Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 169,
+  "stdout_bytes": 44896,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4a32a93f-8638-438f-b4d6-4c2144b33cf3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4a32a93f-8638-438f-b4d6-4c2144b33cf3.stderr"
+}

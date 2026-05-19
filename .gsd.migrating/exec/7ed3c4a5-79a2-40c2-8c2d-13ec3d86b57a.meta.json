@@ -1,0 +1,18 @@
+{
+  "id": "7ed3c4a5-79a2-40c2-8c2d-13ec3d86b57a",
+  "runtime": "bash",
+  "purpose": "T06 verify cargo test s10_archive_patcher_slint_contract",
+  "script_chars": 69,
+  "started_at": "2026-05-19T03:16:09.645Z",
+  "finished_at": "2026-05-19T03:16:18.665Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9020,
+  "stdout_bytes": 119,
+  "stderr_bytes": 247,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7ed3c4a5-79a2-40c2-8c2d-13ec3d86b57a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7ed3c4a5-79a2-40c2-8c2d-13ec3d86b57a.stderr"
+}

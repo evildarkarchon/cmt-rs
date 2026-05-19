@@ -67,8 +67,7 @@ pub const ARCHIVE_PATCHER_PLAN_NOT_EXECUTABLE_MESSAGE: &str =
 pub const ARCHIVE_PATCHER_RESTORE_UNAVAILABLE_MESSAGE: &str =
     "No Archive Patcher restore manifest is available.";
 /// Safe status shown when Overview has not supplied archive records for the modal.
-pub const ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE: &str =
-    "Archive Patcher needs a refreshed Overview with discovered BA2 archives. Refresh Overview or fix game discovery, then try again.";
+pub const ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE: &str = "Archive Patcher needs a refreshed Overview with discovered BA2 archives. Refresh Overview or fix game discovery, then try again.";
 
 /// Monotonic identity assigned to each Archive Patcher request.
 pub type ArchivePatcherRequestId = u64;

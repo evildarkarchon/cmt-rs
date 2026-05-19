@@ -1,0 +1,18 @@
+{
+  "id": "ee2554b2-8632-43bf-9176-9d3fe3b4c172",
+  "runtime": "bash",
+  "purpose": "confirm downgrader dead_code allow placement",
+  "script_chars": 288,
+  "started_at": "2026-05-19T01:27:55.920Z",
+  "finished_at": "2026-05-19T01:27:56.049Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 129,
+  "stdout_bytes": 64,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\ee2554b2-8632-43bf-9176-9d3fe3b4c172.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\ee2554b2-8632-43bf-9176-9d3fe3b4c172.stderr"
+}

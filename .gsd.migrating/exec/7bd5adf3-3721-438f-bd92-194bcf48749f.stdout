@@ -1,0 +1,9 @@
+    Checking typenum v1.20.0
+    Checking cpufeatures v0.2.17
+    Checking generic-array v0.14.7
+    Checking block-buffer v0.10.4
+    Checking crypto-common v0.1.7
+    Checking digest v0.10.7
+    Checking sha2 v0.10.9
+    Checking cmt-rs v0.1.0 (/mnt/j/cmt-rs)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 25.44s

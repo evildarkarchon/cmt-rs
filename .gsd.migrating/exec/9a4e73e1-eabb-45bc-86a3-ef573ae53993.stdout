@@ -1,0 +1,9 @@
+5757:    const MAIN_SLINT: &str = include_str!("../ui/main.slint");
+5758:    const SETTINGS_SLINT: &str = include_str!("../ui/settings_tab.slint");
+5759:    const OVERVIEW_SLINT: &str = include_str!("../ui/overview_tab.slint");
+5760:    const F4SE_SLINT: &str = include_str!("../ui/f4se_tab.slint");
+5761:    const SCANNER_SLINT: &str = include_str!("../ui/scanner_tab.slint");
+5762:    const DOWNGRADER_SLINT: &str = include_str!("../ui/downgrader_window.slint");
+5763:    const ARCHIVE_PATCHER_SLINT: &str = include_str!("../ui/archive_patcher_window.slint");
+5764:    const TOOLS_SLINT: &str = include_str!("../ui/tools_tab.slint");
+5765:    const ABOUT_SLINT: &str = include_str!("../ui/about_tab.slint");

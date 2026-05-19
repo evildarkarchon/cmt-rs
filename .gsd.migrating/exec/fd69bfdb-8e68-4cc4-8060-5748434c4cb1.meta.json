@@ -1,0 +1,18 @@
+{
+  "id": "fd69bfdb-8e68-4cc4-8060-5748434c4cb1",
+  "runtime": "bash",
+  "purpose": "rerun focused archive_patcher_domain tests after removing unused import",
+  "script_chars": 41,
+  "started_at": "2026-05-19T01:23:54.696Z",
+  "finished_at": "2026-05-19T01:24:23.779Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 29083,
+  "stdout_bytes": 0,
+  "stderr_bytes": 8686,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\fd69bfdb-8e68-4cc4-8060-5748434c4cb1.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\fd69bfdb-8e68-4cc4-8060-5748434c4cb1.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "74f94e19-da36-4459-ac98-b457b302d668",
+  "runtime": "bash",
+  "purpose": "T06 safety review production unwrap expect and archive patcher writes",
+  "script_chars": 1013,
+  "started_at": "2026-05-19T03:26:11.614Z",
+  "finished_at": "2026-05-19T03:26:11.779Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 165,
+  "stdout_bytes": 695,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\74f94e19-da36-4459-ac98-b457b302d668.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\74f94e19-da36-4459-ac98-b457b302d668.stderr"
+}

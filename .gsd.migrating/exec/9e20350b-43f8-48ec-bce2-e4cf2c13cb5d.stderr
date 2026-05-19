@@ -1,0 +1,12 @@
+[WARNING] Failed to read unmanaged installs: expected str, bytes or os.PathLike object, not NoneType
+Traceback (most recent call last):
+  File "<string>", line 58, in <module>
+    total,windows=parse_target_size(data)
+                  ~~~~~~~~~~~~~~~~~^^^^^^
+  File "<string>", line 47, in parse_target_size
+    data_len,i=read_varint(data,i)
+               ~~~~~~~~~~~^^^^^^^^
+  File "<string>", line 20, in read_varint
+    if i>=len(data): raise EOFError('varint eof')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+EOFError: varint eof

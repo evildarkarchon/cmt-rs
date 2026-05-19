@@ -3,55 +3,62 @@ id: T03
 parent: S09
 milestone: M001
 key_files:
-  - src/platform/mod.rs
-  - src/platform/filesystem.rs
-  - src/services/downgrader.rs
   - Cargo.toml
   - Cargo.lock
+  - src/platform/filesystem.rs
+  - src/services/downgrader.rs
+  - src/services/autofix.rs
+  - src/services/discovery.rs
+  - src/services/f4se.rs
+  - src/services/overview_collector.rs
+  - src/services/scanner.rs
 key_decisions:
-  - Kept filesystem mutation in a new `WritableFilesystem` trait instead of expanding the read-only `Filesystem` contract.
-  - Used fakeable `DeltaDownloader` and `DeltaApplier` seams so executor behavior is testable without real network or game paths.
-  - Used pure-Rust `vcdiff-decoder` for the production applier because `xdelta3` conflicted with the existing Slint bindgen/clang dependency graph.
+  - D032: Pin SHA-256 hashes, exact patch byte sizes, and expected VCDIFF output sizes for the twelve reference delta-patches release assets in the Rust downgrader service.
 duration: 
 verification_result: passed
-completed_at: 2026-05-18T11:09:46.533Z
+completed_at: 2026-05-19T00:01:40.024Z
 blocker_discovered: false
 ---
 
-# T03: Added the Downgrader confirmed executor with write, download, and VCDIFF apply seams plus failure-path tests.
+# T03: Hardened Downgrader confirmed execution with canonical containment checks, pinned xdelta integrity, bounded VCDIFF output, and active-file-preserving replacement.
 
-**Added the Downgrader confirmed executor with write, download, and VCDIFF apply seams plus failure-path tests.**
+**Hardened Downgrader confirmed execution with canonical containment checks, pinned xdelta integrity, bounded VCDIFF output, and active-file-preserving replacement.**
 
 ## What Happened
 
-Implemented a separate `WritableFilesystem` trait in `src/platform/filesystem.rs` and extended `PlatformOperation` with safe file write/copy/rename/remove labels. Added real `std::fs` mutation implementations with typed `PlatformError` mapping. Extended `src/services/downgrader.rs` with `DeltaDownloader`, `ReqwestDeltaDownloader`, `DeltaApplier`, and `VcdiffDeltaApplier` seams, plus a confirmed executor that reuses the read-only preview plan, revalidates CRCs before mutation, processes the six managed files independently, restores valid desired backups, creates/reuses/removes current backups according to the reference backup semantics and `Keep Backups`, downloads or reuses patch files, applies VCDIFF deltas, honors `Delete Patches`, and preserves source backups on download/apply failures. Added recording filesystem/downloader/applier test fakes and executor tests for restore, backup cleanup, existing patch reuse, skipped unsupported rows, failed download/apply preservation, permission failures, and a deterministic VCDIFF fixture proof. I initially evaluated the `xdelta3` crate, but it conflicted with Slint’s bindgen/clang dependency graph, so I used the pure-Rust `vcdiff-decoder` dependency and proved the applier with an inline source/patch fixture.
+Reworked the Downgrader mutation path so confirmed execution revalidates the game root through canonicalization, resolves each managed target/backup/patch path under that canonical root, rejects symlink/reparse-point managed paths where the filesystem seam can expose them, and validates containment immediately before destructive operations. The executor now copies current files into backups instead of renaming the active file away, restores/patches via same-directory replacement after bytes are ready, and leaves the active file in place on download/apply/write failures. Added a pinned integrity manifest for the twelve reference GitHub delta-patch assets with exact sizes, SHA-256 digests, and expected VCDIFF output byte counts. Local xdelta files now go through the same size/hash checks as downloaded deltas, and the VCDIFF applier writes into a bounded writer capped by the expected output size. Extended the filesystem seam with no-follow metadata, canonicalization, and atomic/same-directory replacement helpers, then updated fake metadata construction sites after adding the reparse-point flag.
 
 ## Verification
 
-Ran the required targeted gate `cargo test downgrader_executor` after the final refactor; all 6 executor tests passed. Also ran `cargo fmt --check` after the final refactor. Earlier in the same implementation pass, `cargo check`, full `cargo test`, and `cargo clippy --all-targets --all-features` completed successfully; clippy reported warnings only, including an existing scanner warning and a downgrader helper arity warning that was refactored before the final targeted test rerun.
+Verified the targeted executor and read-only plan filters, formatting, compile, full unit suite, and clippy gate. Commands run: cargo test downgrader_executor --message-format short; cargo test downgrader_service_plan --message-format short; cargo fmt --check; cargo check --message-format short; cargo test --message-format short; cargo clippy --all-targets --all-features --message-format short. All commands exited 0. Clippy still reports warnings but does not fail under the current project lint configuration.
 
 ## Verification Evidence
 
 | # | Command | Exit Code | Verdict | Duration |
 |---|---------|-----------|---------|----------|
-| 1 | `cargo test downgrader_executor` | 0 | ✅ pass | 39475ms |
-| 2 | `cargo fmt --check` | 0 | ✅ pass | 626ms |
-| 3 | `cargo check` | 0 | ✅ pass | 23779ms |
-| 4 | `cargo test` | 0 | ✅ pass | 8553ms |
-| 5 | `cargo clippy --all-targets --all-features` | 0 | ✅ pass (warnings reported; downgrader warning refactored afterward) | 38229ms |
+| 1 | `cargo test downgrader_executor --message-format short 2>&1 | tail -120` | 0 | ✅ pass | 39457ms |
+| 2 | `cargo test downgrader_service_plan --message-format short 2>&1 | tail -120` | 0 | ✅ pass | 8278ms |
+| 3 | `cargo fmt --check` | 0 | ✅ pass | 584ms |
+| 4 | `cargo check --message-format short 2>&1 | tail -120` | 0 | ✅ pass | 25464ms |
+| 5 | `cargo test --message-format short 2>&1 | tail -160` | 0 | ✅ pass | 8287ms |
+| 6 | `cargo clippy --all-targets --all-features --message-format short 2>&1 | tail -160` | 0 | ✅ pass | 40072ms |
 
 ## Deviations
 
-Used pure-Rust `vcdiff-decoder` instead of `xdelta3`; the `xdelta3` crate could not be used because its older bindgen dependency introduced a `clang-sys` links conflict with Slint/skia. The production applier was still implemented and fixture-proven via VCDIFF decoding.
+Added `sha2` as a focused dependency for T03 integrity checks and updated nearby fake filesystem metadata constructors after extending the metadata shape.
 
 ## Known Issues
 
-`cargo clippy --all-targets --all-features` was run before the final helper refactor and exited 0 with warnings; the new downgrader warning was refactored away, but hard timeout recovery prevented rerunning clippy after that final refactor. An unrelated existing scanner `too_many_arguments` clippy warning remains.
+Clippy exits successfully but reports existing warning-level findings, including functions with too many arguments. No failing tests remain from T03 verification.
 
 ## Files Created/Modified
 
-- `src/platform/mod.rs`
-- `src/platform/filesystem.rs`
-- `src/services/downgrader.rs`
 - `Cargo.toml`
 - `Cargo.lock`
+- `src/platform/filesystem.rs`
+- `src/services/downgrader.rs`
+- `src/services/autofix.rs`
+- `src/services/discovery.rs`
+- `src/services/f4se.rs`
+- `src/services/overview_collector.rs`
+- `src/services/scanner.rs`

@@ -1,0 +1,18 @@
+{
+  "id": "25ba8d0c-455c-4945-add0-eadf0b3b0a1f",
+  "runtime": "python",
+  "purpose": "compute SHA-256 for downgrader xdelta release assets",
+  "script_chars": 2740,
+  "started_at": "2026-05-18T23:27:27.979Z",
+  "finished_at": "2026-05-18T23:27:39.250Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 11271,
+  "stdout_bytes": 1557,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\25ba8d0c-455c-4945-add0-eadf0b3b0a1f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\25ba8d0c-455c-4945-add0-eadf0b3b0a1f.stderr"
+}

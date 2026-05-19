@@ -1,0 +1,46 @@
+771:                "Archive Patcher worker event arrived after the modal was gone"
+790:                    "Archive Patcher worker event applied"
+798:                            "Archive Patcher completion could not refresh Overview because the main window was gone"
+807:                        "Requesting Overview refresh after Archive Patcher completion"
+824:                "Archive Patcher worker event was stale and ignored"
+831:                "Ignoring non-Archive-Patcher worker event on Archive Patcher sink"
+838:                "Archive Patcher worker event was rejected by current modal state"
+845:                "Archive Patcher worker event unexpectedly hit close-blocked transition"
+2511:                "Opening Archive Patcher from current Overview archive records"
+2528:                "Archive Patcher opened without Overview archive records"
+2539:                "Archive Patcher could not read Overview state"
+2554:            "Archive Patcher modal show failed"
+2582:            "Archive Patcher modal hide failed"
+2600:        "Scheduling Archive Patcher candidate worker"
+2632:        "Scheduling Archive Patcher plan worker"
+2661:        "Scheduling Archive Patcher confirmed patch worker"
+2689:        "Scheduling Archive Patcher restore worker"
+2762:        ArchivePatcherProgress::new("Revalidating Archive Patcher plan...", 5.0),
+2813:        ArchivePatcherProgress::new("Reading Archive Patcher restore manifest...", 5.0),
+2865:                "Archive Patcher log row could not be handed to UI"
+2888:            "Archive Patcher progress could not be handed to UI"
+2943:                "Archive Patcher manifest directory could not be created; falling back to current directory"
+2960:                "Archive Patcher latest manifest availability check failed safely"
+2993:                ToolActionId::ArchivePatcher => "Open the Archive Patcher workflow.",
+4512:                "Archive Patcher controller state is unavailable"
+4747:        "Archive Patcher has not run yet.".to_owned()
+5637:        "Open Archive Patcher.".to_owned()
+7412:        assert!(OVERVIEW_SLINT.contains("Open Archive Patcher."));
+7414:        assert!(TOOLS_SLINT.contains("Open the Archive Patcher workflow."));
+7646:    fn s10_archive_patcher_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+7687:                "Archive Patcher Slint should contain reference label {label:?}"
+7715:    fn s10_archive_patcher_slint_contract_declares_models_callbacks_and_fail_closed_defaults() {
+7729:                "Archive Patcher UI structs should expose field {field:?}"
+7767:                "Archive Patcher window should expose callback {callback:?}"
+7784:    fn s10_archive_patcher_slint_contract_negative_state_surfaces_are_model_driven() {
+7825:                "Archive Patcher Slint should not contain runtime/filesystem marker {prohibited_marker:?}"
+7835:    fn s10_archive_patcher_slint_contract_main_window_exports_modal_and_entrypoint_surfaces() {
+7851:                "label: \"Archive Patcher\"",
+7873:                "overview-archive-patcher-status: \"Open Archive Patcher.\"",
+7889:                "label: \"Archive Patcher\"",
+7891:                "Open the Archive Patcher workflow.",
+7939:                "label: \"Archive Patcher\"",
+7941:                "Open the Archive Patcher workflow.",
+8139:            .expect("Archive Patcher should route as an enabled internal utility");
+8373:        assert!(OVERVIEW_SLINT.contains("Open Archive Patcher."));
+8425:            "Archive Patcher..."

@@ -1,0 +1,18 @@
+{
+  "id": "209c913f-788f-460b-b149-1b045cdc8f34",
+  "runtime": "bash",
+  "purpose": "timeout-recovery cargo check after partial S09/T06 runtime wiring",
+  "script_chars": 11,
+  "started_at": "2026-05-18T22:54:39.296Z",
+  "finished_at": "2026-05-18T22:55:07.767Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 28471,
+  "stdout_bytes": 0,
+  "stderr_bytes": 9322,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\209c913f-788f-460b-b149-1b045cdc8f34.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\209c913f-788f-460b-b149-1b045cdc8f34.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "175fafb4-23b2-4cd0-ae77-94f83eb0d7dd",
+  "runtime": "bash",
+  "purpose": "locate S09 downgrader Slint contract tests and wiring",
+  "script_chars": 172,
+  "started_at": "2026-05-18T22:20:18.409Z",
+  "finished_at": "2026-05-18T22:20:18.600Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 191,
+  "stdout_bytes": 12266,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\175fafb4-23b2-4cd0-ae77-94f83eb0d7dd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\175fafb4-23b2-4cd0-ae77-94f83eb0d7dd.stderr"
+}

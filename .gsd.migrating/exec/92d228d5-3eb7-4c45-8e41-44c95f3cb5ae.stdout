@@ -1,0 +1,72 @@
+
+## src/app/settings_controller.rs
+4: domain::settings::{AppSettings, DowngraderSettings, LogLevel, ScannerSettings, UpdateSource},
+5: platform::settings_store::{AssetResolver, SettingsStore},
+48: store: SettingsStore<R>,
+49: last_persisted: AppSettings,
+58: pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
+66: /// This is used as a startup fallback when the production store cannot load or
+69: pub fn from_settings(store: SettingsStore<R>, settings: AppSettings) -> Self {
+77: pub fn current_settings(&self) -> &AppSettings {
+205: self.save_candidate(candidate, AppSettings::update_source_ui_value)
+225: self.save_candidate(candidate, AppSettings::log_level_ui_value)
+230: candidate: AppSettings,
+231: visible_value: impl FnOnce(&AppSettings) -> &'static str,
+257: impl AppSettings {
+296: platform::settings_store::{SettingsStore, StaticAssetResolver},
+302: let store = SettingsStore::with_asset_resolver(
+319: let store = SettingsStore::with_asset_resolver(
+336: let store = SettingsStore::with_asset_resolver(
+358: let store = SettingsStore::with_asset_resolver(
+377: let setup_store = SettingsStore::with_asset_resolver(
+395: let setup_store = SettingsStore::with_asset_resolver(
+413: let store = SettingsStore::with_asset_resolver(
+430: let store = SettingsStore::with_asset_resolver(
+453: let setup_store = SettingsStore::with_asset_resolver(
+475: let store = SettingsStore::with_asset_resolver(
+499: let setup_store = SettingsStore::with_asset_resolver(
+
+## src/domain/settings.rs
+36: pub struct AppSettings {
+47: impl Default for AppSettings {
+58: impl AppSettings {
+75: /// settings are serialized with [`AppSettings::to_json_value`].
+206: pub settings: AppSettings,
+376: let settings = AppSettings::default();
+386: let json = AppSettings::default().to_json_value();
+422: assert!(AppSettings::from_json_str("{ not json").is_err());
+423: assert!(AppSettings::from_json_str("[]").is_err());
+425: let repaired = AppSettings::from_json_str(
+473: let warning = AppSettings::from_json_str(r#"{"log_level":"WARNING"}"#)
+
+## src/platform/filesystem.rs
+212: /// Creates the production filesystem adapter without touching the filesystem.
+
+## src/services/downgrader.rs
+4: //! destructive backup/restore/xdelta work only after the `Patch All` action is
+255: /// Maximum bytes accepted by the production downloader.
+535: /// File was restored or patched successfully.
+730: /// Returns true when the row restores from an existing desired-version backup.
+731: pub fn restores_from_backup(&self) -> bool {
+743: /// Rows that will restore from a desired-version backup.
+744: pub restore_from_backup_rows: usize,
+795: if row.restores_from_backup() {
+796: counts.restore_from_backup_rows += 1;
+1039: restore_from_backup_rows = plan.counts.restore_from_backup_rows,
+1266: "Delete backup {} after restore.",
+1314: restores_from_backup = row.restores_from_backup(),
+1660: match self.restore_desired_backup(
+1667: Ok(restore_diagnostics) => {
+1668: diagnostics.extend(restore_diagnostics);
+1987: fn restore_desired_backup(
+2021: "{} desired backup changed before restore.",
+2036: let restored_crc = self.read_required_crc(current_path)?;
+2037: if !crc_is_desired_target_for_plan(&restored_crc, row.plan.target) {
+2039: "{} restored output CRC {restored_crc} did not match target {}.",
+2061: "{} restored from {}.",
+3038: fn downgrader_service_plan_builds_restore_from_valid_desired_backup() {
+3062: assert!(fallout.restores_from_backup());
+3072: assert_eq!(plan.counts.restore_from_backup_rows, 1);
+3693: fn downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups() {
+3702: .expect("restore with kept backups");
+3725: .expect("restore without kept backups");

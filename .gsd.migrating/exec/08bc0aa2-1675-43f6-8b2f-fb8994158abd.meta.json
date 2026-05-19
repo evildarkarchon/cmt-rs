@@ -1,0 +1,18 @@
+{
+  "id": "08bc0aa2-1675-43f6-8b2f-fb8994158abd",
+  "runtime": "bash",
+  "purpose": "verify T05 Slint compile via cargo check",
+  "script_chars": 11,
+  "started_at": "2026-05-18T22:21:29.260Z",
+  "finished_at": "2026-05-18T22:21:49.037Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 19777,
+  "stdout_bytes": 0,
+  "stderr_bytes": 116,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\08bc0aa2-1675-43f6-8b2f-fb8994158abd.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\08bc0aa2-1675-43f6-8b2f-fb8994158abd.stderr"
+}

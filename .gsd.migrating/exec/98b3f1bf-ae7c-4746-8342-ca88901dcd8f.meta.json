@@ -1,0 +1,18 @@
+{
+  "id": "98b3f1bf-ae7c-4746-8342-ca88901dcd8f",
+  "runtime": "bash",
+  "purpose": "surface timeout recovery compile/test errors short",
+  "script_chars": 70,
+  "started_at": "2026-05-18T23:56:28.245Z",
+  "finished_at": "2026-05-18T23:57:08.381Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 40136,
+  "stdout_bytes": 1166,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\98b3f1bf-ae7c-4746-8342-ca88901dcd8f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\98b3f1bf-ae7c-4746-8342-ca88901dcd8f.stderr"
+}

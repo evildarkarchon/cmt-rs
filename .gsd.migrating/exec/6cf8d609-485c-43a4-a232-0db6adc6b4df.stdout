@@ -1,0 +1,389 @@
+
+## src/domain/overview.rs (1788 lines, 85 keyword hits)
+4: //! checks, binary/archive/module summaries, and scanner problem records. This
+14: ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4InstallType,
+41: /// User-facing title for the archive summary panel.
+42: pub const ARCHIVE_PANEL_TITLE: &str = "Archives (BA2)";
+48: /// User-facing archive row label for General/GNRL archives.
+50: /// User-facing archive row label for Texture/DX10 archives.
+52: /// User-facing total row label used by archive and module panels.
+54: /// User-facing unreadable row label used by archive and module panels.
+56: /// User-facing archive-version row label for v1 BA2 files.
+57: pub const ARCHIVE_OLD_GEN_VERSION_LABEL: &str = "v1 (OG)";
+58: /// User-facing archive-version row label for v7/v8 BA2 files.
+60: /// Reference archive count row order, excluding visual separators.
+74: /// User-facing module row label for HEDR v1.00 plugins.
+75: pub const MODULE_HEDR_100_LABEL: &str = "HEDR v1.00";
+102: /// Deferred utility button label in the archive panel.
+103: pub const ACTION_ARCHIVE_PATCHER_LABEL: &str = "Archive Patcher...";
+580: /// Count row used by archive and module Overview panels.
+615: /// Archive panel summary generated from typed archive records or fake test data.
+617: pub struct ArchivePanelSummary {
+626: impl ArchivePanelSummary {
+627: /// Creates an archive panel with zero counts and reference row order.
+629: Self::from_counts(ArchivePanelCounts::default())
+632: /// Creates an archive panel from explicit counts.
+633: pub fn from_counts(counts: ArchivePanelCounts) -> Self {
+669: OverviewDeferredActionKind::OpenArchivePatcher,
+675: /// Creates an archive panel by counting supplied archive records.
+676: pub fn from_records(records: &[ArchiveRecord]) -> Self {
+677: let mut counts = ArchivePanelCounts::default();
+684: || matches!(record.format, ArchiveFormat::Unknown(_))
+685: || matches!(record.version, ArchiveVersion::Unknown(_));
+692: ArchiveFormat::General => counts.general += 1,
+693: ArchiveFormat::DirectX10 => counts.texture += 1,
+694: ArchiveFormat::Unknown(_) => {}
+698: ArchiveVersion::OldGen => counts.old_gen_version += 1,
+699: ArchiveVersion::NextGen7 | ArchiveVersion::NextGen8 => counts.next_gen_version += 1,
+... 50 more
+
+## src/domain/discovery.rs (649 lines, 40 keyword hits)
+121: /// Archive records observed by later scanner/overview workflows.
+122: pub archives: Vec<ArchiveRecord>,
+141: archives: Vec::new(),
+175: /// Archive file format magic recognized by the reference scanner.
+177: pub enum ArchiveFormat {
+178: /// General BA2 archive (`GNRL`).
+180: /// DirectX 10 texture BA2 archive (`DX10`).
+182: /// Any other archive format marker retained for diagnostics.
+186: impl ArchiveFormat {
+197: /// BA2 version classes used by the archive overview and patcher workflows.
+199: pub enum ArchiveVersion {
+200: /// v1, required by Old-Gen Fallout 4 and accepted by all versions.
+202: /// v7, initial Next-Gen archive version.
+204: /// v8, current Next-Gen archive version.
+210: impl ArchiveVersion {
+211: /// Converts the typed archive version into the numeric value in the BA2 header.
+222: /// Single archive record carried by scanner and overview workflows.
+224: pub struct ArchiveRecord {
+225: /// Archive path as discovered by a platform/scanner adapter.
+227: /// Parsed archive format marker.
+228: pub format: ArchiveFormat,
+229: /// Parsed archive version.
+230: pub version: ArchiveVersion,
+231: /// Whether later enablement parsing found this archive active.
+233: /// Whether the scanner could read enough bytes to classify the archive.
+237: impl ArchiveRecord {
+238: /// Creates a readable archive record with an explicit enabled state.
+241: format: ArchiveFormat,
+242: version: ArchiveVersion,
+254: /// Creates an unreadable archive record while preserving its path.
+258: format: ArchiveFormat::Unknown(String::new()),
+259: version: ArchiveVersion::Unknown(0),
+271: /// Reference-supported HEDR v1.00.
+548: fn archive_module_and_ini_records_are_pure_domain_state() {
+550: installation.archives.push(ArchiveRecord::new(
+... 5 more
+
+## src/services/overview_collector.rs (2179 lines, 140 keyword hits)
+4: //! binary, archive, module, and enablement facts. This module performs the
+18: ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4IniFiles, Fallout4InstallType,
+23: filesystem::{DirectoryEntry, FileType, Filesystem},
+39: "sresourcestartuparchivelist",
+40: "sresourcearchivelist",
+41: "sresourcearchivelist2",
+124: relative_path: "Tools\\Archive2\\Archive2.exe",
+239: pub archives: Vec<ArchiveRecord>,
+260: Archives,
+273: Self::Archives => "archives",
+321: /// Number of archive records emitted.
+322: pub archive_count: usize,
+325: /// Number of archive records marked enabled.
+326: pub enabled_archive_count: usize,
+379: /// Filesystem/process backed collector for Overview diagnostics facts.
+381: pub struct OverviewCollector<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> {
+386: impl<'a, F: Filesystem + ?Sized, P: ProcessInspector + ?Sized> OverviewCollector<'a, F, P> {
+419: let archives = self.collect_archives(
+421: &enablement_inputs.enabled_archives,
+431: diagnostics.archive_count = archives.len();
+433: diagnostics.enabled_archive_count = archives.iter().filter(|record| record.enabled).count();
+436: diagnostics.record_phase(OverviewCollectionPhase::Archives, archives.len());
+443: archive_count = diagnostics.archive_count,
+445: enabled_archive_count = diagnostics.enabled_archive_count,
+454: archives,
+591: let startup_path = data_path.join("Fallout4 - Startup.ba2");
+610: "Fallout4 - Startup.ba2 is not a regular file.",
+616: "Fallout4 - Startup.ba2 was not found for downgrade detection.",
+707: self.collect_ini_enabled_archives(
+717: collection.enabled_modules.len() + collection.enabled_archives.len(),
+919: fn collect_ini_enabled_archives(
+931: for archive_name in ini_archive_names(&installation.ini_files) {
+932: match index.resolve_relative(&archive_name) {
+933: Some(path) if is_archive_path(&path) => {
+934: collection.enabled_archives.insert(path_key(&path));
+... 105 more
+
+## src/app/downgrader_controller.rs (1778 lines, 527 keyword hits)
+1: //! Slint-free Downgrader modal controller and worker-payload reducer.
+7: //! typed [`DowngraderWorkerPayload`](crate::workers::DowngraderWorkerPayload)
+13: downgrader::{
+14: DowngraderExecutionLogRow, DowngraderLogLevel, DowngraderOptionsSnapshot,
+15: DowngraderProgress, DowngraderStatusRow, DowngraderTarget,
+17: settings::DowngraderSettings,
+19: services::downgrader::{
+20: CONFIRMED_PLAN_CHANGED_MESSAGE, DowngraderExecutionResult, DowngraderPreviewPlan,
+21: DowngraderStatusSnapshot,
+24: DowngraderWorkerPayload, DowngraderWorkerStage, WorkerEvent, WorkerPayload,
+29: /// Stable prefix for S09 Downgrader status worker task identifiers.
+30: pub const DOWNGRADER_STATUS_TASK_PREFIX: &str = "s09-downgrader-status:";
+31: /// Stable prefix for S09 Downgrader plan worker task identifiers.
+32: pub const DOWNGRADER_PLAN_TASK_PREFIX: &str = "s09-downgrader-plan:";
+33: /// Stable prefix for S09 Downgrader confirmed-run worker task identifiers.
+34: pub const DOWNGRADER_RUN_TASK_PREFIX: &str = "s09-downgrader-run:";
+37: pub const DOWNGRADER_STATUS_LOADING_MESSAGE: &str = "Loading Downgrader status...";
+39: pub const DOWNGRADER_PLANNING_MESSAGE: &str = "Preparing Downgrader plan...";
+48: pub const DOWNGRADER_STATUS_START_FAILED_MESSAGE: &str = "Downgrader status could not be started.";
+50: pub const DOWNGRADER_PLAN_START_FAILED_MESSAGE: &str = "Downgrader plan could not be started.";
+52: pub const DOWNGRADER_RUN_START_FAILED_MESSAGE: &str = "Downgrader patching could not be started.";
+55: "Downgrader plan cannot be executed. Refresh status and try again.";
+57: /// Monotonic identity assigned to each Downgrader status, plan, or run request.
+58: pub type DowngraderRequestId = u64;
+60: /// Render-relevant lifecycle state for the Downgrader modal.
+62: pub enum DowngraderControllerPhase {
+82: /// Result of applying a Downgrader controller transition.
+84: pub enum DowngraderTransitionResult {
+97: impl DowngraderTransitionResult {
+106: pub enum DowngraderWorkerRequestKind {
+115: impl DowngraderWorkerRequestKind {
+116: const fn stage(self) -> DowngraderWorkerStage {
+118: Self::Status => DowngraderWorkerStage::Status,
+119: Self::Plan => DowngraderWorkerStage::Plan,
+120: Self::Run => DowngraderWorkerStage::Run,
+... 492 more
+
+## src/services/downgrader.rs (3960 lines, 518 keyword hits)
+1: //! Read-only Downgrader status and preview-plan service.
+6: //! read-only [`Filesystem`] trait, validates every managed path under the
+24: downgrader::{
+25: DOWNGRADER_FILE_DEFINITIONS, DowngraderExecutionLogRow, DowngraderFileDefinition,
+26: DowngraderFileGroup, DowngraderInstallStatus, DowngraderOptionsSnapshot,
+27: DowngraderPlanAction, DowngraderPlanRow, DowngraderPlanStep, DowngraderPlanStepKind,
+28: DowngraderProgress, DowngraderStatusRow, DowngraderTarget,
+36: filesystem::{FileMetadata, Filesystem, WritableFilesystem},
+41: const UNSAFE_MANAGED_PATH_MESSAGE: &str = "Downgrader managed file path is unsafe.";
+57: "Downgrader files changed after preview. Refresh the plan and try again.";
+60: struct DowngraderPatchIntegrity {
+70: const PATCH_INTEGRITY_MANIFEST: [DowngraderPatchIntegrity; 12] = [
+71: DowngraderPatchIntegrity {
+72: patch_name: "NG-to-OG-Archive2.exe.xdelta",
+77: DowngraderPatchIntegrity {
+78: patch_name: "NG-to-OG-Archive2Interop.dll.xdelta",
+83: DowngraderPatchIntegrity {
+89: DowngraderPatchIntegrity {
+95: DowngraderPatchIntegrity {
+101: DowngraderPatchIntegrity {
+107: DowngraderPatchIntegrity {
+108: patch_name: "OG-to-NG-Archive2.exe.xdelta",
+113: DowngraderPatchIntegrity {
+114: patch_name: "OG-to-NG-Archive2Interop.dll.xdelta",
+119: DowngraderPatchIntegrity {
+125: DowngraderPatchIntegrity {
+131: DowngraderPatchIntegrity {
+137: DowngraderPatchIntegrity {
+145: /// Request input for a read-only Downgrader status snapshot.
+147: pub struct DowngraderStatusRequest<'a> {
+154: impl<'a> DowngraderStatusRequest<'a> {
+164: /// Request input for a read-only Downgrader inline preview plan.
+166: pub struct DowngraderPlanRequest<'a> {
+172: pub options: DowngraderOptionsSnapshot,
+175: impl<'a> DowngraderPlanRequest<'a> {
+... 483 more
+
+## src/domain/downgrader.rs (1195 lines, 268 keyword hits)
+1: //! Slint-free Downgrader workflow contract.
+3: //! The reference Tkinter modal lives in `CMT/src/downgrader.py`, with shared
+12: pub const DOWNGRADER_MODAL_TITLE: &str = "Downgrader";
+45: pub const ABOUT_DOWNGRADING_BODY: &str = "This downgrader makes use of delta patches which are downloaded as-needed from the CMT GitHub page.\nPatches range in size from 23KB to...
+48: pub const TOOLTIP_DOWNGRADER_BACKUPS: &str = "Backups are created prior to patching, and will be used instead of patches if present.\nSimple Downgrader's backups will also be us...
+65: pub enum DowngraderLogLevel {
+74: impl DowngraderLogLevel {
+85: /// Install/status labels used by the Downgrader modal.
+87: pub enum DowngraderInstallStatus {
+105: impl DowngraderInstallStatus {
+136: impl fmt::Display for DowngraderInstallStatus {
+142: /// Desired target chosen by the Downgrader radio buttons.
+144: pub enum DowngraderTarget {
+151: impl DowngraderTarget {
+161: pub const fn desired_status(self) -> DowngraderInstallStatus {
+163: Self::OldGen => DowngraderInstallStatus::OldGen,
+164: Self::NextGen => DowngraderInstallStatus::NextGen,
+215: impl fmt::Display for DowngraderTarget {
+221: /// Reference group for a downgrader-managed file.
+223: pub enum DowngraderFileGroup {
+230: impl DowngraderFileGroup {
+242: pub struct DowngraderCrcMapping {
+246: pub status: DowngraderInstallStatus,
+249: impl DowngraderCrcMapping {
+250: const fn new(crc32: &'static str, status: DowngraderInstallStatus) -> Self {
+257: pub struct DowngraderFileDefinition {
+263: pub group: DowngraderFileGroup,
+264: /// CRC-to-status mappings copied from `CMT/src/downgrader.py`.
+265: pub crc_mappings: &'static [DowngraderCrcMapping],
+268: impl DowngraderFileDefinition {
+270: pub fn status_for_crc(self, crc32: &str) -> Option<DowngraderInstallStatus> {
+278: pub const fn status_row(self, status: DowngraderInstallStatus) -> DowngraderStatusRow {
+279: DowngraderStatusRow {
+290: pub struct DowngraderStatusRow {
+296: pub group: DowngraderFileGroup,
+... 233 more
+
+## src/workers/events.rs (1349 lines, 95 keyword hits)
+19: downgrader::{DowngraderExecutionLogRow, DowngraderProgress},
+31: downgrader::{DowngraderExecutionResult, DowngraderPreviewPlan, DowngraderStatusSnapshot},
+79: /// Archive or file patching work.
+194: pub struct WorkerEvent {
+203: impl WorkerEvent {
+407: /// Downgrader modal status, plan, progress, log, or run result.
+408: Downgrader(DowngraderWorkerPayload),
+604: /// Downgrader worker stage used for safe failure routing and stale-event rejection.
+606: pub enum DowngraderWorkerStage {
+615: impl DowngraderWorkerStage {
+626: /// Downgrader-specific worker payloads that must cross the UI handoff boundary intact.
+628: pub enum DowngraderWorkerPayload {
+634: snapshot: Box<DowngraderStatusSnapshot>,
+641: plan: Box<DowngraderPreviewPlan>,
+648: row: DowngraderExecutionLogRow,
+655: progress: DowngraderProgress,
+662: result: Box<DowngraderExecutionResult>,
+669: stage: DowngraderWorkerStage,
+677: impl DowngraderWorkerPayload {
+678: /// Creates a Downgrader status-loaded payload.
+679: pub fn status_loaded(request_id: u64, snapshot: DowngraderStatusSnapshot) -> Self {
+686: /// Creates a Downgrader plan-ready payload.
+687: pub fn plan_ready(request_id: u64, plan: DowngraderPreviewPlan) -> Self {
+694: /// Creates a Downgrader log-row payload.
+695: pub fn log_row(request_id: u64, row: DowngraderExecutionLogRow) -> Self {
+699: /// Creates a Downgrader progress payload.
+700: pub fn progress(request_id: u64, progress: DowngraderProgress) -> Self {
+707: /// Creates a Downgrader run-completed payload.
+708: pub fn run_completed(request_id: u64, result: DowngraderExecutionResult) -> Self {
+715: /// Creates a Downgrader safe-failure payload.
+718: stage: DowngraderWorkerStage,
+743: pub const fn stage(&self) -> DowngraderWorkerStage {
+745: Self::StatusLoaded { .. } => DowngraderWorkerStage::Status,
+746: Self::PlanReady { .. } => DowngraderWorkerStage::Plan,
+748: DowngraderWorkerStage::Run
+... 60 more
+
+## src/main.rs (7251 lines, 486 keyword hits)
+16: downgrader_controller::{
+17: DOWNGRADER_PLAN_READY_MESSAGE, DowngraderController, DowngraderPatchWorkerRequest,
+18: DowngraderPlanWorkerRequest, DowngraderRunWorkerRequest, DowngraderStatusWorkerRequest,
+19: DowngraderTransitionResult, DowngraderWorkerRequestKind, downgrader_log_row_payload,
+20: downgrader_plan_ready_payload, downgrader_progress_payload,
+21: downgrader_run_completed_payload, downgrader_status_loaded_payload,
+47: downgrader::{
+48: ABOUT_DOWNGRADING_BODY, ABOUT_DOWNGRADING_TITLE, DowngraderExecutionLogRow,
+49: DowngraderFileGroup, DowngraderInstallStatus, DowngraderOptionsSnapshot,
+50: DowngraderStatusRow, DowngraderTarget,
+67: settings::{AppSettings, DowngraderSettings, UpdateSource},
+73: filesystem::RealFilesystem,
+81: downgrader::{
+82: DowngraderExecutionProgressEvent, DowngraderExecutionRequest, DowngraderPlanRequest,
+83: DowngraderService, DowngraderStatusRequest, ReqwestDeltaDownloader, VcdiffDeltaApplier,
+107: WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+228: struct DowngraderUiProjection {
+229: current_game_status_rows: Vec<DowngraderStatusUiRow>,
+230: current_creation_kit_status_rows: Vec<DowngraderStatusUiRow>,
+234: plan_rows: Vec<DowngraderPlanUiRow>,
+238: log_rows: Vec<DowngraderLogUiRow>,
+249: struct DowngraderAboutProjection {
+255: enum DowngraderOpenSource {
+260: impl DowngraderOpenSource {
+292: let downgrader_controller = Arc::new(Mutex::new(DowngraderController::new()));
+293: let downgrader_window = DowngraderWindow::new()?;
+303: apply_current_downgrader_state(&downgrader_window, &downgrader_controller);
+310: let downgrader_sink = bind_downgrader_worker_sink(
+312: &downgrader_window,
+313: Arc::clone(&downgrader_controller),
+325: bind_downgrader_callbacks(
+326: &downgrader_window,
+327: Arc::clone(&downgrader_controller),
+331: downgrader_sink.clone(),
+335: &downgrader_window,
+... 451 more
+
+## ui/main.slint (312 lines, 14 keyword hits)
+5: import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+6: export { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+18: in-out property <[OverviewUiRow]> overview-archive-rows;
+31: in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+32: in-out property <bool> overview-archive-patcher-enabled: false;
+33: in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+84: in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+99: callback overview-open-archive-patcher-requested();
+139: overview-archive-rows <=> root.overview-archive-rows;
+152: overview-archive-patcher-label <=> root.overview-archive-patcher-label;
+153: overview-archive-patcher-enabled <=> root.overview-archive-patcher-enabled;
+154: overview-archive-patcher-status <=> root.overview-archive-patcher-status;
+171: open-archive-patcher-requested => {
+172: root.overview-open-archive-patcher-requested();
+
+## ui/overview_tab.slint (317 lines, 11 keyword hits)
+138: in-out property <[OverviewUiRow]> overview-archive-rows;
+151: in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+152: in-out property <bool> overview-archive-patcher-enabled: false;
+153: in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+161: callback open-archive-patcher-requested();
+285: title: "Archives (BA2)";
+286: rows: root.overview-archive-rows;
+288: action-label: root.overview-archive-patcher-label;
+289: action-enabled: root.overview-archive-patcher-enabled;
+290: action-status: root.overview-archive-patcher-status;
+292: root.open-archive-patcher-requested();
+
+## ui/tools_tab.slint (233 lines, 5 keyword hits)
+57: in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+100: label: "Archive Patcher";
+101: action-id: "tools.archive_patcher";
+103: helper-text: "Deferred until S10 Archive Patcher workflow is ported.";
+205: action-id: "tools.ba2_merging_automation_tool";
+
+## src/domain/tools.rs (850 lines, 12 keyword hits)
+68: /// Deferred Archive Patcher utility entry.
+69: ArchivePatcher,
+99: Self::ArchivePatcher => "tools.archive_patcher",
+110: Self::Ba2MergingAutomationTool => "tools.ba2_merging_automation_tool",
+315: id: ToolActionId::ArchivePatcher,
+316: label: "Archive Patcher",
+318: key: "archive_patcher",
+319: status_text: "Archive Patcher is not available in this Rust port yet.",
+518: ["Downgrade Manager", "Archive Patcher"]
+795: "Archive Patcher",
+797: key: "archive_patcher",
+798: status_text: "Archive Patcher is not available in this Rust port yet.",
+
+## src/services/tools.rs (1027 lines, 7 keyword hits)
+985: fn s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred()
+1008: let archive_feedback = service.execute_tools_action(ToolActionId::ArchivePatcher.as_str());
+1011: archive_feedback.outcome,
+1015: archive_feedback.action,
+1017: ToolActionId::ArchivePatcher
+1021: archive_feedback.safe_message(),
+1022: "Archive Patcher is not available in this Rust port yet."
+
+## src/platform/filesystem.rs (691 lines, 24 keyword hits)
+4: //! directory traversal. Callers should depend on [`Filesystem`] so tests can use
+110: /// Filesystem operations needed by discovery, scan, parser, and patch code.
+111: pub trait Filesystem {
+144: /// The default delegates to [`Filesystem::metadata`] so existing fake adapters remain small;
+166: /// error behavior as [`Filesystem::read_bytes`].
+183: /// Filesystem mutation operations needed by confirmed patch/download workflows.
+185: /// This trait is intentionally separate from [`Filesystem`] so read-only discovery,
+187: pub trait WritableFilesystem {
+209: pub struct RealFilesystem;
+211: impl RealFilesystem {
+218: impl Filesystem for RealFilesystem {
+351: impl WritableFilesystem for RealFilesystem {
+510: struct FakeFilesystem {
+514: impl FakeFilesystem {
+553: impl Filesystem for FakeFilesystem {
+622: fn collect_files(fs: &dyn Filesystem, root: &Path) -> PlatformResult<BTreeSet<PathBuf>> {
+633: let fs = FakeFilesystem::default()
+636: .with_file("Data/Fallout4 - Main.ba2", b"archive".to_vec())
+644: PathBuf::from("Data/Fallout4 - Main.ba2"),
+662: let fs = FakeFilesystem::default()
+664: .with_denied("Data/Private.ba2");
+667: .metadata(Path::new("Data/Private.ba2"))
+674: "Filesystem metadata read target could not be accessed because permission was denied."
+680: let fs = RealFilesystem::new();

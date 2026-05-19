@@ -1,0 +1,18 @@
+{
+  "id": "a2f64aa7-367b-4d4c-822a-036f8e36731f",
+  "runtime": "bash",
+  "purpose": "run focused archive_patcher_service_plan tests",
+  "script_chars": 47,
+  "started_at": "2026-05-19T01:29:10.714Z",
+  "finished_at": "2026-05-19T01:29:19.259Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8545,
+  "stdout_bytes": 1000,
+  "stderr_bytes": 49,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a2f64aa7-367b-4d4c-822a-036f8e36731f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a2f64aa7-367b-4d4c-822a-036f8e36731f.stderr"
+}

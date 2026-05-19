@@ -1,0 +1,18 @@
+{
+  "id": "8ad96f33-87eb-4de2-a3cd-1c0fa422af31",
+  "runtime": "bash",
+  "purpose": "T06 verify negative test coverage keywords",
+  "script_chars": 175,
+  "started_at": "2026-05-19T03:26:50.652Z",
+  "finished_at": "2026-05-19T03:27:00.004Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9352,
+  "stdout_bytes": 6107,
+  "stderr_bytes": 530,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\8ad96f33-87eb-4de2-a3cd-1c0fa422af31.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\8ad96f33-87eb-4de2-a3cd-1c0fa422af31.stderr"
+}

@@ -1,0 +1,114 @@
+
+=== cargo test downgrader_domain ===
+exit: 0
+duration_s: 0.6
+--- tail ---
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 8 tests
+test domain::downgrader::tests::downgrader_domain_progress_values_are_clamped_to_reference_range ... ok
+test domain::downgrader::tests::downgrader_domain_status_and_target_labels_match_reference ... ok
+test domain::downgrader::tests::downgrader_domain_backup_and_patch_helpers_match_reference ... ok
+test domain::downgrader::tests::downgrader_domain_plan_and_log_rows_use_reference_vocabulary ... ok
+test domain::downgrader::tests::downgrader_domain_crc_mappings_match_reference ... ok
+test domain::downgrader::tests::downgrader_domain_reference_crc_buckets_include_ngae_for_ng_and_ae ... ok
+test domain::downgrader::tests::downgrader_domain_file_definitions_preserve_reference_order_and_groups ... ok
+test domain::downgrader::tests::downgrader_domain_reference_strings_match_python_modal ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 0.00s
+
+
+=== cargo test downgrader_service_plan ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 8 tests
+test services::downgrader::tests::downgrader_service_plan_rejects_escaping_managed_paths_before_output ... ok
+test services::downgrader::tests::downgrader_service_plan_rejects_missing_and_unsafe_roots ... ok
+test services::downgrader::tests::downgrader_service_plan_marks_missing_unknown_obsolete_and_anniversary_rows_safely ... ok
+test services::downgrader::tests::downgrader_service_plan_status_classifies_rows_and_default_target ... ok
+test services::downgrader::tests::downgrader_service_plan_skips_reference_rows_in_order ... ok
+test services::downgrader::tests::downgrader_service_plan_builds_invalid_backup_cleanup_download_patch_and_optional_cleanup ... ok
+test services::downgrader::tests::downgrader_service_plan_builds_restore_from_valid_desired_backup ... ok
+test services::downgrader::tests::downgrader_service_plan_fails_row_when_current_or_backup_cannot_be_read ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 312 filtered out; finished in 0.00s
+
+
+=== cargo test downgrader_executor ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 6 tests
+test services::downgrader::tests::downgrader_executor_vcdiff_applier_fixture_decodes_source_patch ... ok
+test services::downgrader::tests::downgrader_executor_deletes_invalid_backups_downloads_applies_and_cleans_deltas ... ok
+test services::downgrader::tests::downgrader_executor_logs_permission_failures_and_continues_safely ... ok
+test services::downgrader::tests::downgrader_executor_reuses_existing_patch_and_does_not_download_for_skipped_rows ... ok
+test services::downgrader::tests::downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups ... ok
+test services::downgrader::tests::downgrader_executor_preserves_source_backup_after_download_or_apply_failures ... ok
+
+test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 314 filtered out; finished in 0.00s
+
+
+=== cargo test downgrader_controller ===
+exit: 0
+duration_s: 0.6
+--- tail ---
+running 10 tests
+test app::downgrader_controller::tests::downgrader_controller_open_requests_status_and_loading_state ... ok
+test app::downgrader_controller::tests::downgrader_controller_close_is_blocked_while_running ... ok
+test app::downgrader_controller::tests::downgrader_controller_option_changes_invalidate_plan_and_reject_malformed_values ... ok
+test app::downgrader_controller::tests::downgrader_controller_safe_failure_payload_uses_safe_text_without_diagnostic ... ok
+test app::downgrader_controller::tests::downgrader_controller_stale_status_plan_and_run_events_are_ignored ... ok
+test app::downgrader_controller::tests::downgrader_controller_first_patch_click_plans_and_second_click_runs ... ok
+test app::downgrader_controller::tests::downgrader_task_id_parsing_and_payload_helpers_are_stable ... ok
+test app::downgrader_controller::tests::downgrader_controller_worker_failure_recovers_with_safe_error_and_allows_close ... ok
+test app::downgrader_controller::tests::downgrader_controller_status_loaded_default_target_through_recording_sink ... ok
+test app::downgrader_controller::tests::downgrader_controller_completion_reenables_patch_and_queues_status_refresh ... ok
+
+test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 310 filtered out; finished in 0.00s
+
+
+=== cargo test downgrader_worker_payload ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 1 test
+test workers::events::tests::downgrader_worker_payload_round_trips_owned_status_plan_log_progress_run_and_failure ... ok
+
+test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 319 filtered out; finished in 0.00s
+
+
+=== cargo test s09_downgrader_slint_contract ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.43s
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 2 tests
+test tests::s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred ... ok
+test tests::s09_downgrader_slint_contract_modal_source_exposes_reference_shape_and_labels ... ok
+
+test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 318 filtered out; finished in 0.00s
+
+
+=== cargo test s09_downgrader_runtime_wiring ===
+exit: 0
+duration_s: 0.5
+--- tail ---
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.44s
+     Running unittests src\main.rs (target\debug\deps\cmt_rs-0419c7dc2aae5745.exe)
+
+running 0 tests
+
+test result: ok. 0 passed; 0 failed; 0 ignored; 0 measured; 320 filtered out; finished in 0.00s
+

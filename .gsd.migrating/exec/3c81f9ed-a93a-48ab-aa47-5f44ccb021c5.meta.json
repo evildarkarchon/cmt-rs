@@ -1,0 +1,18 @@
+{
+  "id": "3c81f9ed-a93a-48ab-aa47-5f44ccb021c5",
+  "runtime": "bash",
+  "purpose": "verify cargo fmt check after archive patcher controller changes",
+  "script_chars": 33,
+  "started_at": "2026-05-19T02:23:44.384Z",
+  "finished_at": "2026-05-19T02:23:45.071Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 687,
+  "stdout_bytes": 21064,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\3c81f9ed-a93a-48ab-aa47-5f44ccb021c5.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\3c81f9ed-a93a-48ab-aa47-5f44ccb021c5.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "638a8259-de38-4a76-843e-f9ae8cd81e53",
+  "runtime": "bash",
+  "purpose": "minimal rerun s09 runtime wiring after assertion fix",
+  "script_chars": 63,
+  "started_at": "2026-05-19T00:35:07.778Z",
+  "finished_at": "2026-05-19T00:36:55.280Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 107502,
+  "stdout_bytes": 722,
+  "stderr_bytes": 8662,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\638a8259-de38-4a76-843e-f9ae8cd81e53.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\638a8259-de38-4a76-843e-f9ae8cd81e53.stderr"
+}

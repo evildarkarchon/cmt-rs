@@ -1,0 +1,133 @@
+
+## pub fn snapshot
+103: 
+104:     /// Returns the current render-ready Overview snapshot.
+105:     pub fn snapshot(&self) -> &OverviewSnapshot {
+106:         &self.snapshot
+107:     }
+108: 
+109:     /// Returns the current safe last-action error, if any.
+110:     pub fn last_safe_action_error(&self) -> Option<&OverviewActionError> {
+111:         self.snapshot.last_action_error.as_ref()
+112:     }
+113: 
+
+## current_snapshot
+
+## OverviewSnapshot
+3: //! The controller owns no Slint handles and performs no filesystem, registry,
+4: //! process, network, or desktop work. It only turns UI intents and owned worker
+5: //! events into a current [`OverviewSnapshot`](crate::domain::overview::OverviewSnapshot)
+6: //! so production code can keep slow work on background workers while tests can
+7: //! exercise every state transition with in-memory values.
+8: 
+9: use crate::{
+10:     domain::{
+11:         overview::{
+12:             OverviewActionError, OverviewDeferredAction, OverviewDeferredActionKind,
+13:             OverviewDeferredActionTarget, OverviewGamePathStatus, OverviewSnapshot,
+11:         overview::{
+12:             OverviewActionError, OverviewDeferredAction, OverviewDeferredActionKind,
+13:             OverviewDeferredActionTarget, OverviewGamePathStatus, OverviewSnapshot,
+14:             UpdateBannerState, UpdateProvider,
+15:         },
+16:         settings::UpdateSource,
+17:     },
+18:     workers::{
+19:         OverviewWorkerPayload, WorkerEvent, WorkerFailure, WorkerPayload, WorkerSpawnError,
+20:         WorkerTask, WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
+21:     },
+79: #[derive(Debug, Clone, PartialEq, Eq)]
+80: pub struct OverviewController {
+81:     snapshot: OverviewSnapshot,
+82:     next_refresh_id: OverviewRefreshId,
+83:     latest_refresh_id: Option<OverviewRefreshId>,
+84:     pending_update_banner: Option<(OverviewRefreshId, UpdateBannerState)>,
+85: }
+86: 
+87: impl Default for OverviewController {
+88:     fn default() -> Self {
+89:         Self::new()
+95:     pub fn new() -> Self {
+96:         Self {
+97:             snapshot: OverviewSnapshot::empty(),
+98:             next_refresh_id: 1,
+99:             latest_refresh_id: None,
+100:             pending_update_banner: None,
+101:         }
+102:     }
+103: 
+104:     /// Returns the current render-ready Overview snapshot.
+105:     pub fn snapshot(&self) -> &OverviewSnapshot {
+103: 
+104:     /// Returns the current render-ready Overview snapshot.
+105:     pub fn snapshot(&self) -> &OverviewSnapshot {
+106:         &self.snapshot
+107:     }
+108: 
+109:     /// Returns the current safe last-action error, if any.
+110:     pub fn last_safe_action_error(&self) -> Option<&OverviewActionError> {
+111:         self.snapshot.last_action_error.as_ref()
+112:     }
+113: 
+
+## archives
+
+## refresh
+22: };
+23: 
+24: /// Stable prefix for Overview refresh worker task identifiers.
+25: pub const OVERVIEW_REFRESH_TASK_PREFIX: &str = "overview-refresh";
+26: /// Stable prefix for Overview update-check worker task identifiers.
+27: pub const OVERVIEW_UPDATE_TASK_PREFIX: &str = "overview-update";
+28: /// Stable prefix for Overview desktop-action worker task identifiers.
+29: pub const OVERVIEW_DESKTOP_TASK_PREFIX: &str = "overview-desktop";
+30: 
+31: /// Monotonic identity assigned to each Overview refresh request.
+32: pub type OverviewRefreshId = u64;
+23: 
+24: /// Stable prefix for Overview refresh worker task identifiers.
+25: pub const OVERVIEW_REFRESH_TASK_PREFIX: &str = "overview-refresh";
+26: /// Stable prefix for Overview update-check worker task identifiers.
+27: pub const OVERVIEW_UPDATE_TASK_PREFIX: &str = "overview-update";
+28: /// Stable prefix for Overview desktop-action worker task identifiers.
+29: pub const OVERVIEW_DESKTOP_TASK_PREFIX: &str = "overview-desktop";
+30: 
+31: /// Monotonic identity assigned to each Overview refresh request.
+32: pub type OverviewRefreshId = u64;
+33: 
+29: pub const OVERVIEW_DESKTOP_TASK_PREFIX: &str = "overview-desktop";
+30: 
+31: /// Monotonic identity assigned to each Overview refresh request.
+32: pub type OverviewRefreshId = u64;
+33: 
+34: /// Result of applying a controller transition.
+35: #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+36: pub enum OverviewTransitionResult {
+37:     /// The event matched the active controller state and changed the snapshot or diagnostics.
+38:     Applied,
+39:     /// The event belonged to an older refresh and was intentionally ignored.
+37:     /// The event matched the active controller state and changed the snapshot or diagnostics.
+38:     Applied,
+39:     /// The event belonged to an older refresh and was intentionally ignored.
+40:     StaleIgnored,
+41:     /// The event was not an Overview event or was not relevant to this reducer.
+42:     Ignored,
+43: }
+44: 
+45: impl OverviewTransitionResult {
+46:     /// Returns true when the event changed controller state.
+47:     pub const fn is_applied(self) -> bool {
+50: }
+51: 
+52: /// Work request returned by refresh intents and consumed by worker wiring.
+53: #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+54: pub struct OverviewRefreshRequest {
+55:     /// Monotonic refresh request id used to reject stale worker results.
+56:     pub refresh_id: OverviewRefreshId,
+57:     /// Update source snapshot captured at request time.
+58:     pub update_source: UpdateSource,
+59: }
+60: 
+
+## deferred

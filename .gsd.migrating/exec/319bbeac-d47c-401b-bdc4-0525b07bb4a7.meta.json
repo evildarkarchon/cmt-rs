@@ -1,0 +1,18 @@
+{
+  "id": "319bbeac-d47c-401b-bdc4-0525b07bb4a7",
+  "runtime": "bash",
+  "purpose": "S10 codebase symbol scan for archive patcher relevant references",
+  "script_chars": 453,
+  "started_at": "2026-05-19T00:47:01.764Z",
+  "finished_at": "2026-05-19T00:47:01.900Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 136,
+  "stdout_bytes": 25728,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\319bbeac-d47c-401b-bdc4-0525b07bb4a7.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\319bbeac-d47c-401b-bdc4-0525b07bb4a7.stderr"
+}

@@ -1,0 +1,11 @@
+warning: unused import: `ArchivePatcherArchiveFormat`
+  --> src/main.rs:52:52
+   |
+52 | ...E, ArchivePatcherArchiveFormat,
+   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   |
+   = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+warning: `cmt-rs` (bin "cmt-rs" test) generated 1 warning (run `cargo fix --bin "cmt-rs" -p cmt-rs --tests` to apply 1 suggestion)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 9.14s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-677af665d081adb5)

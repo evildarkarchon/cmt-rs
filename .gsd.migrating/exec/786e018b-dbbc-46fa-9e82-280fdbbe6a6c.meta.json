@@ -1,0 +1,18 @@
+{
+  "id": "786e018b-dbbc-46fa-9e82-280fdbbe6a6c",
+  "runtime": "bash",
+  "purpose": "M001 assessment verdict inventory retry",
+  "script_chars": 539,
+  "started_at": "2026-05-19T04:15:48.760Z",
+  "finished_at": "2026-05-19T04:15:48.929Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 169,
+  "stdout_bytes": 683,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\786e018b-dbbc-46fa-9e82-280fdbbe6a6c.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\786e018b-dbbc-46fa-9e82-280fdbbe6a6c.stderr"
+}

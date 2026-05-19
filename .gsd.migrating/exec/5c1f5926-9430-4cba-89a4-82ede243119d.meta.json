@@ -1,0 +1,18 @@
+{
+  "id": "5c1f5926-9430-4cba-89a4-82ede243119d",
+  "runtime": "bash",
+  "purpose": "T06 final cargo test quiet rerun after assertion split",
+  "script_chars": 34,
+  "started_at": "2026-05-19T03:44:13.313Z",
+  "finished_at": "2026-05-19T03:44:59.149Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 45836,
+  "stdout_bytes": 517,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5c1f5926-9430-4cba-89a4-82ede243119d.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5c1f5926-9430-4cba-89a4-82ede243119d.stderr"
+}

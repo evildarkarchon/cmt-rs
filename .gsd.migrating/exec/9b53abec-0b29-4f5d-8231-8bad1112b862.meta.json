@@ -1,0 +1,18 @@
+{
+  "id": "9b53abec-0b29-4f5d-8231-8bad1112b862",
+  "runtime": "bash",
+  "purpose": "locate relevant tests and ArchiveRecord usage",
+  "script_chars": 419,
+  "started_at": "2026-05-19T01:09:21.455Z",
+  "finished_at": "2026-05-19T01:09:21.574Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 119,
+  "stdout_bytes": 583,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9b53abec-0b29-4f5d-8231-8bad1112b862.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9b53abec-0b29-4f5d-8231-8bad1112b862.stderr"
+}

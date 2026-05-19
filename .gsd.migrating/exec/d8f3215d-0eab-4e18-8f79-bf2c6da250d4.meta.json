@@ -1,0 +1,18 @@
+{
+  "id": "d8f3215d-0eab-4e18-8f79-bf2c6da250d4",
+  "runtime": "bash",
+  "purpose": "M001 validation quality gates and CMT clean status",
+  "script_chars": 1087,
+  "started_at": "2026-05-19T04:13:56.548Z",
+  "finished_at": "2026-05-19T04:13:57.147Z",
+  "exit_code": 2,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 599,
+  "stdout_bytes": 116,
+  "stderr_bytes": 56,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d8f3215d-0eab-4e18-8f79-bf2c6da250d4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d8f3215d-0eab-4e18-8f79-bf2c6da250d4.stderr"
+}

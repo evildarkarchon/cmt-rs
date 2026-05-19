@@ -1,0 +1,1153 @@
+## startup/controllers and downgrader sink 260-540
+260: impl DowngraderOpenSource {
+261:     const fn label(self) -> &'static str {
+262:         match self {
+263:             Self::Overview => "overview",
+264:             Self::Tools => "tools",
+265:         }
+266:     }
+267: }
+268: 
+269: fn main() -> Result<(), Box<dyn std::error::Error>> {
+270:     let tokio_runtime = tokio::runtime::Builder::new_multi_thread()
+271:         .enable_all()
+272:         .thread_name("cmt-rs-worker")
+273:         .build()?;
+274:     let runtime_handle = tokio_runtime.handle().clone();
+275:     let _runtime_guard = tokio_runtime.enter();
+276: 
+277:     let app = MainWindow::new()?;
+278:     let settings_controller = Rc::new(RefCell::new(load_settings_controller()));
+279:     let shared_settings_snapshot = Arc::new(Mutex::new(
+280:         settings_controller.borrow().current_settings().clone(),
+281:     ));
+282:     let overview_controller = Arc::new(Mutex::new(OverviewController::new()));
+283:     let f4se_controller = Arc::new(Mutex::new(F4seController::new()));
+284:     let scanner_controller = Arc::new(Mutex::new(ScannerController::new(
+285:         settings_controller
+286:             .borrow()
+287:             .current_scanner_settings()
+288:             .clone(),
+289:     )));
+290:     let tools_controller = Arc::new(Mutex::new(ToolsController::new()));
+291:     let about_controller = Arc::new(Mutex::new(AboutController::new()));
+292:     let downgrader_controller = Arc::new(Mutex::new(DowngraderController::new()));
+293:     let downgrader_window = DowngraderWindow::new()?;
+294:     let worker_runtime = WorkerRuntime::new();
+295: 
+296:     app.set_update_source(settings_controller.borrow().visible_update_source().into());
+297:     app.set_log_level(settings_controller.borrow().visible_log_level().into());
+298:     apply_current_overview_snapshot(&app, &overview_controller);
+299:     apply_current_f4se_snapshot(&app, &f4se_controller);
+300:     apply_current_scanner_state(&app, &scanner_controller);
+301:     apply_current_tools_state(&app, &tools_controller);
+302:     apply_current_about_state(&app, &about_controller);
+303:     apply_current_downgrader_state(&downgrader_window, &downgrader_controller);
+304: 
+305:     let overview_sink = bind_overview_worker_sink(&app, Arc::clone(&overview_controller));
+306:     let f4se_sink = bind_f4se_worker_sink(&app, Arc::clone(&f4se_controller));
+307:     let scanner_sink = bind_scanner_worker_sink(&app, Arc::clone(&scanner_controller));
+308:     let tools_sink = bind_tools_worker_sink(&app, Arc::clone(&tools_controller));
+309:     let about_sink = bind_about_worker_sink(&app, Arc::clone(&about_controller));
+310:     let downgrader_sink = bind_downgrader_worker_sink(
+311:         &app,
+312:         &downgrader_window,
+313:         Arc::clone(&downgrader_controller),
+314:         Arc::clone(&overview_controller),
+315:         Arc::clone(&shared_settings_snapshot),
+316:         worker_runtime,
+317:         overview_sink.clone(),
+318:         runtime_handle.clone(),
+319:     );
+320:     bind_settings_callbacks(
+321:         &app,
+322:         Rc::clone(&settings_controller),
+323:         Arc::clone(&shared_settings_snapshot),
+324:     );
+325:     bind_downgrader_callbacks(
+326:         &downgrader_window,
+327:         Arc::clone(&downgrader_controller),
+328:         Rc::clone(&settings_controller),
+329:         Arc::clone(&shared_settings_snapshot),
+330:         worker_runtime,
+331:         downgrader_sink.clone(),
+332:     );
+333:     bind_tools_callbacks(
+334:         &app,
+335:         &downgrader_window,
+336:         Arc::clone(&tools_controller),
+337:         Arc::clone(&downgrader_controller),
+338:         Rc::clone(&settings_controller),
+339:         worker_runtime,
+340:         tools_sink.clone(),
+341:         downgrader_sink.clone(),
+342:     );
+343:     bind_about_callbacks(
+344:         &app,
+345:         Arc::clone(&about_controller),
+346:         worker_runtime,
+347:         about_sink,
+348:     );
+349:     bind_f4se_callbacks(
+350:         &app,
+351:         Arc::clone(&f4se_controller),
+352:         worker_runtime,
+353:         f4se_sink,
+354:     );
+355:     bind_scanner_callbacks(
+356:         &app,
+357:         Arc::clone(&scanner_controller),
+358:         Rc::clone(&settings_controller),
+359:         worker_runtime,
+360:         scanner_sink,
+361:     );
+362:     bind_overview_callbacks(
+363:         &app,
+364:         &downgrader_window,
+365:         Arc::clone(&overview_controller),
+366:         Arc::clone(&downgrader_controller),
+367:         Rc::clone(&settings_controller),
+368:         worker_runtime,
+369:         overview_sink.clone(),
+370:         downgrader_sink,
+371:         runtime_handle.clone(),
+372:     );
+373: 
+374:     request_overview_refresh(
+375:         &app,
+376:         &overview_controller,
+377:         &settings_controller,
+378:         worker_runtime,
+379:         overview_sink,
+380:         runtime_handle,
+381:     );
+382: 
+383:     Ok(app.run()?)
+384: }
+385: 
+386: fn load_settings_controller() -> SettingsController<FileAssetResolver> {
+387:     SettingsController::load(SettingsStore::production()).unwrap_or_else(|error| {
+388:         tracing::error!(%error, "Settings : Failed to load settings; using in-memory defaults");
+389:         SettingsController::from_settings(SettingsStore::production(), AppSettings::default())
+390:     })
+391: }
+392: 
+393: fn bind_settings_callbacks(
+394:     app: &MainWindow,
+395:     controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+396:     shared_settings_snapshot: Arc<Mutex<AppSettings>>,
+397: ) {
+398:     app.on_update_source_selected({
+399:         let app = app.as_weak();
+400:         let controller = Rc::clone(&controller);
+401:         let shared_settings_snapshot = Arc::clone(&shared_settings_snapshot);
+402: 
+403:         move |selected| {
+404:             let visible_value = controller
+405:                 .borrow_mut()
+406:                 .select_update_source(selected.as_str());
+407:             remember_current_settings_snapshot(&controller, &shared_settings_snapshot);
+408:             if let Some(app) = app.upgrade() {
+409:                 app.set_update_source(visible_value.into());
+410:             }
+411:         }
+412:     });
+413: 
+414:     app.on_log_level_selected({
+415:         let app = app.as_weak();
+416:         let controller = Rc::clone(&controller);
+417:         let shared_settings_snapshot = Arc::clone(&shared_settings_snapshot);
+418: 
+419:         move |selected| {
+420:             let visible_value = controller.borrow_mut().select_log_level(selected.as_str());
+421:             remember_current_settings_snapshot(&controller, &shared_settings_snapshot);
+422:             if let Some(app) = app.upgrade() {
+423:                 app.set_log_level(visible_value.into());
+424:             }
+425:         }
+426:     });
+427: }
+428: 
+429: fn remember_current_settings_snapshot<R: AssetResolver>(
+430:     controller: &Rc<RefCell<SettingsController<R>>>,
+431:     shared_settings_snapshot: &Arc<Mutex<AppSettings>>,
+432: ) {
+433:     let settings = controller.borrow().current_settings().clone();
+434:     match shared_settings_snapshot.lock() {
+435:         Ok(mut snapshot) => *snapshot = settings,
+436:         Err(error) => tracing::error!(
+437:             event = "settings-shared-snapshot-update-failed",
+438:             diagnostic = %error,
+439:             "Current settings snapshot could not be updated"
+440:         ),
+441:     }
+442: }
+443: 
+444: fn bind_downgrader_worker_sink(
+445:     app: &MainWindow,
+446:     window: &DowngraderWindow,
+447:     controller: Arc<Mutex<DowngraderController>>,
+448:     overview_controller: Arc<Mutex<OverviewController>>,
+449:     shared_settings_snapshot: Arc<Mutex<AppSettings>>,
+450:     worker_runtime: WorkerRuntime,
+451:     overview_sink: SlintEventLoopSink,
+452:     runtime_handle: tokio::runtime::Handle,
+453: ) -> SlintEventLoopSink {
+454:     let app = app.as_weak();
+455:     let window = window.as_weak();
+456:     SlintEventLoopSink::new(move |event| {
+457:         let task_id = event.task.id.to_string();
+458:         let task_kind = event.task.kind.label();
+459:         let status = event.status.label();
+460:         let was_run_completion = matches!(
+461:             &event.payload,
+462:             WorkerPayload::Downgrader(workers::DowngraderWorkerPayload::RunCompleted { .. })
+463:         );
+464:         let Some(window) = window.upgrade() else {
+465:             tracing::warn!(
+466:                 event = "s09-downgrader-worker-event-dropped",
+467:                 task_id = %task_id,
+468:                 task_kind,
+469:                 status,
+470:                 "Downgrader worker event arrived after the Slint window was gone"
+471:             );
+472:             return;
+473:         };
+474: 
+475:         let Some(result) = with_downgrader_controller_mut(&controller, |controller| {
+476:             handle_downgrader_worker_event(controller, event)
+477:         }) else {
+478:             return;
+479:         };
+480: 
+481:         match result {
+482:             DowngraderTransitionResult::Applied => {
+483:                 tracing::debug!(
+484:                     event = "s09-downgrader-worker-event-applied",
+485:                     task_id = %task_id,
+486:                     task_kind,
+487:                     status,
+488:                     "Downgrader worker event applied to render state"
+489:                 );
+490:                 apply_current_downgrader_state(&window, &controller);
+491:                 if was_run_completion {
+492:                     let app_handle = app.upgrade();
+493:                     let overview_settings =
+494:                         overview_settings_for_downgrader_completion(&shared_settings_snapshot);
+495:                     schedule_downgrader_completion_refresh(
+496:                         app_handle.as_ref(),
+497:                         &window,
+498:                         &controller,
+499:                         &overview_controller,
+500:                         overview_settings,
+501:                         worker_runtime,
+502:                         overview_sink.clone(),
+503:                         runtime_handle.clone(),
+504:                     );
+505:                 }
+506:             }
+507:             DowngraderTransitionResult::StaleIgnored => tracing::debug!(
+508:                 event = "s09-downgrader-worker-event-stale-ignored",
+509:                 task_id = %task_id,
+510:                 task_kind,
+511:                 status,
+512:                 "Downgrader worker event was stale and ignored"
+513:             ),
+514:             DowngraderTransitionResult::Ignored => tracing::debug!(
+515:                 event = "s09-downgrader-worker-event-ignored",
+516:                 task_id = %task_id,
+517:                 task_kind,
+518:                 status,
+519:                 "Ignoring non-Downgrader worker event on Downgrader sink"
+520:             ),
+521:             DowngraderTransitionResult::Rejected | DowngraderTransitionResult::CloseBlocked => {
+522:                 tracing::debug!(
+523:                     event = "s09-downgrader-worker-event-rejected",
+524:                     task_id = %task_id,
+525:                     task_kind,
+526:                     status,
+527:                     result = ?result,
+528:                     "Downgrader worker event was rejected by current modal state"
+529:                 );
+530:             }
+531:         }
+532:     })
+533: }
+534: 
+535: fn bind_downgrader_callbacks(
+536:     window: &DowngraderWindow,
+537:     controller: Arc<Mutex<DowngraderController>>,
+538:     settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+539:     shared_settings_snapshot: Arc<Mutex<AppSettings>>,
+540:     worker_runtime: WorkerRuntime,
+
+## tools entrypoint handling 740-840
+740:                 status,
+741:                 "About worker event applied to render state"
+742:             );
+743:             apply_current_about_state(&app, &controller);
+744:         } else {
+745:             tracing::debug!(
+746:                 event = "s05-about-worker-event-ignored",
+747:                 task_id = %task_id,
+748:                 task_kind,
+749:                 status,
+750:                 "About worker event ignored because it belongs to another surface"
+751:             );
+752:         }
+753:     })
+754: }
+755: 
+756: fn bind_tools_callbacks(
+757:     app: &MainWindow,
+758:     downgrader_window: &DowngraderWindow,
+759:     controller: Arc<Mutex<ToolsController>>,
+760:     downgrader_controller: Arc<Mutex<DowngraderController>>,
+761:     settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+762:     worker_runtime: WorkerRuntime,
+763:     tools_sink: SlintEventLoopSink,
+764:     downgrader_sink: SlintEventLoopSink,
+765: ) {
+766:     app.on_tool_action_requested({
+767:         let app = app.as_weak();
+768:         let downgrader_window = downgrader_window.as_weak();
+769:         let controller = Arc::clone(&controller);
+770:         let downgrader_controller = Arc::clone(&downgrader_controller);
+771:         let settings_controller = Rc::clone(&settings_controller);
+772:         let downgrader_sink = downgrader_sink.clone();
+773: 
+774:         move |action_id| {
+775:             let action_id = action_id.to_string();
+776:             if action_id == ToolActionId::DowngradeManager.as_str() {
+777:                 if let Some(downgrader_window) = downgrader_window.upgrade() {
+778:                     request_open_downgrader_modal(
+779:                         &downgrader_window,
+780:                         &downgrader_controller,
+781:                         &settings_controller,
+782:                         worker_runtime,
+783:                         downgrader_sink.clone(),
+784:                         DowngraderOpenSource::Tools,
+785:                     );
+786:                 }
+787:                 return;
+788:             }
+789: 
+790:             if let Some(app) = app.upgrade() {
+791:                 request_tools_action(
+792:                     &app,
+793:                     &controller,
+794:                     worker_runtime,
+795:                     tools_sink.clone(),
+796:                     action_id,
+797:                 );
+798:             }
+799:         }
+800:     });
+801: 
+802:     app.on_tools_open_downgrade_manager_requested({
+803:         let downgrader_window = downgrader_window.as_weak();
+804:         let downgrader_controller = Arc::clone(&downgrader_controller);
+805:         let settings_controller = Rc::clone(&settings_controller);
+806:         let downgrader_sink = downgrader_sink.clone();
+807: 
+808:         move || {
+809:             if let Some(downgrader_window) = downgrader_window.upgrade() {
+810:                 request_open_downgrader_modal(
+811:                     &downgrader_window,
+812:                     &downgrader_controller,
+813:                     &settings_controller,
+814:                     worker_runtime,
+815:                     downgrader_sink.clone(),
+816:                     DowngraderOpenSource::Tools,
+817:                 );
+818:             }
+819:         }
+820:     });
+821: }
+822: 
+823: fn bind_about_callbacks(
+824:     app: &MainWindow,
+825:     controller: Arc<Mutex<AboutController>>,
+826:     worker_runtime: WorkerRuntime,
+827:     about_sink: SlintEventLoopSink,
+828: ) {
+829:     app.on_about_open_requested({
+830:         let app = app.as_weak();
+831:         let controller = Arc::clone(&controller);
+832:         let about_sink = about_sink.clone();
+833: 
+834:         move |action_id| {
+835:             if let Some(app) = app.upgrade() {
+836:                 request_about_action(
+837:                     &app,
+838:                     &controller,
+839:                     worker_runtime,
+840:                     about_sink.clone(),
+
+## overview entrypoints 1240-1310
+1240:     app.on_overview_open_github_update_requested({
+1241:         let app = app.as_weak();
+1242:         let overview_controller = Arc::clone(&overview_controller);
+1243:         let overview_sink = overview_sink.clone();
+1244: 
+1245:         move || {
+1246:             if let Some(app) = app.upgrade() {
+1247:                 schedule_overview_action(
+1248:                     &app,
+1249:                     &overview_controller,
+1250:                     worker_runtime,
+1251:                     overview_sink.clone(),
+1252:                     OverviewDeferredActionKind::OpenUpdateProvider(UpdateProvider::Github),
+1253:                     "GitHub update link is not available.",
+1254:                     |controller| controller.update_provider_action(UpdateProvider::Github),
+1255:                 );
+1256:             }
+1257:         }
+1258:     });
+1259: 
+1260:     app.on_overview_open_downgrade_manager_requested({
+1261:         let downgrader_window = downgrader_window.as_weak();
+1262:         let downgrader_controller = Arc::clone(&downgrader_controller);
+1263:         let settings_controller = Rc::clone(&settings_controller);
+1264:         let downgrader_sink = downgrader_sink.clone();
+1265: 
+1266:         move || {
+1267:             if let Some(downgrader_window) = downgrader_window.upgrade() {
+1268:                 request_open_downgrader_modal(
+1269:                     &downgrader_window,
+1270:                     &downgrader_controller,
+1271:                     &settings_controller,
+1272:                     worker_runtime,
+1273:                     downgrader_sink.clone(),
+1274:                     DowngraderOpenSource::Overview,
+1275:                 );
+1276:             }
+1277:         }
+1278:     });
+1279: 
+1280:     app.on_overview_open_archive_patcher_requested({
+1281:         let app = app.as_weak();
+1282:         let overview_controller = Arc::clone(&overview_controller);
+1283: 
+1284:         move || {
+1285:             if let Some(app) = app.upgrade() {
+1286:                 apply_action_error(
+1287:                     &app,
+1288:                     &overview_controller,
+1289:                     OverviewDeferredActionKind::OpenArchivePatcher,
+1290:                     "Archive Patcher is reserved for a later port phase.".to_owned(),
+1291:                 );
+1292:             }
+1293:         }
+1294:     });
+1295: }
+1296: 
+1297: fn bind_f4se_worker_sink(
+1298:     app: &MainWindow,
+1299:     controller: Arc<Mutex<F4seController>>,
+1300: ) -> SlintEventLoopSink {
+1301:     let app = app.as_weak();
+1302:     SlintEventLoopSink::new(move |event| {
+1303:         let task_id = event.task.id.to_string();
+1304:         let task_kind = event.task.kind.label();
+1305:         let status = event.status.label();
+1306:         let Some(app) = app.upgrade() else {
+1307:             tracing::warn!(
+1308:                 event = "s06-f4se-worker-event-dropped",
+1309:                 task_id = %task_id,
+1310:                 task_kind,
+
+## downgrader scheduling and refresh 1590-1850
+1590: }
+1591: 
+1592: fn request_open_downgrader_modal<R: AssetResolver>(
+1593:     window: &DowngraderWindow,
+1594:     controller: &Arc<Mutex<DowngraderController>>,
+1595:     settings_controller: &Rc<RefCell<SettingsController<R>>>,
+1596:     worker_runtime: WorkerRuntime,
+1597:     downgrader_sink: SlintEventLoopSink,
+1598:     source: DowngraderOpenSource,
+1599: ) {
+1600:     let settings_snapshot = settings_controller
+1601:         .borrow()
+1602:         .current_downgrader_settings()
+1603:         .clone();
+1604:     let Some(request) = with_downgrader_controller_mut(controller, |controller| {
+1605:         controller.open(settings_snapshot, None)
+1606:     })
+1607:     .flatten() else {
+1608:         apply_current_downgrader_state(window, controller);
+1609:         return;
+1610:     };
+1611: 
+1612:     tracing::info!(
+1613:         event = "s09-downgrader-open-schedule",
+1614:         source = source.label(),
+1615:         request_id = request.request_id,
+1616:         task_id = %request.task.id,
+1617:         "Scheduling Downgrader status worker after modal open"
+1618:     );
+1619:     if let Err(error) = window.show() {
+1620:         tracing::warn!(
+1621:             event = "s09-downgrader-show-failed",
+1622:             source = source.label(),
+1623:             diagnostic = %error,
+1624:             "Downgrader modal show failed"
+1625:         );
+1626:     }
+1627:     apply_current_downgrader_state(window, controller);
+1628:     schedule_downgrader_status_request(
+1629:         window,
+1630:         controller,
+1631:         worker_runtime,
+1632:         downgrader_sink,
+1633:         request,
+1634:     );
+1635: }
+1636: 
+1637: fn request_downgrader_patch_or_run<R: AssetResolver>(
+1638:     window: &DowngraderWindow,
+1639:     controller: &Arc<Mutex<DowngraderController>>,
+1640:     settings_controller: &Rc<RefCell<SettingsController<R>>>,
+1641:     shared_settings_snapshot: &Arc<Mutex<AppSettings>>,
+1642:     worker_runtime: WorkerRuntime,
+1643:     downgrader_sink: SlintEventLoopSink,
+1644: ) {
+1645:     let Some(options) =
+1646:         with_downgrader_controller_mut(controller, |controller| controller.options())
+1647:     else {
+1648:         return;
+1649:     };
+1650:     let save_result = settings_controller
+1651:         .borrow_mut()
+1652:         .save_downgrader_settings_for_workflow(downgrader_settings_from_options(options));
+1653:     if !save_result.should_schedule_workflow() {
+1654:         tracing::warn!(
+1655:             event = "s09-downgrader-workflow-not-scheduled",
+1656:             reason = "settings-save-failed",
+1657:             "Downgrader work not scheduled because settings persistence failed"
+1658:         );
+1659:         with_downgrader_controller_mut(controller, |controller| {
+1660:             controller.set_keep_backups(save_result.visible_settings.keep_backups);
+1661:             controller.set_delete_deltas(save_result.visible_settings.delete_deltas);
+1662:         });
+1663:         apply_current_downgrader_state(window, controller);
+1664:         return;
+1665:     }
+1666:     remember_current_settings_snapshot(settings_controller, shared_settings_snapshot);
+1667: 
+1668:     let Some(request) =
+1669:         with_downgrader_controller_mut(controller, |controller| controller.request_patch_all())
+1670:             .flatten()
+1671:     else {
+1672:         apply_current_downgrader_state(window, controller);
+1673:         return;
+1674:     };
+1675:     apply_current_downgrader_state(window, controller);
+1676: 
+1677:     match request {
+1678:         DowngraderPatchWorkerRequest::PreviewPlan(request) => {
+1679:             schedule_downgrader_plan_request(
+1680:                 window,
+1681:                 controller,
+1682:                 worker_runtime,
+1683:                 downgrader_sink,
+1684:                 request,
+1685:             );
+1686:         }
+1687:         DowngraderPatchWorkerRequest::ConfirmedRun(request) => {
+1688:             schedule_downgrader_run_request(
+1689:                 window,
+1690:                 controller,
+1691:                 worker_runtime,
+1692:                 downgrader_sink,
+1693:                 request,
+1694:             );
+1695:         }
+1696:     }
+1697: }
+1698: 
+1699: fn schedule_downgrader_status_request(
+1700:     window: &DowngraderWindow,
+1701:     controller: &Arc<Mutex<DowngraderController>>,
+1702:     worker_runtime: WorkerRuntime,
+1703:     downgrader_sink: SlintEventLoopSink,
+1704:     request: DowngraderStatusWorkerRequest,
+1705: ) {
+1706:     let request_id = request.request_id;
+1707:     let task = request.task.clone();
+1708:     let task_for_failure = task.clone();
+1709:     tracing::info!(
+1710:         event = "s09-downgrader-status-schedule",
+1711:         request_id,
+1712:         task_id = %task.id,
+1713:         "Scheduling Downgrader status worker"
+1714:     );
+1715:     if let Err(error) = worker_runtime.spawn_blocking_task(task, downgrader_sink, move |_context| {
+1716:         build_downgrader_status_payload(request)
+1717:     }) {
+1718:         tracing::error!(
+1719:             event = "s09-downgrader-status-spawn-failed",
+1720:             request_id,
+1721:             task_id = %task_for_failure.id,
+1722:             error = %error,
+1723:             "Downgrader status worker could not be scheduled"
+1724:         );
+1725:         with_downgrader_controller_mut(controller, |controller| {
+1726:             controller.spawn_failed(DowngraderWorkerRequestKind::Status, request_id, error);
+1727:         });
+1728:         apply_current_downgrader_state(window, controller);
+1729:     }
+1730: }
+1731: 
+1732: fn schedule_downgrader_plan_request(
+1733:     window: &DowngraderWindow,
+1734:     controller: &Arc<Mutex<DowngraderController>>,
+1735:     worker_runtime: WorkerRuntime,
+1736:     downgrader_sink: SlintEventLoopSink,
+1737:     request: DowngraderPlanWorkerRequest,
+1738: ) {
+1739:     let request_id = request.request_id;
+1740:     let task = request.task.clone();
+1741:     let task_for_failure = task.clone();
+1742:     tracing::info!(
+1743:         event = "s09-downgrader-plan-schedule",
+1744:         request_id,
+1745:         task_id = %task.id,
+1746:         "Scheduling Downgrader plan worker"
+1747:     );
+1748:     if let Err(error) = worker_runtime.spawn_blocking_task(task, downgrader_sink, move |_context| {
+1749:         build_downgrader_plan_payload(request)
+1750:     }) {
+1751:         tracing::error!(
+1752:             event = "s09-downgrader-plan-spawn-failed",
+1753:             request_id,
+1754:             task_id = %task_for_failure.id,
+1755:             error = %error,
+1756:             "Downgrader plan worker could not be scheduled"
+1757:         );
+1758:         with_downgrader_controller_mut(controller, |controller| {
+1759:             controller.spawn_failed(DowngraderWorkerRequestKind::Plan, request_id, error);
+1760:         });
+1761:         apply_current_downgrader_state(window, controller);
+1762:     }
+1763: }
+1764: 
+1765: fn schedule_downgrader_run_request(
+1766:     window: &DowngraderWindow,
+1767:     controller: &Arc<Mutex<DowngraderController>>,
+1768:     worker_runtime: WorkerRuntime,
+1769:     downgrader_sink: SlintEventLoopSink,
+1770:     request: DowngraderRunWorkerRequest,
+1771: ) {
+1772:     let request_id = request.request_id;
+1773:     let task = request.task.clone();
+1774:     let task_for_failure = task.clone();
+1775:     tracing::info!(
+1776:         event = "s09-downgrader-run-schedule",
+1777:         request_id,
+1778:         confirmed_plan_request_id = request.confirmed_plan_request_id,
+1779:         task_id = %task.id,
+1780:         "Scheduling Downgrader confirmed run worker"
+1781:     );
+1782:     if let Err(error) = worker_runtime.spawn_blocking_task(task, downgrader_sink, move |context| {
+1783:         build_downgrader_run_payload(context, request)
+1784:     }) {
+1785:         tracing::error!(
+1786:             event = "s09-downgrader-run-spawn-failed",
+1787:             request_id,
+1788:             task_id = %task_for_failure.id,
+1789:             error = %error,
+1790:             "Downgrader run worker could not be scheduled"
+1791:         );
+1792:         with_downgrader_controller_mut(controller, |controller| {
+1793:             controller.spawn_failed(DowngraderWorkerRequestKind::Run, request_id, error);
+1794:         });
+1795:         apply_current_downgrader_state(window, controller);
+1796:     }
+1797: }
+1798: 
+1799: fn overview_settings_for_downgrader_completion(
+1800:     shared_settings_snapshot: &Arc<Mutex<AppSettings>>,
+1801: ) -> AppSettings {
+1802:     match shared_settings_snapshot.lock() {
+1803:         Ok(settings) => settings.clone(),
+1804:         Err(error) => {
+1805:             tracing::error!(
+1806:                 event = "s09-downgrader-overview-settings-unavailable",
+1807:                 diagnostic = %error,
+1808:                 "Current settings snapshot unavailable; using safe defaults for Overview refresh"
+1809:             );
+1810:             AppSettings::default()
+1811:         }
+1812:     }
+1813: }
+1814: 
+1815: fn schedule_downgrader_completion_refresh(
+1816:     app: Option<&MainWindow>,
+1817:     window: &DowngraderWindow,
+1818:     controller: &Arc<Mutex<DowngraderController>>,
+1819:     overview_controller: &Arc<Mutex<OverviewController>>,
+1820:     overview_settings: AppSettings,
+1821:     worker_runtime: WorkerRuntime,
+1822:     overview_sink: SlintEventLoopSink,
+1823:     runtime_handle: tokio::runtime::Handle,
+1824: ) {
+1825:     if let Some(status_request) = with_downgrader_controller_mut(controller, |controller| {
+1826:         controller.take_pending_status_refresh()
+1827:     })
+1828:     .flatten()
+1829:     {
+1830:         schedule_downgrader_status_request(
+1831:             window,
+1832:             controller,
+1833:             worker_runtime,
+1834:             bind_downgrader_worker_sink_for_status_only(window, Arc::clone(controller)),
+1835:             status_request,
+1836:         );
+1837:     }
+1838: 
+1839:     if let Some(app) = app {
+1840:         tracing::info!(
+1841:             event = "s09-downgrader-overview-refresh-requested",
+1842:             "Requesting Overview refresh after Downgrader completion"
+1843:         );
+1844:         request_overview_refresh_from_settings(
+1845:             app,
+1846:             overview_controller,
+1847:             overview_settings,
+1848:             worker_runtime,
+1849:             overview_sink,
+1850:             runtime_handle,
+
+## downgrader projection helpers 3620-3770
+3620: ) {
+3621:     let Some(projection) = with_downgrader_controller_mut(controller, |controller| {
+3622:         project_downgrader_state(controller)
+3623:     }) else {
+3624:         return;
+3625:     };
+3626:     apply_downgrader_projection(window, projection);
+3627: }
+3628: 
+3629: fn project_downgrader_state(controller: &DowngraderController) -> DowngraderUiProjection {
+3630:     let status_rows = controller.status_rows();
+3631:     let options = controller.options();
+3632:     DowngraderUiProjection {
+3633:         current_game_status_rows: format_downgrader_status_rows(
+3634:             &status_rows,
+3635:             DowngraderFileGroup::Game,
+3636:         ),
+3637:         current_creation_kit_status_rows: format_downgrader_status_rows(
+3638:             &status_rows,
+3639:             DowngraderFileGroup::CreationKit,
+3640:         ),
+3641:         selected_target: downgrader_target_ui_value(options.target).to_owned(),
+3642:         keep_backups: options.keep_backups,
+3643:         delete_patches: options.delete_deltas,
+3644:         plan_rows: controller
+3645:             .plan()
+3646:             .map(|plan| plan.rows.iter().map(format_downgrader_plan_row).collect())
+3647:             .unwrap_or_default(),
+3648:         plan_visible: controller.plan().is_some(),
+3649:         confirmation_state: if matches!(
+3650:             controller.phase(),
+3651:             app::downgrader_controller::DowngraderControllerPhase::PlanReady
+3652:         ) {
+3653:             "needs-confirmation".to_owned()
+3654:         } else {
+3655:             "idle".to_owned()
+3656:         },
+3657:         plan_confirmation_text: DOWNGRADER_PLAN_READY_MESSAGE.to_owned(),
+3658:         log_rows: controller
+3659:             .log_rows()
+3660:             .iter()
+3661:             .map(format_downgrader_log_row)
+3662:             .collect(),
+3663:         log_text: controller.status_text().to_owned(),
+3664:         progress_percent: controller.progress().percent,
+3665:         progress_text: controller.status_text().to_owned(),
+3666:         patch_enabled: controller.patch_button_enabled(),
+3667:         about_enabled: !matches!(
+3668:             controller.phase(),
+3669:             app::downgrader_controller::DowngraderControllerPhase::Running
+3670:         ),
+3671:         controls_enabled: !matches!(
+3672:             controller.phase(),
+3673:             app::downgrader_controller::DowngraderControllerPhase::LoadingStatus
+3674:                 | app::downgrader_controller::DowngraderControllerPhase::Planning
+3675:                 | app::downgrader_controller::DowngraderControllerPhase::Running
+3676:         ),
+3677:         close_blocked: !controller.close_enabled(),
+3678:     }
+3679: }
+3680: 
+3681: fn apply_downgrader_projection(window: &DowngraderWindow, projection: DowngraderUiProjection) {
+3682:     window.set_current_game_status_rows(model_from_vec(projection.current_game_status_rows));
+3683:     window.set_current_creation_kit_status_rows(model_from_vec(
+3684:         projection.current_creation_kit_status_rows,
+3685:     ));
+3686:     window.set_selected_target(projection.selected_target.as_str().into());
+3687:     window.set_keep_backups(projection.keep_backups);
+3688:     window.set_delete_patches(projection.delete_patches);
+3689:     window.set_plan_rows(model_from_vec(projection.plan_rows));
+3690:     window.set_plan_visible(projection.plan_visible);
+3691:     window.set_confirmation_state(projection.confirmation_state.as_str().into());
+3692:     window.set_plan_confirmation_text(projection.plan_confirmation_text.as_str().into());
+3693:     window.set_log_rows(model_from_vec(projection.log_rows));
+3694:     window.set_log_text(projection.log_text.as_str().into());
+3695:     window.set_progress_percent(projection.progress_percent);
+3696:     window.set_progress_text(projection.progress_text.as_str().into());
+3697:     window.set_patch_enabled(projection.patch_enabled);
+3698:     window.set_about_enabled(projection.about_enabled);
+3699:     window.set_controls_enabled(projection.controls_enabled);
+3700:     window.set_close_blocked(projection.close_blocked);
+3701: }
+3702: 
+3703: fn format_downgrader_status_rows(
+3704:     rows: &[DowngraderStatusRow],
+3705:     group: DowngraderFileGroup,
+3706: ) -> Vec<DowngraderStatusUiRow> {
+3707:     rows.iter()
+3708:         .copied()
+3709:         .filter(|row| row.group == group)
+3710:         .map(|row| DowngraderStatusUiRow {
+3711:             display_name: row.display_name.into(),
+3712:             status: row.status_label().into(),
+3713:             severity: downgrader_status_severity(row.status).into(),
+3714:             detail: row.relative_path.into(),
+3715:         })
+3716:         .collect()
+3717: }
+3718: 
+3719: fn format_downgrader_plan_row(
+3720:     row: &services::downgrader::DowngraderPreviewPlanRow,
+3721: ) -> DowngraderPlanUiRow {
+3722:     let action = row.failure.as_deref().unwrap_or_else(|| {
+3723:         row.steps
+3724:             .first()
+3725:             .map(|step| step.message.as_str())
+3726:             .unwrap_or("No action.")
+3727:     });
+3728:     let detail = if row.failure.is_some() {
+3729:         String::new()
+3730:     } else {
+3731:         row.steps
+3732:             .iter()
+3733:             .skip(1)
+3734:             .map(|step| step.message.as_str())
+3735:             .collect::<Vec<_>>()
+3736:             .join(" ")
+3737:     };
+3738:     DowngraderPlanUiRow {
+3739:         display_name: row.plan.display_name.into(),
+3740:         action: action.into(),
+3741:         detail: detail.as_str().into(),
+3742:         severity: if row.failure.is_some() {
+3743:             "error"
+3744:         } else {
+3745:             "neutral"
+3746:         }
+3747:         .into(),
+3748:     }
+3749: }
+3750: 
+3751: fn format_downgrader_log_row(row: &DowngraderExecutionLogRow) -> DowngraderLogUiRow {
+3752:     DowngraderLogUiRow {
+3753:         level: row.level.as_reference_str().into(),
+3754:         message: row.message.as_str().into(),
+3755:     }
+3756: }
+3757: 
+3758: fn downgrader_target_ui_value(target: DowngraderTarget) -> &'static str {
+3759:     match target {
+3760:         DowngraderTarget::OldGen => "old_gen",
+3761:         DowngraderTarget::NextGen => "next_gen",
+3762:     }
+3763: }
+3764: 
+3765: fn downgrader_status_severity(status: DowngraderInstallStatus) -> &'static str {
+3766:     match status {
+3767:         DowngraderInstallStatus::OldGen => "old-gen",
+3768:         DowngraderInstallStatus::NextGen | DowngraderInstallStatus::NextGenAnniversary => {
+3769:             "next-gen"
+3770:         }
+
+## runtime/slint contract tests 6290-6565
+6290:     #[test]
+6291:     fn s09_downgrader_runtime_wiring_open_entrypoints_and_archive_patcher_deferred() {
+6292:         assert_eq!(DowngraderOpenSource::Overview.label(), "overview");
+6293:         assert_eq!(DowngraderOpenSource::Tools.label(), "tools");
+6294:         assert!(MAIN_SLINT.contains("callback overview-open-downgrade-manager-requested()"));
+6295:         assert!(MAIN_SLINT.contains("callback tools-open-downgrade-manager-requested()"));
+6296:         assert!(OVERVIEW_SLINT.contains("root.open-downgrade-manager-requested()"));
+6297:         assert!(TOOLS_SLINT.contains("root.open-downgrade-manager-requested()"));
+6298:         assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
+6299:         assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+6300:         assert!(TOOLS_SLINT.contains(ToolActionId::ArchivePatcher.as_str()));
+6301:         assert!(TOOLS_SLINT.contains("Deferred until S10 Archive Patcher workflow is ported."));
+6302:     }
+6303: 
+6304:     #[test]
+6305:     fn s09_downgrader_runtime_wiring_settings_save_failure_reverts_visible_options() {
+6306:         let mut settings = AppSettings::default();
+6307:         settings.downgrader = DowngraderSettings {
+6308:             keep_backups: true,
+6309:             delete_deltas: false,
+6310:         };
+6311:         let (settings_controller, root) =
+6312:             main_test_settings_controller("s09-downgrader-save-failure", settings.clone());
+6313:         std::fs::create_dir_all(root.join("settings.json"))
+6314:             .expect("settings path directory should force save failure");
+6315: 
+6316:         let result = settings_controller
+6317:             .borrow_mut()
+6318:             .save_downgrader_settings_for_workflow(DowngraderSettings {
+6319:                 keep_backups: false,
+6320:                 delete_deltas: true,
+6321:             });
+6322: 
+6323:         assert!(!result.saved);
+6324:         assert_eq!(result.visible_settings, settings.downgrader);
+6325:         let shared = Arc::new(Mutex::new(AppSettings::default()));
+6326:         remember_current_settings_snapshot(&settings_controller, &shared);
+6327:         assert_eq!(
+6328:             overview_settings_for_downgrader_completion(&shared).downgrader,
+6329:             settings.downgrader
+6330:         );
+6331:         let _ = std::fs::remove_dir_all(root);
+6332:     }
+6333: 
+6334:     #[test]
+6335:     fn s09_downgrader_runtime_wiring_live_feedback_stale_close_and_spawn_failure_project_safely() {
+6336:         let mut controller = s09_runtime_ready_controller();
+6337:         let plan_request = match controller.request_patch_all() {
+6338:             Some(DowngraderPatchWorkerRequest::PreviewPlan(request)) => request,
+6339:             other => panic!("expected plan request, got {other:?}"),
+6340:         };
+6341:         assert_eq!(
+6342:             controller.plan_ready(
+6343:                 plan_request.request_id,
+6344:                 s09_runtime_plan(plan_request.request_id, plan_request.options),
+6345:             ),
+6346:             DowngraderTransitionResult::Applied
+6347:         );
+6348:         let run_request = match controller.request_patch_all() {
+6349:             Some(DowngraderPatchWorkerRequest::ConfirmedRun(request)) => request,
+6350:             other => panic!("expected run request, got {other:?}"),
+6351:         };
+6352:         assert!(!run_request.confirmed_plan_digest.is_empty());
+6353: 
+6354:         assert_eq!(
+6355:             controller.request_close(),
+6356:             DowngraderTransitionResult::CloseBlocked
+6357:         );
+6358:         assert!(project_downgrader_state(&controller).close_blocked);
+6359:         assert_eq!(
+6360:             controller.handle_worker_event(WorkerEvent::new(
+6361:                 run_request.task.clone(),
+6362:                 WorkerTaskStatus::Progress,
+6363:                 downgrader_progress_payload(run_request.request_id, DowngraderProgress::new(37.5)),
+6364:             )),
+6365:             DowngraderTransitionResult::Applied
+6366:         );
+6367:         assert_eq!(
+6368:             controller.handle_worker_event(WorkerEvent::new(
+6369:                 run_request.task.clone(),
+6370:                 WorkerTaskStatus::Progress,
+6371:                 downgrader_log_row_payload(
+6372:                     run_request.request_id,
+6373:                     DowngraderExecutionLogRow::new(DowngraderLogLevel::Info, "Downloading patch."),
+6374:                 ),
+6375:             )),
+6376:             DowngraderTransitionResult::Applied
+6377:         );
+6378:         let projection = project_downgrader_state(&controller);
+6379:         assert_eq!(projection.progress_percent, 37.5);
+6380:         assert!(
+6381:             projection
+6382:                 .log_rows
+6383:                 .iter()
+6384:                 .any(|row| row.message.as_str() == "Downloading patch.")
+6385:         );
+6386: 
+6387:         assert_eq!(
+6388:             controller.handle_worker_event(WorkerEvent::completed(
+6389:                 app::downgrader_controller::downgrader_run_task(run_request.request_id + 100),
+6390:                 downgrader_run_completed_payload(
+6391:                     run_request.request_id + 100,
+6392:                     s09_runtime_execution_result(run_request.request_id + 100),
+6393:                 ),
+6394:             )),
+6395:             DowngraderTransitionResult::StaleIgnored
+6396:         );
+6397:         assert_eq!(
+6398:             controller.phase(),
+6399:             app::downgrader_controller::DowngraderControllerPhase::Running
+6400:         );
+6401: 
+6402:         assert_eq!(
+6403:             controller.spawn_failed(
+6404:                 DowngraderWorkerRequestKind::Run,
+6405:                 run_request.request_id,
+6406:                 WorkerSpawnError::NoActiveRuntime {
+6407:                     task_id: run_request.task.id.clone(),
+6408:                 },
+6409:             ),
+6410:             DowngraderTransitionResult::Applied
+6411:         );
+6412:         let projection = project_downgrader_state(&controller);
+6413:         assert!(!projection.patch_enabled);
+6414:         assert!(!projection.close_blocked);
+6415:         assert!(projection.log_text.contains("could not be started"));
+6416:     }
+6417: 
+6418:     #[test]
+6419:     fn s09_downgrader_runtime_wiring_completion_refresh_uses_current_settings_snapshot() {
+6420:         let mut settings = AppSettings::default();
+6421:         settings.update_source = UpdateSource::Github;
+6422:         settings.log_level = LogLevel::Warning;
+6423:         settings.downgrader = DowngraderSettings {
+6424:             keep_backups: false,
+6425:             delete_deltas: true,
+6426:         };
+6427:         let shared = Arc::new(Mutex::new(settings.clone()));
+6428: 
+6429:         let projected = overview_settings_for_downgrader_completion(&shared);
+6430: 
+6431:         assert_eq!(projected, settings);
+6432:         assert_ne!(projected, AppSettings::default());
+6433:     }
+6434: 
+6435:     #[test]
+6436:     fn s09_downgrader_slint_contract_modal_source_exposes_reference_shape_and_labels() {
+6437:         assert!(DOWNGRADER_SLINT.contains("export struct DowngraderStatusUiRow"));
+6438:         assert!(DOWNGRADER_SLINT.contains("export struct DowngraderPlanUiRow"));
+6439:         assert!(DOWNGRADER_SLINT.contains("export struct DowngraderLogUiRow"));
+6440:         assert!(DOWNGRADER_SLINT.contains("export component DowngraderWindow inherits Window"));
+6441:         assert!(MAIN_SLINT.contains(
+6442:             "import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow }"
+6443:         ));
+6444: 
+6445:         assert!(DOWNGRADER_SLINT.contains(&slint_assignment("title", DOWNGRADER_MODAL_TITLE)));
+6446:         assert!(DOWNGRADER_SLINT.contains(&format!("width: {}px", DOWNGRADER_MODAL_WIDTH)));
+6447:         assert!(DOWNGRADER_SLINT.contains(&format!("height: {}px", DOWNGRADER_MODAL_HEIGHT)));
+6448: 
+6449:         for label in [
+6450:             CURRENT_GAME_GROUP_LABEL,
+6451:             CURRENT_CREATION_KIT_GROUP_LABEL,
+6452:             DESIRED_VERSION_GROUP_LABEL,
+6453:             OPTIONS_GROUP_LABEL,
+6454:             TARGET_OLD_GEN_LABEL,
+6455:             TARGET_NEXT_GEN_LABEL,
+6456:             KEEP_BACKUPS_CHECKBOX_LABEL,
+6457:             DELETE_PATCHES_CHECKBOX_LABEL,
+6458:             ABOUT_BUTTON_LABEL,
+6459:             INITIAL_LOG_LINE,
+6460:         ] {
+6461:             assert!(
+6462:                 DOWNGRADER_SLINT.contains(&slint_assignment("text", label))
+6463:                     || DOWNGRADER_SLINT.contains(&slint_assignment("title", label))
+6464:                     || DOWNGRADER_SLINT.contains(label),
+6465:                 "Downgrader Slint should contain reference label {label:?}"
+6466:             );
+6467:         }
+6468:         assert!(DOWNGRADER_SLINT.contains(&slint_assignment("text", PATCH_ALL_BUTTON_LABEL)));
+6469: 
+6470:         assert_source_contains_in_order(
+6471:             DOWNGRADER_SLINT,
+6472:             &[
+6473:                 "title: \"Current Game\"",
+6474:                 "Fallout4.exe:",
+6475:                 "Fallout4Launcher.exe:",
+6476:                 "steam_api64.dll:",
+6477:                 "title: \"Current Creation Kit\"",
+6478:                 "CreationKit.exe:",
+6479:                 "Archive2.exe:",
+6480:                 "Archive2Interop.dll:",
+6481:                 "title: \"Desired Version\"",
+6482:                 "text: \"Old-Gen\"",
+6483:                 "target-id: \"old_gen\"",
+6484:                 "text: \"Next-Gen\"",
+6485:                 "target-id: \"next_gen\"",
+6486:                 "title: \"Options\"",
+6487:                 "text: \"Keep Backups\"",
+6488:                 "option-id: \"keep_backups\"",
+6489:                 "text: \"Delete Patches\"",
+6490:                 "option-id: \"delete_patches\"",
+6491:                 "text: \"Patch\\n All\"",
+6492:                 "text: \"About\"",
+6493:             ],
+6494:         );
+6495:         assert!(!DOWNGRADER_SLINT.contains("Tools\\\\Archive2\\\\Archive2.exe:"));
+6496:         assert!(!DOWNGRADER_SLINT.contains("Tools\\\\Archive2\\\\Archive2Interop.dll:"));
+6497: 
+6498:         assert_source_contains_in_order(
+6499:             DOWNGRADER_SLINT,
+6500:             &[
+6501:                 "in-out property <[DowngraderStatusUiRow]> current-game-status-rows",
+6502:                 "in-out property <[DowngraderStatusUiRow]> current-creation-kit-status-rows",
+6503:                 "in-out property <string> selected-target",
+6504:                 "in-out property <bool> keep-backups",
+6505:                 "in-out property <bool> delete-patches",
+6506:                 "in-out property <[DowngraderPlanUiRow]> plan-rows",
+6507:                 "in-out property <bool> plan-visible",
+6508:                 "in-out property <string> confirmation-state",
+6509:                 "in-out property <[DowngraderLogUiRow]> log-rows",
+6510:                 "in-out property <string> log-text",
+6511:                 "in-out property <float> progress-percent",
+6512:                 "in-out property <string> progress-text",
+6513:                 "in-out property <bool> patch-enabled",
+6514:                 "in-out property <bool> about-enabled",
+6515:                 "in-out property <bool> close-blocked",
+6516:                 "callback target-selected(string)",
+6517:                 "callback option-toggled(string, bool)",
+6518:                 "callback patch-requested()",
+6519:                 "callback confirm-requested()",
+6520:                 "callback about-requested()",
+6521:                 "callback modal-close-requested()",
+6522:             ],
+6523:         );
+6524:         assert!(
+6525:             DOWNGRADER_SLINT.contains("Review the plan, then click Patch All again to confirm.")
+6526:         );
+6527:         assert!(DOWNGRADER_SLINT.contains("root.confirm-requested()"));
+6528:         assert!(DOWNGRADER_SLINT.contains("root.patch-requested()"));
+6529:         assert!(DOWNGRADER_SLINT.contains("close/Escape"));
+6530:     }
+6531: 
+6532:     #[test]
+6533:     fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred()
+6534:      {
+6535:         assert!(!DOWNGRADER_SLINT.contains("target-id: \"anniversary\""));
+6536:         assert!(!DOWNGRADER_SLINT.contains("text: \"Anniversary\""));
+6537: 
+6538:         assert_source_contains_in_order(
+6539:             OVERVIEW_SLINT,
+6540:             &[
+6541:                 "overview-downgrade-enabled: true",
+6542:                 "overview-downgrade-status: \"Open Downgrade Manager.\"",
+6543:                 "callback open-downgrade-manager-requested()",
+6544:                 "action-label: root.overview-downgrade-label",
+6545:                 "action-enabled: root.overview-downgrade-enabled",
+6546:                 "root.open-downgrade-manager-requested()",
+6547:             ],
+6548:         );
+6549:         assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
+6550:         assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+6551: 
+6552:         assert_source_contains_in_order(
+6553:             TOOLS_SLINT,
+6554:             &[
+6555:                 "callback open-downgrade-manager-requested()",
+6556:                 "label: \"Downgrade Manager\"",
+6557:                 "action-id: \"tools.downgrade_manager\"",
+6558:                 "Open the Downgrade Manager workflow.",
+6559:                 "root.open-downgrade-manager-requested()",
+6560:                 "label: \"Archive Patcher\"",
+6561:                 "action-id: \"tools.archive_patcher\"",
+6562:                 "button-enabled: false;",
+6563:                 "Deferred until S10 Archive Patcher workflow is ported.",
+6564:             ],
+6565:         );
+

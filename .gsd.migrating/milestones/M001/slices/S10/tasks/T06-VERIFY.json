@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "taskId": "T06",
+  "unitId": "M001/S10/T06",
+  "timestamp": 1779162485034,
+  "passed": true,
+  "discoverySource": "task-plan",
+  "checks": [
+    {
+      "command": "cargo test archive_patcher_domain --quiet\ncargo test archive_patcher_service_plan --quiet\ncargo test archive_patcher_executor --quiet\ncargo test archive_patcher_controller --quiet\ncargo test archive_patcher_worker_payload --quiet\ncargo test s10_archive_patcher_slint_contract --quiet\ncargo test s10_archive_patcher_runtime_wiring --quiet\ncargo test overview --quiet\ncargo test tools --quiet\ncargo test worker --quiet\ncargo fmt --check\ncargo check --quiet\ncargo test --quiet\ncargo clippy --all-targets --all-features --quiet",
+      "exitCode": 0,
+      "durationMs": 27688,
+      "verdict": "pass"
+    }
+  ]
+}

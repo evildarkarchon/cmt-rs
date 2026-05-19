@@ -1,0 +1,18 @@
+{
+  "id": "5b5204b1-2483-45fe-ab81-833b731af95e",
+  "runtime": "bash",
+  "purpose": "T06 verify cargo test overview",
+  "script_chars": 43,
+  "started_at": "2026-05-19T03:16:38.577Z",
+  "finished_at": "2026-05-19T03:16:47.608Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 9031,
+  "stdout_bytes": 769,
+  "stderr_bytes": 296,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5b5204b1-2483-45fe-ab81-833b731af95e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5b5204b1-2483-45fe-ab81-833b731af95e.stderr"
+}

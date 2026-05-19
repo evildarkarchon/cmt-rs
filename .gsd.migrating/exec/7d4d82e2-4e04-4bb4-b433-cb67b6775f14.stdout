@@ -1,0 +1,23 @@
+61     expected_output_bytes: u64,
+72         expected_output_bytes: 63_488,
+78         expected_output_bytes: 513_024,
+84         expected_output_bytes: 80_361_352,
+90         expected_output_bytes: 65_503_104,
+96         expected_output_bytes: 4_522_496,
+102         expected_output_bytes: 206_760,
+108         expected_output_bytes: 62_976,
+114         expected_output_bytes: 470_016,
+120         expected_output_bytes: 68_193_792,
+126         expected_output_bytes: 52_552_472,
+132         expected_output_bytes: 4_520_448,
+138         expected_output_bytes: 298_384,
+415     fn apply_delta(
+419         expected_output_bytes: u64,
+428     fn apply_delta(
+432         expected_output_bytes: u64,
+434         let max_output_bytes = usize::try_from(expected_output_bytes).map_err(|_| {
+1972             context.integrity.expected_output_bytes,
+1988         if output_bytes.len() as u64 != context.integrity.expected_output_bytes {
+1995                     context.integrity.expected_output_bytes
+3489         fn apply_delta(
+3493             _expected_output_bytes: u64,

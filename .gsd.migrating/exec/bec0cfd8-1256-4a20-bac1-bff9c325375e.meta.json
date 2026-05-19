@@ -1,0 +1,18 @@
+{
+  "id": "bec0cfd8-1256-4a20-bac1-bff9c325375e",
+  "runtime": "bash",
+  "purpose": "T06 safety review writes under CMT check rerun",
+  "script_chars": 630,
+  "started_at": "2026-05-19T03:26:39.356Z",
+  "finished_at": "2026-05-19T03:26:39.502Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 146,
+  "stdout_bytes": 458,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bec0cfd8-1256-4a20-bac1-bff9c325375e.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bec0cfd8-1256-4a20-bac1-bff9c325375e.stderr"
+}

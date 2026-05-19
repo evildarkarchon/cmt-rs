@@ -1,0 +1,18 @@
+{
+  "id": "4b002f08-5179-42e9-92ee-42297bc26f64",
+  "runtime": "bash",
+  "purpose": "T06 final cargo fmt --check",
+  "script_chars": 33,
+  "started_at": "2026-05-19T03:38:53.042Z",
+  "finished_at": "2026-05-19T03:38:53.767Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 725,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4b002f08-5179-42e9-92ee-42297bc26f64.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4b002f08-5179-42e9-92ee-42297bc26f64.stderr"
+}

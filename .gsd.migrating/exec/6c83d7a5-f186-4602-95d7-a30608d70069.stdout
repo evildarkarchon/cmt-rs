@@ -1,0 +1,220 @@
+16:    archive_patcher_controller::{
+18:        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController, ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
+19:        ArchivePatcherPlanWorkerRequest, ArchivePatcherRestoreWorkerRequest,
+20:        ArchivePatcherTransitionResult, ArchivePatcherWorkerRequestKind,
+21:        archive_patcher_candidates_loaded_payload, archive_patcher_log_row_payload,
+22:        archive_patcher_patch_completed_payload, archive_patcher_plan_ready_payload,
+23:        archive_patcher_progress_payload, archive_patcher_restore_completed_payload,
+51:    archive_patcher::{
+52:        ABOUT_ARCHIVES_BODY, ABOUT_ARCHIVES_TITLE, ArchivePatcherArchiveFormat,
+53:        ArchivePatcherCandidateRow, ArchivePatcherExecutionResult, ArchivePatcherLogLevel,
+54:        ArchivePatcherLogRow, ArchivePatcherPlanAction, ArchivePatcherPreviewPlanRow,
+55:        ArchivePatcherProgress, ArchivePatcherTarget,
+94:    archive_patcher::{
+95:        ArchivePatcherCandidateRequest, ArchivePatcherExecutionError,
+96:        ArchivePatcherExecutionRequest, ArchivePatcherPlanRequest, ArchivePatcherRestoreRequest,
+97:        ArchivePatcherService,
+126:    AboutActionWorkerPayload, ArchivePatcherWorkerPayload, ArchivePatcherWorkerStage,
+269:struct ArchivePatcherUiProjection {
+272:    candidate_rows: Vec<ArchivePatcherCandidateUiRow>,
+274:    plan_rows: Vec<ArchivePatcherPlanUiRow>,
+277:    log_rows: Vec<ArchivePatcherLogUiRow>,
+314:enum ArchivePatcherOpenSource {
+319:impl ArchivePatcherOpenSource {
+352:    let archive_patcher_controller = Arc::new(Mutex::new(ArchivePatcherController::new()));
+354:    let archive_patcher_window = ArchivePatcherWindow::new()?;
+365:    apply_current_archive_patcher_state(&archive_patcher_window, &archive_patcher_controller);
+372:    let archive_patcher_sink = bind_archive_patcher_worker_sink(
+374:        &archive_patcher_window,
+375:        Arc::clone(&archive_patcher_controller),
+405:    bind_archive_patcher_callbacks(
+406:        &archive_patcher_window,
+407:        Arc::clone(&archive_patcher_controller),
+409:        archive_patcher_sink.clone(),
+414:        &archive_patcher_window,
+417:        Arc::clone(&archive_patcher_controller),
+423:        archive_patcher_sink.clone(),
+447:        &archive_patcher_window,
+450:        Arc::clone(&archive_patcher_controller),
+455:        archive_patcher_sink,
+747:fn bind_archive_patcher_worker_sink(
+749:    window: &ArchivePatcherWindow,
+750:    controller: Arc<Mutex<ArchivePatcherController>>,
+763:        let refresh_after_completion = archive_patcher_completion_refresh_needed(&event);
+775:        let Some(result) = with_archive_patcher_controller_mut(&controller, |controller| {
+776:            handle_archive_patcher_worker_event(controller, event)
+782:            ArchivePatcherTransitionResult::Applied => {
+791:                apply_current_archive_patcher_state(&window, &controller);
+801:                    let settings = overview_settings_for_archive_patcher_completion(
+819:            ArchivePatcherTransitionResult::StaleIgnored => tracing::debug!(
+826:            ArchivePatcherTransitionResult::Ignored => tracing::debug!(
+833:            ArchivePatcherTransitionResult::Rejected => tracing::debug!(
+840:            ArchivePatcherTransitionResult::CloseBlocked => tracing::debug!(
+851:fn bind_archive_patcher_callbacks(
+852:    window: &ArchivePatcherWindow,
+853:    controller: Arc<Mutex<ArchivePatcherController>>,
+855:    archive_patcher_sink: SlintEventLoopSink,
+860:        let archive_patcher_sink = archive_patcher_sink.clone();
+866:            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+870:            apply_current_archive_patcher_state(&window, &controller);
+872:                schedule_archive_patcher_candidate_request(
+876:                    archive_patcher_sink.clone(),
+886:        let archive_patcher_sink = archive_patcher_sink.clone();
+892:            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+896:            apply_current_archive_patcher_state(&window, &controller);
+898:                schedule_archive_patcher_candidate_request(
+902:                    archive_patcher_sink.clone(),
+912:        let archive_patcher_sink = archive_patcher_sink.clone();
+918:            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+922:            apply_current_archive_patcher_state(&window, &controller);
+924:                Some(ArchivePatcherPatchAllRequest::PreviewPlan(request)) => {
+925:                    schedule_archive_patcher_plan_request(
+929:                        archive_patcher_sink.clone(),
+933:                Some(ArchivePatcherPatchAllRequest::ConfirmedPatch(request)) => {
+934:                    schedule_archive_patcher_patch_request(
+938:                        archive_patcher_sink.clone(),
+950:        let archive_patcher_sink = archive_patcher_sink.clone();
+956:            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+960:            apply_current_archive_patcher_state(&window, &controller);
+962:                schedule_archive_patcher_restore_request(
+966:                    archive_patcher_sink.clone(),
+979:                with_archive_patcher_controller_mut(&controller, |controller| {
+982:                apply_current_archive_patcher_state(&window, &controller);
+993:                with_archive_patcher_controller_mut(&controller, |controller| {
+996:                apply_current_archive_patcher_state(&window, &controller);
+1007:                close_archive_patcher_modal(&window, &controller);
+1020:            match close_archive_patcher_modal(&window, &controller) {
+1021:                ArchivePatcherTransitionResult::CloseBlocked => {
+1127:    archive_patcher_window: &ArchivePatcherWindow,
+1130:    archive_patcher_controller: Arc<Mutex<ArchivePatcherController>>,
+1136:    archive_patcher_sink: SlintEventLoopSink,
+1141:        let archive_patcher_window = archive_patcher_window.as_weak();
+1144:        let archive_patcher_controller = Arc::clone(&archive_patcher_controller);
+1148:        let archive_patcher_sink = archive_patcher_sink.clone();
+1166:            if action_id == ToolActionId::ArchivePatcher.as_str() {
+1167:                if let Some(archive_patcher_window) = archive_patcher_window.upgrade() {
+1168:                    request_open_archive_patcher_modal(
+1169:                        &archive_patcher_window,
+1170:                        &archive_patcher_controller,
+1173:                        archive_patcher_sink.clone(),
+1174:                        ArchivePatcherOpenSource::Tools,
+1561:    archive_patcher_window: &ArchivePatcherWindow,
+1564:    archive_patcher_controller: Arc<Mutex<ArchivePatcherController>>,
+1569:    archive_patcher_sink: SlintEventLoopSink,
+1673:    app.on_overview_open_archive_patcher_requested({
+1674:        let archive_patcher_window = archive_patcher_window.as_weak();
+1675:        let archive_patcher_controller = Arc::clone(&archive_patcher_controller);
+1677:        let archive_patcher_sink = archive_patcher_sink.clone();
+1680:            if let Some(archive_patcher_window) = archive_patcher_window.upgrade() {
+1681:                request_open_archive_patcher_modal(
+1682:                    &archive_patcher_window,
+1683:                    &archive_patcher_controller,
+1686:                    archive_patcher_sink.clone(),
+1687:                    ArchivePatcherOpenSource::Overview,
+2487:fn request_open_archive_patcher_modal(
+2488:    window: &ArchivePatcherWindow,
+2489:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2492:    archive_patcher_sink: SlintEventLoopSink,
+2493:    source: ArchivePatcherOpenSource,
+2498:    let manifest_path = archive_patcher_manifest_path();
+2499:    let manifest_available = archive_patcher_manifest_available(&manifest_path);
+2513:            with_archive_patcher_controller_mut(controller, |controller| {
+2530:            with_archive_patcher_controller_mut(controller, |controller| {
+2541:            with_archive_patcher_controller_mut(controller, |controller| {
+2548:    apply_current_archive_patcher_state(window, controller);
+2558:        schedule_archive_patcher_candidate_request(
+2562:            archive_patcher_sink,
+2568:fn close_archive_patcher_modal(
+2569:    window: &ArchivePatcherWindow,
+2570:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2571:) -> ArchivePatcherTransitionResult {
+2572:    let result = with_archive_patcher_controller_mut(controller, |controller| {
+2575:    .unwrap_or(ArchivePatcherTransitionResult::Ignored);
+2576:    apply_current_archive_patcher_state(window, controller);
+2589:fn schedule_archive_patcher_candidate_request(
+2590:    window: &ArchivePatcherWindow,
+2591:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2593:    archive_patcher_sink: SlintEventLoopSink,
+2594:    request: ArchivePatcherCandidateWorkerRequest,
+2607:        archive_patcher_sink,
+2608:        move |_context| build_archive_patcher_candidates_payload(request),
+2610:        with_archive_patcher_controller_mut(controller, |controller| {
+2611:            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Candidates, request_id, error)
+2613:        apply_current_archive_patcher_state(window, controller);
+2617:fn schedule_archive_patcher_plan_request(
+2618:    window: &ArchivePatcherWindow,
+2619:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2621:    archive_patcher_sink: SlintEventLoopSink,
+2622:    request: ArchivePatcherPlanWorkerRequest,
+2635:        archive_patcher_sink,
+2636:        move |_context| build_archive_patcher_plan_payload(request),
+2638:        with_archive_patcher_controller_mut(controller, |controller| {
+2639:            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Plan, request_id, error)
+2641:        apply_current_archive_patcher_state(window, controller);
+2645:fn schedule_archive_patcher_patch_request(
+2646:    window: &ArchivePatcherWindow,
+2647:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2649:    archive_patcher_sink: SlintEventLoopSink,
+2650:    request: ArchivePatcherPatchWorkerRequest,
+2664:        archive_patcher_sink,
+2665:        move |context| build_archive_patcher_patch_payload(context, request),
+2667:        with_archive_patcher_controller_mut(controller, |controller| {
+2668:            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Patch, request_id, error)
+2670:        apply_current_archive_patcher_state(window, controller);
+2674:fn schedule_archive_patcher_restore_request(
+2675:    window: &ArchivePatcherWindow,
+2676:    controller: &Arc<Mutex<ArchivePatcherController>>,
+2678:    archive_patcher_sink: SlintEventLoopSink,
+2679:    request: ArchivePatcherRestoreWorkerRequest,
+2692:        archive_patcher_sink,
+2693:        move |context| build_archive_patcher_restore_payload(context, request),
+2695:        with_archive_patcher_controller_mut(controller, |controller| {
+2696:            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Restore, request_id, error)
+2698:        apply_current_archive_patcher_state(window, controller);
+2702:fn build_archive_patcher_candidates_payload(
+2703:    request: ArchivePatcherCandidateWorkerRequest,
+2706:        "s10_archive_patcher_candidates_worker",
+2712:    let service = ArchivePatcherService::new(&filesystem);
+2713:    let snapshot = service.candidate_snapshot(ArchivePatcherCandidateRequest::new(
+2720:        archive_patcher_candidates_loaded_payload(request.request_id, snapshot),
+2724:fn build_archive_patcher_plan_payload(
+2725:    request: ArchivePatcherPlanWorkerRequest,
+2728:        "s10_archive_patcher_plan_worker",
+2735:    let service = ArchivePatcherService::new(&filesystem);
+2736:    let plan = service.preview_plan(ArchivePatcherPlanRequest::new(
+2744:        archive_patcher_plan_ready_payload(request.request_id, plan),
+2748:fn build_archive_patcher_patch_payload<S>(
+2750:    request: ArchivePatcherPatchWorkerRequest,
+2755:    emit_archive_patcher_progress(
+2758:        ArchivePatcherWorkerStage::Patch,
+2759:        ArchivePatcherProgress::new("Revalidating Archive Patcher plan...", 5.0),
+2762:    let service = ArchivePatcherService::new(&filesystem);
+2765:            ArchivePatcherExecutionRequest::new(
+2775:        .map_err(archive_patcher_service_failure)?;
+2776:    emit_archive_patcher_execution_log_rows(
+2779:        ArchivePatcherWorkerStage::Patch,
+2782:    emit_archive_patcher_progress(
+2785:        ArchivePatcherWorkerStage::Patch,
+2786:        ArchivePatcherProgress::complete(
+2795:        archive_patcher_patch_completed_payload(request.request_id, result),
+2799:fn build_archive_patcher_restore_payload<S>(
+2801:    request: ArchivePatcherRestoreWorkerRequest,
+2806:    emit_archive_patcher_progress(
+2809:        ArchivePatcherWorkerStage::Restore,
+2810:        ArchivePatcherProgress::new("Reading Archive Patcher restore manifest...", 5.0),
+2813:    let service = ArchivePatcherService::new(&filesystem);
+2815:        .restore_last_run(ArchivePatcherRestoreRequest::new(
+2820:        .map_err(archive_patcher_service_failure)?;
+2821:    emit_archive_patcher_execution_log_rows(
+2824:        ArchivePatcherWorkerStage::Restore,
+2827:    emit_archive_patcher_progress(
+2830:        ArchivePatcherWorkerStage::Restore,
+2831:        ArchivePatcherProgress::complete(
+2840:        archive_patcher_restore_completed_payload(request.request_id, result),
+2844:fn emit_archive_patcher_execution_log_rows<S>(
+2847:    stage: ArchivePatcherWorkerStage,
+2848:    result: &ArchivePatcherExecutionResult,
+2855:            archive_patcher_log_row_payload(request_id, stage, row.clone()),
+2868:fn emit_archive_patcher_progress<S>(
+2871:    stage: ArchivePatcherWorkerStage,
+2872:    progress: ArchivePatcherProgress,

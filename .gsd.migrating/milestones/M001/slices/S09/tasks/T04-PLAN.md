@@ -4,7 +4,7 @@ estimated_files: 4
 skills_used: []
 ---
 
-# T04: Add controller and worker payloads
+# T04: Added a Slint-free Downgrader modal controller with owned worker payloads and stale-safe lifecycle tests.
 
 ---
 estimated_steps: 8

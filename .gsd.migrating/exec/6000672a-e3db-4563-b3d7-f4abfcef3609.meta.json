@@ -1,0 +1,18 @@
+{
+  "id": "6000672a-e3db-4563-b3d7-f4abfcef3609",
+  "runtime": "bash",
+  "purpose": "check pathlib PureWindowsPath sort semantics for archive patcher candidate order",
+  "script_chars": 256,
+  "started_at": "2026-05-19T01:29:38.039Z",
+  "finished_at": "2026-05-19T01:29:38.134Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 95,
+  "stdout_bytes": 156,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6000672a-e3db-4563-b3d7-f4abfcef3609.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6000672a-e3db-4563-b3d7-f4abfcef3609.stderr"
+}

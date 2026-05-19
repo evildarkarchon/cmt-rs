@@ -1,0 +1,18 @@
+{
+  "id": "667799aa-7553-4bfb-b7cd-755626764465",
+  "runtime": "bash",
+  "purpose": "full cargo test after S09/T06 recovery edits",
+  "script_chars": 10,
+  "started_at": "2026-05-18T23:02:20.102Z",
+  "finished_at": "2026-05-18T23:03:13.630Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 53528,
+  "stdout_bytes": 34558,
+  "stderr_bytes": 196,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\667799aa-7553-4bfb-b7cd-755626764465.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\667799aa-7553-4bfb-b7cd-755626764465.stderr"
+}

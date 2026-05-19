@@ -1,0 +1,232 @@
+
+## pub struct OverviewSnapshot
+1293: 
+1294: /// Complete, UI-independent Overview snapshot.
+1295: #[derive(Debug, Default, Clone, PartialEq, Eq)]
+1296: pub struct OverviewSnapshot {
+1297:     /// Last refresh lifecycle state.
+1298:     pub refresh: OverviewRefreshState,
+1299:     /// Top status rows derived from discovery and system metadata.
+1300:     pub top: OverviewTopStatus,
+1301:     /// Binary panel state.
+1302:     pub binaries: BinaryPanelSummary,
+1303:     /// Archive panel state.
+1304:     pub archives: ArchivePanelSummary,
+1305:     /// Module panel state.
+1306:     pub modules: ModulePanelSummary,
+1307:     /// Update banner state.
+1308:     pub update_banner: UpdateBannerState,
+1309:     /// Scanner-ready problem records.
+1310:     pub problems: Vec<OverviewProblem>,
+1311:     /// Last safe action error, such as a desktop-open failure.
+1312:     pub last_action_error: Option<OverviewActionError>,
+1313: }
+1314: 
+
+## archives:
+1301:     /// Binary panel state.
+1302:     pub binaries: BinaryPanelSummary,
+1303:     /// Archive panel state.
+1304:     pub archives: ArchivePanelSummary,
+1305:     /// Module panel state.
+1306:     pub modules: ModulePanelSummary,
+1307:     /// Update banner state.
+1308:     pub update_banner: UpdateBannerState,
+1309:     /// Scanner-ready problem records.
+1310:     pub problems: Vec<OverviewProblem>,
+1311:     /// Last safe action error, such as a desktop-open failure.
+1312:     pub last_action_error: Option<OverviewActionError>,
+1313: }
+1314: 
+1315: impl OverviewSnapshot {
+1316:     /// Creates an empty snapshot with labels/actions present and no OS access.
+1317:     pub fn empty() -> Self {
+1318:         Self::default()
+1319:     }
+1320: 
+1321:     /// Creates a loading snapshot.
+1322:     pub fn loading(message: impl Into<String>) -> Self {
+
+## archive_records
+
+## ArchiveRecord
+11: use crate::{
+12:     domain::{
+13:         discovery::{
+14:             ArchiveFormat, ArchiveRecord, ArchiveVersion, Fallout4InstallType,
+15:             Fallout4Installation, ModuleHeaderVersion, ModuleKind, ModuleRecord,
+16:         },
+17:         settings::UpdateSource,
+18:     },
+19:     platform::process::SystemMetadata,
+20:     services::discovery::DiscoveredModManager,
+21: };
+22: 
+23: /// User-facing label for the mod-manager top status row.
+24: pub const TOP_ROW_MOD_MANAGER_LABEL: &str = "Mod Manager";
+25: /// User-facing label for the game-path top status row.
+26: pub const TOP_ROW_GAME_PATH_LABEL: &str = "Game Path";
+27: /// User-facing label for the game-version top status row.
+28: pub const TOP_ROW_VERSION_LABEL: &str = "Version";
+29: /// User-facing label for the PC-specs top status row.
+30: pub const TOP_ROW_PC_SPECS_LABEL: &str = "PC Specs";
+31: /// Reference top-row order from `CMT/src/tabs/_overview.py`.
+32: pub const TOP_STATUS_LABELS: [&str; 4] = [
+673:     }
+674: 
+675:     /// Creates an archive panel by counting supplied archive records.
+676:     pub fn from_records(records: &[ArchiveRecord]) -> Self {
+677:         let mut counts = ArchivePanelCounts::default();
+678: 
+679:         for record in records
+680:             .iter()
+681:             .filter(|record| record.enabled || !record.readable)
+682:         {
+683:             let invalid_or_unreadable = !record.readable
+684:                 || matches!(record.format, ArchiveFormat::Unknown(_))
+685:                 || matches!(record.version, ArchiveVersion::Unknown(_));
+686:             if invalid_or_unreadable {
+687:                 counts.unreadable += 1;
+688:                 continue;
+689:             }
+690: 
+691:             match record.format {
+692:                 ArchiveFormat::General => counts.general += 1,
+693:                 ArchiveFormat::DirectX10 => counts.texture += 1,
+694:                 ArchiveFormat::Unknown(_) => {}
+1561:             None::<PathBuf>,
+1562:         );
+1563:         installation.install_type = Fallout4InstallType::OldGen;
+1564:         installation.archives.push(ArchiveRecord::new(
+1565:             "C:/Games/Fallout 4/Data/Fallout4 - Textures.ba2",
+1566:             ArchiveFormat::DirectX10,
+1567:             ArchiveVersion::NextGen8,
+1568:             true,
+1569:         ));
+1570:         installation.modules.push(ModuleRecord::new(
+1571:             "C:/Games/Fallout 4/Data/Example.esl",
+1572:             ModuleKind::Light,
+1573:             ModuleHeaderVersion::Version100,
+1574:             true,
+1575:         ));
+1576: 
+1577:         let snapshot = OverviewSnapshot::from_discovery_parts(
+1578:             Some(installation),
+1579:             Some(fake_mo2()),
+1580:             Some(fake_system_metadata()),
+1581:             UpdateSource::Nexus,
+1582:         );
+
+## installation:
+1345: 
+1346:     /// Creates a snapshot from typed discovery results without reading the host OS.
+1347:     pub fn from_discovery_parts(
+1348:         installation: Option<Fallout4Installation>,
+1349:         mod_manager: Option<DiscoveredModManager>,
+1350:         system_metadata: Option<SystemMetadata>,
+1351:         update_source: UpdateSource,
+1352:     ) -> Self {
+1353:         let mut snapshot = Self {
+1354:             update_banner: UpdateBannerState::from_update_source(update_source),
+1355:             ..Self::default()
+1356:         };
+1357: 
+1358:         snapshot.top.system_metadata = system_metadata;
+1359: 
+1360:         if let Some(manager) = mod_manager {
+1361:             snapshot.top.mod_manager = OverviewModManagerStatus::detected(manager);
+1362:         } else {
+1363:             snapshot.problems.push(OverviewProblem::pathless(
+1364:                 OverviewProblemSource::TopStatus,
+1365:                 TOP_ROW_MOD_MANAGER_LABEL,
+1366:                 OverviewProblemType::NoModManager,
+
+## game_path
+357:     /// Mod-manager status.
+358:     pub mod_manager: OverviewModManagerStatus,
+359:     /// Fallout 4 game-path status.
+360:     pub game_path: OverviewGamePathStatus,
+361:     /// Fallout 4 install type/version class.
+362:     pub version: Fallout4InstallType,
+363:     /// Fakeable PC specs/system metadata.
+364:     pub system_metadata: Option<SystemMetadata>,
+365: }
+366: 
+367: impl OverviewTopStatus {
+368:     /// Creates top status rows from already-collected typed values.
+369:     pub fn new(
+370:         mod_manager: OverviewModManagerStatus,
+371:         game_path: OverviewGamePathStatus,
+372:         version: Fallout4InstallType,
+373:         system_metadata: Option<SystemMetadata>,
+374:     ) -> Self {
+375:         Self {
+376:             mod_manager,
+377:             game_path,
+378:             version,
+368:     /// Creates top status rows from already-collected typed values.
+369:     pub fn new(
+370:         mod_manager: OverviewModManagerStatus,
+371:         game_path: OverviewGamePathStatus,
+372:         version: Fallout4InstallType,
+373:         system_metadata: Option<SystemMetadata>,
+374:     ) -> Self {
+375:         Self {
+376:             mod_manager,
+377:             game_path,
+378:             version,
+379:             system_metadata,
+380:         }
+381:     }
+382: 
+383:     /// Returns top status rows in the reference display order.
+384:     pub fn rows(&self) -> Vec<OverviewTopStatusRow> {
+385:         OverviewTopStatusKind::reference_order()
+386:             .into_iter()
+387:             .map(|kind| match kind {
+388:                 OverviewTopStatusKind::ModManager => OverviewTopStatusRow {
+389:                     kind,
+374:     ) -> Self {
+375:         Self {
+376:             mod_manager,
+377:             game_path,
+378:             version,
+379:             system_metadata,
+380:         }
+381:     }
+382: 
+383:     /// Returns top status rows in the reference display order.
+384:     pub fn rows(&self) -> Vec<OverviewTopStatusRow> {
+385:         OverviewTopStatusKind::reference_order()
+386:             .into_iter()
+387:             .map(|kind| match kind {
+388:                 OverviewTopStatusKind::ModManager => OverviewTopStatusRow {
+389:                     kind,
+390:                     label: kind.label(),
+391:                     value: self.mod_manager.display_text(),
+392:                     severity: self.mod_manager.severity(),
+393:                     action: None,
+394:                 },
+395:                 OverviewTopStatusKind::GamePath => OverviewTopStatusRow {
+395:                 OverviewTopStatusKind::GamePath => OverviewTopStatusRow {
+396:                     kind,
+397:                     label: kind.label(),
+398:                     value: self.game_path.display_text(),
+399:                     severity: self.game_path.severity(),
+400:                     action: match &self.game_path {
+401:                         OverviewGamePathStatus::Found(path) => {
+402:                             Some(OverviewDeferredAction::open_path(
+403:                                 OverviewDeferredActionKind::OpenGamePath,
+404:                                 TOP_ROW_GAME_PATH_LABEL,
+405:                                 path.clone(),
+406:                             ))
+407:                         }
+408:                         OverviewGamePathStatus::NotFound => None,
+409:                     },
+410:                 },
+411:                 OverviewTopStatusKind::Version => OverviewTopStatusRow {
+412:                     kind,
+413:                     label: kind.label(),
+414:                     value: self.version.to_string(),
+415:                     severity: install_type_severity(self.version),
+416:                     action: None,

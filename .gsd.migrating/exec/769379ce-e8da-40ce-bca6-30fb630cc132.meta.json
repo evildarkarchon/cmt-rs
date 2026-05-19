@@ -1,0 +1,18 @@
+{
+  "id": "769379ce-e8da-40ce-bca6-30fb630cc132",
+  "runtime": "bash",
+  "purpose": "focused archive patcher executor tests after initial implementation",
+  "script_chars": 43,
+  "started_at": "2026-05-19T01:58:04.910Z",
+  "finished_at": "2026-05-19T01:58:26.303Z",
+  "exit_code": 101,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 21393,
+  "stdout_bytes": 0,
+  "stderr_bytes": 37609,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\769379ce-e8da-40ce-bca6-30fb630cc132.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\769379ce-e8da-40ce-bca6-30fb630cc132.stderr"
+}

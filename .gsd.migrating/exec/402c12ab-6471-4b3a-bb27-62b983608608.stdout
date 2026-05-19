@@ -1,0 +1,132 @@
+Diff in /mnt/j/cmt-rs/src/app/archive_patcher_controller.rs:67:
+ pub const ARCHIVE_PATCHER_RESTORE_UNAVAILABLE_MESSAGE: &str =
+     "No Archive Patcher restore manifest is available.";
+ /// Safe status shown when Overview has not supplied archive records for the modal.
+[31m-pub const ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE: &str =
+(B[m[31m-    "Archive Patcher needs a refreshed Overview with discovered BA2 archives. Refresh Overview or fix game discovery, then try again.";
+(B[m[32m+pub const ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE: &str = "Archive Patcher needs a refreshed Overview with discovered BA2 archives. Refresh Overview or fix game discovery, then try again.";
+(B[m 
+ /// Monotonic identity assigned to each Archive Patcher request.
+ pub type ArchivePatcherRequestId = u64;
+Diff in /mnt/j/cmt-rs/src/main.rs:15:
+     about_controller::{AboutController, AboutState, AboutTransitionResult},
+     archive_patcher_controller::{
+         ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE, ARCHIVE_PATCHER_PLAN_READY_MESSAGE,
+[31m-        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController, ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
+(B[m[32m+        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController,
+(B[m[32m+        ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
+(B[m         ArchivePatcherPlanWorkerRequest, ArchivePatcherRestoreWorkerRequest,
+         ArchivePatcherTransitionResult, ArchivePatcherWorkerRequestKind,
+         archive_patcher_candidates_loaded_payload, archive_patcher_log_row_payload,
+Diff in /mnt/j/cmt-rs/src/main.rs:798:
+                         );
+                         return;
+                     };
+[31m-                    let settings = overview_settings_for_archive_patcher_completion(
+(B[m[31m-                        &shared_settings_snapshot,
+(B[m[31m-                    );
+(B[m[32m+                    let settings =
+(B[m[32m+                        overview_settings_for_archive_patcher_completion(&shared_settings_snapshot);
+(B[m                     tracing::info!(
+                         event = "s10-archive-patcher-overview-refresh-requested",
+                         task_id = %task_id,
+Diff in /mnt/j/cmt-rs/src/main.rs:2569:
+     window: &ArchivePatcherWindow,
+     controller: &Arc<Mutex<ArchivePatcherController>>,
+ ) -> ArchivePatcherTransitionResult {
+[31m-    let result = with_archive_patcher_controller_mut(controller, |controller| {
+(B[m[31m-        controller.request_close()
+(B[m[31m-    })
+(B[m[31m-    .unwrap_or(ArchivePatcherTransitionResult::Ignored);
+(B[m[32m+    let result =
+(B[m[32m+        with_archive_patcher_controller_mut(controller, |controller| controller.request_close())
+(B[m[32m+            .unwrap_or(ArchivePatcherTransitionResult::Ignored);
+(B[m     apply_current_archive_patcher_state(window, controller);
+     if result.is_applied()
+         && let Err(error) = window.hide()
+Diff in /mnt/j/cmt-rs/src/main.rs:2602:
+     );
+     let task = request.task.clone();
+     let request_id = request.request_id;
+[31m-    if let Err(error) = worker_runtime.spawn_blocking_task(
+(B[m[31m-        task,
+(B[m[31m-        archive_patcher_sink,
+(B[m[31m-        move |_context| build_archive_patcher_candidates_payload(request),
+(B[m[31m-    ) {
+(B[m[32m+    if let Err(error) =
+(B[m[32m+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |_context| {
+(B[m[32m+            build_archive_patcher_candidates_payload(request)
+(B[m[32m+        })
+(B[m[32m+    {
+(B[m         with_archive_patcher_controller_mut(controller, |controller| {
+[31m-            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Candidates, request_id, error)
+(B[m[32m+            controller.spawn_failed(
+(B[m[32m+                ArchivePatcherWorkerRequestKind::Candidates,
+(B[m[32m+                request_id,
+(B[m[32m+                error,
+(B[m[32m+            )
+(B[m         });
+         apply_current_archive_patcher_state(window, controller);
+     }
+Diff in /mnt/j/cmt-rs/src/main.rs:2630:
+     );
+     let task = request.task.clone();
+     let request_id = request.request_id;
+[31m-    if let Err(error) = worker_runtime.spawn_blocking_task(
+(B[m[31m-        task,
+(B[m[31m-        archive_patcher_sink,
+(B[m[31m-        move |_context| build_archive_patcher_plan_payload(request),
+(B[m[31m-    ) {
+(B[m[32m+    if let Err(error) =
+(B[m[32m+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |_context| {
+(B[m[32m+            build_archive_patcher_plan_payload(request)
+(B[m[32m+        })
+(B[m[32m+    {
+(B[m         with_archive_patcher_controller_mut(controller, |controller| {
+             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Plan, request_id, error)
+         });
+Diff in /mnt/j/cmt-rs/src/main.rs:2659:
+     );
+     let task = request.task.clone();
+     let request_id = request.request_id;
+[31m-    if let Err(error) = worker_runtime.spawn_blocking_task(
+(B[m[31m-        task,
+(B[m[31m-        archive_patcher_sink,
+(B[m[31m-        move |context| build_archive_patcher_patch_payload(context, request),
+(B[m[31m-    ) {
+(B[m[32m+    if let Err(error) =
+(B[m[32m+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |context| {
+(B[m[32m+            build_archive_patcher_patch_payload(context, request)
+(B[m[32m+        })
+(B[m[32m+    {
+(B[m         with_archive_patcher_controller_mut(controller, |controller| {
+             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Patch, request_id, error)
+         });
+Diff in /mnt/j/cmt-rs/src/main.rs:2687:
+     );
+     let task = request.task.clone();
+     let request_id = request.request_id;
+[31m-    if let Err(error) = worker_runtime.spawn_blocking_task(
+(B[m[31m-        task,
+(B[m[31m-        archive_patcher_sink,
+(B[m[31m-        move |context| build_archive_patcher_restore_payload(context, request),
+(B[m[31m-    ) {
+(B[m[32m+    if let Err(error) =
+(B[m[32m+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |context| {
+(B[m[32m+            build_archive_patcher_restore_payload(context, request)
+(B[m[32m+        })
+(B[m[32m+    {
+(B[m         with_archive_patcher_controller_mut(controller, |controller| {
+             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Restore, request_id, error)
+         });
+Diff in /mnt/j/cmt-rs/src/services/tools.rs:1009:
+         assert_eq!(archive_feedback.outcome, ActionOutcome::Succeeded);
+         assert_eq!(
+             archive_feedback.action,
+[31m-            Some(ToolsActionKind::InternalUtility(ToolActionId::ArchivePatcher))
+(B[m[32m+            Some(ToolsActionKind::InternalUtility(
+(B[m[32m+                ToolActionId::ArchivePatcher
+(B[m[32m+            ))
+(B[m         );
+         assert_eq!(
+             archive_feedback.safe_message(),

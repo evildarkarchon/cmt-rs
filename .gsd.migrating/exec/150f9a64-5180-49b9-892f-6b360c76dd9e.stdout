@@ -1,0 +1,144 @@
+Cargo.toml:12:directories = "6.0.0"
+src/main.rs:76:    settings_store::{AssetResolver, FileAssetResolver, SettingsStore},
+src/main.rs:386:fn load_settings_controller() -> SettingsController<FileAssetResolver> {
+src/main.rs:387:    SettingsController::load(SettingsStore::production()).unwrap_or_else(|error| {
+src/main.rs:389:        SettingsController::from_settings(SettingsStore::production(), AppSettings::default())
+src/main.rs:395:    controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:429:fn remember_current_settings_snapshot<R: AssetResolver>(
+src/main.rs:538:    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:761:    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:966:    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:1173:    settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:1592:fn request_open_downgrader_modal<R: AssetResolver>(
+src/main.rs:1637:fn request_downgrader_patch_or_run<R: AssetResolver>(
+src/main.rs:2321:    settings_controller: &Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:2366:fn prepare_scanner_scan_request<R: AssetResolver>(
+src/main.rs:3054:    settings_controller: &Rc<RefCell<SettingsController<FileAssetResolver>>>,
+src/main.rs:5488:        let store = SettingsStore::with_asset_resolver(
+src/main.rs:5490:            crate::platform::settings_store::StaticAssetResolver::new(Some("nexus")),
+src/main.rs:6100:        Rc<RefCell<SettingsController<crate::platform::settings_store::StaticAssetResolver>>>,
+src/main.rs:6106:        let store = SettingsStore::with_asset_resolver(
+src/main.rs:6108:            crate::platform::settings_store::StaticAssetResolver::new(Some("nexus")),
+src/services/scanner.rs:394:    /// Number of Data directories successfully read.
+src/services/scanner.rs:1240:            self.scan_data_directory(
+src/services/scanner.rs:1257:    fn scan_data_directory(
+src/services/scanner.rs:1351:            self.scan_data_directory(
+src/services/scanner.rs:1624:    directories: BTreeSet<String>,
+src/services/scanner.rs:1633:        let mut directories = IGNORE_FOLDERS
+src/services/scanner.rs:1644:            directories.extend(
+src/services/scanner.rs:1647:                    .directories
+src/services/scanner.rs:1654:            directories,
+src/services/scanner.rs:1665:        self.directories.contains(folder_lower)
+src/services/scanner.rs:2174:        let directories = ModOrganizerDirectories::new(
+src/services/scanner.rs:2182:        let context = ModOrganizerContext::new(manager, "Default", directories)
+src/platform/settings_store.rs:18:pub trait AssetResolver {
+src/platform/settings_store.rs:28:pub struct FileAssetResolver {
+src/platform/settings_store.rs:32:impl FileAssetResolver {
+src/platform/settings_store.rs:45:    pub fn production() -> Self {
+src/platform/settings_store.rs:50:impl AssetResolver for FileAssetResolver {
+src/platform/settings_store.rs:62:pub struct StaticAssetResolver {
+src/platform/settings_store.rs:66:impl StaticAssetResolver {
+src/platform/settings_store.rs:75:impl AssetResolver for StaticAssetResolver {
+src/platform/settings_store.rs:81:/// Settings and asset paths used by [`SettingsStore`].
+src/platform/settings_store.rs:83:pub struct SettingsPaths<R = FileAssetResolver> {
+src/platform/settings_store.rs:88:impl SettingsPaths<FileAssetResolver> {
+src/platform/settings_store.rs:90:    pub fn production() -> Self {
+src/platform/settings_store.rs:93:            asset_resolver: FileAssetResolver::production(),
+src/platform/settings_store.rs:98:impl<R: AssetResolver> SettingsPaths<R> {
+src/platform/settings_store.rs:115:pub struct SettingsStore<R = FileAssetResolver> {
+src/platform/settings_store.rs:119:/// Result returned by [`SettingsStore::load`] after any reference-style repair.
+src/platform/settings_store.rs:130:impl SettingsStore<FileAssetResolver> {
+src/platform/settings_store.rs:132:    pub fn production() -> Self {
+src/platform/settings_store.rs:133:        Self::new(SettingsPaths::production())
+src/platform/settings_store.rs:137:impl<R: AssetResolver> SettingsStore<R> {
+src/platform/settings_store.rs:251:        let paths = SettingsPaths::production();
+src/platform/settings_store.rs:262:            SettingsPaths::injected(settings_path.clone(), FileAssetResolver::new(asset_path));
+src/platform/settings_store.rs:263:        let store = SettingsStore::new(paths);
+src/platform/settings_store.rs:271:        let resolver = StaticAssetResolver::new(Some("invalid-source"));
+src/platform/settings_store.rs:272:        let store = SettingsStore::with_asset_resolver(PathBuf::from("settings.json"), resolver);
+src/platform/settings_store.rs:287:            let store = SettingsStore::with_asset_resolver(
+src/platform/settings_store.rs:289:                FileAssetResolver::new(asset_path),
+src/platform/settings_store.rs:299:        let store = SettingsStore::with_asset_resolver(
+src/platform/settings_store.rs:301:            StaticAssetResolver::new(Some("github")),
+src/platform/settings_store.rs:318:        let store = SettingsStore::with_asset_resolver(
+src/platform/settings_store.rs:320:            StaticAssetResolver::new(Some("both")),
+src/platform/settings_store.rs:348:        let store = SettingsStore::with_asset_resolver(
+src/platform/settings_store.rs:350:            StaticAssetResolver::new(Some("nexus")),
+src/platform/settings_store.rs:369:        let store = SettingsStore::with_asset_resolver(
+src/platform/settings_store.rs:371:            StaticAssetResolver::new(Some("nexus")),
+src/platform/settings_store.rs:410:            SettingsStore::with_asset_resolver(settings_path, StaticAssetResolver::new(None));
+src/services/f4se.rs:423:        if let Some(report) = self.ensure_data_directory(data_path, &mut diagnostics) {
+src/services/f4se.rs:524:    fn ensure_data_directory(
+src/app/settings_controller.rs:5:    platform::settings_store::{AssetResolver, SettingsStore},
+src/app/settings_controller.rs:48:    store: SettingsStore<R>,
+src/app/settings_controller.rs:52:impl<R: AssetResolver> SettingsController<R> {
+src/app/settings_controller.rs:58:    pub fn load(store: SettingsStore<R>) -> io::Result<Self> {
+src/app/settings_controller.rs:69:    pub fn from_settings(store: SettingsStore<R>, settings: AppSettings) -> Self {
+src/app/settings_controller.rs:296:        platform::settings_store::{SettingsStore, StaticAssetResolver},
+src/app/settings_controller.rs:302:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:304:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:319:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:321:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:336:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:338:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:358:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:360:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:377:        let setup_store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:379:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:395:        let setup_store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:397:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:413:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:415:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:430:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:432:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:453:        let setup_store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:455:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:475:        let store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:477:            StaticAssetResolver::new(Some("nexus")),
+src/app/settings_controller.rs:499:        let setup_store = SettingsStore::with_asset_resolver(
+src/app/settings_controller.rs:501:            StaticAssetResolver::new(Some("nexus")),
+src/domain/mod_manager.rs:160:    /// Creates explicit MO2 directories from adapter-parsed values.
+src/domain/mod_manager.rs:199:    pub directories: BTreeSet<String>,
+src/domain/mod_manager.rs:206:            directories: BTreeSet::new(),
+src/domain/mod_manager.rs:215:        directories: impl IntoIterator<Item = impl AsRef<str>>,
+src/domain/mod_manager.rs:222:            directories: directories
+src/domain/mod_manager.rs:246:    pub directories: ModOrganizerDirectories,
+src/domain/mod_manager.rs:260:        directories: ModOrganizerDirectories,
+src/domain/mod_manager.rs:269:            directories,
+src/domain/mod_manager.rs:310:        &self.directories.mod_directory
+src/domain/mod_manager.rs:315:        &self.directories.overwrite_directory
+src/domain/mod_manager.rs:320:        &self.directories.profiles_directory
+src/domain/mod_manager.rs:570:        let directories = ModOrganizerDirectories::new(
+src/domain/mod_manager.rs:578:        let context = ModOrganizerContext::new(mo2_manager(), "Default", directories)
+src/domain/mod_manager.rs:604:        assert!(context.skip_rules.directories.contains("cache"));
+src/domain/mod_manager.rs:605:        assert!(context.skip_rules.directories.contains("temp"));
+src/domain/mod_manager.rs:610:        let directories = ModOrganizerDirectories::reference_defaults("C:/Modding/MO2");
+src/domain/mod_manager.rs:611:        let context = ModOrganizerContext::new(mo2_manager(), "Default", directories);
+src/domain/mod_manager.rs:614:            context.directories.cache_directory,
+src/domain/mod_manager.rs:618:            context.directories.download_directory,
+src/domain/mod_manager.rs:631:        assert!(context.skip_rules.directories.is_empty());
+src/services/downgrader.rs:885:    patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
+src/services/downgrader.rs:893:            patch_integrity_manifest: &PATCH_INTEGRITY_MANIFEST,
+src/services/downgrader.rs:898:    const fn with_patch_integrity_manifest(
+src/services/downgrader.rs:900:        patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
+src/services/downgrader.rs:904:            patch_integrity_manifest,
+src/services/downgrader.rs:2325:        self.patch_integrity_manifest
+src/services/downgrader.rs:3751:        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+src/services/downgrader.rs:3754:        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+src/services/downgrader.rs:3793:        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+src/services/downgrader.rs:3796:        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+src/services/downgrader.rs:3846:        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+src/services/downgrader.rs:3848:        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+src/services/downgrader.rs:3873:        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
+src/services/downgrader.rs:3876:        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
+src/services/autofix.rs:315:    pub fn production() -> Self {
+src/services/autofix.rs:386:            registry: AutoFixRegistry::production(),
+src/services/discovery.rs:760:        let directories = ModOrganizerDirectories::new(
+src/services/discovery.rs:781:        let skip_directories = values
+src/services/discovery.rs:783:            .get("skip_directories")
+src/services/discovery.rs:786:        let skip_rules = ModOrganizerSkipRules::new(skip_file_suffixes, skip_directories);
+src/services/discovery.rs:790:            .map(|value| resolve_mo2_path(Some(value), &directories.base_directory, ""));
+src/services/discovery.rs:792:        let mut context = ModOrganizerContext::new(manager, selected_profile, directories)
+src/services/discovery.rs:1203:            | "skip_directories"
+src/services/discovery.rs:1799:                       skip_directories=Cache, Temp\n\
+src/services/discovery.rs:1839:            context.skip_rules.directories,

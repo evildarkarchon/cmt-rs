@@ -1,0 +1,48 @@
+src\platform\filesystem.rs:47: pub struct FileMetadata {
+src\platform\filesystem.rs:53:     pub is_reparse_point: bool,
+src\platform\filesystem.rs:56: impl FileMetadata {
+src\platform\filesystem.rs:62:             is_reparse_point: false,
+src\platform\filesystem.rs:71:             is_reparse_point: true,
+src\platform\filesystem.rs:87:         matches!(self.file_type, FileType::Symlink) || self.is_reparse_point
+src\platform\filesystem.rs:460: fn file_metadata_from_std(metadata: fs::Metadata) -> FileMetadata {
+src\platform\filesystem.rs:461:     let is_reparse_point = metadata_is_reparse_point(&metadata);
+src\platform\filesystem.rs:462:     FileMetadata {
+src\platform\filesystem.rs:465:         is_reparse_point,
+src\platform\filesystem.rs:470: fn metadata_is_reparse_point(metadata: &fs::Metadata) -> bool {
+src\platform\filesystem.rs:478: fn metadata_is_reparse_point(_metadata: &fs::Metadata) -> bool {
+src\services\autofix.rs:1081:                 Ok(FileMetadata {
+src\services\autofix.rs:1084:                 , is_reparse_point: false })
+src\services\discovery.rs:1387:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\discovery.rs:1390:                 , is_reparse_point: false }),
+src\services\discovery.rs:1391:                 FakeNode::Directory => Ok(FileMetadata {
+src\services\discovery.rs:1394:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2080:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\downgrader.rs:2083:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2084:                 FakeNode::Directory => Ok(FileMetadata {
+src\services\downgrader.rs:2087:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2088:                 FakeNode::UnreadableFile => Ok(FileMetadata {
+src\services\downgrader.rs:2091:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2699:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\downgrader.rs:2702:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2703:                 FakeNode::Directory => Ok(FileMetadata {
+src\services\downgrader.rs:2706:                 , is_reparse_point: false }),
+src\services\downgrader.rs:2707:                 FakeNode::UnreadableFile => Ok(FileMetadata {
+src\services\downgrader.rs:2710:                 , is_reparse_point: false }),
+src\services\f4se.rs:893:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\f4se.rs:896:                 , is_reparse_point: false }),
+src\services\f4se.rs:897:                 FakeNode::Directory | FakeNode::UnreadableDirectory => Ok(FileMetadata {
+src\services\f4se.rs:900:                 , is_reparse_point: false }),
+src\services\f4se.rs:901:                 FakeNode::UnreadableFile => Ok(FileMetadata {
+src\services\f4se.rs:904:                 , is_reparse_point: false }),
+src\services\overview_collector.rs:1580:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\overview_collector.rs:1583:                 , is_reparse_point: false }),
+src\services\overview_collector.rs:1584:                 FakeNode::Directory => Ok(FileMetadata {
+src\services\overview_collector.rs:1587:                 , is_reparse_point: false }),
+src\services\overview_collector.rs:1588:                 FakeNode::UnreadableFile => Ok(FileMetadata {
+src\services\overview_collector.rs:1591:                 , is_reparse_point: false }),
+src\services\scanner.rs:2078:                 FakeNode::File(bytes) => Ok(FileMetadata {
+src\services\scanner.rs:2081:                 , is_reparse_point: false }),
+src\services\scanner.rs:2082:                 FakeNode::Directory | FakeNode::UnreadableDirectory => Ok(FileMetadata {
+src\services\scanner.rs:2085:                 , is_reparse_point: false }),
+src\services\scanner.rs:2086:                 FakeNode::UnreadableFile => Ok(FileMetadata {
+src\services\scanner.rs:2089:                 , is_reparse_point: false }),

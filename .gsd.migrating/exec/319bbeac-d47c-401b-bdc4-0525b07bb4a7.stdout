@@ -1,0 +1,331 @@
+## Archive/Patcher/Downgrader symbols
+ui/main.slint:5:import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+ui/main.slint:6:export { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow } from "downgrader_window.slint";
+ui/main.slint:31:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/main.slint:33:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/main.slint:84:    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+ui/downgrader_window.slint:3:export struct DowngraderStatusUiRow {
+ui/downgrader_window.slint:10:export struct DowngraderPlanUiRow {
+ui/downgrader_window.slint:17:export struct DowngraderLogUiRow {
+ui/downgrader_window.slint:22:component DowngraderStatusText inherits Text {
+ui/downgrader_window.slint:35:component DowngraderOptionRadio inherits Rectangle {
+ui/downgrader_window.slint:84:component DowngraderOptionCheck inherits Rectangle {
+ui/downgrader_window.slint:134:component DowngraderStatusGroup inherits Rectangle {
+ui/downgrader_window.slint:137:    in property <[DowngraderStatusUiRow]> rows;
+ui/downgrader_window.slint:162:                for row in root.rows: DowngraderStatusText {
+ui/downgrader_window.slint:175:component DowngraderPlanRowItem inherits Rectangle {
+ui/downgrader_window.slint:176:    in property <DowngraderPlanUiRow> entry;
+ui/downgrader_window.slint:233:component DowngraderLogRowItem inherits Rectangle {
+ui/downgrader_window.slint:234:    in property <DowngraderLogUiRow> entry;
+ui/downgrader_window.slint:248:component DowngraderProgressBar inherits Rectangle {
+ui/downgrader_window.slint:268:// while a confirmed Downgrader run is active.
+ui/downgrader_window.slint:269:export component DowngraderWindow inherits Window {
+ui/downgrader_window.slint:270:    in-out property <[DowngraderStatusUiRow]> current-game-status-rows;
+ui/downgrader_window.slint:271:    in-out property <[DowngraderStatusUiRow]> current-creation-kit-status-rows;
+ui/downgrader_window.slint:275:    in-out property <[DowngraderPlanUiRow]> plan-rows;
+ui/downgrader_window.slint:279:    in-out property <[DowngraderLogUiRow]> log-rows;
+ui/downgrader_window.slint:300:    title: "Downgrader";
+ui/downgrader_window.slint:320:                    DowngraderStatusGroup {
+ui/downgrader_window.slint:326:                    DowngraderStatusGroup {
+ui/downgrader_window.slint:347:                            DowngraderOptionRadio {
+ui/downgrader_window.slint:358:                            DowngraderOptionRadio {
+ui/downgrader_window.slint:380:                            DowngraderOptionCheck {
+ui/downgrader_window.slint:390:                            DowngraderOptionCheck {
+ui/downgrader_window.slint:462:                            for row in root.plan-rows: DowngraderPlanRowItem {
+ui/downgrader_window.slint:480:                        if root.log-rows.length == 0: DowngraderLogRowItem {
+ui/downgrader_window.slint:484:                        for row in root.log-rows: DowngraderLogRowItem {
+ui/downgrader_window.slint:495:                DowngraderProgressBar {
+ui/tools_tab.slint:57:    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+ui/tools_tab.slint:100:                        label: "Archive Patcher";
+ui/tools_tab.slint:101:                        action-id: "tools.archive_patcher";
+ui/tools_tab.slint:103:                        helper-text: "Deferred until S10 Archive Patcher workflow is ported.";
+ui/tools_tab.slint:159:                        helper-text: "Sniff out textures that might CTD your game. With BA2 support.\nDiscord channel: #nistonmakemod";
+ui/tools_tab.slint:204:                        label: "BA2 Merging Automation\n     Tool (BMAT)";
+ui/tools_tab.slint:206:                        helper-text: "Automated BA2 files repackaging and merging.";
+src/main.rs:17:        DOWNGRADER_PLAN_READY_MESSAGE, DowngraderController, DowngraderPatchWorkerRequest,
+src/main.rs:18:        DowngraderPlanWorkerRequest, DowngraderRunWorkerRequest, DowngraderStatusWorkerRequest,
+src/main.rs:19:        DowngraderTransitionResult, DowngraderWorkerRequestKind, downgrader_log_row_payload,
+src/main.rs:48:        ABOUT_DOWNGRADING_BODY, ABOUT_DOWNGRADING_TITLE, DowngraderExecutionLogRow,
+src/main.rs:49:        DowngraderFileGroup, DowngraderInstallStatus, DowngraderOptionsSnapshot,
+src/main.rs:50:        DowngraderStatusRow, DowngraderTarget,
+src/main.rs:67:    settings::{AppSettings, DowngraderSettings, UpdateSource},
+src/main.rs:82:        DowngraderExecutionProgressEvent, DowngraderExecutionRequest, DowngraderPlanRequest,
+src/main.rs:83:        DowngraderService, DowngraderStatusRequest, ReqwestDeltaDownloader, VcdiffDeltaApplier,
+src/main.rs:107:    WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
+src/main.rs:228:struct DowngraderUiProjection {
+src/main.rs:229:    current_game_status_rows: Vec<DowngraderStatusUiRow>,
+src/main.rs:230:    current_creation_kit_status_rows: Vec<DowngraderStatusUiRow>,
+src/main.rs:234:    plan_rows: Vec<DowngraderPlanUiRow>,
+src/main.rs:238:    log_rows: Vec<DowngraderLogUiRow>,
+src/main.rs:249:struct DowngraderAboutProjection {
+src/main.rs:255:enum DowngraderOpenSource {
+src/main.rs:260:impl DowngraderOpenSource {
+src/main.rs:292:    let downgrader_controller = Arc::new(Mutex::new(DowngraderController::new()));
+src/main.rs:293:    let downgrader_window = DowngraderWindow::new()?;
+src/main.rs:446:    window: &DowngraderWindow,
+src/main.rs:447:    controller: Arc<Mutex<DowngraderController>>,
+src/main.rs:462:            WorkerPayload::Downgrader(workers::DowngraderWorkerPayload::RunCompleted { .. })
+src/main.rs:470:                "Downgrader worker event arrived after the Slint window was gone"
+src/main.rs:482:            DowngraderTransitionResult::Applied => {
+src/main.rs:488:                    "Downgrader worker event applied to render state"
+src/main.rs:507:            DowngraderTransitionResult::StaleIgnored => tracing::debug!(
+src/main.rs:512:                "Downgrader worker event was stale and ignored"
+src/main.rs:514:            DowngraderTransitionResult::Ignored => tracing::debug!(
+src/main.rs:519:                "Ignoring non-Downgrader worker event on Downgrader sink"
+src/main.rs:521:            DowngraderTransitionResult::Rejected | DowngraderTransitionResult::CloseBlocked => {
+src/main.rs:528:                    "Downgrader worker event was rejected by current modal state"
+src/main.rs:536:    window: &DowngraderWindow,
+src/main.rs:537:    controller: Arc<Mutex<DowngraderController>>,
+src/main.rs:655:                DowngraderTransitionResult::CloseBlocked => CloseRequestResponse::KeepWindowShown,
+src/main.rs:758:    downgrader_window: &DowngraderWindow,
+src/main.rs:760:    downgrader_controller: Arc<Mutex<DowngraderController>>,
+src/main.rs:784:                        DowngraderOpenSource::Tools,
+src/main.rs:816:                    DowngraderOpenSource::Tools,
+src/main.rs:1170:    downgrader_window: &DowngraderWindow,
+src/main.rs:1172:    downgrader_controller: Arc<Mutex<DowngraderController>>,
+src/main.rs:1274:                    DowngraderOpenSource::Overview,
+src/main.rs:1280:    app.on_overview_open_archive_patcher_requested({
+src/main.rs:1289:                    OverviewDeferredActionKind::OpenArchivePatcher,
+src/main.rs:1290:                    "Archive Patcher is reserved for a later port phase.".to_owned(),
+src/main.rs:1593:    window: &DowngraderWindow,
+src/main.rs:1594:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1598:    source: DowngraderOpenSource,
+src/main.rs:1617:        "Scheduling Downgrader status worker after modal open"
+src/main.rs:1624:            "Downgrader modal show failed"
+src/main.rs:1638:    window: &DowngraderWindow,
+src/main.rs:1639:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1657:            "Downgrader work not scheduled because settings persistence failed"
+src/main.rs:1678:        DowngraderPatchWorkerRequest::PreviewPlan(request) => {
+src/main.rs:1687:        DowngraderPatchWorkerRequest::ConfirmedRun(request) => {
+src/main.rs:1700:    window: &DowngraderWindow,
+src/main.rs:1701:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1704:    request: DowngraderStatusWorkerRequest,
+src/main.rs:1713:        "Scheduling Downgrader status worker"
+src/main.rs:1723:            "Downgrader status worker could not be scheduled"
+src/main.rs:1726:            controller.spawn_failed(DowngraderWorkerRequestKind::Status, request_id, error);
+src/main.rs:1733:    window: &DowngraderWindow,
+src/main.rs:1734:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1737:    request: DowngraderPlanWorkerRequest,
+src/main.rs:1746:        "Scheduling Downgrader plan worker"
+src/main.rs:1756:            "Downgrader plan worker could not be scheduled"
+src/main.rs:1759:            controller.spawn_failed(DowngraderWorkerRequestKind::Plan, request_id, error);
+src/main.rs:1766:    window: &DowngraderWindow,
+src/main.rs:1767:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1770:    request: DowngraderRunWorkerRequest,
+src/main.rs:1780:        "Scheduling Downgrader confirmed run worker"
+src/main.rs:1790:            "Downgrader run worker could not be scheduled"
+src/main.rs:1793:            controller.spawn_failed(DowngraderWorkerRequestKind::Run, request_id, error);
+src/main.rs:1817:    window: &DowngraderWindow,
+src/main.rs:1818:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:1842:            "Requesting Overview refresh after Downgrader completion"
+src/main.rs:1856:    window: &DowngraderWindow,
+src/main.rs:1857:    controller: Arc<Mutex<DowngraderController>>,
+src/main.rs:1875:fn build_downgrader_status_payload(request: DowngraderStatusWorkerRequest) -> BlockingWorkerResult {
+src/main.rs:1885:    let service = DowngraderService::new(&filesystem);
+src/main.rs:1887:        .status_snapshot(DowngraderStatusRequest::new(
+src/main.rs:1897:fn build_downgrader_plan_payload(request: DowngraderPlanWorkerRequest) -> BlockingWorkerResult {
+src/main.rs:1907:    let service = DowngraderService::new(&filesystem);
+src/main.rs:1909:        .preview_plan(DowngraderPlanRequest::new(
+src/main.rs:1923:    request: DowngraderRunWorkerRequest,
+src/main.rs:1926:    S: WorkerEventSink,
+src/main.rs:1943:    let service = DowngraderService::new(&filesystem);
+src/main.rs:1947:            DowngraderExecutionRequest::new(request_id, installation.as_ref(), request.options)
+src/main.rs:1964:    progress: &DowngraderExecutionProgressEvent,
+src/main.rs:1966:    S: WorkerEventSink,
+src/main.rs:1978:            "Downgrader progress event could not be handed to UI"
+src/main.rs:1986:    row: &DowngraderExecutionLogRow,
+src/main.rs:1988:    S: WorkerEventSink,
+src/main.rs:1998:            "Downgrader log row could not be handed to UI"
+src/main.rs:2004:    error: services::downgrader::DowngraderServiceError,
+src/main.rs:2028:                "Downgrader discovery did not find a usable Fallout 4 installation"
+src/main.rs:2035:fn downgrader_settings_from_options(options: DowngraderOptionsSnapshot) -> DowngraderSettings {
+src/main.rs:2036:    DowngraderSettings {
+src/main.rs:2042:fn project_downgrader_about_dialog() -> DowngraderAboutProjection {
+src/main.rs:2043:    DowngraderAboutProjection {
+src/main.rs:2049:fn show_downgrader_about_dialog(window: &DowngraderWindow) {
+src/main.rs:2057:        "Downgrader About dialog shown"
+src/main.rs:2061:fn hide_downgrader_about_dialog(window: &DowngraderWindow) {
+src/main.rs:2065:        "Downgrader About dialog hidden"
+src/main.rs:2070:    window: &DowngraderWindow,
+src/main.rs:2071:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:2072:) -> DowngraderTransitionResult {
+src/main.rs:2075:            .unwrap_or(DowngraderTransitionResult::Ignored);
+src/main.rs:2083:                "Downgrader modal hide failed"
+src/main.rs:2091:    controller: &mut DowngraderController,
+src/main.rs:2092:    event: WorkerEvent,
+src/main.rs:2093:) -> DowngraderTransitionResult {
+src/main.rs:2115:        Ok(action @ ToolsActionKind::DeferredUtility(_)) => {
+src/main.rs:2413:    S: WorkerEventSink,
+src/main.rs:2557:    S: WorkerEventSink,
+src/main.rs:2575:    S: WorkerEventSink,
+src/main.rs:3244:    emit_worker_event_or_log(&overview_sink, WorkerEvent::running(task.clone()));
+src/main.rs:3263:        let event = WorkerEvent::completed(
+src/main.rs:3400:    event: WorkerEvent,
+src/main.rs:3407:    event: WorkerEvent,
+src/main.rs:3418:    event: WorkerEvent,
+src/main.rs:3429:    event: WorkerEvent,
+src/main.rs:3439:    event: &WorkerEvent,
+src/main.rs:3457:fn tools_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<ToolsActionFeedback> {
+src/main.rs:3472:fn about_worker_failure_feedback_from_event(event: &WorkerEvent) -> Option<AboutActionFeedback> {
+src/main.rs:3495:fn emit_worker_event_or_log<S>(sink: &S, event: WorkerEvent)
+src/main.rs:3497:    S: WorkerEventSink,
+src/main.rs:3601:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:3602:    action: impl FnOnce(&mut DowngraderController) -> T,
+src/main.rs:3610:                "Downgrader controller state is unavailable"
+src/main.rs:3618:    window: &DowngraderWindow,
+src/main.rs:3619:    controller: &Arc<Mutex<DowngraderController>>,
+src/main.rs:3629:fn project_downgrader_state(controller: &DowngraderController) -> DowngraderUiProjection {
+src/main.rs:3632:    DowngraderUiProjection {
+src/main.rs:3635:            DowngraderFileGroup::Game,
+src/main.rs:3639:            DowngraderFileGroup::CreationKit,
+src/main.rs:3651:            app::downgrader_controller::DowngraderControllerPhase::PlanReady
+src/main.rs:3669:            app::downgrader_controller::DowngraderControllerPhase::Running
+src/main.rs:3673:            app::downgrader_controller::DowngraderControllerPhase::LoadingStatus
+src/main.rs:3674:                | app::downgrader_controller::DowngraderControllerPhase::Planning
+src/main.rs:3675:                | app::downgrader_controller::DowngraderControllerPhase::Running
+src/main.rs:3681:fn apply_downgrader_projection(window: &DowngraderWindow, projection: DowngraderUiProjection) {
+src/main.rs:3704:    rows: &[DowngraderStatusRow],
+src/main.rs:3705:    group: DowngraderFileGroup,
+src/main.rs:3706:) -> Vec<DowngraderStatusUiRow> {
+src/main.rs:3710:        .map(|row| DowngraderStatusUiRow {
+src/main.rs:3720:    row: &services::downgrader::DowngraderPreviewPlanRow,
+src/main.rs:3721:) -> DowngraderPlanUiRow {
+src/main.rs:3738:    DowngraderPlanUiRow {
+src/main.rs:3751:fn format_downgrader_log_row(row: &DowngraderExecutionLogRow) -> DowngraderLogUiRow {
+src/main.rs:3752:    DowngraderLogUiRow {
+src/main.rs:3758:fn downgrader_target_ui_value(target: DowngraderTarget) -> &'static str {
+src/main.rs:3760:        DowngraderTarget::OldGen => "old_gen",
+src/main.rs:3761:        DowngraderTarget::NextGen => "next_gen",
+src/main.rs:3765:fn downgrader_status_severity(status: DowngraderInstallStatus) -> &'static str {
+src/main.rs:3767:        DowngraderInstallStatus::OldGen => "old-gen",
+src/main.rs:3768:        DowngraderInstallStatus::NextGen | DowngraderInstallStatus::NextGenAnniversary => {
+src/main.rs:3771:        DowngraderInstallStatus::Anniversary => "anniversary",
+src/main.rs:3772:        DowngraderInstallStatus::NotFound => "warning",
+src/main.rs:3773:        DowngraderInstallStatus::Obsolete | DowngraderInstallStatus::Unknown => "error",
+src/main.rs:4318:    app.set_overview_archive_patcher_label(
+src/main.rs:4321:            OverviewDeferredActionKind::OpenArchivePatcher,
+src/main.rs:4326:    app.set_overview_archive_patcher_enabled(false);
+src/main.rs:4327:    app.set_overview_archive_patcher_status(
+src/main.rs:4330:            OverviewDeferredActionKind::OpenArchivePatcher,
+src/main.rs:4331:            "Archive Patcher",
+src/main.rs:4618:            DOWNGRADER_MODAL_TITLE, DOWNGRADER_MODAL_WIDTH, DowngraderLogLevel, DowngraderProgress,
+src/main.rs:5012:        let event = WorkerEvent::completed(
+src/main.rs:5028:        let unrelated = WorkerEvent::completed(
+src/main.rs:5521:                WorkerEvent::running(request.task.clone())
+src/main.rs:5528:                WorkerEvent::progress(
+src/main.rs:5547:                WorkerEvent::completed(
+src/main.rs:5569:            WorkerEvent::completed(
+src/main.rs:5651:            WorkerEvent::failed(
+src/main.rs:5846:                    WorkerEvent::completed(prepared.request.task, payload),
+src/main.rs:5914:                    WorkerEvent::failed(
+src/main.rs:5987:                WorkerEvent::completed(prepared.request.task, payload),
+src/main.rs:6205:    ) -> services::downgrader::DowngraderStatusSnapshot {
+src/main.rs:6206:        services::downgrader::DowngraderStatusSnapshot {
+src/main.rs:6210:            default_target: DowngraderTarget::OldGen,
+src/main.rs:6219:        options: DowngraderOptionsSnapshot,
+src/main.rs:6220:    ) -> services::downgrader::DowngraderPreviewPlan {
+src/main.rs:6222:        services::downgrader::DowngraderPreviewPlan {
+src/main.rs:6228:            counts: services::downgrader::DowngraderPreviewPlanCounts::default(),
+src/main.rs:6235:    ) -> services::downgrader::DowngraderExecutionResult {
+src/main.rs:6236:        services::downgrader::DowngraderExecutionResult {
+src/main.rs:6239:            options: DowngraderOptionsSnapshot::new(DowngraderTarget::OldGen, true, false),
+src/main.rs:6241:            log_rows: vec![DowngraderExecutionLogRow::new(
+src/main.rs:6242:                DowngraderLogLevel::Good,
+src/main.rs:6250:    fn s09_runtime_ready_controller() -> DowngraderController {
+src/main.rs:6251:        let mut controller = DowngraderController::new();
+src/main.rs:6254:                DowngraderSettings {
+src/main.rs:6268:            DowngraderTransitionResult::Applied
+src/main.rs:6282:                .contains("Simple Downgrader's backups will also be used.")
+src/main.rs:6291:    fn s09_downgrader_runtime_wiring_open_entrypoints_and_archive_patcher_deferred() {
+src/main.rs:6292:        assert_eq!(DowngraderOpenSource::Overview.label(), "overview");
+src/main.rs:6293:        assert_eq!(DowngraderOpenSource::Tools.label(), "tools");
+src/main.rs:6299:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:6300:        assert!(TOOLS_SLINT.contains(ToolActionId::ArchivePatcher.as_str()));
+src/main.rs:6301:        assert!(TOOLS_SLINT.contains("Deferred until S10 Archive Patcher workflow is ported."));
+src/main.rs:6307:        settings.downgrader = DowngraderSettings {
+src/main.rs:6318:            .save_downgrader_settings_for_workflow(DowngraderSettings {
+src/main.rs:6338:            Some(DowngraderPatchWorkerRequest::PreviewPlan(request)) => request,
+src/main.rs:6346:            DowngraderTransitionResult::Applied
+src/main.rs:6349:            Some(DowngraderPatchWorkerRequest::ConfirmedRun(request)) => request,
+src/main.rs:6356:            DowngraderTransitionResult::CloseBlocked
+src/main.rs:6360:            controller.handle_worker_event(WorkerEvent::new(
+src/main.rs:6363:                downgrader_progress_payload(run_request.request_id, DowngraderProgress::new(37.5)),
+src/main.rs:6365:            DowngraderTransitionResult::Applied
+src/main.rs:6368:            controller.handle_worker_event(WorkerEvent::new(
+src/main.rs:6373:                    DowngraderExecutionLogRow::new(DowngraderLogLevel::Info, "Downloading patch."),
+src/main.rs:6376:            DowngraderTransitionResult::Applied
+src/main.rs:6388:            controller.handle_worker_event(WorkerEvent::completed(
+src/main.rs:6395:            DowngraderTransitionResult::StaleIgnored
+src/main.rs:6399:            app::downgrader_controller::DowngraderControllerPhase::Running
+src/main.rs:6404:                DowngraderWorkerRequestKind::Run,
+src/main.rs:6410:            DowngraderTransitionResult::Applied
+src/main.rs:6423:        settings.downgrader = DowngraderSettings {
+src/main.rs:6437:        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderStatusUiRow"));
+src/main.rs:6438:        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderPlanUiRow"));
+src/main.rs:6439:        assert!(DOWNGRADER_SLINT.contains("export struct DowngraderLogUiRow"));
+src/main.rs:6440:        assert!(DOWNGRADER_SLINT.contains("export component DowngraderWindow inherits Window"));
+src/main.rs:6442:            "import { DowngraderWindow, DowngraderStatusUiRow, DowngraderPlanUiRow, DowngraderLogUiRow }"
+src/main.rs:6465:                "Downgrader Slint should contain reference label {label:?}"
+src/main.rs:6501:                "in-out property <[DowngraderStatusUiRow]> current-game-status-rows",
+src/main.rs:6502:                "in-out property <[DowngraderStatusUiRow]> current-creation-kit-status-rows",
+src/main.rs:6506:                "in-out property <[DowngraderPlanUiRow]> plan-rows",
+src/main.rs:6509:                "in-out property <[DowngraderLogUiRow]> log-rows",
+src/main.rs:6533:    fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred()
+src/main.rs:6550:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:6560:                "label: \"Archive Patcher\"",
+src/main.rs:6561:                "action-id: \"tools.archive_patcher\"",
+src/main.rs:6563:                "Deferred until S10 Archive Patcher workflow is ported.",
+src/main.rs:6610:                "label: \"Archive Patcher\"",
+src/main.rs:6611:                "action-id: \"tools.archive_patcher\"",
+src/main.rs:6613:                "Deferred until S10 Archive Patcher workflow is ported.",
+src/main.rs:6809:        let tools_deferred = tools_action_for_id(ToolActionId::ArchivePatcher.as_str())
+src/main.rs:6810:            .expect_err("Archive Patcher utility should still fail closed");
+src/main.rs:6880:        let tools_event = WorkerEvent::completed(
+src/main.rs:6911:        let unrelated_for_tools = WorkerEvent::completed(
+src/main.rs:6924:        let about_event = WorkerEvent::completed(
+src/main.rs:6937:        let unrelated_for_about = WorkerEvent::completed(
+src/main.rs:6957:        let tools_failure = WorkerEvent::failed(
+src/main.rs:6972:        let about_failure = WorkerEvent::failed(
+src/main.rs:6986:        let unrelated_failure = WorkerEvent::failed(
+src/main.rs:7034:                "title: \"Archives (BA2)\"",
+src/main.rs:7044:        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+src/main.rs:7093:                OverviewDeferredActionKind::OpenArchivePatcher,
+src/main.rs:7096:            "Archive Patcher..."
+src/workers/handoff.rs:3://! Background workers emit owned [`WorkerEvent`](crate::workers::events::WorkerEvent)
+src/workers/handoff.rs:13:use crate::workers::events::WorkerEvent;
+src/workers/handoff.rs:90:pub trait WorkerEventSink: Clone + Send + Sync + 'static {
+src/workers/handoff.rs:92:    fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult;
+src/workers/handoff.rs:98:    events: Arc<Mutex<Vec<WorkerEvent>>>,
+src/workers/handoff.rs:108:    pub fn events(&self) -> WorkerHandoffResult<Vec<WorkerEvent>> {
+src/workers/handoff.rs:129:impl WorkerEventSink for RecordingEventSink {
+src/workers/handoff.rs:130:    fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {
+src/workers/handoff.rs:141:/// owned [`WorkerEvent`](crate::workers::events::WorkerEvent) values; it never
+src/workers/handoff.rs:145:    handler: Arc<dyn Fn(WorkerEvent) + Send + Sync + 'static>,
+src/workers/handoff.rs:150:    pub fn new(handler: impl Fn(WorkerEvent) + Send + Sync + 'static) -> Self {
+src/workers/handoff.rs:166:impl WorkerEventSink for SlintEventLoopSink {
+src/workers/handoff.rs:167:    fn emit(&self, event: WorkerEvent) -> WorkerHandoffResult {
+src/workers/handoff.rs:179:    use crate::workers::events::{WorkerEvent, WorkerTask, WorkerTaskKind};
+src/workers/handoff.rs:181:    fn assert_sink<T: WorkerEventSink>() {}
+src/workers/handoff.rs:186:        let event = WorkerEvent::running(WorkerTask::new("discover", WorkerTaskKind::Discovery));
+src/app/mod.rs:20:/// Returns the canonical shell tab labels in reference display order.
+ui/overview_tab.slint:151:    in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
+ui/overview_tab.slint:153:    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+ui/overview_tab.slint:285:                    title: "Archives (BA2)";
+src/app/tools_controller.rs:9:    workers::{WorkerEvent, WorkerPayload},
+src/app/tools_controller.rs:13:pub const TOOLS_DEFAULT_DISABLED_UTILITY_STATUS: &str = "Archive Patcher is deferred until S10.";
+src/app/tools_controller.rs:148:    pub fn handle_worker_event(&mut self, event: WorkerEvent) -> ToolsTransitionResult {
+src/app/tools_controller.rs:157:    matches!(action, Some(ToolsActionKind::DeferredUtility(_)))
+src/app/tools_controller.rs:167:            AboutActionWorkerPayload, WorkerEvent, WorkerPayload, WorkerTask, WorkerTaskKind,
+src/app/tools_controller.rs:175:            ToolActionId::ArchivePatcher.as_str(),
+src/app/tools_controller.rs:176:            Some(ToolsActionKind::DeferredUtility(
+src/app/tools_controller.rs:177:                ToolActionId::ArchivePatcher,
+
+## Reference patcher files
+CMT/src/cm_checker.py
+CMT/src/game_info.py
+CMT/src/globals.py
+CMT/src/patcher/__init__.py
+CMT/src/patcher/_archives.py
+CMT/src/patcher/_base.py
+CMT/src/tabs/_overview.py
+CMT/src/tabs/_tools.py

@@ -1,0 +1,18 @@
+{
+  "id": "c961409f-9631-4acd-9693-4c062d36236a",
+  "runtime": "bash",
+  "purpose": "List S09 task summary files",
+  "script_chars": 294,
+  "started_at": "2026-05-19T00:40:35.391Z",
+  "finished_at": "2026-05-19T00:40:35.481Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 90,
+  "stdout_bytes": 355,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c961409f-9631-4acd-9693-4c062d36236a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c961409f-9631-4acd-9693-4c062d36236a.stderr"
+}

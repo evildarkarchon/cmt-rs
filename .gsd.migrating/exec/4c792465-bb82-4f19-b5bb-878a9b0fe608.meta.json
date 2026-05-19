@@ -1,0 +1,18 @@
+{
+  "id": "4c792465-bb82-4f19-b5bb-878a9b0fe608",
+  "runtime": "bash",
+  "purpose": "final focused archive_patcher_service_plan verification",
+  "script_chars": 47,
+  "started_at": "2026-05-19T01:32:37.500Z",
+  "finished_at": "2026-05-19T01:32:46.090Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8590,
+  "stdout_bytes": 123,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\4c792465-bb82-4f19-b5bb-878a9b0fe608.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\4c792465-bb82-4f19-b5bb-878a9b0fe608.stderr"
+}

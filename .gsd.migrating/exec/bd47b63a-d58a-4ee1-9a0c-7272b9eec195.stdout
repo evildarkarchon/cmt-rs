@@ -1,0 +1,3 @@
+src/main.rs:5651:            format!("Deferred until the {workflow_name} workflow is ported.")
+src/main.rs:8430:            "Deferred until the Downgrade Manager workflow is ported."
+ui/main.slint:32:    in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";

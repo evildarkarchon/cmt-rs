@@ -1,0 +1,18 @@
+{
+  "id": "ea4e2730-e578-4ff7-b9cc-eca9072a571a",
+  "runtime": "bash",
+  "purpose": "T06 final cargo test s10_archive_patcher_runtime_wiring after adding coverage",
+  "script_chars": 69,
+  "started_at": "2026-05-19T03:36:38.958Z",
+  "finished_at": "2026-05-19T03:37:28.038Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 49080,
+  "stdout_bytes": 115,
+  "stderr_bytes": 247,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\ea4e2730-e578-4ff7-b9cc-eca9072a571a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\ea4e2730-e578-4ff7-b9cc-eca9072a571a.stderr"
+}

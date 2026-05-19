@@ -1,0 +1,18 @@
+{
+  "id": "a17a0bcd-712b-4712-9c54-cb9adab09777",
+  "runtime": "bash",
+  "purpose": "search dialog/about runtime references",
+  "script_chars": 528,
+  "started_at": "2026-05-19T00:04:29.849Z",
+  "finished_at": "2026-05-19T00:04:30.070Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 221,
+  "stdout_bytes": 915,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a17a0bcd-712b-4712-9c54-cb9adab09777.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a17a0bcd-712b-4712-9c54-cb9adab09777.stderr"
+}

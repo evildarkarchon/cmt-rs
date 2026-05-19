@@ -1,0 +1,18 @@
+{
+  "id": "29ec9aa9-dd7c-4baf-8dda-92f139da5879",
+  "runtime": "bash",
+  "purpose": "T06 verify cargo test worker rerun after S10 mapping update",
+  "script_chars": 41,
+  "started_at": "2026-05-19T03:23:05.192Z",
+  "finished_at": "2026-05-19T03:23:54.220Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 49028,
+  "stdout_bytes": 154,
+  "stderr_bytes": 247,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\29ec9aa9-dd7c-4baf-8dda-92f139da5879.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\29ec9aa9-dd7c-4baf-8dda-92f139da5879.stderr"
+}

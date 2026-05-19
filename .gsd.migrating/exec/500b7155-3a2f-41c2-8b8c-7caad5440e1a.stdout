@@ -1,0 +1,11 @@
+src/app/downgrader_controller.rs:198:    pub confirmed_plan_digest: String,
+src/app/downgrader_controller.rs:212:        confirmed_plan_digest: String,
+src/app/downgrader_controller.rs:219:            confirmed_plan_digest,
+src/app/downgrader_controller.rs:641:                let confirmed_plan_digest = plan.stable_digest();
+src/app/downgrader_controller.rs:650:                let request = DowngraderRunWorkerRequest::new(
+src/app/downgrader_controller.rs:653:                    confirmed_plan_digest,
+src/services/downgrader.rs:505:    pub confirmed_plan_digest: Option<String>,
+src/services/downgrader.rs:519:            confirmed_plan_digest: None,
+src/services/downgrader.rs:524:    pub fn with_confirmed_plan_digest(mut self, digest: impl Into<String>) -> Self {
+src/services/downgrader.rs:525:        self.confirmed_plan_digest = Some(digest.into());
+src/services/downgrader.rs:1457:        if let Some(expected_digest) = request.confirmed_plan_digest.as_deref() {

@@ -1,0 +1,18 @@
+{
+  "id": "6db7dd6f-9c88-496f-ba23-4555ff934fd9",
+  "runtime": "bash",
+  "purpose": "T06 inspect archive patcher button enabled methods",
+  "script_chars": 139,
+  "started_at": "2026-05-19T03:34:05.199Z",
+  "finished_at": "2026-05-19T03:34:05.335Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 136,
+  "stdout_bytes": 883,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\6db7dd6f-9c88-496f-ba23-4555ff934fd9.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\6db7dd6f-9c88-496f-ba23-4555ff934fd9.stderr"
+}
