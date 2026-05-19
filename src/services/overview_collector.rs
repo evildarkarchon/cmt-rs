@@ -1577,18 +1577,9 @@ mod overview_collector_tests {
     impl Filesystem for FakeFilesystem {
         fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
             match self.node(path, PlatformOperation::ReadMetadata)? {
-                FakeNode::File(bytes) => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: bytes.len() as u64,
-                }),
-                FakeNode::Directory => Ok(FileMetadata {
-                    file_type: FileType::Directory,
-                    len: 0,
-                }),
-                FakeNode::UnreadableFile => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: 0,
-                }),
+                FakeNode::File(bytes) => Ok(FileMetadata::new(FileType::File, bytes.len() as u64)),
+                FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
             }
         }
 

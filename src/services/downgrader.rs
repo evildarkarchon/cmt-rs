@@ -8,12 +8,13 @@
 //! later worker can execute through separate mutation/download/apply seams.
 
 use std::{
-    io::{Cursor, Read},
+    io::{Cursor, Read, Write},
     path::{Component, Path, PathBuf},
     sync::OnceLock,
     time::Duration,
 };
 
+use sha2::{Digest, Sha256};
 use thiserror::Error;
 use tracing::{debug, info, info_span, warn};
 
@@ -32,7 +33,7 @@ use crate::{
     },
     platform::{
         PlatformErrorKind,
-        filesystem::{Filesystem, WritableFilesystem},
+        filesystem::{FileMetadata, Filesystem, WritableFilesystem},
     },
 };
 
@@ -45,10 +46,98 @@ const BACKUP_READ_FAILURE_MESSAGE: &str =
     "Backup file could not be read; patching is disabled for this file.";
 const DOWNLOAD_FAILURE_MESSAGE: &str = "Delta patch could not be downloaded.";
 const APPLY_FAILURE_MESSAGE: &str = "Delta patch could not be applied.";
+const PATCH_INTEGRITY_FAILURE_MESSAGE: &str = "Delta patch failed integrity verification.";
+const OUTPUT_INTEGRITY_FAILURE_MESSAGE: &str = "Patched output failed integrity verification.";
 const MAX_DELTA_PATCH_BYTES: u64 = 128 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(10);
 const DOWNLOAD_CHUNK_BYTES: usize = 64 * 1024;
 const MIN_PROGRESS_DELTA_PERCENT: f32 = 1.0;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+struct DowngraderPatchIntegrity {
+    patch_name: &'static str,
+    expected_patch_bytes: u64,
+    sha256_hex: &'static str,
+    expected_output_bytes: u64,
+}
+
+// SHA-256 pins were computed from the public CMT `delta-patches` GitHub release
+// assets. Output sizes are parsed from the VCDIFF target-window sizes and are
+// used to bound decompression before any active file is replaced.
+const PATCH_INTEGRITY_MANIFEST: [DowngraderPatchIntegrity; 12] = [
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-Archive2.exe.xdelta",
+        expected_patch_bytes: 23_825,
+        sha256_hex: "59e6598f4603c48103aa051eda156914ecd640263cd0f6c01f8bf4a284ba61db",
+        expected_output_bytes: 63_488,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-Archive2Interop.dll.xdelta",
+        expected_patch_bytes: 168_265,
+        sha256_hex: "43c10dea8dc87985da20a93ac5088620245fa085415ddf87f3b1e9f5ed55aed7",
+        expected_output_bytes: 513_024,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-CreationKit.exe.xdelta",
+        expected_patch_bytes: 65_857_566,
+        sha256_hex: "0a873f7f07a86de955994343f7dc6455c7392c83612cc01674836de8c9bdf65e",
+        expected_output_bytes: 80_361_352,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-Fallout4.exe.xdelta",
+        expected_patch_bytes: 53_072_487,
+        sha256_hex: "ede24453c08e2ffa0dc0f73f7f7fae3b5434a02befeb3edc692f958ec2b6beba",
+        expected_output_bytes: 65_503_104,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-Fallout4Launcher.exe.xdelta",
+        expected_patch_bytes: 94_023,
+        sha256_hex: "e5289695f96b4ada4f30aef7d706d14ddc91ae897181b0f4b46e3674179c1118",
+        expected_output_bytes: 4_522_496,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "NG-to-OG-steam_api64.dll.xdelta",
+        expected_patch_bytes: 99_130,
+        sha256_hex: "01de64945b9263c69bc0a82dda0dad153e39c27954d965d58ff92a9b09c65e91",
+        expected_output_bytes: 206_760,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-Archive2.exe.xdelta",
+        expected_patch_bytes: 23_679,
+        sha256_hex: "9f1d74aefbec81fbda47116c58408e58c122ca58559b41a3a883364eda8695b6",
+        expected_output_bytes: 62_976,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-Archive2Interop.dll.xdelta",
+        expected_patch_bytes: 158_699,
+        sha256_hex: "578930ad7a470e05ec55e98c88286b8bfdb22ba1a246f9f703fc01150f75279c",
+        expected_output_bytes: 470_016,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-CreationKit.exe.xdelta",
+        expected_patch_bytes: 27_441_440,
+        sha256_hex: "acc49129151df43ae556b655b1f8eebf633ed34565d53f4dd25bda1afa8f2103",
+        expected_output_bytes: 68_193_792,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-Fallout4.exe.xdelta",
+        expected_patch_bytes: 42_028_246,
+        sha256_hex: "224687af80a61e987798258cd37ac0bffbbf3935dc9b0a0ef2626eaa7eeac29c",
+        expected_output_bytes: 52_552_472,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-Fallout4Launcher.exe.xdelta",
+        expected_patch_bytes: 81_597,
+        sha256_hex: "56b00b2e40a5051c71d0851484c130a889d3af99b3a2316b627257296688755e",
+        expected_output_bytes: 4_520_448,
+    },
+    DowngraderPatchIntegrity {
+        patch_name: "OG-to-NG-steam_api64.dll.xdelta",
+        expected_patch_bytes: 154_573,
+        sha256_hex: "533ad4d6894a551a5997d4a9674195baf2a8c88619dbcb1fe80014aa068a380c",
+        expected_output_bytes: 298_384,
+    },
+];
 
 /// Request input for a read-only Downgrader status snapshot.
 #[derive(Debug, Clone, Copy)]
@@ -327,6 +416,7 @@ pub trait DeltaApplier {
         &self,
         source_bytes: &[u8],
         patch_bytes: &[u8],
+        expected_output_bytes: u64,
     ) -> Result<Vec<u8>, DowngraderDeltaApplyError>;
 }
 
@@ -339,13 +429,52 @@ impl DeltaApplier for VcdiffDeltaApplier {
         &self,
         source_bytes: &[u8],
         patch_bytes: &[u8],
+        expected_output_bytes: u64,
     ) -> Result<Vec<u8>, DowngraderDeltaApplyError> {
+        let max_output_bytes = usize::try_from(expected_output_bytes).map_err(|_| {
+            DowngraderDeltaApplyError::failed("expected output size does not fit this platform")
+        })?;
         let mut source = Cursor::new(source_bytes.to_vec());
         let mut patch = Cursor::new(patch_bytes.to_vec());
-        let mut output = Vec::new();
+        let mut output = BoundedVecWriter::new(max_output_bytes);
         vcdiff_decoder::apply_patch(&mut patch, Some(&mut source), &mut output)
             .map_err(|error| DowngraderDeltaApplyError::failed(error.to_string()))?;
-        Ok(output)
+        Ok(output.into_inner())
+    }
+}
+
+struct BoundedVecWriter {
+    bytes: Vec<u8>,
+    max_len: usize,
+}
+
+impl BoundedVecWriter {
+    fn new(max_len: usize) -> Self {
+        Self {
+            bytes: Vec::with_capacity(max_len.min(1024 * 1024)),
+            max_len,
+        }
+    }
+
+    fn into_inner(self) -> Vec<u8> {
+        self.bytes
+    }
+}
+
+impl Write for BoundedVecWriter {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        if self.bytes.len().saturating_add(buf.len()) > self.max_len {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "VCDIFF output exceeded expected target size",
+            ));
+        }
+        self.bytes.extend_from_slice(buf);
+        Ok(buf.len())
+    }
+
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
     }
 }
 
@@ -669,12 +798,27 @@ impl DowngraderPreviewPlan {
 #[derive(Debug, Clone, Copy)]
 pub struct DowngraderService<'a, F: Filesystem + ?Sized> {
     filesystem: &'a F,
+    patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
 }
 
 impl<'a, F: Filesystem + ?Sized> DowngraderService<'a, F> {
     /// Creates a Downgrader service over a read-only filesystem adapter.
     pub const fn new(filesystem: &'a F) -> Self {
-        Self { filesystem }
+        Self {
+            filesystem,
+            patch_integrity_manifest: &PATCH_INTEGRITY_MANIFEST,
+        }
+    }
+
+    #[cfg(test)]
+    const fn with_patch_integrity_manifest(
+        filesystem: &'a F,
+        patch_integrity_manifest: &'a [DowngraderPatchIntegrity],
+    ) -> Self {
+        Self {
+            filesystem,
+            patch_integrity_manifest,
+        }
     }
 
     /// Builds a read-only status snapshot for the six reference-managed files.
@@ -1136,6 +1280,44 @@ impl<'a, F: Filesystem + ?Sized> DowngraderService<'a, F> {
 }
 
 impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
+    fn validated_execution_game_root(
+        &self,
+        planned_root: &Path,
+    ) -> Result<PathBuf, DowngraderServiceError> {
+        validate_game_root_path(planned_root)?;
+        let canonical_root = self
+            .filesystem
+            .canonicalize_path(planned_root)
+            .map_err(|error| {
+                warn!(
+                    event = "downgrader-execute-root-canonicalize-failed",
+                    root = %planned_root.display(),
+                    failure_kind = ?error.kind,
+                    "Downgrader execution root canonicalization failed"
+                );
+                DowngraderServiceError::InvalidGameRoot {
+                    root: planned_root.to_path_buf(),
+                    safe_message: error.user_message().to_owned(),
+                }
+            })?;
+        match self.filesystem.metadata(&canonical_root) {
+            Ok(metadata) if metadata.is_dir() => Ok(canonical_root),
+            Ok(_) => Err(DowngraderServiceError::InvalidGameRoot {
+                root: canonical_root,
+                safe_message: ROOT_NOT_DIRECTORY_MESSAGE.to_owned(),
+            }),
+            Err(error) if error.kind == PlatformErrorKind::NotFound => {
+                Err(DowngraderServiceError::MissingGameRoot {
+                    safe_message: FALLOUT4_NOT_FOUND_MESSAGE.to_owned(),
+                })
+            }
+            Err(error) => Err(DowngraderServiceError::InvalidGameRoot {
+                root: canonical_root,
+                safe_message: error.user_message().to_owned(),
+            }),
+        }
+    }
+
     /// Executes a freshly revalidated Downgrader plan after the user confirms the inline preview.
     ///
     /// The executor processes each of the six managed files independently and
@@ -1170,9 +1352,10 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             request.installation,
             request.options,
         ))?;
+        let execution_root = self.validated_execution_game_root(&plan.game_root)?;
         let mut result = DowngraderExecutionResult {
             request_id: request.request_id,
-            game_root: plan.game_root.clone(),
+            game_root: execution_root.clone(),
             options: request.options,
             rows: Vec::with_capacity(plan.rows.len()),
             log_rows: Vec::with_capacity(plan.rows.len()),
@@ -1183,7 +1366,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         for row in &plan.rows {
             let file_result = self.execute_row(
                 request.request_id,
-                &plan.game_root,
+                &execution_root,
                 row,
                 downloader,
                 applier,
@@ -1299,7 +1482,15 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         A: DeltaApplier + ?Sized,
     {
         let mut diagnostics = Vec::new();
-        let current_crc = match self.read_required_crc(&row.current_path) {
+        let paths = match self.revalidated_execution_paths(game_root, row) {
+            Ok(paths) => paths,
+            Err(diagnostic) => {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        };
+        let current_crc = match self.read_required_crc(&paths.current_path) {
             Ok(crc32) => crc32,
             Err(diagnostic) => {
                 return RowExecutionStatus::Failed {
@@ -1324,22 +1515,29 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             return RowExecutionStatus::SkippedUnsupported { diagnostics };
         }
 
-        let current_backup_path = backup_path_for(&row.current_path, &row.plan.current_backup_name);
-        let desired_backup_path = backup_path_for(&row.current_path, &row.plan.desired_backup_name);
-
-        if let Err(diagnostic) =
-            self.prepare_current_backup(row, &current_backup_path, &current_crc)
-        {
+        if let Err(diagnostic) = self.prepare_current_backup(
+            game_root,
+            row,
+            &paths.current_path,
+            &paths.current_backup_path,
+            &current_crc,
+        ) {
             return RowExecutionStatus::Failed {
                 diagnostics: vec![diagnostic],
             };
         }
 
-        match self.read_crc(&desired_backup_path) {
+        match self.read_crc(&paths.desired_backup_path) {
             CrcProbe::Readable { crc32 }
                 if crc_is_desired_target_for_plan(&crc32, row.plan.target) =>
             {
-                match self.restore_desired_backup(row, &current_backup_path, &desired_backup_path) {
+                match self.restore_desired_backup(
+                    game_root,
+                    row,
+                    &paths.current_path,
+                    &paths.current_backup_path,
+                    &paths.desired_backup_path,
+                ) {
                     Ok(restore_diagnostics) => {
                         diagnostics.extend(restore_diagnostics);
                         RowExecutionStatus::Patched { diagnostics }
@@ -1355,8 +1553,9 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                     row.plan.display_name,
                     row.plan.target.as_reference_str()
                 ));
-                if let Err(diagnostic) = self.remove_file_with_context(
-                    &desired_backup_path,
+                if let Err(diagnostic) = self.remove_file_under_root(
+                    game_root,
+                    &paths.desired_backup_path,
                     row,
                     DowngraderPlanStepKind::DeleteInvalidDesiredBackup,
                 ) {
@@ -1369,7 +1568,10 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                         request_id,
                         game_root,
                         row,
-                        current_backup_path: &current_backup_path,
+                        current_path: &paths.current_path,
+                        current_backup_path: &paths.current_backup_path,
+                        patch_path: &paths.patch_path,
+                        integrity: paths.integrity,
                         progress_events,
                         diagnostics,
                     },
@@ -1382,7 +1584,10 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                     request_id,
                     game_root,
                     row,
-                    current_backup_path: &current_backup_path,
+                    current_path: &paths.current_path,
+                    current_backup_path: &paths.current_backup_path,
+                    patch_path: &paths.patch_path,
+                    integrity: paths.integrity,
                     progress_events,
                     diagnostics,
                 },
@@ -1395,15 +1600,189 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         }
     }
 
+    fn revalidated_execution_paths(
+        &self,
+        game_root: &Path,
+        row: &DowngraderPreviewPlanRow,
+    ) -> Result<ManagedExecutionPaths, String> {
+        let current_path = resolve_managed_relative_path(game_root, row.plan.relative_path)
+            .map_err(|error| error.user_message().to_owned())?;
+        self.ensure_existing_file_within_root(game_root, &current_path, row, "managed target")?;
+
+        let current_backup_path = backup_path_for(&current_path, &row.plan.current_backup_name);
+        let desired_backup_path = backup_path_for(&current_path, &row.plan.desired_backup_name);
+        let patch_path = game_root.join(&row.plan.patch_name);
+        self.ensure_existing_or_parent_within_root(
+            game_root,
+            &current_backup_path,
+            row,
+            "current backup",
+        )?;
+        self.ensure_existing_or_parent_within_root(
+            game_root,
+            &desired_backup_path,
+            row,
+            "desired backup",
+        )?;
+        self.ensure_existing_or_parent_within_root(game_root, &patch_path, row, "delta patch")?;
+        let integrity = self
+            .patch_integrity_for(&row.plan.patch_name)
+            .ok_or_else(|| {
+                format!(
+                    "{} has no pinned integrity metadata for {}.",
+                    PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name
+                )
+            })?;
+
+        Ok(ManagedExecutionPaths {
+            current_path,
+            current_backup_path,
+            desired_backup_path,
+            patch_path,
+            integrity,
+        })
+    }
+
+    fn ensure_existing_or_parent_within_root(
+        &self,
+        game_root: &Path,
+        path: &Path,
+        row: &DowngraderPreviewPlanRow,
+        context: &str,
+    ) -> Result<(), String> {
+        match self.filesystem.symlink_metadata(path) {
+            Ok(metadata) => {
+                if !metadata.is_file() {
+                    return Err(format!(
+                        "{} {context} path is not a file.",
+                        row.plan.display_name
+                    ));
+                }
+                self.ensure_metadata_path_within_root(game_root, path, &metadata, row, context)
+            }
+            Err(error) if error.kind == PlatformErrorKind::NotFound => {
+                let parent = path.parent().ok_or_else(|| {
+                    format!("{} {context} path is invalid.", row.plan.display_name)
+                })?;
+                self.ensure_directory_within_root(game_root, parent, row, context)
+            }
+            Err(error) => Err(mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                error.user_message(),
+            )),
+        }
+    }
+
+    fn ensure_existing_file_within_root(
+        &self,
+        game_root: &Path,
+        path: &Path,
+        row: &DowngraderPreviewPlanRow,
+        context: &str,
+    ) -> Result<(), String> {
+        let metadata = self.filesystem.symlink_metadata(path).map_err(|error| {
+            mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                error.user_message(),
+            )
+        })?;
+        if !metadata.is_file() {
+            return Err(format!(
+                "{} {context} path is not a file.",
+                row.plan.display_name
+            ));
+        }
+        self.ensure_metadata_path_within_root(game_root, path, &metadata, row, context)
+    }
+
+    fn ensure_directory_within_root(
+        &self,
+        game_root: &Path,
+        path: &Path,
+        row: &DowngraderPreviewPlanRow,
+        context: &str,
+    ) -> Result<(), String> {
+        let metadata = self.filesystem.symlink_metadata(path).map_err(|error| {
+            mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                error.user_message(),
+            )
+        })?;
+        if !metadata.is_dir() {
+            return Err(format!(
+                "{} {context} parent path is not a folder.",
+                row.plan.display_name
+            ));
+        }
+        self.ensure_metadata_path_within_root(game_root, path, &metadata, row, context)
+    }
+
+    fn ensure_metadata_path_within_root(
+        &self,
+        game_root: &Path,
+        path: &Path,
+        metadata: &FileMetadata,
+        row: &DowngraderPreviewPlanRow,
+        context: &str,
+    ) -> Result<(), String> {
+        if metadata.is_symlink_or_reparse_point() {
+            warn!(
+                event = "downgrader-execute-reparse-rejected",
+                relative_path = row.plan.relative_path,
+                path = %path.display(),
+                context,
+                "Downgrader rejected a symlink/reparse managed path before mutation"
+            );
+            return Err(format!(
+                "{} {context} path is unsafe.",
+                row.plan.display_name
+            ));
+        }
+        let canonical_path = self.filesystem.canonicalize_path(path).map_err(|error| {
+            mutation_diagnostic(
+                row,
+                DowngraderPlanStepKind::ApplyDeltaPatch,
+                error.user_message(),
+            )
+        })?;
+        if !canonical_path.starts_with(game_root) {
+            warn!(
+                event = "downgrader-execute-path-escape-rejected",
+                relative_path = row.plan.relative_path,
+                path = %path.display(),
+                canonical_path = %canonical_path.display(),
+                canonical_root = %game_root.display(),
+                context,
+                "Downgrader rejected a managed path escaping the canonical root"
+            );
+            return Err(format!(
+                "{} {context} path escapes the game folder.",
+                row.plan.display_name
+            ));
+        }
+        Ok(())
+    }
+
     fn prepare_current_backup(
         &self,
+        game_root: &Path,
         row: &DowngraderPreviewPlanRow,
+        current_path: &Path,
         current_backup_path: &Path,
         initial_current_crc: &str,
     ) -> Result<(), String> {
         match self.read_crc(current_backup_path) {
             CrcProbe::Readable { crc32 } if crc32.eq_ignore_ascii_case(initial_current_crc) => {
-                let current_crc = self.read_required_crc(&row.current_path)?;
+                self.ensure_existing_file_within_root(
+                    game_root,
+                    current_backup_path,
+                    row,
+                    "current backup",
+                )?;
+                let current_crc = self.read_required_crc(current_path)?;
                 let backup_crc = self.read_required_crc(current_backup_path)?;
                 if !current_crc.eq_ignore_ascii_case(&backup_crc) {
                     return Err(format!(
@@ -1411,11 +1790,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                         row.plan.display_name
                     ));
                 }
-                self.remove_file_with_context(
-                    &row.current_path,
-                    row,
-                    DowngraderPlanStepKind::ReuseCurrentBackup,
-                )
+                Ok(())
             }
             CrcProbe::Readable { crc32 } => {
                 debug!(
@@ -1424,14 +1799,17 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                     backup_crc = crc32,
                     "Downgrader deleting invalid current backup"
                 );
-                self.remove_file_with_context(
+                self.remove_file_under_root(
+                    game_root,
                     current_backup_path,
                     row,
                     DowngraderPlanStepKind::DeleteInvalidCurrentBackup,
                 )?;
-                self.create_current_backup(row, current_backup_path)
+                self.create_current_backup(game_root, row, current_path, current_backup_path)
             }
-            CrcProbe::Missing => self.create_current_backup(row, current_backup_path),
+            CrcProbe::Missing => {
+                self.create_current_backup(game_root, row, current_path, current_backup_path)
+            }
             CrcProbe::Unreadable { safe_message } => {
                 Err(format!("{} {}", BACKUP_READ_FAILURE_MESSAGE, safe_message))
             }
@@ -1440,10 +1818,19 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
 
     fn create_current_backup(
         &self,
+        game_root: &Path,
         row: &DowngraderPreviewPlanRow,
+        current_path: &Path,
         current_backup_path: &Path,
     ) -> Result<(), String> {
-        let current_crc = self.read_required_crc(&row.current_path)?;
+        self.ensure_existing_file_within_root(game_root, current_path, row, "managed target")?;
+        self.ensure_existing_or_parent_within_root(
+            game_root,
+            current_backup_path,
+            row,
+            "current backup",
+        )?;
+        let current_crc = self.read_required_crc(current_path)?;
         if !crc_is_supported_source_for_target(&current_crc, row.plan.target) {
             return Err(format!(
                 "{} current CRC {current_crc} changed to an unsupported source before backup creation.",
@@ -1451,53 +1838,92 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             ));
         }
         self.filesystem
-            .rename_file(&row.current_path, current_backup_path)
+            .copy_file(current_path, current_backup_path)
             .map_err(|error| {
                 mutation_diagnostic(
                     row,
                     DowngraderPlanStepKind::CreateCurrentBackup,
                     error.user_message(),
                 )
-            })
+            })?;
+        let backup_crc = self.read_required_crc(current_backup_path)?;
+        if !backup_crc.eq_ignore_ascii_case(&current_crc) {
+            return Err(format!(
+                "{} current backup CRC did not match the active file after copy.",
+                row.plan.display_name
+            ));
+        }
+        Ok(())
     }
 
     fn restore_desired_backup(
         &self,
+        game_root: &Path,
         row: &DowngraderPreviewPlanRow,
+        current_path: &Path,
         current_backup_path: &Path,
         desired_backup_path: &Path,
     ) -> Result<Vec<String>, String> {
-        let desired_crc = self.read_required_crc(desired_backup_path)?;
+        self.ensure_existing_file_within_root(game_root, current_path, row, "managed target")?;
+        self.ensure_existing_file_within_root(
+            game_root,
+            desired_backup_path,
+            row,
+            "desired backup",
+        )?;
+        self.ensure_existing_file_within_root(
+            game_root,
+            current_backup_path,
+            row,
+            "current backup",
+        )?;
+        let desired_bytes = self
+            .filesystem
+            .read_bytes(desired_backup_path)
+            .map_err(|error| {
+                mutation_diagnostic(
+                    row,
+                    DowngraderPlanStepKind::RestoreDesiredBackup,
+                    error.user_message(),
+                )
+            })?;
+        let desired_crc = crc32_hex(&desired_bytes);
         if !crc_is_desired_target_for_plan(&desired_crc, row.plan.target) {
             return Err(format!(
                 "{} desired backup changed before restore.",
                 row.plan.display_name
             ));
         }
-        self.read_required_crc(current_backup_path)?;
+
+        self.ensure_existing_file_within_root(game_root, current_path, row, "managed target")?;
+        self.filesystem
+            .replace_file_bytes(current_path, &desired_bytes)
+            .map_err(|error| {
+                mutation_diagnostic(
+                    row,
+                    DowngraderPlanStepKind::RestoreDesiredBackup,
+                    error.user_message(),
+                )
+            })?;
+        let restored_crc = self.read_required_crc(current_path)?;
+        if !crc_is_desired_target_for_plan(&restored_crc, row.plan.target) {
+            return Err(format!(
+                "{} restored output CRC {restored_crc} did not match target {}.",
+                row.plan.display_name,
+                row.plan.target.as_reference_str()
+            ));
+        }
 
         let mut diagnostics = Vec::new();
-        if row.options().keep_backups {
-            self.filesystem
-                .copy_file(desired_backup_path, &row.current_path)
-                .map_err(|error| {
-                    mutation_diagnostic(
-                        row,
-                        DowngraderPlanStepKind::RestoreDesiredBackup,
-                        error.user_message(),
-                    )
-                })?;
-        } else {
-            self.filesystem
-                .rename_file(desired_backup_path, &row.current_path)
-                .map_err(|error| {
-                    mutation_diagnostic(
-                        row,
-                        DowngraderPlanStepKind::RestoreDesiredBackup,
-                        error.user_message(),
-                    )
-                })?;
-            self.remove_file_with_context(
+        if !row.options().keep_backups {
+            self.remove_file_under_root(
+                game_root,
+                desired_backup_path,
+                row,
+                DowngraderPlanStepKind::RestoreDesiredBackup,
+            )?;
+            self.remove_file_under_root(
+                game_root,
                 current_backup_path,
                 row,
                 DowngraderPlanStepKind::DeleteCurrentBackup,
@@ -1521,6 +1947,16 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         A: DeltaApplier + ?Sized,
     {
         let row = context.row;
+        if let Err(diagnostic) = self.ensure_existing_file_within_root(
+            context.game_root,
+            context.current_backup_path,
+            row,
+            "current backup",
+        ) {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![diagnostic],
+            };
+        }
         let source_bytes = match self.filesystem.read_bytes(context.current_backup_path) {
             Ok(bytes) => bytes,
             Err(error) => {
@@ -1533,11 +1969,11 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 };
             }
         };
-        let patch_path = context.game_root.join(&row.plan.patch_name);
         let patch_bytes = match self.read_or_download_patch(
             context.request_id,
             row,
-            &patch_path,
+            context.patch_path,
+            context.integrity,
             downloader,
             context.progress_events,
         ) {
@@ -1548,7 +1984,11 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 };
             }
         };
-        let output_bytes = match applier.apply_delta(&source_bytes, &patch_bytes) {
+        let output_bytes = match applier.apply_delta(
+            &source_bytes,
+            &patch_bytes,
+            context.integrity.expected_output_bytes,
+        ) {
             Ok(bytes) => bytes,
             Err(error) => {
                 warn!(
@@ -1563,6 +2003,17 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 };
             }
         };
+        if output_bytes.len() as u64 != context.integrity.expected_output_bytes {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![format!(
+                    "{} {} output length {} did not match expected {} bytes.",
+                    OUTPUT_INTEGRITY_FAILURE_MESSAGE,
+                    row.plan.display_name,
+                    output_bytes.len(),
+                    context.integrity.expected_output_bytes
+                )],
+            };
+        }
         let output_crc = crc32_hex(&output_bytes);
         if !crc_is_desired_target_for_plan(&output_crc, row.plan.target) {
             return RowExecutionStatus::Failed {
@@ -1574,9 +2025,19 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             };
         }
 
+        if let Err(diagnostic) = self.ensure_existing_file_within_root(
+            context.game_root,
+            context.current_path,
+            row,
+            "managed target",
+        ) {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![diagnostic],
+            };
+        }
         if let Err(error) = self
             .filesystem
-            .write_bytes(&row.current_path, &output_bytes)
+            .replace_file_bytes(context.current_path, &output_bytes)
         {
             return RowExecutionStatus::Failed {
                 diagnostics: vec![mutation_diagnostic(
@@ -1586,8 +2047,25 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 )],
             };
         }
+        let active_crc = match self.read_required_crc(context.current_path) {
+            Ok(crc32) => crc32,
+            Err(diagnostic) => {
+                return RowExecutionStatus::Failed {
+                    diagnostics: vec![diagnostic],
+                };
+            }
+        };
+        if !crc_is_desired_target_for_plan(&active_crc, row.plan.target) {
+            return RowExecutionStatus::Failed {
+                diagnostics: vec![format!(
+                    "{} active file CRC {active_crc} did not match target after replacement.",
+                    row.plan.display_name
+                )],
+            };
+        }
         if !row.options().keep_backups {
-            if let Err(diagnostic) = self.remove_file_with_context(
+            if let Err(diagnostic) = self.remove_file_under_root(
+                context.game_root,
                 context.current_backup_path,
                 row,
                 DowngraderPlanStepKind::DeleteCurrentBackup,
@@ -1598,8 +2076,9 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
             }
         }
         if row.options().delete_deltas {
-            if let Err(diagnostic) = self.remove_file_with_context(
-                &patch_path,
+            if let Err(diagnostic) = self.remove_file_under_root(
+                context.game_root,
+                context.patch_path,
                 row,
                 DowngraderPlanStepKind::DeleteDeltaPatch,
             ) {
@@ -1623,6 +2102,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
         request_id: u64,
         row: &DowngraderPreviewPlanRow,
         patch_path: &Path,
+        integrity: DowngraderPatchIntegrity,
         downloader: &D,
         progress_events: &mut Vec<DowngraderExecutionProgressEvent>,
     ) -> Result<Vec<u8>, String>
@@ -1631,13 +2111,30 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
     {
         match self.filesystem.metadata(patch_path) {
             Ok(metadata) if metadata.is_file() => {
-                self.filesystem.read_bytes(patch_path).map_err(|error| {
+                if metadata.len > MAX_DELTA_PATCH_BYTES {
+                    return Err(format!(
+                        "{} {} exceeds configured size limit of {} bytes.",
+                        PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name, MAX_DELTA_PATCH_BYTES
+                    ));
+                }
+                if metadata.len != integrity.expected_patch_bytes {
+                    return Err(format!(
+                        "{} {} size {} did not match pinned size {} bytes.",
+                        PATCH_INTEGRITY_FAILURE_MESSAGE,
+                        row.plan.patch_name,
+                        metadata.len,
+                        integrity.expected_patch_bytes
+                    ));
+                }
+                let bytes = self.filesystem.read_bytes(patch_path).map_err(|error| {
                     mutation_diagnostic(
                         row,
                         DowngraderPlanStepKind::DownloadDelta,
                         error.user_message(),
                     )
-                })
+                })?;
+                verify_patch_bytes(row, integrity, &bytes)?;
+                Ok(bytes)
             }
             Ok(_) => Err(mutation_diagnostic(
                 row,
@@ -1670,6 +2167,7 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                             error.diagnostic().unwrap_or("")
                         )
                     })?;
+                verify_patch_bytes(row, integrity, &bytes)?;
                 self.filesystem
                     .write_bytes(patch_path, &bytes)
                     .map_err(|error| {
@@ -1687,6 +2185,24 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
                 error.user_message(),
             )),
         }
+    }
+
+    fn patch_integrity_for(&self, patch_name: &str) -> Option<DowngraderPatchIntegrity> {
+        self.patch_integrity_manifest
+            .iter()
+            .copied()
+            .find(|entry| entry.patch_name.eq_ignore_ascii_case(patch_name))
+    }
+
+    fn remove_file_under_root(
+        &self,
+        game_root: &Path,
+        path: &Path,
+        row: &DowngraderPreviewPlanRow,
+        step: DowngraderPlanStepKind,
+    ) -> Result<(), String> {
+        self.ensure_existing_file_within_root(game_root, path, row, step.as_str())?;
+        self.remove_file_with_context(path, row, step)
     }
 
     fn remove_file_with_context(
@@ -1709,11 +2225,22 @@ impl<'a, F: Filesystem + WritableFilesystem + ?Sized> DowngraderService<'a, F> {
     }
 }
 
+struct ManagedExecutionPaths {
+    current_path: PathBuf,
+    current_backup_path: PathBuf,
+    desired_backup_path: PathBuf,
+    patch_path: PathBuf,
+    integrity: DowngraderPatchIntegrity,
+}
+
 struct PatchApplyContext<'a> {
     request_id: u64,
     game_root: &'a Path,
     row: &'a DowngraderPreviewPlanRow,
+    current_path: &'a Path,
     current_backup_path: &'a Path,
+    patch_path: &'a Path,
+    integrity: DowngraderPatchIntegrity,
     progress_events: &'a mut Vec<DowngraderExecutionProgressEvent>,
     diagnostics: Vec<String>,
 }
@@ -1756,6 +2283,38 @@ fn failed_execution_file_result(
         failed_patching_log_row(row.plan.display_name),
         diagnostics,
     )
+}
+
+fn verify_patch_bytes(
+    row: &DowngraderPreviewPlanRow,
+    integrity: DowngraderPatchIntegrity,
+    bytes: &[u8],
+) -> Result<(), String> {
+    let actual_len = bytes.len() as u64;
+    if actual_len > MAX_DELTA_PATCH_BYTES {
+        return Err(format!(
+            "{} {} exceeds configured size limit of {} bytes.",
+            PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name, MAX_DELTA_PATCH_BYTES
+        ));
+    }
+    if actual_len != integrity.expected_patch_bytes {
+        return Err(format!(
+            "{} {} size {actual_len} did not match pinned size {} bytes.",
+            PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name, integrity.expected_patch_bytes
+        ));
+    }
+    let actual_hash = sha256_hex(bytes);
+    if !actual_hash.eq_ignore_ascii_case(integrity.sha256_hex) {
+        return Err(format!(
+            "{} {} SHA-256 {actual_hash} did not match pinned value.",
+            PATCH_INTEGRITY_FAILURE_MESSAGE, row.plan.patch_name
+        ));
+    }
+    Ok(())
+}
+
+fn sha256_hex(bytes: &[u8]) -> String {
+    format!("{:x}", Sha256::digest(bytes))
 }
 
 fn mutation_diagnostic(
@@ -1993,6 +2552,8 @@ mod tests {
         File(Vec<u8>),
         Directory,
         UnreadableFile,
+        SymlinkFile(Vec<u8>),
+        ReparseFile(Vec<u8>),
     }
 
     #[derive(Debug, Default, Clone)]
@@ -2077,25 +2638,24 @@ mod tests {
         fn metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
             self.metadata_reads.borrow_mut().push(path.to_path_buf());
             match self.node(path, PlatformOperation::ReadMetadata)? {
-                FakeNode::File(bytes) => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: bytes.len() as u64,
-                }),
-                FakeNode::Directory => Ok(FileMetadata {
-                    file_type: FileType::Directory,
-                    len: 0,
-                }),
-                FakeNode::UnreadableFile => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: 0,
-                }),
+                FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) => {
+                    Ok(FileMetadata::new(FileType::File, bytes.len() as u64))
+                }
+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+                    FileType::File,
+                    bytes.len() as u64,
+                )),
+                FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
             }
         }
 
         fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
             self.read_files.borrow_mut().push(path.to_path_buf());
             match self.node(path, PlatformOperation::ReadFile)? {
-                FakeNode::File(bytes) => Ok(bytes.clone()),
+                FakeNode::File(bytes)
+                | FakeNode::SymlinkFile(bytes)
+                | FakeNode::ReparseFile(bytes) => Ok(bytes.clone()),
                 FakeNode::Directory => Err(PlatformError::new(
                     PlatformOperation::ReadFile,
                     path.display().to_string(),
@@ -2676,13 +3236,17 @@ mod tests {
         fn has_file(&self, path: impl AsRef<Path>) -> bool {
             matches!(
                 self.nodes.borrow().get(path.as_ref()),
-                Some(FakeNode::File(_))
+                Some(FakeNode::File(_) | FakeNode::SymlinkFile(_) | FakeNode::ReparseFile(_))
             )
         }
 
         fn file_crc(&self, path: impl AsRef<Path>) -> Option<String> {
             match self.nodes.borrow().get(path.as_ref()) {
-                Some(FakeNode::File(bytes)) => Some(crc32_hex(bytes)),
+                Some(
+                    FakeNode::File(bytes)
+                    | FakeNode::SymlinkFile(bytes)
+                    | FakeNode::ReparseFile(bytes),
+                ) => Some(crc32_hex(bytes)),
                 _ => None,
             }
         }
@@ -2696,25 +3260,40 @@ mod tests {
         fn metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
             self.maybe_fail(PlatformOperation::ReadMetadata, path)?;
             match self.node(path, PlatformOperation::ReadMetadata)? {
-                FakeNode::File(bytes) => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: bytes.len() as u64,
-                }),
-                FakeNode::Directory => Ok(FileMetadata {
-                    file_type: FileType::Directory,
-                    len: 0,
-                }),
-                FakeNode::UnreadableFile => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: 0,
-                }),
+                FakeNode::File(bytes) | FakeNode::SymlinkFile(bytes) => {
+                    Ok(FileMetadata::new(FileType::File, bytes.len() as u64))
+                }
+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+                    FileType::File,
+                    bytes.len() as u64,
+                )),
+                FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
+            }
+        }
+
+        fn symlink_metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
+            self.maybe_fail(PlatformOperation::ReadMetadata, path)?;
+            match self.node(path, PlatformOperation::ReadMetadata)? {
+                FakeNode::File(bytes) => Ok(FileMetadata::new(FileType::File, bytes.len() as u64)),
+                FakeNode::SymlinkFile(bytes) => {
+                    Ok(FileMetadata::new(FileType::Symlink, bytes.len() as u64))
+                }
+                FakeNode::ReparseFile(bytes) => Ok(FileMetadata::reparse_point(
+                    FileType::File,
+                    bytes.len() as u64,
+                )),
+                FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
+                FakeNode::UnreadableFile => Ok(FileMetadata::new(FileType::File, 0)),
             }
         }
 
         fn read_bytes(&self, path: &Path) -> Result<Vec<u8>, PlatformError> {
             self.maybe_fail(PlatformOperation::ReadFile, path)?;
             match self.node(path, PlatformOperation::ReadFile)? {
-                FakeNode::File(bytes) => Ok(bytes),
+                FakeNode::File(bytes)
+                | FakeNode::SymlinkFile(bytes)
+                | FakeNode::ReparseFile(bytes) => Ok(bytes),
                 FakeNode::Directory => Err(PlatformError::new(
                     PlatformOperation::ReadFile,
                     path.display().to_string(),
@@ -2763,11 +3342,34 @@ mod tests {
             Ok(())
         }
 
+        fn replace_file_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::WriteFile, path)?;
+            if !self.has_file(path) {
+                return Err(PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    "File write target was not found.",
+                ));
+            }
+            self.ensure_parent_dirs(path);
+            self.nodes
+                .borrow_mut()
+                .insert(path.to_path_buf(), FakeNode::File(bytes.to_vec()));
+            self.operations
+                .borrow_mut()
+                .push(RecordedWriteOp::Write(path.to_path_buf()));
+            Ok(())
+        }
+
         fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
             self.maybe_fail(PlatformOperation::CopyFile, to)?;
             let bytes = match self.node(from, PlatformOperation::CopyFile)? {
                 FakeNode::File(bytes) => bytes,
-                FakeNode::Directory | FakeNode::UnreadableFile => {
+                FakeNode::Directory
+                | FakeNode::UnreadableFile
+                | FakeNode::SymlinkFile(_)
+                | FakeNode::ReparseFile(_) => {
                     return Err(PlatformError::new(
                         PlatformOperation::CopyFile,
                         from.display().to_string(),
@@ -2812,7 +3414,10 @@ mod tests {
         fn remove_file(&self, path: &Path) -> PlatformResult<()> {
             self.maybe_fail(PlatformOperation::RemoveFile, path)?;
             match self.nodes.borrow_mut().remove(path) {
-                Some(FakeNode::File(_)) | Some(FakeNode::UnreadableFile) => {
+                Some(FakeNode::File(_))
+                | Some(FakeNode::UnreadableFile)
+                | Some(FakeNode::SymlinkFile(_))
+                | Some(FakeNode::ReparseFile(_)) => {
                     self.operations
                         .borrow_mut()
                         .push(RecordedWriteOp::Remove(path.to_path_buf()));
@@ -2908,6 +3513,7 @@ mod tests {
             &self,
             source_bytes: &[u8],
             patch_bytes: &[u8],
+            _expected_output_bytes: u64,
         ) -> Result<Vec<u8>, DowngraderDeltaApplyError> {
             self.calls
                 .borrow_mut()
@@ -2935,6 +3541,19 @@ mod tests {
             .with_crc_file("Game/Fallout4.exe", "C5965A2E")
     }
 
+    fn test_patch_integrity(
+        patch_name: &'static str,
+        patch_bytes: &[u8],
+        expected_output_bytes: u64,
+    ) -> [DowngraderPatchIntegrity; 1] {
+        [DowngraderPatchIntegrity {
+            patch_name,
+            expected_patch_bytes: patch_bytes.len() as u64,
+            sha256_hex: Box::leak(sha256_hex(patch_bytes).into_boxed_str()),
+            expected_output_bytes,
+        }]
+    }
+
     #[test]
     fn downgrader_executor_restores_valid_desired_backup_and_respects_keep_backups() {
         let fs = next_gen_fallout4_executor_fs()
@@ -2960,13 +3579,7 @@ mod tests {
         assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
         assert_eq!(
             fs.operations(),
-            vec![
-                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4.exe")),
-                RecordedWriteOp::Copy {
-                    from: PathBuf::from("Game/Fallout4_upgradeBackup.exe"),
-                    to: PathBuf::from("Game/Fallout4.exe"),
-                },
-            ]
+            vec![RecordedWriteOp::Write(PathBuf::from("Game/Fallout4.exe"))]
         );
 
         let fs = next_gen_fallout4_executor_fs()
@@ -2986,11 +3599,8 @@ mod tests {
         assert_eq!(
             fs.operations(),
             vec![
-                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4.exe")),
-                RecordedWriteOp::Rename {
-                    from: PathBuf::from("Game/Fallout4_upgradeBackup.exe"),
-                    to: PathBuf::from("Game/Fallout4.exe"),
-                },
+                RecordedWriteOp::Write(PathBuf::from("Game/Fallout4.exe")),
+                RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_upgradeBackup.exe")),
                 RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_downgradeBackup.exe")),
             ]
         );
@@ -3001,10 +3611,12 @@ mod tests {
         let fs = next_gen_fallout4_executor_fs()
             .with_crc_file("Game/Fallout4_upgradeBackup.exe", "C5965A2E")
             .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C6053902");
-        let downloader = RecordingDownloader::ok(b"delta bytes".to_vec());
+        let patch_bytes = b"delta bytes".to_vec();
+        let downloader = RecordingDownloader::ok(patch_bytes.clone());
+        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
         let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
 
-        let result = DowngraderService::new(&fs)
+        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
             .execute_confirmed(executor_request(32, false, true), &downloader, &applier)
             .expect("download/apply path");
 
@@ -3023,7 +3635,7 @@ mod tests {
             fs.operations(),
             vec![
                 RecordedWriteOp::Remove(PathBuf::from("Game/Fallout4_downgradeBackup.exe")),
-                RecordedWriteOp::Rename {
+                RecordedWriteOp::Copy {
                     from: PathBuf::from("Game/Fallout4.exe"),
                     to: PathBuf::from("Game/Fallout4_downgradeBackup.exe"),
                 },
@@ -3038,16 +3650,15 @@ mod tests {
 
     #[test]
     fn downgrader_executor_reuses_existing_patch_and_does_not_download_for_skipped_rows() {
+        let patch_bytes = b"existing patch".to_vec();
         let fs = next_gen_fallout4_executor_fs()
             .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
-            .with_file(
-                "Game/NG-to-OG-Fallout4.exe.xdelta",
-                b"existing patch".to_vec(),
-            );
+            .with_file("Game/NG-to-OG-Fallout4.exe.xdelta", patch_bytes.clone());
         let downloader = RecordingDownloader::ok(b"download should not be used".to_vec());
+        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
         let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
 
-        let result = DowngraderService::new(&fs)
+        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
             .execute_confirmed(executor_request(33, true, false), &downloader, &applier)
             .expect("existing patch path");
 
@@ -3089,40 +3700,45 @@ mod tests {
         assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Failed);
         assert_eq!(result.log_rows[0], failed_patching_log_row("Fallout4.exe"));
         assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
-        assert!(!fs.has_file("Game/Fallout4.exe"));
+        assert!(fs.has_file("Game/Fallout4.exe"));
         assert!(applier.calls().is_empty());
 
+        let patch_bytes = b"bad patch".to_vec();
         let fs = next_gen_fallout4_executor_fs()
             .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
-            .with_file("Game/NG-to-OG-Fallout4.exe.xdelta", b"bad patch".to_vec());
+            .with_file("Game/NG-to-OG-Fallout4.exe.xdelta", patch_bytes.clone());
         let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
         let applier = RecordingApplier::failing();
-        let result = DowngraderService::new(&fs)
+        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
             .execute_confirmed(executor_request(36, false, true), &downloader, &applier)
             .expect("failed apply still returns per-row result");
 
         assert_eq!(result.rows[0].outcome, DowngraderExecutionOutcome::Failed);
         assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
         assert!(fs.has_file("Game/NG-to-OG-Fallout4.exe.xdelta"));
-        assert!(!fs.has_file("Game/Fallout4.exe"));
+        assert!(fs.has_file("Game/Fallout4.exe"));
         assert_eq!(applier.calls().len(), 1);
         assert!(downloader.calls().is_empty());
     }
 
     #[test]
     fn downgrader_executor_logs_permission_failures_and_continues_safely() {
+        let patch_bytes = b"permission patch".to_vec();
         let fs = next_gen_fallout4_executor_fs()
             .with_crc_file("Game/Fallout4_downgradeBackup.exe", "C5965A2E")
+            .with_file("Game/NG-to-OG-Fallout4.exe.xdelta", patch_bytes.clone())
             .with_crc_file("Game/Fallout4Launcher.exe", "02445570")
             .with_failure(
-                PlatformOperation::RemoveFile,
+                PlatformOperation::WriteFile,
                 "Game/Fallout4.exe",
                 PlatformErrorKind::PermissionDenied,
             );
         let downloader = RecordingDownloader::ok(b"unused".to_vec());
+        let manifest = test_patch_integrity("NG-to-OG-Fallout4.exe.xdelta", &patch_bytes, 4);
         let applier = RecordingApplier::ok(bytes_with_crc("C6053902"));
 
-        let result = DowngraderService::new(&fs)
+        let result = DowngraderService::with_patch_integrity_manifest(&fs, &manifest)
             .execute_confirmed(executor_request(37, false, false), &downloader, &applier)
             .expect("permission failure should not abort full executor");
 
@@ -3136,7 +3752,7 @@ mod tests {
                 .any(|message| message.contains("permission was denied"))
         );
         assert!(downloader.calls().is_empty());
-        assert!(applier.calls().is_empty());
+        assert_eq!(applier.calls().len(), 1);
         assert!(fs.has_file("Game/Fallout4.exe"));
         assert!(fs.has_file("Game/Fallout4_downgradeBackup.exe"));
     }
@@ -3162,7 +3778,7 @@ mod tests {
         ];
 
         let output = VcdiffDeltaApplier
-            .apply_delta(b"hello", &patch)
+            .apply_delta(b"hello", &patch, 13)
             .expect("VCDIFF fixture should decode");
 
         assert_eq!(output, b"Hello! Hello!".to_vec());

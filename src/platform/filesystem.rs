@@ -6,8 +6,9 @@
 
 use std::{
     fs,
-    io::Read,
+    io::{Read, Write},
     path::{Path, PathBuf},
+    sync::atomic::{AtomicU64, Ordering},
 };
 
 use walkdir::WalkDir;
@@ -29,12 +30,12 @@ pub enum FileType {
 
 impl FileType {
     fn from_std(file_type: fs::FileType) -> Self {
-        if file_type.is_file() {
+        if file_type.is_symlink() {
+            Self::Symlink
+        } else if file_type.is_file() {
             Self::File
         } else if file_type.is_dir() {
             Self::Directory
-        } else if file_type.is_symlink() {
-            Self::Symlink
         } else {
             Self::Other
         }
@@ -48,9 +49,29 @@ pub struct FileMetadata {
     pub file_type: FileType,
     /// Byte length reported by the OS for files and other entries.
     pub len: u64,
+    /// Whether the path itself is a platform reparse point such as a Windows junction.
+    pub is_reparse_point: bool,
 }
 
 impl FileMetadata {
+    /// Creates ordinary metadata for a non-reparse path.
+    pub const fn new(file_type: FileType, len: u64) -> Self {
+        Self {
+            file_type,
+            len,
+            is_reparse_point: false,
+        }
+    }
+
+    /// Creates metadata for a path the platform reports as a reparse point.
+    pub const fn reparse_point(file_type: FileType, len: u64) -> Self {
+        Self {
+            file_type,
+            len,
+            is_reparse_point: true,
+        }
+    }
+
     /// Returns true when this metadata describes a regular file.
     pub const fn is_file(&self) -> bool {
         matches!(self.file_type, FileType::File)
@@ -59,6 +80,11 @@ impl FileMetadata {
     /// Returns true when this metadata describes a directory.
     pub const fn is_dir(&self) -> bool {
         matches!(self.file_type, FileType::Directory)
+    }
+
+    /// Returns true when a no-follow metadata read found a link or reparse point.
+    pub const fn is_symlink_or_reparse_point(&self) -> bool {
+        matches!(self.file_type, FileType::Symlink) || self.is_reparse_point
     }
 }
 
@@ -113,6 +139,23 @@ pub trait Filesystem {
         }
     }
 
+    /// Reads metadata for a path without following the final symbolic link or reparse point.
+    ///
+    /// The default delegates to [`Filesystem::metadata`] so existing fake adapters remain small;
+    /// real adapters should override this when the platform can expose no-follow metadata.
+    fn symlink_metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+        self.metadata(path)
+    }
+
+    /// Resolves a path through the platform canonicalization API.
+    ///
+    /// The default returns the input path unchanged for in-memory fakes. Real adapters should
+    /// override this to collapse links, junctions, and relative components before containment
+    /// checks that guard destructive mutation.
+    fn canonicalize_path(&self, path: &Path) -> PlatformResult<PathBuf> {
+        Ok(path.to_path_buf())
+    }
+
     /// Reads a whole file as bytes.
     fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>>;
 
@@ -145,6 +188,12 @@ pub trait WritableFilesystem {
     /// Writes a whole file from bytes.
     fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()>;
 
+    /// Replaces a file with bytes written to a temporary file in the same directory.
+    ///
+    /// Implementations should keep the active destination intact until the replacement bytes have
+    /// been fully written and are ready for a same-directory rename/replace operation.
+    fn replace_file_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()>;
+
     /// Copies one file to another path.
     fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()>;
 
@@ -169,10 +218,7 @@ impl RealFilesystem {
 impl Filesystem for RealFilesystem {
     fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
         fs::metadata(path)
-            .map(|metadata| FileMetadata {
-                file_type: FileType::from_std(metadata.file_type()),
-                len: metadata.len(),
-            })
+            .map(file_metadata_from_std)
             .map_err(|error| {
                 PlatformError::from_io(
                     PlatformOperation::ReadMetadata,
@@ -180,6 +226,28 @@ impl Filesystem for RealFilesystem {
                     &error,
                 )
             })
+    }
+
+    fn symlink_metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
+        fs::symlink_metadata(path)
+            .map(file_metadata_from_std)
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::ReadMetadata,
+                    path.display().to_string(),
+                    &error,
+                )
+            })
+    }
+
+    fn canonicalize_path(&self, path: &Path) -> PlatformResult<PathBuf> {
+        fs::canonicalize(path).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::ReadMetadata,
+                path.display().to_string(),
+                &error,
+            )
+        })
     }
 
     fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {
@@ -201,7 +269,7 @@ impl Filesystem for RealFilesystem {
             )
         })?;
         let mut bytes = Vec::with_capacity(max_len);
-        file.by_ref()
+        Read::by_ref(&mut file)
             .take(max_len as u64)
             .read_to_end(&mut bytes)
             .map_err(|error| {
@@ -265,12 +333,12 @@ impl Filesystem for RealFilesystem {
         for entry in WalkDir::new(path).sort_by_file_name() {
             let entry = entry.map_err(|error| walkdir_error(path, error))?;
             let file_type = entry.file_type();
-            let file_type = if file_type.is_file() {
+            let file_type = if file_type.is_symlink() {
+                FileType::Symlink
+            } else if file_type.is_file() {
                 FileType::File
             } else if file_type.is_dir() {
                 FileType::Directory
-            } else if file_type.is_symlink() {
-                FileType::Symlink
             } else {
                 FileType::Other
             };
@@ -289,6 +357,76 @@ impl WritableFilesystem for RealFilesystem {
                 &error,
             )
         })
+    }
+
+    fn replace_file_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
+        static TEMP_COUNTER: AtomicU64 = AtomicU64::new(0);
+
+        let parent = path.parent().ok_or_else(|| {
+            PlatformError::new(
+                PlatformOperation::WriteFile,
+                path.display().to_string(),
+                crate::platform::PlatformErrorKind::InvalidInput,
+                "File write target is invalid.",
+            )
+        })?;
+        let file_name = path
+            .file_name()
+            .and_then(|name| name.to_str())
+            .ok_or_else(|| {
+                PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    crate::platform::PlatformErrorKind::InvalidInput,
+                    "File write target is invalid.",
+                )
+            })?;
+        let temp_path = parent.join(format!(
+            ".{file_name}.cmt-rs-{}-{}.tmp",
+            std::process::id(),
+            TEMP_COUNTER.fetch_add(1, Ordering::Relaxed)
+        ));
+
+        let write_result = (|| -> PlatformResult<()> {
+            let mut temp_file = fs::OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&temp_path)
+                .map_err(|error| {
+                    PlatformError::from_io(
+                        PlatformOperation::WriteFile,
+                        temp_path.display().to_string(),
+                        &error,
+                    )
+                })?;
+            temp_file.write_all(bytes).map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::WriteFile,
+                    temp_path.display().to_string(),
+                    &error,
+                )
+            })?;
+            temp_file.sync_all().map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::WriteFile,
+                    temp_path.display().to_string(),
+                    &error,
+                )
+            })?;
+            fs::rename(&temp_path, path).map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::RenameFile,
+                    format!("{} -> {}", temp_path.display(), path.display()),
+                    &error,
+                )
+            })?;
+            Ok(())
+        })();
+
+        if write_result.is_err() {
+            let _ = fs::remove_file(&temp_path);
+        }
+        write_result
     }
 
     fn copy_file(&self, from: &Path, to: &Path) -> PlatformResult<()> {
@@ -320,6 +458,28 @@ impl WritableFilesystem for RealFilesystem {
             )
         })
     }
+}
+
+fn file_metadata_from_std(metadata: fs::Metadata) -> FileMetadata {
+    let is_reparse_point = metadata_is_reparse_point(&metadata);
+    FileMetadata {
+        file_type: FileType::from_std(metadata.file_type()),
+        len: metadata.len(),
+        is_reparse_point,
+    }
+}
+
+#[cfg(windows)]
+fn metadata_is_reparse_point(metadata: &fs::Metadata) -> bool {
+    use std::os::windows::fs::MetadataExt;
+
+    const FILE_ATTRIBUTE_REPARSE_POINT: u32 = 0x400;
+    metadata.file_attributes() & FILE_ATTRIBUTE_REPARSE_POINT != 0
+}
+
+#[cfg(not(windows))]
+fn metadata_is_reparse_point(_metadata: &fs::Metadata) -> bool {
+    false
 }
 
 fn walkdir_error(root: &Path, error: walkdir::Error) -> PlatformError {
@@ -395,15 +555,12 @@ mod tests {
             let node = self.node(path, PlatformOperation::ReadMetadata)?;
             let file_type = match node {
                 FakeNode::File(bytes) => {
-                    return Ok(FileMetadata {
-                        file_type: FileType::File,
-                        len: bytes.len() as u64,
-                    });
+                    return Ok(FileMetadata::new(FileType::File, bytes.len() as u64));
                 }
                 FakeNode::Directory => FileType::Directory,
                 FakeNode::Denied => unreachable!("denied nodes return before classification"),
             };
-            Ok(FileMetadata { file_type, len: 0 })
+            Ok(FileMetadata::new(file_type, 0))
         }
 
         fn read_bytes(&self, path: &Path) -> PlatformResult<Vec<u8>> {

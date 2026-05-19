@@ -1078,10 +1078,7 @@ mod scanner_autofix_service {
     impl Filesystem for FakeFilesystem {
         fn metadata(&self, path: &Path) -> PlatformResult<FileMetadata> {
             if self.files.contains(path) {
-                Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: 1,
-                })
+                Ok(FileMetadata::new(FileType::File, 1))
             } else {
                 Err(PlatformError::new(
                     PlatformOperation::ReadMetadata,

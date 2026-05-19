@@ -1384,14 +1384,8 @@ mod tests {
     impl Filesystem for FakeFilesystem {
         fn metadata(&self, path: &Path) -> Result<FileMetadata, PlatformError> {
             match self.node(path, PlatformOperation::ReadMetadata)? {
-                FakeNode::File(bytes) => Ok(FileMetadata {
-                    file_type: FileType::File,
-                    len: bytes.len() as u64,
-                }),
-                FakeNode::Directory => Ok(FileMetadata {
-                    file_type: FileType::Directory,
-                    len: 0,
-                }),
+                FakeNode::File(bytes) => Ok(FileMetadata::new(FileType::File, bytes.len() as u64)),
+                FakeNode::Directory => Ok(FileMetadata::new(FileType::Directory, 0)),
             }
         }
 
