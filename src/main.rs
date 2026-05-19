@@ -15,7 +15,8 @@ use app::{
     about_controller::{AboutController, AboutState, AboutTransitionResult},
     archive_patcher_controller::{
         ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE, ARCHIVE_PATCHER_PLAN_READY_MESSAGE,
-        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController, ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
+        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController,
+        ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
         ArchivePatcherPlanWorkerRequest, ArchivePatcherRestoreWorkerRequest,
         ArchivePatcherTransitionResult, ArchivePatcherWorkerRequestKind,
         archive_patcher_candidates_loaded_payload, archive_patcher_log_row_payload,
@@ -49,10 +50,10 @@ use app::{
 };
 use domain::{
     archive_patcher::{
-        ABOUT_ARCHIVES_BODY, ABOUT_ARCHIVES_TITLE, ArchivePatcherArchiveFormat,
-        ArchivePatcherCandidateRow, ArchivePatcherExecutionResult, ArchivePatcherLogLevel,
-        ArchivePatcherLogRow, ArchivePatcherPlanAction, ArchivePatcherPreviewPlanRow,
-        ArchivePatcherProgress, ArchivePatcherTarget,
+        ABOUT_ARCHIVES_BODY, ABOUT_ARCHIVES_TITLE, ArchivePatcherCandidateRow,
+        ArchivePatcherExecutionResult, ArchivePatcherLogLevel, ArchivePatcherLogRow,
+        ArchivePatcherPlanAction, ArchivePatcherPreviewPlanRow, ArchivePatcherProgress,
+        ArchivePatcherTarget,
     },
     autofix::{
         AutoFixCompletion, AutoFixRejection, AutoFixRequest, AutoFixResultDetail,
@@ -69,9 +70,8 @@ use domain::{
     overview::{
         ACTION_ARCHIVE_PATCHER_LABEL, ACTION_DOWNGRADE_MANAGER_LABEL, BinaryStatusRow,
         OverviewActionError, OverviewCountRow, OverviewDeferredAction, OverviewDeferredActionKind,
-        OverviewDeferredActionTarget, OverviewProblem, OverviewRefreshState, OverviewSnapshot,
-        OverviewTopStatusRow, StatusSeverity, UpdateBannerState, UpdateCheckFailure,
-        UpdateProvider,
+        OverviewProblem, OverviewRefreshState, OverviewSnapshot, OverviewTopStatusRow,
+        StatusSeverity, UpdateBannerState, UpdateCheckFailure, UpdateProvider,
     },
     scanner::{
         DETAIL_LABEL_MOD, DETAIL_LABEL_PROBLEM, DETAIL_LABEL_SOLUTION, DETAIL_LABEL_SUMMARY,
@@ -798,9 +798,8 @@ fn bind_archive_patcher_worker_sink(
                         );
                         return;
                     };
-                    let settings = overview_settings_for_archive_patcher_completion(
-                        &shared_settings_snapshot,
-                    );
+                    let settings =
+                        overview_settings_for_archive_patcher_completion(&shared_settings_snapshot);
                     tracing::info!(
                         event = "s10-archive-patcher-overview-refresh-requested",
                         task_id = %task_id,
@@ -2569,10 +2568,9 @@ fn close_archive_patcher_modal(
     window: &ArchivePatcherWindow,
     controller: &Arc<Mutex<ArchivePatcherController>>,
 ) -> ArchivePatcherTransitionResult {
-    let result = with_archive_patcher_controller_mut(controller, |controller| {
-        controller.request_close()
-    })
-    .unwrap_or(ArchivePatcherTransitionResult::Ignored);
+    let result =
+        with_archive_patcher_controller_mut(controller, |controller| controller.request_close())
+            .unwrap_or(ArchivePatcherTransitionResult::Ignored);
     apply_current_archive_patcher_state(window, controller);
     if result.is_applied()
         && let Err(error) = window.hide()
@@ -2602,13 +2600,17 @@ fn schedule_archive_patcher_candidate_request(
     );
     let task = request.task.clone();
     let request_id = request.request_id;
-    if let Err(error) = worker_runtime.spawn_blocking_task(
-        task,
-        archive_patcher_sink,
-        move |_context| build_archive_patcher_candidates_payload(request),
-    ) {
+    if let Err(error) =
+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |_context| {
+            build_archive_patcher_candidates_payload(request)
+        })
+    {
         with_archive_patcher_controller_mut(controller, |controller| {
-            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Candidates, request_id, error)
+            controller.spawn_failed(
+                ArchivePatcherWorkerRequestKind::Candidates,
+                request_id,
+                error,
+            )
         });
         apply_current_archive_patcher_state(window, controller);
     }
@@ -2630,11 +2632,11 @@ fn schedule_archive_patcher_plan_request(
     );
     let task = request.task.clone();
     let request_id = request.request_id;
-    if let Err(error) = worker_runtime.spawn_blocking_task(
-        task,
-        archive_patcher_sink,
-        move |_context| build_archive_patcher_plan_payload(request),
-    ) {
+    if let Err(error) =
+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |_context| {
+            build_archive_patcher_plan_payload(request)
+        })
+    {
         with_archive_patcher_controller_mut(controller, |controller| {
             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Plan, request_id, error)
         });
@@ -2659,11 +2661,11 @@ fn schedule_archive_patcher_patch_request(
     );
     let task = request.task.clone();
     let request_id = request.request_id;
-    if let Err(error) = worker_runtime.spawn_blocking_task(
-        task,
-        archive_patcher_sink,
-        move |context| build_archive_patcher_patch_payload(context, request),
-    ) {
+    if let Err(error) =
+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |context| {
+            build_archive_patcher_patch_payload(context, request)
+        })
+    {
         with_archive_patcher_controller_mut(controller, |controller| {
             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Patch, request_id, error)
         });
@@ -2687,11 +2689,11 @@ fn schedule_archive_patcher_restore_request(
     );
     let task = request.task.clone();
     let request_id = request.request_id;
-    if let Err(error) = worker_runtime.spawn_blocking_task(
-        task,
-        archive_patcher_sink,
-        move |context| build_archive_patcher_restore_payload(context, request),
-    ) {
+    if let Err(error) =
+        worker_runtime.spawn_blocking_task(task, archive_patcher_sink, move |context| {
+            build_archive_patcher_restore_payload(context, request)
+        })
+    {
         with_archive_patcher_controller_mut(controller, |controller| {
             controller.spawn_failed(ArchivePatcherWorkerRequestKind::Restore, request_id, error)
         });
@@ -5637,6 +5639,7 @@ fn overview_archive_patcher_action_status(actions: &[OverviewDeferredAction]) ->
     }
 }
 
+#[cfg(test)]
 fn deferred_action_status(
     actions: &[OverviewDeferredAction],
     kind: OverviewDeferredActionKind,
@@ -5647,10 +5650,11 @@ fn deferred_action_status(
     };
 
     match &action.target {
-        OverviewDeferredActionTarget::Internal => {
+        crate::domain::overview::OverviewDeferredActionTarget::Internal => {
             format!("Deferred until the {workflow_name} workflow is ported.")
         }
-        OverviewDeferredActionTarget::Path(_) | OverviewDeferredActionTarget::Url(_) => {
+        crate::domain::overview::OverviewDeferredActionTarget::Path(_)
+        | crate::domain::overview::OverviewDeferredActionTarget::Url(_) => {
             if action.enabled {
                 "Ready.".to_owned()
             } else {
@@ -7398,17 +7402,17 @@ mod tests {
     }
 
     #[test]
-    fn s09_downgrader_runtime_wiring_open_entrypoints_and_archive_patcher_deferred() {
+    fn s09_downgrader_runtime_wiring_open_entrypoints_and_archive_patcher_available() {
         assert_eq!(DowngraderOpenSource::Overview.label(), "overview");
         assert_eq!(DowngraderOpenSource::Tools.label(), "tools");
         assert!(MAIN_SLINT.contains("callback overview-open-downgrade-manager-requested()"));
         assert!(MAIN_SLINT.contains("callback tools-open-downgrade-manager-requested()"));
         assert!(OVERVIEW_SLINT.contains("root.open-downgrade-manager-requested()"));
         assert!(TOOLS_SLINT.contains("root.open-downgrade-manager-requested()"));
-        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
-        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: true"));
+        assert!(OVERVIEW_SLINT.contains("Open Archive Patcher."));
         assert!(TOOLS_SLINT.contains(ToolActionId::ArchivePatcher.as_str()));
-        assert!(TOOLS_SLINT.contains("Deferred until S10 Archive Patcher workflow is ported."));
+        assert!(TOOLS_SLINT.contains("Open the Archive Patcher workflow."));
     }
 
     #[test]
@@ -7853,8 +7857,65 @@ mod tests {
     }
 
     #[test]
-    fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_but_keep_archive_patcher_deferred()
-     {
+    fn s10_archive_patcher_runtime_wiring_candidate_worker_payload_projects_modal_state() {
+        use crate::domain::discovery::{ArchiveFormat, ArchiveRecord, ArchiveVersion};
+
+        let archives = vec![ArchiveRecord::new(
+            "Game/Data/A.ba2",
+            ArchiveFormat::General,
+            ArchiveVersion::NextGen8,
+            true,
+        )];
+        let mut controller = ArchivePatcherController::new();
+        let request = controller
+            .open(
+                archives,
+                Some(PathBuf::from("Game/Data")),
+                PathBuf::from("app-state/archive-patcher-latest.json"),
+                true,
+            )
+            .expect("opening with Overview archive records should request candidates");
+
+        assert_eq!(
+            controller.phase(),
+            crate::app::archive_patcher_controller::ArchivePatcherControllerPhase::LoadingCandidates
+        );
+        let payload = match build_archive_patcher_candidates_payload(request)
+            .expect("candidate worker should not need filesystem access")
+        {
+            WorkerTaskOutcome::Completed(payload) => payload,
+            other => panic!("expected completed candidate payload, got {other:?}"),
+        };
+        let request_id = match &payload {
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::CandidatesLoaded {
+                request_id,
+                snapshot,
+            }) => {
+                assert_eq!(snapshot.rows.len(), 1);
+                assert_eq!(snapshot.rows[0].display_name, "A.ba2");
+                *request_id
+            }
+            other => panic!("expected Archive Patcher candidates payload, got {other:?}"),
+        };
+
+        let result = controller.handle_worker_event(WorkerEvent::completed(
+            crate::app::archive_patcher_controller::archive_patcher_candidates_task(request_id),
+            payload,
+        ));
+
+        assert_eq!(result, ArchivePatcherTransitionResult::Applied);
+        assert_eq!(controller.candidate_rows().len(), 1);
+        let projection = project_archive_patcher_state(&controller);
+        assert_eq!(projection.candidate_rows.len(), 1);
+        assert_eq!(projection.candidate_rows[0].display_name.as_str(), "A.ba2");
+        assert!(projection.patch_enabled);
+        assert!(projection.restore_enabled);
+        assert!(projection.controls_enabled);
+        assert!(!projection.close_blocked);
+    }
+
+    #[test]
+    fn s09_downgrader_slint_contract_entrypoints_forward_downgrader_and_archive_patcher() {
         assert!(!DOWNGRADER_SLINT.contains("target-id: \"anniversary\""));
         assert!(!DOWNGRADER_SLINT.contains("text: \"Anniversary\""));
 
@@ -7869,8 +7930,17 @@ mod tests {
                 "root.open-downgrade-manager-requested()",
             ],
         );
-        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
-        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+        assert_source_contains_in_order(
+            OVERVIEW_SLINT,
+            &[
+                "overview-archive-patcher-enabled: true",
+                "overview-archive-patcher-status: \"Open Archive Patcher.\"",
+                "callback open-archive-patcher-requested()",
+                "action-label: root.overview-archive-patcher-label",
+                "action-enabled: root.overview-archive-patcher-enabled",
+                "root.open-archive-patcher-requested()",
+            ],
+        );
 
         assert_source_contains_in_order(
             TOOLS_SLINT,
@@ -7882,11 +7952,11 @@ mod tests {
                 "root.open-downgrade-manager-requested()",
                 "label: \"Archive Patcher\"",
                 "action-id: \"tools.archive_patcher\"",
-                "button-enabled: false;",
-                "Deferred until S10 Archive Patcher workflow is ported.",
+                "Open the Archive Patcher workflow.",
+                "root.tool-action-requested(action_id)",
             ],
         );
-        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 1);
+        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 0);
 
         assert_source_contains_in_order(
             MAIN_SLINT,
@@ -7932,11 +8002,11 @@ mod tests {
                 "root.open-downgrade-manager-requested()",
                 "label: \"Archive Patcher\"",
                 "action-id: \"tools.archive_patcher\"",
-                "button-enabled: false;",
-                "Deferred until S10 Archive Patcher workflow is ported.",
+                "Open the Archive Patcher workflow.",
+                "root.tool-action-requested(action_id)",
             ],
         );
-        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 1);
+        assert_eq!(TOOLS_SLINT.matches("button-enabled: false;").count(), 0);
         assert!(TOOLS_SLINT.contains("root.tool-action-requested(action_id)"));
         assert_no_direct_urls_or_reference_tree("ui/tools_tab.slint", TOOLS_SLINT);
     }
@@ -8129,11 +8199,11 @@ mod tests {
             ToolsActionKind::InternalUtility(ToolActionId::DowngradeManager)
         );
 
-        let tools_deferred = tools_action_for_id(ToolActionId::ArchivePatcher.as_str())
-            .expect_err("Archive Patcher utility should still fail closed");
+        let tools_archive_patcher = tools_action_for_id(ToolActionId::ArchivePatcher.as_str())
+            .expect("Archive Patcher should route as an enabled internal utility");
         assert_eq!(
-            tools_deferred.outcome,
-            crate::services::tools::ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
+            tools_archive_patcher,
+            ToolsActionKind::InternalUtility(ToolActionId::ArchivePatcher)
         );
 
         let open_action = about_action_for_id(AboutActionId::OpenGithub.as_str())
@@ -8362,9 +8432,9 @@ mod tests {
         assert!(OVERVIEW_SLINT.contains("overview-last-action-error"));
         assert!(OVERVIEW_SLINT.contains("overview-refresh-busy"));
         assert!(OVERVIEW_SLINT.contains("overview-downgrade-enabled: true"));
-        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: false"));
+        assert!(OVERVIEW_SLINT.contains("overview-archive-patcher-enabled: true"));
         assert!(OVERVIEW_SLINT.contains("Open Downgrade Manager."));
-        assert!(OVERVIEW_SLINT.contains("Deferred until the Archive Patcher workflow is ported."));
+        assert!(OVERVIEW_SLINT.contains("Open Archive Patcher."));
         assert!(!OVERVIEW_SLINT.contains("Overview behavior is reserved for a later port phase."));
     }
 

@@ -982,8 +982,7 @@ mod tests {
     }
 
     #[test]
-    fn s09_actions_downgrade_manager_is_routed_without_desktop_handoff_but_archive_patcher_stays_deferred()
-     {
+    fn s09_actions_downgrade_manager_and_archive_patcher_are_routed_without_desktop_handoff() {
         let desktop = FakeDesktopActions::default();
         let clipboard = FakeClipboardActions::default();
         let service = ToolsActionService::new(desktop.clone(), clipboard.clone());
@@ -1007,19 +1006,16 @@ mod tests {
 
         let archive_feedback = service.execute_tools_action(ToolActionId::ArchivePatcher.as_str());
 
-        assert_eq!(
-            archive_feedback.outcome,
-            ActionOutcome::Rejected(ActionRejectionKind::DisabledUtility)
-        );
+        assert_eq!(archive_feedback.outcome, ActionOutcome::Succeeded);
         assert_eq!(
             archive_feedback.action,
-            Some(ToolsActionKind::DeferredUtility(
+            Some(ToolsActionKind::InternalUtility(
                 ToolActionId::ArchivePatcher
             ))
         );
         assert_eq!(
             archive_feedback.safe_message(),
-            "Archive Patcher is not available in this Rust port yet."
+            "Open the Archive Patcher workflow."
         );
         assert!(desktop.calls().is_empty());
         assert!(clipboard.copied().is_empty());

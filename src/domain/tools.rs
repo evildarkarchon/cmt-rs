@@ -63,7 +63,7 @@ pub const IMAGE_RESOURCE_PATHS: [&str; 4] = [
 /// Stable action id for each Tools-tab entry.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ToolActionId {
-    /// Deferred Downgrade Manager utility entry.
+    /// Downgrade Manager utility entry.
     DowngradeManager,
     /// Archive Patcher utility entry.
     ArchivePatcher,
@@ -744,7 +744,7 @@ mod tests {
     }
 
     #[test]
-    fn s05_reference_contract_toolkit_utilities_track_available_and_deferred_workflows() {
+    fn s05_reference_contract_toolkit_utilities_track_internal_and_external_workflows() {
         let entries = TOOL_GROUPS
             .iter()
             .flat_map(|group| group.entries.iter())
@@ -769,17 +769,29 @@ mod tests {
             .collect::<Vec<_>>();
         assert_eq!(
             internal_entries,
-            [(
-                "Downgrade Manager",
-                ToolInternalUtility {
-                    key: "downgrade_manager",
-                    status_text: "Open the Downgrade Manager workflow.",
-                },
-            )]
+            [
+                (
+                    "Downgrade Manager",
+                    ToolInternalUtility {
+                        key: "downgrade_manager",
+                        status_text: "Open the Downgrade Manager workflow.",
+                    },
+                ),
+                (
+                    "Archive Patcher",
+                    ToolInternalUtility {
+                        key: "archive_patcher",
+                        status_text: "Open the Archive Patcher workflow.",
+                    },
+                ),
+            ]
         );
         assert!(TOOL_GROUPS[0].entries[0].is_enabled());
         assert!(TOOL_GROUPS[0].entries[0].external_link().is_none());
         assert!(TOOL_GROUPS[0].entries[0].deferred_utility().is_none());
+        assert!(TOOL_GROUPS[0].entries[1].is_enabled());
+        assert!(TOOL_GROUPS[0].entries[1].external_link().is_none());
+        assert!(TOOL_GROUPS[0].entries[1].deferred_utility().is_none());
 
         let deferred_entries = entries
             .iter()
@@ -789,18 +801,7 @@ mod tests {
                     .map(|utility| (entry.label, utility))
             })
             .collect::<Vec<_>>();
-        assert_eq!(
-            deferred_entries,
-            [(
-                "Archive Patcher",
-                ToolDeferredUtility {
-                    key: "archive_patcher",
-                    status_text: "Archive Patcher is not available in this Rust port yet.",
-                },
-            )]
-        );
-        assert!(!TOOL_GROUPS[0].entries[1].is_enabled());
-        assert!(TOOL_GROUPS[0].entries[1].external_link().is_none());
+        assert!(deferred_entries.is_empty());
 
         for entry in entries
             .iter()
