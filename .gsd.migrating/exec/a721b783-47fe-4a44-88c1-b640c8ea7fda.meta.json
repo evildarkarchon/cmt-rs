@@ -1,0 +1,18 @@
+{
+  "id": "a721b783-47fe-4a44-88c1-b640c8ea7fda",
+  "runtime": "bash",
+  "purpose": "M001 final cargo verification gates",
+  "script_chars": 313,
+  "started_at": "2026-05-19T05:43:14.072Z",
+  "finished_at": "2026-05-19T05:43:41.725Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 27653,
+  "stdout_bytes": 39728,
+  "stderr_bytes": 7527,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a721b783-47fe-4a44-88c1-b640c8ea7fda.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a721b783-47fe-4a44-88c1-b640c8ea7fda.stderr"
+}

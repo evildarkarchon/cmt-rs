@@ -1,0 +1,70 @@
+
+== T01-SUMMARY.md ==
+verification_result: passed
+# T01: Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.
+## What Happened
+## Verification
+Verified the required T01 command with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements`, which passed with 54 records, 54 validated, and 0 active. Also verified `--provenance` mode against existing S01-S10 sl
+## Verification Evidence
+| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements` | 0 | ✅ pass — requirements ok: 54 records, 54 validated, 0 active | 193ms |
+| 2 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 0 | ✅ pass — traceability references existing completed-slice summary IDs | 255ms |
+## Deviations
+## Known Issues
+## Files Created/Modified
+- `.gsd/REQUIREMENTS.md`
+- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`
+
+== T02-SUMMARY.md ==
+verification_result: passed
+# T02: Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.
+## What Happened
+## Verification
+Ran the required artifact verifier mode with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts`; it passed and reported all six required artifacts present, non-empty, and caveated. Also ran an inline negative-guar
+## Verification Evidence
+| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts` | 0 | ✅ pass | 257ms |
+## Deviations
+## Known Issues
+## Files Created/Modified
+- `.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md`
+- `.gsd/milestones/M001/slices/S01/S01-UAT.md`
+- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`
+
+== T03-SUMMARY.md ==
+verification_result: passed
+# T03: Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.
+## What Happened
+## Verification
+Ran the S11 provenance verifier before and after the S07 correction. The guarded verifier failed before the fix with the expected S01-missing/S02-shell-attribution errors, then passed after the S07 frontmatter correction. A separate complet
+## Verification Evidence
+| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 1 | ✅ expected fail before S07 fix; verifier caught missing S01 and incorrect S02 shell attribution | 260ms |
+| 3 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 0 | ✅ pass; provenance verifier confirms traceability IDs and S07 dependency attribution | 256ms |
+## Deviations
+## Known Issues
+## Files Created/Modified
+- `.gsd/milestones/M001/slices/S07/S07-SUMMARY.md`
+- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`
+
+== T04-SUMMARY.md ==
+verification_result: passed
+# T04: Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.
+**Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.**
+## What Happened
+Ran the S11 documentation verifier, all required Cargo gates, and the explicit CMT read-only submodule status check from J:/cmt-rs. The verifier confirmed 54 requirement records with 54 validated and 0 active, required S01/S10 artifacts pre
+## Verification
+Verified with python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all, cargo fmt --check, cargo check, cargo test, cargo clippy --all-targets --all-features, and git status --short CMT. Re-ran the S11 verifier after writing cl
+## Verification Evidence
+| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all` | 0 | ✅ pass — requirements/artifacts/provenance checks passed | 309ms |
+| 2 | `cargo fmt --check` | 0 | ✅ pass — no output | 761ms |
+| 3 | `cargo check` | 0 | ✅ pass | 8861ms |
+| 4 | `cargo test` | 0 | ✅ pass — 365 passed, 0 failed | 8663ms |
+| 5 | `cargo clippy --all-targets --all-features` | 0 | ✅ pass — non-fatal warnings reported under current gate | 8904ms |
+| 6 | `git status --short CMT` | 0 | ✅ pass — no output | 647ms |
+| 7 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all` | 0 | ✅ pass — rerun after closeout artifact writes | 291ms |
+## Deviations
+## Known Issues
+## Files Created/Modified
+- `.gsd/milestones/M001/slices/S11/S11-UAT.md`
+- `.gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md`
+- `.gsd/milestones/M001/slices/S11/S11-SUMMARY.md`
+- `.gsd/milestones/M001/M001-VALIDATION.md`
+- `.gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md`

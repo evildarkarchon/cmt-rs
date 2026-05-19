@@ -1,0 +1,18 @@
+{
+  "id": "9f76f0bc-748d-4d66-9974-8184ed3eacb1",
+  "runtime": "bash",
+  "purpose": "verify M001 implementation diff against integration branch",
+  "script_chars": 966,
+  "started_at": "2026-05-19T05:41:23.736Z",
+  "finished_at": "2026-05-19T05:41:26.535Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 2799,
+  "stdout_bytes": 57,
+  "stderr_bytes": 93,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9f76f0bc-748d-4d66-9974-8184ed3eacb1.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9f76f0bc-748d-4d66-9974-8184ed3eacb1.stderr"
+}

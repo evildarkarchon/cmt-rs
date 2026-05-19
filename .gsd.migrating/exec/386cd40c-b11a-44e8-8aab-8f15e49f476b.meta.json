@@ -1,0 +1,18 @@
+{
+  "id": "386cd40c-b11a-44e8-8aab-8f15e49f476b",
+  "runtime": "bash",
+  "purpose": "M001 final roadmap checkbox audit",
+  "script_chars": 547,
+  "started_at": "2026-05-19T05:45:43.376Z",
+  "finished_at": "2026-05-19T05:45:43.467Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 91,
+  "stdout_bytes": 64,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\386cd40c-b11a-44e8-8aab-8f15e49f476b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\386cd40c-b11a-44e8-8aab-8f15e49f476b.stderr"
+}

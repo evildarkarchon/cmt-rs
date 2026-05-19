@@ -1,0 +1,13 @@
+TASK_SUMMARY .gsd\milestones\M001\slices\S11\tasks\T01-SUMMARY.md
+TASK_SUMMARY .gsd\milestones\M001\slices\S11\tasks\T02-SUMMARY.md
+TASK_SUMMARY .gsd\milestones\M001\slices\S11\tasks\T03-SUMMARY.md
+TASK_SUMMARY .gsd\milestones\M001\slices\S11\tasks\T04-SUMMARY.md
+ARTIFACT .gsd\milestones\M001\slices\S11\S11-UAT.md exists= True size= 3919
+ARTIFACT .gsd\milestones\M001\slices\S11\S11-ASSESSMENT.md exists= True size= 4757
+ARTIFACT .gsd\milestones\M001\slices\S11\S11-SUMMARY.md exists= True size= 4455
+ARTIFACT .gsd\milestones\M001\slices\S11\verify_s11_artifacts.py exists= True size= 14335
+CHECK .gsd\milestones\M001\slices\S01\S01-UAT.md exists= True size= 4353
+CHECK .gsd\milestones\M001\slices\S01\S01-ASSESSMENT.md exists= True size= 5104
+CHECK .gsd\milestones\M001\slices\S07\S07-SUMMARY.md exists= True size= 10787
+CHECK .gsd\milestones\M001\M001-VALIDATION.md exists= True size= 8135
+CHECK .gsd\REQUIREMENTS.md exists= True size= 50073

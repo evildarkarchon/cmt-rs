@@ -1,0 +1,18 @@
+{
+  "id": "bf0014dc-f65b-4c9a-83a8-8f8c87d7d5bb",
+  "runtime": "bash",
+  "purpose": "verify M001 implementation files changed since origin/main baseline escaped",
+  "script_chars": 490,
+  "started_at": "2026-05-19T05:42:53.629Z",
+  "finished_at": "2026-05-19T05:42:54.032Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 403,
+  "stdout_bytes": 7325,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bf0014dc-f65b-4c9a-83a8-8f8c87d7d5bb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bf0014dc-f65b-4c9a-83a8-8f8c87d7d5bb.stderr"
+}

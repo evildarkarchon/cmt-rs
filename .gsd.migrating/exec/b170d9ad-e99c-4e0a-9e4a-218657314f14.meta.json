@@ -1,0 +1,18 @@
+{
+  "id": "b170d9ad-e99c-4e0a-9e4a-218657314f14",
+  "runtime": "bash",
+  "purpose": "S11 extract requirement sections from slice summaries",
+  "script_chars": 728,
+  "started_at": "2026-05-19T04:27:49.257Z",
+  "finished_at": "2026-05-19T04:27:49.423Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 166,
+  "stdout_bytes": 3575,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b170d9ad-e99c-4e0a-9e4a-218657314f14.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b170d9ad-e99c-4e0a-9e4a-218657314f14.stderr"
+}

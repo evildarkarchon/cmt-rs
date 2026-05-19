@@ -1,0 +1,19 @@
+requirements check failed:
+- R026 has missing or too-short proof text
+- R027 has missing or too-short proof text
+- R030 has missing or too-short proof text
+- R040 has missing or too-short proof text
+- R042 has missing or too-short proof text
+- R046 has missing or too-short proof text
+- R047 has missing or too-short proof text
+- R048 has missing or too-short proof text
+- R026 traceability row has missing or too-short proof
+- R027 traceability row has missing or too-short proof
+- R030 traceability row has missing or too-short proof
+- R040 traceability row has missing or too-short proof
+- R042 traceability row has missing or too-short proof
+- R046 traceability row has missing or too-short proof
+- R047 traceability row has missing or too-short proof
+- R048 traceability row has missing or too-short proof
+- coverage summary count mismatch for with_proof: summary=54 actual=46
+- coverage summary count mismatch for without_proof: summary=0 actual=8

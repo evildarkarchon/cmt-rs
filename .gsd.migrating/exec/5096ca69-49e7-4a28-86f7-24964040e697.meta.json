@@ -1,0 +1,18 @@
+{
+  "id": "5096ca69-49e7-4a28-86f7-24964040e697",
+  "runtime": "bash",
+  "purpose": "inspect M001 milestone artifacts and root GSD documents",
+  "script_chars": 607,
+  "started_at": "2026-05-19T05:52:53.097Z",
+  "finished_at": "2026-05-19T05:52:53.111Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 14,
+  "stdout_bytes": 0,
+  "stderr_bytes": 376,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\5096ca69-49e7-4a28-86f7-24964040e697.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\5096ca69-49e7-4a28-86f7-24964040e697.stderr"
+}

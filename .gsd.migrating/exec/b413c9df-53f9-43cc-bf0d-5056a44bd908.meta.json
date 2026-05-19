@@ -1,0 +1,18 @@
+{
+  "id": "b413c9df-53f9-43cc-bf0d-5056a44bd908",
+  "runtime": "bash",
+  "purpose": "debug gsd_exec bash variable expansion",
+  "script_chars": 44,
+  "started_at": "2026-05-19T05:42:38.890Z",
+  "finished_at": "2026-05-19T05:42:41.280Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 2390,
+  "stdout_bytes": 13,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b413c9df-53f9-43cc-bf0d-5056a44bd908.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b413c9df-53f9-43cc-bf0d-5056a44bd908.stderr"
+}

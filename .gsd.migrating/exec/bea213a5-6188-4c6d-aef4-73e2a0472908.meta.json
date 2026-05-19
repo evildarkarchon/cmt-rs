@@ -1,0 +1,18 @@
+{
+  "id": "bea213a5-6188-4c6d-aef4-73e2a0472908",
+  "runtime": "python",
+  "purpose": "summarize M001 slice summary and UAT evidence",
+  "script_chars": 1491,
+  "started_at": "2026-05-19T05:12:06.950Z",
+  "finished_at": "2026-05-19T05:12:07.070Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 120,
+  "stdout_bytes": 25698,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\bea213a5-6188-4c6d-aef4-73e2a0472908.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\bea213a5-6188-4c6d-aef4-73e2a0472908.stderr"
+}

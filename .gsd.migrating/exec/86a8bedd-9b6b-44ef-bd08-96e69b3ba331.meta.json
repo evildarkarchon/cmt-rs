@@ -1,0 +1,18 @@
+{
+  "id": "86a8bedd-9b6b-44ef-bd08-96e69b3ba331",
+  "runtime": "bash",
+  "purpose": "Summarize final S11 requirement remediation state",
+  "script_chars": 539,
+  "started_at": "2026-05-19T04:51:05.885Z",
+  "finished_at": "2026-05-19T04:51:05.987Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 102,
+  "stdout_bytes": 182,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\86a8bedd-9b6b-44ef-bd08-96e69b3ba331.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\86a8bedd-9b6b-44ef-bd08-96e69b3ba331.stderr"
+}

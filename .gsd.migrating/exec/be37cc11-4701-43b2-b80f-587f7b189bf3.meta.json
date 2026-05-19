@@ -1,0 +1,18 @@
+{
+  "id": "be37cc11-4701-43b2-b80f-587f7b189bf3",
+  "runtime": "bash",
+  "purpose": "T04 inspect target artifact existence escaped bash",
+  "script_chars": 320,
+  "started_at": "2026-05-19T05:00:59.136Z",
+  "finished_at": "2026-05-19T05:00:59.219Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 83,
+  "stdout_bytes": 255,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\be37cc11-4701-43b2-b80f-587f7b189bf3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\be37cc11-4701-43b2-b80f-587f7b189bf3.stderr"
+}

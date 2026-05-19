@@ -1,0 +1,18 @@
+{
+  "id": "d73d3119-dcce-4abd-9127-698d43e89de8",
+  "runtime": "bash",
+  "purpose": "T04 gate: cargo check",
+  "script_chars": 11,
+  "started_at": "2026-05-19T04:59:31.589Z",
+  "finished_at": "2026-05-19T04:59:40.450Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8861,
+  "stdout_bytes": 0,
+  "stderr_bytes": 72,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d73d3119-dcce-4abd-9127-698d43e89de8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d73d3119-dcce-4abd-9127-698d43e89de8.stderr"
+}

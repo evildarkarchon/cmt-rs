@@ -1,0 +1,18 @@
+{
+  "id": "95eb9516-8360-43f9-9195-b8652f6fdbd4",
+  "runtime": "bash",
+  "purpose": "inventory M001 GSD artifacts for closeout",
+  "script_chars": 137,
+  "started_at": "2026-05-19T05:29:14.113Z",
+  "finished_at": "2026-05-19T05:29:18.250Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 4137,
+  "stdout_bytes": 3843,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\95eb9516-8360-43f9-9195-b8652f6fdbd4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\95eb9516-8360-43f9-9195-b8652f6fdbd4.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "7d141d86-c8c9-4f99-bee7-04f5610790be",
+  "runtime": "bash",
+  "purpose": "S11 requirement id references across GSD artifacts",
+  "script_chars": 688,
+  "started_at": "2026-05-19T04:28:00.685Z",
+  "finished_at": "2026-05-19T04:28:01.616Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 931,
+  "stdout_bytes": 12901,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7d141d86-c8c9-4f99-bee7-04f5610790be.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7d141d86-c8c9-4f99-bee7-04f5610790be.stderr"
+}

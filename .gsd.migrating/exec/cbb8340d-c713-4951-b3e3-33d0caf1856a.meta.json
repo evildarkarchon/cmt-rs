@@ -1,0 +1,18 @@
+{
+  "id": "cbb8340d-c713-4951-b3e3-33d0caf1856a",
+  "runtime": "python",
+  "purpose": "Summarize S11 task evidence for closeout",
+  "script_chars": 599,
+  "started_at": "2026-05-19T05:06:08.898Z",
+  "finished_at": "2026-05-19T05:06:08.997Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 99,
+  "stdout_bytes": 4782,
+  "stderr_bytes": 102,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\cbb8340d-c713-4951-b3e3-33d0caf1856a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\cbb8340d-c713-4951-b3e3-33d0caf1856a.stderr"
+}

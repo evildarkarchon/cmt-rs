@@ -1,0 +1,18 @@
+{
+  "id": "89bf15f1-8d10-48ae-b351-c7533865c952",
+  "runtime": "bash",
+  "purpose": "T04 gate: cargo fmt --check",
+  "script_chars": 17,
+  "started_at": "2026-05-19T04:59:26.415Z",
+  "finished_at": "2026-05-19T04:59:27.176Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 761,
+  "stdout_bytes": 0,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\89bf15f1-8d10-48ae-b351-c7533865c952.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\89bf15f1-8d10-48ae-b351-c7533865c952.stderr"
+}

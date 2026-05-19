@@ -1,0 +1,43 @@
+COMMAND python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all
+exit=0 duration=0.23s
+stdout_tail:
+requirements ok: 54 records, 54 validated, 0 active
+artifacts ok: 6 required files present, non-empty, and caveated
+provenance ok: traceability references existing completed-slice summary IDs and S07 dependency attribution
+---
+COMMAND cargo fmt --check
+exit=0 duration=0.76s
+---
+COMMAND cargo check
+exit=0 duration=8.37s
+stderr_tail:
+Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.20s
+---
+COMMAND cargo test
+exit=0 duration=9.04s
+stdout_tail:
+test workers::tests::cancellation_request_acknowledgement_and_final_cancelled_flow_through_facade ... ok
+test workers::tests::blocking_facade_runs_work_off_calling_thread_and_records_events ... ok
+test workers::tests::worker_failures_emit_safe_failure_events ... ok
+
+test result: ok. 365 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.06s
+stderr_tail:
+Finished `test` profile [unoptimized + debuginfo] target(s) in 8.83s
+     Running unittests src/main.rs (target/debug/deps/cmt_rs-677af665d081adb5)
+---
+COMMAND cargo clippy --all-targets --all-features
+exit=0 duration=9.30s
+stderr_tail:
+     |
+7534 | ...   ...default();
+     |       ...^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#field_reassign_with_default
+
+warning: `cmt-rs` (bin "cmt-rs") generated 12 warnings (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs -- ` to apply 1 suggestion)
+warning: `cmt-rs` (bin "cmt-rs" test) generated 14 warnings (12 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 9.15s
+---
+COMMAND git status --short CMT
+exit=0 duration=0.52s
+---
+OVERALL PASS

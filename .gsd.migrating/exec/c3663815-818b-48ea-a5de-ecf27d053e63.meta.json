@@ -1,0 +1,18 @@
+{
+  "id": "c3663815-818b-48ea-a5de-ecf27d053e63",
+  "runtime": "bash",
+  "purpose": "inspect gsd CLI help for artifact save command",
+  "script_chars": 22,
+  "started_at": "2026-05-19T05:46:49.422Z",
+  "finished_at": "2026-05-19T05:46:49.745Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 323,
+  "stdout_bytes": 0,
+  "stderr_bytes": 70,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\c3663815-818b-48ea-a5de-ecf27d053e63.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\c3663815-818b-48ea-a5de-ecf27d053e63.stderr"
+}

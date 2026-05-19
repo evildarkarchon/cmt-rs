@@ -1,0 +1,56 @@
+
+## S01
+
+## S02
+Requirements Advanced: - R014 — Settings file access now goes through an injectable platform settings store, establishing the pattern for broader filesystem adapter work. - R016 — `update_source` now has persisted typed semantics that later non-blocking update checks can consume. - R031 — Scanner setting keys and defaults now exist in the shared settings contract, preparing Scanner category toggles for later UI work. - R043 — Downgrader backup and delta cleanup preferences now persist in the shared settings contract for later tool workflows.
+Requirements Validated: - R006 — First-run defaults are covered by settings domain/store tests and full Rust verification. - R007 — JSON persistence keys and wire values for log level, update source, scanner toggles, and downgrader preferences are covered by domain/store tests and full Rust verification. - R008 — Settings-tab source-level contract tests verify update-channel labels and order. - R009 — Requirement was re-scoped to include `Warning`; Settings-tab source-level contract tests and settings-domain tests verify the log-level options and wire values. - R010 — Scanner default toggles are covered by domain settings tests. - R011 — Malformed, invalid, partial, and save-failure settings cases are covered by domain/store/controller tests.
+Requirements Invalidated or Re-scoped: - R009 — Re-scoped from Debug/Info/Error-only wording to include `Warning`, because the persisted reference settings schema accepts `WARNING` and the Rust UI preserves that valid state.
+New Requirements Surfaced: None.
+
+## S03
+Requirements Advanced: - Later Overview work can consume typed installation, manager, and system metadata state without direct OS queries in tests. — - Later F4SE/Scanner work can distinguish valid game paths from missing optional Data or Data/F4SE/Plugins folders. — - Later tools and background workflows can use typed platform and worker boundaries instead of blocking Slint callbacks. —
+Requirements Validated: - Discovery ordering, not-found behavior, direct executable normalization, partial derived paths, MO2 parsing, MO2 portable/instance order, MO2 typed failures, Vortex identity-only detection, and fake-backed PC Specs metadata are covered by src/services/discovery.rs unit tests. — - Platform adapter fake/real boundary behavior is covered by platform unit tests. — - Worker event and handoff behavior is covered by worker unit tests. —
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S04
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S05
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S06
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S07
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: None.
+
+## S08
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S09
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.
+
+## S10
+Requirements Advanced: None.
+Requirements Validated: None.
+Requirements Invalidated or Re-scoped: None.
+New Requirements Surfaced: - None.

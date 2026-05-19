@@ -1,0 +1,18 @@
+{
+  "id": "82bc4828-c687-4fac-9fc3-28cc5d34490a",
+  "runtime": "bash",
+  "purpose": "inspect gsd CLI help with escaped PATH node.exe",
+  "script_chars": 64,
+  "started_at": "2026-05-19T05:46:58.567Z",
+  "finished_at": "2026-05-19T05:46:58.904Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 337,
+  "stdout_bytes": 0,
+  "stderr_bytes": 70,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\82bc4828-c687-4fac-9fc3-28cc5d34490a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\82bc4828-c687-4fac-9fc3-28cc5d34490a.stderr"
+}

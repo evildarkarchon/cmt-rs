@@ -1,0 +1,18 @@
+{
+  "id": "10cd6d3f-1fe7-4215-954b-65a2b3be665a",
+  "runtime": "bash",
+  "purpose": "Inspect short proof strings in requirements after verifier failure",
+  "script_chars": 374,
+  "started_at": "2026-05-19T04:48:14.371Z",
+  "finished_at": "2026-05-19T04:48:14.477Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 106,
+  "stdout_bytes": 348,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\10cd6d3f-1fe7-4215-954b-65a2b3be665a.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\10cd6d3f-1fe7-4215-954b-65a2b3be665a.stderr"
+}

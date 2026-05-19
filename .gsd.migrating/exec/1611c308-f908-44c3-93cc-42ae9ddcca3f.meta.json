@@ -1,0 +1,18 @@
+{
+  "id": "1611c308-f908-44c3-93cc-42ae9ddcca3f",
+  "runtime": "bash",
+  "purpose": "S11 planning artifact/path inventory",
+  "script_chars": 1395,
+  "started_at": "2026-05-19T04:33:43.258Z",
+  "finished_at": "2026-05-19T04:33:43.569Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 311,
+  "stdout_bytes": 1516,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\1611c308-f908-44c3-93cc-42ae9ddcca3f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\1611c308-f908-44c3-93cc-42ae9ddcca3f.stderr"
+}

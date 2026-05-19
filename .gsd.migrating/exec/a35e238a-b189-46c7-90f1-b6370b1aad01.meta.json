@@ -1,0 +1,18 @@
+{
+  "id": "a35e238a-b189-46c7-90f1-b6370b1aad01",
+  "runtime": "bash",
+  "purpose": "Run S11 verifier provenance mode for traceability slice references",
+  "script_chars": 76,
+  "started_at": "2026-05-19T04:50:41.850Z",
+  "finished_at": "2026-05-19T04:50:42.105Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 255,
+  "stdout_bytes": 76,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\a35e238a-b189-46c7-90f1-b6370b1aad01.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\a35e238a-b189-46c7-90f1-b6370b1aad01.stderr"
+}

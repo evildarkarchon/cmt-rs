@@ -1,0 +1,18 @@
+{
+  "id": "77d027e8-29e1-4ce4-ac5e-b96dfdc36bf4",
+  "runtime": "bash",
+  "purpose": "Exercise S11 verifier negative checks for placeholders, missing owners, and duplicate/missing IDs",
+  "script_chars": 1300,
+  "started_at": "2026-05-19T04:50:58.909Z",
+  "finished_at": "2026-05-19T04:50:59.079Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 170,
+  "stdout_bytes": 80,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\77d027e8-29e1-4ce4-ac5e-b96dfdc36bf4.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\77d027e8-29e1-4ce4-ac5e-b96dfdc36bf4.stderr"
+}

@@ -1,12 +1,12 @@
 {
-  "compiledAt": "2026-05-19T04:10:15.098Z",
+  "compiledAt": "2026-05-19T05:52:25.793Z",
   "milestoneId": "M001",
   "pipeline": {
     "clarifyRoundLimit": 3,
     "researchSynthesized": true,
     "draftContextIncluded": false,
     "finalizedContextIncluded": true,
-    "sourcePhase": "validating-milestone"
+    "sourcePhase": "completing-milestone"
   },
   "nodes": [
     {
@@ -1016,6 +1016,89 @@
         "unitType": "complete-slice",
         "unitId": "M001.S10",
         "title": "S10",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S11:T01",
+      "kind": "unit",
+      "dependsOn": [],
+      "writes": [
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S11.T01",
+        "title": "Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S11:T02",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S11:T01"
+      ],
+      "writes": [
+        ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S01/S01-UAT.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S11.T02",
+        "title": "Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S11:T03",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S11:T02"
+      ],
+      "writes": [
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S11.T03",
+        "title": "Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "execute-task:M001:S11:T04",
+      "kind": "unit",
+      "dependsOn": [
+        "execute-task:M001:S11:T03"
+      ],
+      "writes": [
+        ".gsd/milestones/M001/slices/S11/S11-UAT.md",
+        ".gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S11/S11-SUMMARY.md",
+        ".gsd/milestones/M001/M001-VALIDATION.md",
+        ".gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md"
+      ],
+      "metadata": {
+        "unitType": "execute-task",
+        "unitId": "M001.S11.T04",
+        "title": "Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.",
+        "status": "complete"
+      }
+    },
+    {
+      "id": "complete-slice:M001:S11",
+      "kind": "verification",
+      "dependsOn": [
+        "execute-task:M001:S11:T04"
+      ],
+      "metadata": {
+        "unitType": "complete-slice",
+        "unitId": "M001.S11",
+        "title": "S11",
         "status": "complete"
       }
     }

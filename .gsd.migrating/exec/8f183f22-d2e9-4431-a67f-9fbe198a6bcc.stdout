@@ -1,0 +1,261 @@
+### .gsd/milestones/M001/slices/S01/S01-SUMMARY.md
+  # S01: Slint Shell Port Architecture
+  ## What Happened
+  # Phase 01 Plan 01: Slint Dependency/Build Pipeline Summary
+  ## Performance
+  ## Accomplishments
+  ## Task Commits
+  ## Files Created/Modified
+  ## Decisions Made
+  ## Deviations from Plan
+  ### Auto-fixed Issues
+  ## Issues Encountered
+  ## Known Stubs
+  ## Threat Flags
+  ## Verification
+  ## User Setup Required
+  ## Next Phase Readiness
+  ## Self-Check: PASSED
+  # Phase 01 Plan 02: Inert Reference-Order Slint Tabs Summary
+  ## Performance
+  ## Accomplishments
+  ## Task Commits
+  ## Files Created/Modified
+  ## Decisions Made
+  ## Deviations from Plan
+  ## Issues Encountered
+  ## Known Stubs
+  ## Threat Flags
+  ## Verification
+  ## User Setup Required
+  ## Next Phase Readiness
+  ## Self-Check: PASSED
+  # Phase 01 Plan 03: Shell Contract and Architecture Boundaries Summary
+  ## Performance
+  ## Accomplishments
+  ## Task Commits
+  ## Files Created/Modified
+  ## Decisions Made
+  ## Deviations from Plan
+  ## Issues Encountered
+  ## Known Stubs
+  ## Threat Flags
+  ## Verification
+  ## TDD Gate Compliance
+  ## User Setup Required
+  ## Next Phase Readiness
+  ## Self-Check: PASSED
+### .gsd/milestones/M001/slices/S02/S02-SUMMARY.md
+  # S02: Settings Defaults Parity
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S03/S03-SUMMARY.md
+  # S03: S03
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S04/S04-SUMMARY.md
+  # S04: Overview Diagnostics & Updates
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S05/S05-SUMMARY.md
+  # S05: Tools Shell, Links & About
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S06/S06-SUMMARY.md
+  # S06: F4SE Diagnostics
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S07/S07-SUMMARY.md
+  # S07: Scanner Read Only Results
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S08/S08-SUMMARY.md
+  # S08: Scanner Auto Fix Actions
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S09/S09-SUMMARY.md
+  # S09: Downgrade Manager Workflow
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S10/S10-SUMMARY.md
+  # S10: Archive Patcher Workflow
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S11/S11-SUMMARY.md
+  # S11: Validation Traceability Remediation
+  ## What Happened
+  ## Verification
+  ## Requirements Advanced
+  ## Requirements Validated
+  ## New Requirements Surfaced
+  ## Requirements Invalidated or Re-scoped
+  ## Operational Readiness
+  ## Deviations
+  ## Known Limitations
+  ## Follow-ups
+  ## Files Created/Modified
+### .gsd/milestones/M001/slices/S01/S01-UAT.md
+  # S01 UAT: Slint Shell Port Architecture
+  ## Purpose
+  ## Acceptance Records
+  ## Developer UAT Procedure for Future Re-Run
+  ## Evidence Used for This Backfill
+  ## Not Proven By This UAT Record
+### .gsd/milestones/M001/slices/S02/S02-UAT.md
+  # S02: Settings Defaults Parity — UAT
+  # UAT: S02 Settings Defaults Parity
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S03/S03-UAT.md
+  # S03: S03 — UAT
+  # UAT: S03 Platform Discovery Background Adapters
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S04/S04-UAT.md
+  # S04: Overview Diagnostics & Updates — UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases to Try
+  ## Expected Operational Signals
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S05/S05-UAT.md
+  # S05: Tools Shell, Links & About — UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps
+  ## Expected Outcomes
+  ## Edge Cases
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S06/S06-UAT.md
+  # S06: F4SE Diagnostics — UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases to Exercise
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S07/S07-UAT.md
+  # S07: Scanner Read Only Results — UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases Covered
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S08/S08-UAT.md
+  # S08: Scanner Auto Fix Actions — UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases Covered
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S09/S09-UAT.md
+  # S09: Downgrade Manager Workflow — UAT
+  # S09 UAT: Downgrade Manager Workflow
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases to Exercise
+  ## Not Proven By This UAT
+### .gsd/milestones/M001/slices/S10/S10-UAT.md
+  # S10: Archive Patcher Workflow — UAT
+  ## UAT: S10 Archive Patcher Workflow
+  ### Preconditions
+  ### Steps and Expected Outcomes
+  ### Edge Cases to Exercise
+  ### Not Proven By This UAT
+### .gsd/milestones/M001/slices/S11/S11-UAT.md
+  # S11: Validation Traceability Remediation — UAT
+  # S11: Validation Traceability Remediation - UAT
+  ## UAT Type
+  ## Preconditions
+  ## Steps and Expected Outcomes
+  ## Edge Cases
+  ## Not Proven By This UAT
+  ## Result

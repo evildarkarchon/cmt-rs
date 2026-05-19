@@ -1,0 +1,18 @@
+{
+  "id": "0967f2c5-1e10-4463-8562-609644d292d8",
+  "runtime": "bash",
+  "purpose": "M001 closeout UTC timestamp",
+  "script_chars": 27,
+  "started_at": "2026-05-19T05:49:19.239Z",
+  "finished_at": "2026-05-19T05:49:23.331Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 4092,
+  "stdout_bytes": 21,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\0967f2c5-1e10-4463-8562-609644d292d8.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\0967f2c5-1e10-4463-8562-609644d292d8.stderr"
+}

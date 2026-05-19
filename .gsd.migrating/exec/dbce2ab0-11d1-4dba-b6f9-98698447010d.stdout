@@ -1,0 +1,321 @@
+
+## S01 16268
+provides:
+  []
+requires:
+  []
+affects:
+  []
+key_files:
+  []
+verification_result:
+  passed
+
+## S02 7675
+provides:
+    - Reference-compatible Settings defaults, JSON keys, and repair behavior.
+    - Production `settings.json` persistence with test-injectable paths and asset resolution.
+    - Settings-tab UI contract for update channel and log-level choices.
+    - Immediate-save callbacks with rollback semantics for failed persistence.
+requires:
+    []
+affects:
+    []
+key_files:
+    - src/domain/settings.rs
+    - src/platform/settings_store.rs
+    - src/app/settings_controller.rs
+    - src/app/mod.rs
+    - src/main.rs
+    - ui/settings_tab.slint
+    - Cargo.toml
+    - .gsd/REQUIREMENTS.md
+    - .gsd/DECISIONS.md
+verification_result:
+  passed
+
+## S03 9712
+provides:
+    - Pure Fallout 4 discovery and mod-manager domain contracts with reference-compatible messages.
+    - Fakeable platform adapters for filesystem, registry, process/system/version metadata, and desktop/tool actions.
+    - A discovery orchestration service for Fallout 4, MO2, Vortex, and system metadata.
+    - Typed worker event, cancellation, handoff, and off-UI-thread execution contracts.
+requires:
+    []
+affects:
+    - S04
+    - S05
+    - S06
+    - S07
+    - S08
+    - S09
+    - S10
+key_files:
+    - src/domain/discovery.rs
+    - src/domain/mod_manager.rs
+    - src/domain/mod.rs
+    - src/platform/mod.rs
+    - src/platform/filesystem.rs
+    - src/platform/registry.rs
+    - src/platform/process.rs
+    - src/platform/desktop.rs
+    - src/services/mod.rs
+    - src/services/discovery.rs
+    - src/workers/events.rs
+    - src/workers/handoff.rs
+    - src/workers/mod.rs
+    - src/main.rs
+    - Cargo.toml
+    - Cargo.lock
+verification_result:
+  passed
+
+## S04 10307
+provides:
+    - Reference-shaped Overview tab populated from typed diagnostics.
+    - Scanner-ready `OverviewProblem` feed with problem type, paths, summaries, solutions, link/detail metadata, and source markers.
+    - Fakeable collector and diagnostics services for binary/archive/module/enablement status.
+    - Reference-compatible update-check behavior and safe path/URL open action feedback.
+    - Disabled/deferred Downgrade Manager and Archive Patcher presentation for later workflow slices.
+requires:
+    - slice: S01
+      provides: Slint shell, tab order, and placeholder boundaries that Overview replaced.
+    - slice: S02
+      provides: Typed settings and persisted `update_source` used to drive update checks.
+    - slice: S03
+      provides: Discovery, platform, desktop, process/filesystem, and worker seams consumed by Overview.
+affects:
+    - S05 Tools Shell, Links & About consumes safe open/link patterns and deferred utility placement.
+    - S06 F4SE Diagnostics can reuse binary/plugin diagnostic patterns and off-UI-thread handoff.
+    - S07 Scanner Read Only Results consumes the Overview problem feed for the reference Overview Issues category.
+    - S08 Scanner Auto Fix Actions can attach actions to typed problem records later.
+    - S09 Downgrade Manager Workflow will replace the deferred Overview control with live behavior.
+    - S10 Archive Patcher Workflow will replace the deferred Overview control with live behavior.
+key_files:
+    - src/domain/overview.rs
+    - src/services/overview.rs
+    - src/services/overview_collector.rs
+    - src/services/update.rs
+    - src/app/overview_controller.rs
+    - src/main.rs
+    - src/workers/events.rs
+    - src/workers/handoff.rs
+    - src/workers/mod.rs
+    - ui/overview_tab.slint
+    - ui/main.slint
+    - Cargo.toml
+    - Cargo.lock
+verification_result:
+  passed
+
+## S05 9824
+provides:
+    - Reference-shaped Tools and About tabs for downstream visual/workflow slices.
+    - Safe external URL and clipboard action seams usable by future Scanner/F4SE/Downgrader/Patcher actions.
+    - Rust-owned About image assets available to Slint.
+    - Visible but non-destructive utility entry points for S09/S10.
+    - Contract and runtime tests covering labels/order/URLs/resources/callbacks/deferred state/failure feedback.
+requires:
+    - slice: S03
+      provides: Fakeable platform/process/desktop seams and worker handoff patterns consumed by Tools/About action wiring.
+    - slice: S04
+      provides: Precedent for safe visible last-action feedback and deferred workflow presentation consumed by S05.
+affects:
+    - S06 F4SE Diagnostics
+    - S07 Scanner Read Only Results
+    - S09 Downgrade Manager Workflow
+    - S10 Archive Patcher Workflow
+key_files:
+    - Cargo.toml
+    - Cargo.lock
+    - src/domain/tools.rs
+    - src/domain/mod.rs
+    - src/platform/clipboard.rs
+    - src/platform/desktop.rs
+    - src/platform/mod.rs
+    - src/services/tools.rs
+    - src/services/mod.rs
+    - src/app/tools_controller.rs
+    - src/app/about_controller.rs
+    - src/app/mod.rs
+    - src/workers/events.rs
+    - src/workers/mod.rs
+    - src/main.rs
+    - ui/tools_tab.slint
+    - ui/about_tab.slint
+    - ui/main.slint
+    - resources/images/icon-256.png
+    - resources/images/logo-nexusmods.png
+    - resources/images/logo-discord.png
+    - resources/images/logo-github.png
+verification_result:
+  passed
+
+## S06 9532
+provides:
+    - Typed F4SE domain rows/status/snapshots independent of Slint.
+    - Fakeable F4SE scan service and Pelite-based production DLL inspector.
+    - Owned F4SE worker payloads and lazy tab activation pattern for future diagnostics tabs.
+    - A reference-shaped read-only table/progress/error pattern that S07 Scanner can reuse.
+requires:
+    - slice: S03
+      provides: Fakeable platform filesystem/discovery seams and owned worker handoff pattern.
+    - slice: S04
+      provides: Overview-derived current Fallout4.exe/game classification inputs.
+    - slice: S05
+      provides: MainWindow callback/state projection conventions for non-placeholder tabs.
+affects:
+    - S07 Scanner Read Only Results can reuse the row model, status/error projection, and worker handoff patterns.
+    - S08 Scanner Auto Fix Actions should preserve the distinction between unknown/warning and confirmed unsupported states.
+    - Future F4SE enhancements should avoid filename/mod-name heuristics unless a new scoped decision changes the compatibility source of truth.
+key_files:
+    - src/domain/f4se.rs
+    - src/services/f4se.rs
+    - src/app/f4se_controller.rs
+    - src/workers/events.rs
+    - src/workers/mod.rs
+    - ui/f4se_tab.slint
+    - ui/main.slint
+    - src/main.rs
+    - Cargo.toml
+    - Cargo.lock
+verification_result:
+  passed
+
+## S07 10697
+provides:
+    - Reference-shaped read-only Scanner tab UI and state contract
+    - Adapter-backed ScannerScanService with MO2 attribution, Vortex Data-only handling, progress, diagnostics, and reference rule classification
+    - Scanner controller and worker payloads for scan progress/completion, stale-event rejection, and safe read-only actions
+requires:
+    - slice: S02
+      provides: Main shell, settings persistence baseline, and tab wiring patterns
+    - slice: S03
+      provides: Discovery and Mod Organizer/Vortex context contracts
+    - slice: S04
+      provides: Overview problem feed and worker/event handoff pattern
+    - slice: S05
+      provides: Safe desktop/clipboard action adapter patterns
+    - slice: S06
+      provides: F4SE worker/status/runtime wiring patterns
+affects:
+    - S08 Auto-Fix write actions
+    - S09 Downgrade Manager
+    - S10 Archive Patcher
+key_files:
+    - src/domain/scanner.rs
+    - src/services/scanner.rs
+    - src/services/mod.rs
+    - src/app/scanner_controller.rs
+    - src/app/mod.rs
+    - src/app/settings_controller.rs
+    - src/workers/events.rs
+    - src/workers/mod.rs
+    - ui/scanner_tab.slint
+    - ui/main.slint
+    - src/main.rs
+    - src/domain/mod_manager.rs
+    - Cargo.toml
+verification_result:
+  passed
+
+## S08 8162
+provides:
+    - Typed Auto-Fix extension seam for future supported Scanner repairs.
+    - Fail-closed production behavior that preserves current reference parity and avoids destructive operations.
+    - Inline Scanner result feedback for fake/future supported operations.
+    - Worker/runtime scheduling pattern that S09/S10 can reuse only with explicit operation-scoped safety gates.
+requires:
+    - slice: S07
+      provides: Scanner typed results, details reducer, worker handoff, read-only actions, and Slint callback surfaces extended by S08.
+affects:
+    - S09
+    - S10
+key_files:
+    - src/domain/autofix.rs
+    - src/domain/scanner.rs
+    - src/services/autofix.rs
+    - src/services/scanner.rs
+    - src/app/scanner_controller.rs
+    - src/workers/events.rs
+    - ui/scanner_tab.slint
+    - ui/main.slint
+    - src/main.rs
+verification_result:
+  passed
+
+## S09 10522
+provides:
+    - A live Downgrade Manager utility entrypoint from Overview and Tools.
+    - A tested modal utility/controller/worker pattern for S10 Archive Patcher.
+    - A hardened write-plan and confirmed-run pattern for destructive filesystem workflows.
+    - Pinned delta integrity and bounded VCDIFF application infrastructure.
+requires:
+    - slice: S02
+      provides: Settings defaults/persistence for Downgrader options.
+    - slice: S03
+      provides: Discovery/platform seams and worker event handoff foundations.
+    - slice: S04
+      provides: Overview state projection and refresh patterns.
+    - slice: S05
+      provides: Tools action routing and deferred utility contracts.
+    - slice: S08
+      provides: Fail-closed mutation and user-visible action feedback patterns.
+affects:
+    - S10: Archive Patcher Workflow
+key_files:
+    - src/domain/downgrader.rs
+    - src/services/downgrader.rs
+    - src/app/downgrader_controller.rs
+    - src/workers/events.rs
+    - src/platform/filesystem.rs
+    - src/main.rs
+    - ui/downgrader_window.slint
+    - ui/main.slint
+    - ui/overview_tab.slint
+    - ui/tools_tab.slint
+    - Cargo.toml
+    - Cargo.lock
+verification_result:
+  passed
+
+## S10 11168
+provides:
+    - A complete live Archive Patcher modal reachable from Overview and Tools.
+    - Reusable fail-closed byte-range mutation and latest-header-restore manifest pattern for future file-mutating workflows.
+    - Fakeable filesystem write/read-prefix seams and automated tests covering BA2 header validation, patching, restore, stale events, and runtime wiring.
+requires:
+    - slice: S03
+      provides: Fakeable filesystem/platform seams and worker event handoff conventions.
+    - slice: S04
+      provides: Overview archive diagnostics and archive record state consumed by Archive Patcher candidates.
+    - slice: S05
+      provides: Tools entrypoint/action-id patterns that now route to the live Archive Patcher workflow.
+    - slice: S09
+      provides: Downgrader modal/controller/worker safety pattern reused for Archive Patcher mutation flow.
+affects:
+    - Overview archive diagnostics and Archive Patcher entrypoint
+    - Tools Toolkit Utilities metadata and Archive Patcher entrypoint
+    - Filesystem platform adapter write seam
+    - Worker event/payload dispatch
+    - Slint app shell modal exports
+key_files:
+    - src/domain/archive_patcher.rs
+    - src/services/archive_patcher.rs
+    - src/platform/filesystem.rs
+    - src/app/archive_patcher_controller.rs
+    - src/workers/events.rs
+    - src/workers/mod.rs
+    - src/domain/overview.rs
+    - src/services/overview.rs
+    - src/domain/tools.rs
+    - src/services/tools.rs
+    - src/app/tools_controller.rs
+    - src/app/overview_controller.rs
+    - src/main.rs
+    - ui/archive_patcher_window.slint
+    - ui/main.slint
+    - ui/overview_tab.slint
+    - ui/tools_tab.slint
+verification_result:
+  passed

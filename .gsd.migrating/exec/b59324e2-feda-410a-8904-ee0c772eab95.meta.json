@@ -1,0 +1,18 @@
+{
+  "id": "b59324e2-feda-410a-8904-ee0c772eab95",
+  "runtime": "bash",
+  "purpose": "negative provenance verifier before S07 attribution fix",
+  "script_chars": 76,
+  "started_at": "2026-05-19T04:57:25.049Z",
+  "finished_at": "2026-05-19T04:57:25.309Z",
+  "exit_code": 1,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 260,
+  "stdout_bytes": 0,
+  "stderr_bytes": 160,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\b59324e2-feda-410a-8904-ee0c772eab95.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\b59324e2-feda-410a-8904-ee0c772eab95.stderr"
+}

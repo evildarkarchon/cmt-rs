@@ -1,0 +1,18 @@
+{
+  "id": "dc56b20c-3319-496c-9d6a-ede30543f927",
+  "runtime": "bash",
+  "purpose": "Audit M001 slice summary, assessment, and UAT artifacts",
+  "script_chars": 1168,
+  "started_at": "2026-05-19T05:26:13.196Z",
+  "finished_at": "2026-05-19T05:26:18.258Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 5062,
+  "stdout_bytes": 567,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\dc56b20c-3319-496c-9d6a-ede30543f927.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\dc56b20c-3319-496c-9d6a-ede30543f927.stderr"
+}

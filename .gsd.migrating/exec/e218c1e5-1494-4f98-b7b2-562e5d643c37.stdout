@@ -1,0 +1,21 @@
+BASE .gsd/activity exists False
+BASE .gsd/journal exists True
+BASE .gsd/milestones/M001 exists True
+.gsd/milestones/M001/slices/S02/S02-ASSESSMENT.md 2256
+.gsd/milestones/M001/slices/S02/S02-UAT.md 2816
+.gsd/milestones/M001/slices/S03/S03-ASSESSMENT.md 2720
+.gsd/milestones/M001/slices/S03/S03-UAT.md 3208
+.gsd/milestones/M001/slices/S04/S04-ASSESSMENT.md 2483
+.gsd/milestones/M001/slices/S04/S04-UAT.md 4981
+.gsd/milestones/M001/slices/S05/S05-ASSESSMENT.md 2836
+.gsd/milestones/M001/slices/S05/S05-UAT.md 3750
+.gsd/milestones/M001/slices/S06/S06-ASSESSMENT.md 2690
+.gsd/milestones/M001/slices/S06/S06-UAT.md 3383
+.gsd/milestones/M001/slices/S07/S07-ASSESSMENT.md 3196
+.gsd/milestones/M001/slices/S07/S07-UAT.md 3145
+.gsd/milestones/M001/slices/S08/S08-ASSESSMENT.md 3402
+.gsd/milestones/M001/slices/S08/S08-UAT.md 3219
+.gsd/milestones/M001/slices/S09/S09-ASSESSMENT.md 3270
+.gsd/milestones/M001/slices/S09/S09-UAT.md 4970
+.gsd/milestones/M001/slices/S10/S10-ASSESSMENT.md 610
+.gsd/milestones/M001/slices/S10/S10-UAT.md 4037

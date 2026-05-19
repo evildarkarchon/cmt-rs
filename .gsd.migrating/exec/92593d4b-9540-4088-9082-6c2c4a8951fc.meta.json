@@ -1,0 +1,18 @@
+{
+  "id": "92593d4b-9540-4088-9082-6c2c4a8951fc",
+  "runtime": "bash",
+  "purpose": "S11 validation round 0 blocker extraction",
+  "script_chars": 815,
+  "started_at": "2026-05-19T04:26:22.994Z",
+  "finished_at": "2026-05-19T04:26:23.106Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 112,
+  "stdout_bytes": 136,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\92593d4b-9540-4088-9082-6c2c4a8951fc.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\92593d4b-9540-4088-9082-6c2c4a8951fc.stderr"
+}

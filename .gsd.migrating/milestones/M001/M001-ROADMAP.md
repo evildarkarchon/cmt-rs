@@ -42,7 +42,7 @@
 - [x] **S10: S10** `risk:medium` `depends:[]`
   > After this: User can open and run Archive Patcher operations through validated, fail-closed write plans that protect user files.
 
-- [ ] **S11: Validation Traceability Remediation** `risk:medium` `depends:[S10]`
+- [x] **S11: S11** `risk:medium` `depends:[]`
   > After this: Validation round 1 shows requirement traceability repaired, missing assessment and UAT artifacts present, S07 integration attribution corrected, and quality gates still passing.
 
 ## Boundary Map

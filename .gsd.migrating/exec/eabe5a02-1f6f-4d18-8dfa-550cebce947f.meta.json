@@ -1,0 +1,18 @@
+{
+  "id": "eabe5a02-1f6f-4d18-8dfa-550cebce947f",
+  "runtime": "bash",
+  "purpose": "M001 final targeted safety regression tests",
+  "script_chars": 366,
+  "started_at": "2026-05-19T05:45:52.181Z",
+  "finished_at": "2026-05-19T05:46:18.532Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 26351,
+  "stdout_bytes": 544,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\eabe5a02-1f6f-4d18-8dfa-550cebce947f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\eabe5a02-1f6f-4d18-8dfa-550cebce947f.stderr"
+}

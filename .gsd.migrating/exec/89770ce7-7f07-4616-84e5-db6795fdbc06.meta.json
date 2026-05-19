@@ -1,0 +1,18 @@
+{
+  "id": "89770ce7-7f07-4616-84e5-db6795fdbc06",
+  "runtime": "bash",
+  "purpose": "T02 negative guard inspection",
+  "script_chars": 1071,
+  "started_at": "2026-05-19T04:55:34.152Z",
+  "finished_at": "2026-05-19T04:55:34.261Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 109,
+  "stdout_bytes": 112,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\89770ce7-7f07-4616-84e5-db6795fdbc06.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\89770ce7-7f07-4616-84e5-db6795fdbc06.stderr"
+}

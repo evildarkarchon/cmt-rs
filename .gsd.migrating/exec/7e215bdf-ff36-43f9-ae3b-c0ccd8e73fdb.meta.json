@@ -1,0 +1,18 @@
+{
+  "id": "7e215bdf-ff36-43f9-ae3b-c0ccd8e73fdb",
+  "runtime": "bash",
+  "purpose": "S11 planning milestone validation artifact lookup",
+  "script_chars": 288,
+  "started_at": "2026-05-19T04:33:55.254Z",
+  "finished_at": "2026-05-19T04:33:55.736Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 482,
+  "stdout_bytes": 8,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\7e215bdf-ff36-43f9-ae3b-c0ccd8e73fdb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\7e215bdf-ff36-43f9-ae3b-c0ccd8e73fdb.stderr"
+}

@@ -1,0 +1,18 @@
+{
+  "id": "17f854d4-12b1-44de-aab1-fc717f90fc68",
+  "runtime": "bash",
+  "purpose": "discover project-scoped subagent files",
+  "script_chars": 128,
+  "started_at": "2026-05-19T05:29:29.303Z",
+  "finished_at": "2026-05-19T05:29:29.389Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 86,
+  "stdout_bytes": 25,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\17f854d4-12b1-44de-aab1-fc717f90fc68.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\17f854d4-12b1-44de-aab1-fc717f90fc68.stderr"
+}

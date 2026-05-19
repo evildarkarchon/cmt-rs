@@ -1,0 +1,18 @@
+{
+  "id": "608ebb41-5c98-4d4c-9324-7848bb80a924",
+  "runtime": "bash",
+  "purpose": "T04 gate: cargo test",
+  "script_chars": 10,
+  "started_at": "2026-05-19T04:59:43.297Z",
+  "finished_at": "2026-05-19T04:59:51.960Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 8663,
+  "stdout_bytes": 39566,
+  "stderr_bytes": 152,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\608ebb41-5c98-4d4c-9324-7848bb80a924.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\608ebb41-5c98-4d4c-9324-7848bb80a924.stderr"
+}

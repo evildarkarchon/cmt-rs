@@ -1,0 +1,187 @@
+R001 refs 4
+  .gsd/REQUIREMENTS.md:219: ### R001 — Untitled
+  .gsd/REQUIREMENTS.md:301: | R001 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S11/S11-CONTEXT.md:24: - Repair `.gsd/REQUIREMENTS.md` as an audit-grade traceability matrix for R001–R054: meaningful titles/descriptions where missing, primary owning slices, supporting evidence, proof...
+R002 refs 3
+  .gsd/REQUIREMENTS.md:224: ### R002 — Untitled
+  .gsd/REQUIREMENTS.md:302: | R002 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+R003 refs 3
+  .gsd/REQUIREMENTS.md:229: ### R003 — Untitled
+  .gsd/REQUIREMENTS.md:303: | R003 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+R004 refs 3
+  .gsd/REQUIREMENTS.md:234: ### R004 — Untitled
+  .gsd/REQUIREMENTS.md:304: | R004 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+R005 refs 3
+  .gsd/REQUIREMENTS.md:239: ### R005 — Untitled
+  .gsd/REQUIREMENTS.md:305: | R005 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+R006 refs 4
+  .gsd/REQUIREMENTS.md:244: ### R006 — Untitled
+  .gsd/REQUIREMENTS.md:306: | R006 | core-capability | validated | S02 | none | S02 verifies first-run settings load reference-compatible defaults through domain and settings-store tests plus full Rust gates....
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:65: - R006 — First-run defaults are covered by settings domain/store tests and full Rust verification.
+R007 refs 4
+  .gsd/REQUIREMENTS.md:251: ### R007 — Untitled
+  .gsd/REQUIREMENTS.md:307: | R007 | core-capability | validated | S02 | none | S02 verifies persisted JSON keys and values for `log_level`, `update_source`, scanner toggles, and downgrader settings through t...
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:66: - R007 — JSON persistence keys and wire values for log level, update source, scanner toggles, and downgrader preferences are covered by domain/store tests and full Rust verificatio...
+R008 refs 4
+  .gsd/REQUIREMENTS.md:258: ### R008 — Untitled
+  .gsd/REQUIREMENTS.md:308: | R008 | core-capability | validated | S02 | none | S02 Settings-tab Slint source contract tests verify update channel labels and order; full Rust gates passed. |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:67: - R008 — Settings-tab source-level contract tests verify update-channel labels and order.
+R009 refs 8
+  .gsd/REQUIREMENTS.md:265: ### R009 — User can choose log level options matching the validated Settings contract: `Debug`, `Info`, `Warning`, and `Error`.
+  .gsd/REQUIREMENTS.md:309: | R009 | core-capability | validated | S02 | none | S02 Settings source-level contract tests and full Rust verification (`cargo fmt --check`, `cargo check`, `cargo test`, `cargo cl...
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:50: S02 established the Settings foundation for later port slices. The Rust domain now owns typed `AppSettings`, `UpdateSource`, `LogLevel`, scanner toggles, and downgrader preferences...
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:68: - R009 — Requirement was re-scoped to include `Warning`; Settings-tab source-level contract tests and settings-domain tests verify the log-level options and wire values.
+R010 refs 4
+  .gsd/REQUIREMENTS.md:274: ### R010 — Untitled
+  .gsd/REQUIREMENTS.md:310: | R010 | core-capability | validated | S02 | none | S02 domain settings tests verify scanner-related defaults, including Overview Issues, Errors, Wrong Format, Loose Previs, Junk F...
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:69: - R010 — Scanner default toggles are covered by domain settings tests.
+R011 refs 4
+  .gsd/REQUIREMENTS.md:281: ### R011 — Untitled
+  .gsd/REQUIREMENTS.md:311: | R011 | core-capability | validated | S02 | none | S02 domain and store tests verify malformed, invalid, and partial settings repair behavior, including preserving valid values an...
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:70: - R011 — Malformed, invalid, partial, and save-failure settings cases are covered by domain/store/controller tests.
+R012 refs 2
+  .gsd/REQUIREMENTS.md:7: ### R012 — Untitled
+  .gsd/REQUIREMENTS.md:312: | R012 | core-capability | active | none | none | unmapped |
+R013 refs 2
+  .gsd/REQUIREMENTS.md:12: ### R013 — Untitled
+  .gsd/REQUIREMENTS.md:313: | R013 | core-capability | active | none | none | unmapped |
+R014 refs 3
+  .gsd/REQUIREMENTS.md:17: ### R014 — Untitled
+  .gsd/REQUIREMENTS.md:314: | R014 | core-capability | active | none | none | unmapped |
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:58: - R014 — Settings file access now goes through an injectable platform settings store, establishing the pattern for broader filesystem adapter work.
+R015 refs 2
+  .gsd/REQUIREMENTS.md:22: ### R015 — Untitled
+  .gsd/REQUIREMENTS.md:315: | R015 | core-capability | active | none | none | unmapped |
+R016 refs 3
+  .gsd/REQUIREMENTS.md:27: ### R016 — Untitled
+  .gsd/REQUIREMENTS.md:316: | R016 | core-capability | active | none | none | unmapped |
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:59: - R016 — `update_source` now has persisted typed semantics that later non-blocking update checks can consume.
+R017 refs 2
+  .gsd/REQUIREMENTS.md:32: ### R017 — Untitled
+  .gsd/REQUIREMENTS.md:317: | R017 | core-capability | active | none | none | unmapped |
+R018 refs 2
+  .gsd/REQUIREMENTS.md:37: ### R018 — Untitled
+  .gsd/REQUIREMENTS.md:318: | R018 | core-capability | active | none | none | unmapped |
+R019 refs 2
+  .gsd/REQUIREMENTS.md:42: ### R019 — Untitled
+  .gsd/REQUIREMENTS.md:319: | R019 | core-capability | active | none | none | unmapped |
+R020 refs 2
+  .gsd/REQUIREMENTS.md:47: ### R020 — Untitled
+  .gsd/REQUIREMENTS.md:320: | R020 | core-capability | active | none | none | unmapped |
+R021 refs 2
+  .gsd/REQUIREMENTS.md:52: ### R021 — Untitled
+  .gsd/REQUIREMENTS.md:321: | R021 | core-capability | active | none | none | unmapped |
+R022 refs 2
+  .gsd/REQUIREMENTS.md:57: ### R022 — Untitled
+  .gsd/REQUIREMENTS.md:322: | R022 | core-capability | active | none | none | unmapped |
+R023 refs 2
+  .gsd/REQUIREMENTS.md:62: ### R023 — Untitled
+  .gsd/REQUIREMENTS.md:323: | R023 | core-capability | active | none | none | unmapped |
+R024 refs 2
+  .gsd/REQUIREMENTS.md:67: ### R024 — Untitled
+  .gsd/REQUIREMENTS.md:324: | R024 | core-capability | active | none | none | unmapped |
+R025 refs 2
+  .gsd/REQUIREMENTS.md:72: ### R025 — Untitled
+  .gsd/REQUIREMENTS.md:325: | R025 | core-capability | active | none | none | unmapped |
+R026 refs 2
+  .gsd/REQUIREMENTS.md:77: ### R026 — Untitled
+  .gsd/REQUIREMENTS.md:326: | R026 | core-capability | active | none | none | unmapped |
+R027 refs 2
+  .gsd/REQUIREMENTS.md:82: ### R027 — Untitled
+  .gsd/REQUIREMENTS.md:327: | R027 | core-capability | active | none | none | unmapped |
+R028 refs 2
+  .gsd/REQUIREMENTS.md:87: ### R028 — Untitled
+  .gsd/REQUIREMENTS.md:328: | R028 | core-capability | active | none | none | unmapped |
+R029 refs 2
+  .gsd/REQUIREMENTS.md:92: ### R029 — Untitled
+  .gsd/REQUIREMENTS.md:329: | R029 | core-capability | active | none | none | unmapped |
+R030 refs 2
+  .gsd/REQUIREMENTS.md:97: ### R030 — Untitled
+  .gsd/REQUIREMENTS.md:330: | R030 | core-capability | active | none | none | unmapped |
+R031 refs 3
+  .gsd/REQUIREMENTS.md:102: ### R031 — Untitled
+  .gsd/REQUIREMENTS.md:331: | R031 | core-capability | active | none | none | unmapped |
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:60: - R031 — Scanner setting keys and defaults now exist in the shared settings contract, preparing Scanner category toggles for later UI work.
+R032 refs 2
+  .gsd/REQUIREMENTS.md:107: ### R032 — Untitled
+  .gsd/REQUIREMENTS.md:332: | R032 | core-capability | active | none | none | unmapped |
+R033 refs 2
+  .gsd/REQUIREMENTS.md:112: ### R033 — Untitled
+  .gsd/REQUIREMENTS.md:333: | R033 | core-capability | active | none | none | unmapped |
+R034 refs 2
+  .gsd/REQUIREMENTS.md:117: ### R034 — Untitled
+  .gsd/REQUIREMENTS.md:334: | R034 | core-capability | active | none | none | unmapped |
+R035 refs 2
+  .gsd/REQUIREMENTS.md:122: ### R035 — Untitled
+  .gsd/REQUIREMENTS.md:335: | R035 | core-capability | active | none | none | unmapped |
+R036 refs 2
+  .gsd/REQUIREMENTS.md:127: ### R036 — Untitled
+  .gsd/REQUIREMENTS.md:336: | R036 | core-capability | active | none | none | unmapped |
+R037 refs 2
+  .gsd/REQUIREMENTS.md:132: ### R037 — Untitled
+  .gsd/REQUIREMENTS.md:337: | R037 | core-capability | active | none | none | unmapped |
+R038 refs 2
+  .gsd/REQUIREMENTS.md:137: ### R038 — Untitled
+  .gsd/REQUIREMENTS.md:338: | R038 | core-capability | active | none | none | unmapped |
+R039 refs 2
+  .gsd/REQUIREMENTS.md:142: ### R039 — Untitled
+  .gsd/REQUIREMENTS.md:339: | R039 | core-capability | active | none | none | unmapped |
+R040 refs 2
+  .gsd/REQUIREMENTS.md:147: ### R040 — Untitled
+  .gsd/REQUIREMENTS.md:340: | R040 | core-capability | active | none | none | unmapped |
+R041 refs 2
+  .gsd/REQUIREMENTS.md:152: ### R041 — Untitled
+  .gsd/REQUIREMENTS.md:341: | R041 | core-capability | active | none | none | unmapped |
+R042 refs 2
+  .gsd/REQUIREMENTS.md:157: ### R042 — Untitled
+  .gsd/REQUIREMENTS.md:342: | R042 | core-capability | active | none | none | unmapped |
+R043 refs 3
+  .gsd/REQUIREMENTS.md:162: ### R043 — Untitled
+  .gsd/REQUIREMENTS.md:343: | R043 | core-capability | active | none | none | unmapped |
+  .gsd/milestones/M001/slices/S02/S02-SUMMARY.md:61: - R043 — Downgrader backup and delta cleanup preferences now persist in the shared settings contract for later tool workflows.
+R044 refs 2
+  .gsd/REQUIREMENTS.md:167: ### R044 — Untitled
+  .gsd/REQUIREMENTS.md:344: | R044 | core-capability | active | none | none | unmapped |
+R045 refs 2
+  .gsd/REQUIREMENTS.md:172: ### R045 — Untitled
+  .gsd/REQUIREMENTS.md:345: | R045 | core-capability | active | none | none | unmapped |
+R046 refs 2
+  .gsd/REQUIREMENTS.md:177: ### R046 — Untitled
+  .gsd/REQUIREMENTS.md:346: | R046 | core-capability | active | none | none | unmapped |
+R047 refs 2
+  .gsd/REQUIREMENTS.md:182: ### R047 — Untitled
+  .gsd/REQUIREMENTS.md:347: | R047 | core-capability | active | none | none | unmapped |
+R048 refs 2
+  .gsd/REQUIREMENTS.md:187: ### R048 — Untitled
+  .gsd/REQUIREMENTS.md:348: | R048 | core-capability | active | none | none | unmapped |
+R049 refs 2
+  .gsd/REQUIREMENTS.md:192: ### R049 — Untitled
+  .gsd/REQUIREMENTS.md:349: | R049 | core-capability | active | none | none | unmapped |
+R050 refs 2
+  .gsd/REQUIREMENTS.md:197: ### R050 — Untitled
+  .gsd/REQUIREMENTS.md:350: | R050 | core-capability | active | none | none | unmapped |
+R051 refs 2
+  .gsd/REQUIREMENTS.md:202: ### R051 — Untitled
+  .gsd/REQUIREMENTS.md:351: | R051 | core-capability | active | none | none | unmapped |
+R052 refs 2
+  .gsd/REQUIREMENTS.md:207: ### R052 — Untitled
+  .gsd/REQUIREMENTS.md:352: | R052 | core-capability | active | none | none | unmapped |
+R053 refs 2
+  .gsd/REQUIREMENTS.md:212: ### R053 — Untitled
+  .gsd/REQUIREMENTS.md:353: | R053 | core-capability | active | none | none | unmapped |
+R054 refs 4
+  .gsd/REQUIREMENTS.md:288: ### R054 — Untitled
+  .gsd/REQUIREMENTS.md:354: | R054 | core-capability | validated | none | none | unmapped |
+  .gsd/REQUIREMENTS.md:360: - Validated: 12 (R001, R002, R003, R004, R005, R006, R007, R008, R009, R010, R011, R054)
+  .gsd/milestones/M001/slices/S11/S11-CONTEXT.md:24: - Repair `.gsd/REQUIREMENTS.md` as an audit-grade traceability matrix for R001–R054: meaningful titles/descriptions where missing, primary owning slices, supporting evidence, proof...

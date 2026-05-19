@@ -1,0 +1,13 @@
+slice | summary | assessment | uat
+S01 | present | present/pass-signal | present
+S02 | present | present/pass-signal | present
+S03 | present | present/pass-signal | present
+S04 | present | present/pass-signal | present
+S05 | present | present/pass-signal | present
+S06 | present | present/pass-signal | present
+S07 | present | present/pass-signal | present
+S08 | present | present/pass-signal | present
+S09 | present | present/pass-signal | present
+S10 | present | present/pass-signal | present
+S11 | present | present/pass-signal | present
+total_slices=11 missing=0

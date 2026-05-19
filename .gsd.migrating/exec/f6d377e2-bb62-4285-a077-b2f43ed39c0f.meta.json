@@ -1,0 +1,18 @@
+{
+  "id": "f6d377e2-bb62-4285-a077-b2f43ed39c0f",
+  "runtime": "bash",
+  "purpose": "M001 validation round 1 slice artifact inventory",
+  "script_chars": 475,
+  "started_at": "2026-05-19T05:18:21.126Z",
+  "finished_at": "2026-05-19T05:18:21.417Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 291,
+  "stdout_bytes": 362,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\f6d377e2-bb62-4285-a077-b2f43ed39c0f.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\f6d377e2-bb62-4285-a077-b2f43ed39c0f.stderr"
+}

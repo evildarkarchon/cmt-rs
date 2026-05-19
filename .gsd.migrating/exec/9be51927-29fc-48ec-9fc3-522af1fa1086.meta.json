@@ -1,0 +1,18 @@
+{
+  "id": "9be51927-29fc-48ec-9fc3-522af1fa1086",
+  "runtime": "bash",
+  "purpose": "T04 inspect target artifact existence",
+  "script_chars": 299,
+  "started_at": "2026-05-19T05:00:30.010Z",
+  "finished_at": "2026-05-19T05:00:30.094Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 84,
+  "stdout_bytes": 45,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\9be51927-29fc-48ec-9fc3-522af1fa1086.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\9be51927-29fc-48ec-9fc3-522af1fa1086.stderr"
+}

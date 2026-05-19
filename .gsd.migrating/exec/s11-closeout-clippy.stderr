@@ -1,0 +1,253 @@
+warning: this function has too many arguments (8/7)
+   --> src\app\archive_patcher_controller.rs:249:5
+    |
+249 | /     pub fn new(
+250 | |         request_id: ArchivePatcherRequestId,
+251 | |         confirmed_plan_request_id: ArchivePatcherRequestId,
+252 | |         confirmed_plan_digest: String,
+...   |
+257 | |         manifest_path: PathBuf,
+258 | |     ) -> Self {
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+    = note: `#[warn(clippy::too_many_arguments)]` on by default
+
+warning: this `let...else` may be rewritten with the `?` operator
+   --> src\app\archive_patcher_controller.rs:752:9
+    |
+752 | /         let Some(plan) = self.plan.as_ref() else {
+753 | |             return None;
+754 | |         };
+    | |__________^ help: replace it with: `let plan = self.plan.as_ref()?;`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#question_mark
+    = note: `#[warn(clippy::question_mark)]` on by default
+
+warning: this block may be rewritten with the `?` operator
+    --> src\app\archive_patcher_controller.rs:1333:9
+     |
+1333 | /         if self.manifest_path.is_none() {
+1334 | |             return None;
+1335 | |         }
+     | |_________^ help: replace it with: `self.manifest_path.as_ref()?;`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#question_mark
+
+warning: the `Err`-variant returned from this function is very large
+   --> src\services\discovery.rs:419:10
+    |
+143 |     ModOrganizer(Mo2ParseError),
+    |     --------------------------- the largest variant contains at least 144 bytes
+...
+419 |     ) -> Result<Option<DiscoveredModManager>, ModManagerDiscoveryError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: try reducing the size of `services::discovery::ModManagerDiscoveryError`, for example by boxing large elements or replacing it with `Box<services::discovery::ModManagerDiscoveryError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+    = note: `#[warn(clippy::result_large_err)]` on by default
+
+warning: the `Err`-variant returned from this function is very large
+   --> src\services\discovery.rs:448:10
+    |
+143 |     ModOrganizer(Mo2ParseError),
+    |     --------------------------- the largest variant contains at least 144 bytes
+...
+448 |     ) -> Result<Option<DetectedModManager>, ModManagerDiscoveryError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    |
+    = help: try reducing the size of `services::discovery::ModManagerDiscoveryError`, for example by boxing large elements or replacing it with `Box<services::discovery::ModManagerDiscoveryError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+
+warning: the `Err`-variant returned from this function is very large
+   --> src\services\discovery.rs:548:10
+    |
+548 |     ) -> Result<Mo2Configuration, Mo2ParseError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the `Err`-variant is at least 144 bytes
+    |
+    = help: try reducing the size of `domain::mod_manager::Mo2ParseError`, for example by boxing large elements or replacing it with `Box<domain::mod_manager::Mo2ParseError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+
+warning: the `Err`-variant returned from this function is very large
+   --> src\services\discovery.rs:623:10
+    |
+623 |     ) -> Result<bool, Mo2ParseError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^ the `Err`-variant is at least 144 bytes
+    |
+    = help: try reducing the size of `domain::mod_manager::Mo2ParseError`, for example by boxing large elements or replacing it with `Box<domain::mod_manager::Mo2ParseError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+
+warning: the `Err`-variant returned from this function is very large
+   --> src\services\discovery.rs:698:10
+    |
+698 |     ) -> Result<Mo2Configuration, Mo2ParseError> {
+    |          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the `Err`-variant is at least 144 bytes
+    |
+    = help: try reducing the size of `domain::mod_manager::Mo2ParseError`, for example by boxing large elements or replacing it with `Box<domain::mod_manager::Mo2ParseError>`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#result_large_err
+
+warning: this function has too many arguments (8/7)
+    --> src\services\downgrader.rs:1538:5
+     |
+1538 | /     fn execute_row<D, A, P>(
+1539 | |         &self,
+1540 | |         request_id: u64,
+1541 | |         game_root: &Path,
+...    |
+1550 | |         A: DeltaApplier + ?Sized,
+1551 | |         P: FnMut(&DowngraderExecutionProgressEvent),
+     | |____________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+    --> src\services\downgrader.rs:1595:5
+     |
+1595 | /     fn execute_mutating_row<D, A, P>(
+1596 | |         &self,
+1597 | |         request_id: u64,
+1598 | |         game_root: &Path,
+...    |
+1607 | |         A: DeltaApplier + ?Sized,
+1608 | |         P: FnMut(&DowngraderExecutionProgressEvent),
+     | |____________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+    --> src\services\downgrader.rs:2230:5
+     |
+2230 | /     fn read_or_download_patch<D, P>(
+2231 | |         &self,
+2232 | |         request_id: u64,
+2233 | |         row: &DowngraderPreviewPlanRow,
+...    |
+2241 | |         D: DeltaDownloader + ?Sized,
+2242 | |         P: FnMut(&DowngraderExecutionProgressEvent),
+     | |____________________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+    --> src\services\scanner.rs:1118:5
+     |
+1118 | /     fn scan_data_tree<P>(
+1119 | |         &self,
+1120 | |         data_path: &Path,
+1121 | |         request: &ScannerScanRequest<'_>,
+...    |
+1127 | |     ) where
+1128 | |         P: FnMut(&ScannerProgressEvent),
+     | |________________________________________^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+   --> src\main.rs:529:1
+    |
+529 | / fn bind_downgrader_worker_sink(
+530 | |     app: &MainWindow,
+531 | |     window: &DowngraderWindow,
+532 | |     controller: Arc<Mutex<DowngraderController>>,
+...   |
+537 | |     runtime_handle: tokio::runtime::Handle,
+538 | | ) -> SlintEventLoopSink {
+    | |_______________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+   --> src\main.rs:747:1
+    |
+747 | / fn bind_archive_patcher_worker_sink(
+748 | |     app: &MainWindow,
+749 | |     window: &ArchivePatcherWindow,
+750 | |     controller: Arc<Mutex<ArchivePatcherController>>,
+...   |
+755 | |     runtime_handle: tokio::runtime::Handle,
+756 | | ) -> SlintEventLoopSink {
+    | |_______________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (12/7)
+    --> src\main.rs:1123:1
+     |
+1123 | / fn bind_tools_callbacks(
+1124 | |     app: &MainWindow,
+1125 | |     downgrader_window: &DowngraderWindow,
+1126 | |     archive_patcher_window: &ArchivePatcherWindow,
+...    |
+1135 | |     archive_patcher_sink: SlintEventLoopSink,
+1136 | | ) {
+     | |_^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (12/7)
+    --> src\main.rs:1557:1
+     |
+1557 | / fn bind_overview_callbacks(
+1558 | |     app: &MainWindow,
+1559 | |     downgrader_window: &DowngraderWindow,
+1560 | |     archive_patcher_window: &ArchivePatcherWindow,
+...    |
+1569 | |     runtime_handle: tokio::runtime::Handle,
+1570 | | ) {
+     | |_^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: this function has too many arguments (8/7)
+    --> src\main.rs:2211:1
+     |
+2211 | / fn schedule_downgrader_completion_refresh(
+2212 | |     app: Option<&MainWindow>,
+2213 | |     window: &DowngraderWindow,
+2214 | |     controller: &Arc<Mutex<DowngraderController>>,
+...    |
+2219 | |     runtime_handle: tokio::runtime::Handle,
+2220 | | ) {
+     | |_^
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#too_many_arguments
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> src\main.rs:7421:9
+     |
+7421 | /         settings.downgrader = DowngraderSettings {
+7422 | |             keep_backups: true,
+7423 | |             delete_deltas: false,
+7424 | |         };
+     | |__________^
+     |
+note: consider initializing the variable with `domain::settings::AppSettings { downgrader: DowngraderSettings {
+                  keep_backups: true,
+                  delete_deltas: false,
+              }, ..Default::default() }` and removing relevant reassignments
+    --> src\main.rs:7420:9
+     |
+7420 |         let mut settings = AppSettings::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#field_reassign_with_default
+     = note: `#[warn(clippy::field_reassign_with_default)]` on by default
+
+warning: field assignment outside of initializer for an instance created with Default::default()
+    --> src\main.rs:7535:9
+     |
+7535 |         settings.update_source = UpdateSource::Github;
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     |
+note: consider initializing the variable with `domain::settings::AppSettings { update_source: UpdateSource::Github, log_level: LogLevel::Warning, downgrader: DowngraderSettings {
+                  keep_backups: false,
+                  delete_deltas: true,
+              }, ..Default::default() }` and removing relevant reassignments
+    --> src\main.rs:7534:9
+     |
+7534 |         let mut settings = AppSettings::default();
+     |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.95.0/index.html#field_reassign_with_default
+
+warning: `cmt-rs` (bin "cmt-rs") generated 17 warnings (run `cargo clippy --fix --bin "cmt-rs" -p cmt-rs -- ` to apply 1 suggestion)
+warning: `cmt-rs` (bin "cmt-rs" test) generated 19 warnings (17 duplicates)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.55s

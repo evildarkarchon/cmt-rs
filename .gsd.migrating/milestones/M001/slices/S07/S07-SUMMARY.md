@@ -7,8 +7,10 @@ provides:
   - Adapter-backed ScannerScanService with MO2 attribution, Vortex Data-only handling, progress, diagnostics, and reference rule classification
   - Scanner controller and worker payloads for scan progress/completion, stale-event rejection, and safe read-only actions
 requires:
+  - slice: S01
+    provides: Main shell, reference tab order, and MainWindow/tab wiring patterns
   - slice: S02
-    provides: Main shell, settings persistence baseline, and tab wiring patterns
+    provides: Settings persistence baseline and scanner settings contract
   - slice: S03
     provides: Discovery and Mod Organizer/Vortex context contracts
   - slice: S04

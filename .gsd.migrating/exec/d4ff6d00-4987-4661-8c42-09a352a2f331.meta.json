@@ -1,0 +1,18 @@
+{
+  "id": "d4ff6d00-4987-4661-8c42-09a352a2f331",
+  "runtime": "bash",
+  "purpose": "Run T01 requirements traceability verifier",
+  "script_chars": 78,
+  "started_at": "2026-05-19T04:49:02.269Z",
+  "finished_at": "2026-05-19T04:49:02.486Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 217,
+  "stdout_bytes": 52,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d4ff6d00-4987-4661-8c42-09a352a2f331.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d4ff6d00-4987-4661-8c42-09a352a2f331.stderr"
+}

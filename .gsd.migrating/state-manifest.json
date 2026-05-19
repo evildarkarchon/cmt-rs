@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "exported_at": "2026-05-19T04:18:18.657Z",
+  "exported_at": "2026-05-19T05:10:15.627Z",
   "milestones": [
     {
       "id": "M001",
@@ -288,22 +288,20 @@
     {
       "milestone_id": "M001",
       "id": "S11",
-      "title": "Validation Traceability Remediation",
-      "status": "pending",
+      "title": "S11",
+      "status": "complete",
       "risk": "medium",
-      "depends": [
-        "S10"
-      ],
+      "depends": [],
       "demo": "Validation round 1 shows requirement traceability repaired, missing assessment and UAT artifacts present, S07 integration attribution corrected, and quality gates still passing.",
       "created_at": "2026-05-19T04:18:18.578Z",
-      "completed_at": null,
-      "full_summary_md": "",
-      "full_uat_md": "",
-      "goal": "",
-      "success_criteria": "",
-      "proof_level": "",
-      "integration_closure": "",
-      "observability_impact": "",
+      "completed_at": "2026-05-19T05:10:15.562Z",
+      "full_summary_md": "---\nid: S11\nparent: M001\nmilestone: M001\nprovides:\n  - Audit-ready R001-R054 traceability matrix for M001 validation.\n  - Backfilled S01 assessment/UAT and accepted/caveated S10 artifact coverage.\n  - Correct S07 provenance attribution for downstream validation.\n  - M001 validation round 1 artifact showing no remaining validation blockers.\nrequires:\n  - slice: S01\n    provides: Shell/tab-order evidence and backfilled assessment/UAT target.\n  - slice: S02\n    provides: Settings persistence/scanner settings provenance used by S07 attribution.\n  - slice: S07\n    provides: Scanner completed-slice summary whose dependency provenance was corrected.\n  - slice: S10\n    provides: Archive patcher assessment/UAT artifacts checked and caveated for validation.\naffects:\n  - M001 validation and milestone closure readiness.\n  - S01 validation artifact coverage.\n  - S07 completed-slice provenance documentation.\n  - S10 validation caveat handling.\nkey_files:\n  - .gsd/REQUIREMENTS.md\n  - .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py\n  - .gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md\n  - .gsd/milestones/M001/slices/S01/S01-UAT.md\n  - .gsd/milestones/M001/slices/S07/S07-SUMMARY.md\n  - .gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md\n  - .gsd/milestones/M001/slices/S11/S11-UAT.md\n  - .gsd/milestones/M001/M001-VALIDATION.md\nkey_decisions:\n  - No Rust/Slint product behavior changes were made in S11; remediation stayed in validation and planning artifacts.\n  - Backfilled UAT evidence is explicitly caveated as source-contract/procedure evidence, not fresh manual or real-install UAT.\n  - M001 validation round 1 was recorded as a manual fallback because the validation tool was unavailable to the T04 executor.\npatterns_established:\n  - Slice-local validation verifier for traceability counts, placeholder detection, artifact caveats, and provenance regression checks.\n  - Backfilled validation artifacts must state evidence class and explicitly list what they do not prove.\n  - Operational readiness for milestone closeout includes health signals, failure signals, recovery steps, and monitoring gaps in closeout prose.\nobservability_surfaces:\n  - .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py gives targeted failure diagnostics for requirements, artifacts, and provenance.\n  - .gsd/milestones/M001/M001-VALIDATION.md records validation round 1 rationale, slice audit, requirement coverage, and caveats.\n  - Fresh gsd_exec output `14cf0481-98ae-4706-8cb9-ff4e6c3e990a` records final verifier and Cargo gate evidence.\ndrill_down_paths:\n  - .gsd/milestones/M001/slices/S11/tasks/T01-SUMMARY.md\n  - .gsd/milestones/M001/slices/S11/tasks/T02-SUMMARY.md\n  - .gsd/milestones/M001/slices/S11/tasks/T03-SUMMARY.md\n  - .gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md\nduration: \"\"\nverification_result: passed\ncompleted_at: 2026-05-19T05:10:15.563Z\nblocker_discovered: false\n---\n\n# S11: Validation Traceability Remediation\n\n**Repaired M001 validation traceability, backfilled missing validation artifacts, corrected S07 provenance, and recorded validation round 1 with green documentation and Rust gates.**\n\n## What Happened\n\nS11 was a documentation and validation-remediation slice with no intended Rust/Slint product behavior changes. T01 rebuilt `.gsd/REQUIREMENTS.md` into an audit-grade R001-R054 traceability matrix with meaningful requirement titles/descriptions, evidence-based validated status, primary owning slices, supporting slices, and non-placeholder proof text; it also added `verify_s11_artifacts.py` so the traceability checks are mechanical instead of prose-only. T02 backfilled the missing S01 assessment and UAT artifacts from completed shell-foundation evidence, explicitly caveating that S11 did not perform fresh manual GUI, real Fallout 4 install, network, or destructive-file UAT. T03 corrected completed-slice provenance in `S07-SUMMARY.md` so the scanner slice now credits S01 for Main shell/reference tab-order/MainWindow wiring and S02 for settings persistence/scanner settings. T04 checked S10 assessment/UAT presence and acceptability, wrote S11 assessment/UAT closeout artifacts, and recorded M001 validation round 1 as a manual fallback artifact because the milestone validation tool was not exposed to that executor. As closer, I reran the slice verifier and Rust quality gates through `gsd_exec`; all passed. Operational readiness is now agent-visible: the health signal is `verify_s11_artifacts.py --all` plus Cargo gates and `M001-VALIDATION.md`; the failure signal is the verifier's specific missing/placeholder/owner/proof/provenance diagnostics or nonzero Cargo exit codes; recovery is to reopen the failing S11 task or return product failures to the owning slice; monitoring gaps remain manual desktop/real-install UAT and future DB-backed validation if the validation tool becomes available.\n\n## Verification\n\nFresh closer verification via gsd_exec `14cf0481-98ae-4706-8cb9-ff4e6c3e990a`: `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all` exited 0 and reported 54 requirement records, 54 validated, 0 active, 6 required artifacts present/caveated, and S07 provenance valid; `cargo fmt --check` exited 0; `cargo check` exited 0; `cargo test` exited 0 with 361 passed and 0 failed; `cargo clippy --all-targets --all-features` exited 0 with existing non-fatal warnings. T04 also recorded `git status --short CMT` exit 0 with no output; the closer did not rerun git because the closeout instruction explicitly prohibited git commands.\n\n## Requirements Advanced\n\n- R001-R054 — traceability repaired with owners, evidence, and proof text.\n\n## Requirements Validated\n\n- R001-R054 — S11 verifier confirmed 54 records, 54 validated, 0 active, with required artifacts and provenance checks passing.\n\n## New Requirements Surfaced\n\n- None.\n\n## Requirements Invalidated or Re-scoped\n\nNone.\n\n## Operational Readiness\n\nNone.\n\n## Deviations\n\nT01 rebuilt `.gsd/REQUIREMENTS.md` directly because that executor reported no DB-backed requirement update tool in its namespace. T04 recorded M001 validation round 1 manually because the milestone validation tool was unavailable. The closer did not rerun `git status --short CMT` due the explicit no-git closeout instruction and relied on T04's recorded clean CMT evidence.\n\n## Known Limitations\n\nNo fresh manual GUI, real Fallout 4 install, live network, destructive real-file, or pixel-perfect UI UAT was performed in S11. Clippy exits 0 but reports existing non-fatal warnings. The validation artifact is a manual fallback rather than a DB-rendered validation artifact.\n\n## Follow-ups\n\nFuture release-candidate work should run manual desktop/real-install/sandbox UAT, optionally clean existing clippy warnings before adopting `-D warnings`, and rerun DB-backed milestone validation if the validation tool becomes available.\n\n## Files Created/Modified\n\n- `.gsd/REQUIREMENTS.md` — Rebuilt R001-R054 requirement traceability matrix with evidence-backed statuses, owners, supporting slices, and proof.\n- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py` — Added/extended verifier for requirements, artifact caveats, and S07 provenance checks.\n- `.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md` — Backfilled S01 assessment from completed shell-foundation evidence with caveats.\n- `.gsd/milestones/M001/slices/S01/S01-UAT.md` — Backfilled S01 UAT procedure/source-contract evidence with explicit no-manual-GUI caveats.\n- `.gsd/milestones/M001/slices/S07/S07-SUMMARY.md` — Corrected provenance so S01 owns shell/tab wiring and S02 owns settings/scanner settings.\n- `.gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md` — Recorded S11 remediation assessment and remaining caveats.\n- `.gsd/milestones/M001/m001-validation.md` — Not used; canonical validation artifact is `.gsd/milestones/M001/M001-VALIDATION.md`.\n- `.gsd/milestones/M001/M001-VALIDATION.md` — Recorded M001 validation round 1 as passed with explicit tooling and UAT caveats.\n",
+      "full_uat_md": "# S11: Validation Traceability Remediation — UAT\n\n**Milestone:** M001\n**Written:** 2026-05-19T05:10:15.564Z\n\n# S11: Validation Traceability Remediation - UAT\n\n## UAT Type\n\nDocumentation and traceability acceptance UAT backed by automated artifact verification and Rust quality gates. This is not manual desktop GUI UAT, real Fallout 4 install UAT, live network UAT, or destructive real-file UAT.\n\n## Preconditions\n\n1. Work is performed from `J:/cmt-rs` with S01-S10 complete and S11 tasks T01-T04 complete.\n2. Python and the Rust toolchain are available for the verifier and Cargo gates.\n3. The `CMT/` directory is treated as a read-only reference submodule.\n4. No product behavior changes are expected from this slice; acceptance is based on validation artifacts and command evidence.\n\n## Steps and Expected Outcomes\n\n1. Run `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all`.\n   - Expected: exit 0; output includes `requirements ok: 54 records, 54 validated, 0 active`, artifact presence/caveat success, and S07 provenance success.\n2. Inspect `.gsd/REQUIREMENTS.md` for R001-R054.\n   - Expected: each requirement has a meaningful title/description, validated status, primary owning slice, supporting evidence where applicable, and proof text that is not `unmapped`.\n3. Inspect `.gsd/milestones/M001/slices/S01/S01-UAT.md` and `S01-ASSESSMENT.md`.\n   - Expected: both files exist and explicitly state that backfilled evidence is source-contract/procedure evidence, not a claim that S11 performed fresh manual GUI or real-install UAT.\n4. Inspect S10 validation artifacts.\n   - Expected: S10 assessment/UAT exist and are accepted with the caveat that S10 UAT is a future/sandbox procedure unless a separate run records execution.\n5. Inspect `.gsd/milestones/M001/slices/S07/S07-SUMMARY.md` provenance.\n   - Expected: S07 requires S01 for shell/tab wiring and S02 for settings persistence/scanner settings; it no longer attributes Main shell wiring to S02.\n6. Run Rust quality gates: `cargo fmt --check`, `cargo check`, `cargo test`, and `cargo clippy --all-targets --all-features`.\n   - Expected: all exit 0. In the closer rerun, `cargo test` reported 361 passed and 0 failed; clippy exited 0 while still reporting non-fatal warnings.\n7. Review `.gsd/milestones/M001/M001-VALIDATION.md`.\n   - Expected: validation round 1 is recorded as passed with explicit caveats and no remaining validation blockers.\n8. Confirm `CMT/` safety evidence.\n   - Expected: T04 recorded `git status --short CMT` exit 0 with no output. The closer does not rerun git because closeout rules prohibit git commands.\n\n## Edge Cases\n\n- If a requirement remains active, it must carry an explicit gap; otherwise the verifier should fail.\n- If any required UAT/assessment artifact is missing, empty, or lacks the required caveat language, the verifier should fail.\n- If S07 loses the S01 shell dependency or reassigns shell/tab wiring to S02, the provenance check should fail.\n- Clippy warnings are acceptable only while `cargo clippy --all-targets --all-features` exits 0 under the current gate; this UAT does not prove a future `-D warnings` policy would pass.\n- If the DB-backed milestone validation tool is unavailable, any manual validation artifact must say so explicitly.\n\n## Not Proven By This UAT\n\n- Fresh manual desktop launch, visual inspection, or pixel-perfect comparison with the Python/Tkinter UI.\n- Real Fallout 4 install detection or live mod-manager staging.\n- Live network update/download behavior.\n- Destructive archive patching, downgrading, or file mutation against real user data.\n- DB-rendered milestone validation when the validation tool is not exposed.\n\n## Result\n\nAccepted. S11 delivers audit-ready M001 validation traceability and artifact coverage with honest caveats and green closeout gates.\n",
+      "goal": "Repair M001 validation traceability and missing validation artifacts without changing Rust/Slint product behavior, then rerun final documentation and Cargo gates so validation round 1 can trust the evidence.",
+      "success_criteria": "- R001-R054 in `.gsd/REQUIREMENTS.md` have meaningful non-placeholder titles/descriptions, evidence-based statuses, primary owning slices, supporting evidence, and non-`unmapped` proof strings.\n- S01 has honest backfilled `S01-ASSESSMENT.md` and `S01-UAT.md` artifacts based on completed S01 evidence, with no claim of manual GUI/game-install UAT unless actually performed.\n- S10 assessment/UAT artifact presence is checked and any limitations are represented honestly in S11 closeout rather than overstated.\n- S07 dependency/provenance documentation correctly credits S01 for the main shell/tab wiring and S02 for settings persistence/scanner settings.\n- Final verification runs include the slice-local artifact verifier, `cargo fmt --check`, `cargo check`, `cargo test`, `cargo clippy --all-targets --all-features`, and `git status --short CMT` with no CMT modifications.\n- M001 validation round 1 is recorded as passing, or any remaining blockers are precisely documented as validation blockers rather than hidden.",
+      "proof_level": "Final-assembly documentation and validation proof. The slice proves auditability of the completed M001 port through requirement traceability, missing-artifact remediation, corrected provenance, and fresh quality-gate evidence. Real desktop/game-install runtime and human UAT are not required for S11 unless the executor actually performs and records them; simulated manual evidence is forbidden.",
+      "integration_closure": "S11 consumes completed S01-S10 summaries/task summaries, the v1 requirements source in `.planning/REQUIREMENTS.md`, and existing GSD milestone state. It introduces no product runtime wiring. Integration is closed when repaired traceability, artifacts, dependency attribution, Cargo gates, clean CMT status, and milestone validation evidence all agree that M001 can proceed to completion, or when any validation blocker is explicitly carried forward.",
+      "observability_impact": "Improves agent-facing observability of milestone closure: `.gsd/REQUIREMENTS.md` becomes a readable traceability matrix, S01/S11 UAT and assessment artifacts expose evidence class and caveats, the slice-local verifier gives mechanical failure localization, and final validation/gate outputs provide a current audit trail.",
       "sequence": 11,
       "replan_triggered_at": null,
       "is_sketch": 0,
@@ -2909,6 +2907,236 @@
       ],
       "expected_output": [],
       "observability_impact": "Confirms that the user-visible and tracing surfaces added in earlier tasks survive integration and adjacent regression tests.",
+      "full_plan_md": "",
+      "sequence": 0,
+      "blocker_source": "",
+      "escalation_pending": 0,
+      "escalation_awaiting_review": 0,
+      "escalation_artifact_path": null,
+      "escalation_override_applied_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S11",
+      "id": "T01",
+      "title": "Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.",
+      "status": "complete",
+      "one_liner": "Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.",
+      "narrative": "Reconciled `.gsd/REQUIREMENTS.md` against `.planning/REQUIREMENTS.md` and the completed S01-S10 evidence summarized in S11 research. The rendered requirements now carry meaningful FOUND/SET/DISC/OVR/F4SE/SCAN/TOOL/ABOUT/SAFE titles, descriptions, validated status, primary owning slices, normalized supporting slice IDs, evidence class caveats, proof strings tied to completed slice summaries/tests/gates, and the preserved R009 Warning discrepancy note. No Rust/Slint product behavior was changed.\n\nThe preferred DB-backed requirement-update tool was not exposed in this execution session, so I used the task-approved direct Markdown fallback and documented that fallback in the remediation note at the top of `.gsd/REQUIREMENTS.md`. I also added `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py` with `--requirements`, `--artifacts`, `--provenance`, and `--all` modes. The required `--requirements` mode checks missing/duplicate R001-R054 records, placeholder `Untitled`, placeholder `unmapped`, missing primary owners, missing proof text, invalid statuses, traceability-table mismatches, and inconsistent coverage counts. The artifact mode is intentionally available for later S11 tasks that backfill missing UAT/assessment artifacts.",
+      "verification_result": "Verified the required T01 command with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements`, which passed with 54 records, 54 validated, and 0 active. Also verified `--provenance` mode against existing S01-S10 slice summaries and ran temporary-mutant negative checks proving the verifier fails on placeholder titles, `unmapped` proof, missing owners, missing IDs, and duplicate IDs.",
+      "duration": "",
+      "completed_at": "2026-05-19T04:51:49.547Z",
+      "blocker_discovered": false,
+      "deviations": "The DB-backed GSD requirement-update/render tool was unavailable in the exposed tool namespace, so the task-approved direct Markdown fallback was used and documented in `.gsd/REQUIREMENTS.md`. No product-code deviations.",
+      "known_issues": "None for T01. The verifier's `--artifacts`/`--all` modes may still localize later S11 artifact gaps until subsequent tasks backfill missing assessment/UAT artifacts.",
+      "key_files": [
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "key_decisions": [
+        "Used the task-approved direct Markdown fallback because no DB-backed requirement-update tool was exposed.",
+        "Kept all R001-R054 statuses validated only where completed S01-S10 evidence exists, with explicit evidence-class caveats and the R009 Warning discrepancy note preserved."
+      ],
+      "full_summary_md": "---\nid: T01\nparent: S11\nmilestone: M001\nkey_files:\n  - .gsd/REQUIREMENTS.md\n  - .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py\nkey_decisions:\n  - Used the task-approved direct Markdown fallback because no DB-backed requirement-update tool was exposed.\n  - Kept all R001-R054 statuses validated only where completed S01-S10 evidence exists, with explicit evidence-class caveats and the R009 Warning discrepancy note preserved.\nduration: \nverification_result: passed\ncompleted_at: 2026-05-19T04:51:49.547Z\nblocker_discovered: false\n---\n\n# T01: Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.\n\n**Rebuilt R001-R054 requirement traceability into an evidence-backed matrix and added a slice-local verifier for placeholder, owner, proof, and count failures.**\n\n## What Happened\n\nReconciled `.gsd/REQUIREMENTS.md` against `.planning/REQUIREMENTS.md` and the completed S01-S10 evidence summarized in S11 research. The rendered requirements now carry meaningful FOUND/SET/DISC/OVR/F4SE/SCAN/TOOL/ABOUT/SAFE titles, descriptions, validated status, primary owning slices, normalized supporting slice IDs, evidence class caveats, proof strings tied to completed slice summaries/tests/gates, and the preserved R009 Warning discrepancy note. No Rust/Slint product behavior was changed.\n\nThe preferred DB-backed requirement-update tool was not exposed in this execution session, so I used the task-approved direct Markdown fallback and documented that fallback in the remediation note at the top of `.gsd/REQUIREMENTS.md`. I also added `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py` with `--requirements`, `--artifacts`, `--provenance`, and `--all` modes. The required `--requirements` mode checks missing/duplicate R001-R054 records, placeholder `Untitled`, placeholder `unmapped`, missing primary owners, missing proof text, invalid statuses, traceability-table mismatches, and inconsistent coverage counts. The artifact mode is intentionally available for later S11 tasks that backfill missing UAT/assessment artifacts.\n\n## Verification\n\nVerified the required T01 command with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements`, which passed with 54 records, 54 validated, and 0 active. Also verified `--provenance` mode against existing S01-S10 slice summaries and ran temporary-mutant negative checks proving the verifier fails on placeholder titles, `unmapped` proof, missing owners, missing IDs, and duplicate IDs.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements` | 0 | ✅ pass — requirements ok: 54 records, 54 validated, 0 active | 193ms |\n| 2 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 0 | ✅ pass — traceability references existing completed-slice summary IDs | 255ms |\n| 3 | `python3 inline negative-check harness importing verify_s11_artifacts.py and mutating temporary copies for untitled, unmapped, missing_owner, missing_id, duplicate_id` | 0 | ✅ pass — all required negative mutations failed as expected | 170ms |\n\n## Deviations\n\nThe DB-backed GSD requirement-update/render tool was unavailable in the exposed tool namespace, so the task-approved direct Markdown fallback was used and documented in `.gsd/REQUIREMENTS.md`. No product-code deviations.\n\n## Known Issues\n\nNone for T01. The verifier's `--artifacts`/`--all` modes may still localize later S11 artifact gaps until subsequent tasks backfill missing assessment/UAT artifacts.\n\n## Files Created/Modified\n\n- `.gsd/REQUIREMENTS.md`\n- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`\n",
+      "description": "Expected executor skills: write-docs, verify-before-complete.\n\nWhy: M001 validation is blocked because `.gsd/REQUIREMENTS.md` still contains placeholder `Untitled` records and `unmapped` trace rows for most R001-R054 requirements, even though implementation slices S01-S10 are complete. The executor must make the requirements file audit-grade, not merely checker-satisfying.\n\nDo: Use `.planning/REQUIREMENTS.md` as the canonical source for v1 requirement titles and descriptions, preserving the known ID mapping by list order: R001-R005 FOUND, R006-R011 SET, R012-R016 DISC, R017-R024 OVR, R025-R029 F4SE, R030-R039 SCAN, R040-R045 TOOL, R046-R049 ABOUT, and R050-R054 SAFE. For every R001-R054 record, update through the GSD requirement-update/render path if the harness exposes it; if no DB-backed requirement update tool is available, make a surgical Markdown remediation and document that fallback in the task summary. Assign primary owning slices from the original phase/slice mapping, add supporting slices when later workflows satisfy the requirement (for example Overview Downgrade Manager via S09 and Archive Patcher via S10), and write proof strings tied to completed slice summaries, task summaries, source-contract/runtime tests, and recorded Cargo gates. Preserve the S02 discrepancy note for R009: the Rust port intentionally validates `Warning` in addition to the Python tab's visible Debug/Info/Error labels because the reference settings schema accepts persisted WARNING.\n\nAlso create a slice-local verifier script at `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`. It must be a small Python check with modes such as `--requirements`, `--artifacts`, `--provenance`, and `--all`; `--requirements` should fail on missing R001-R054 IDs, `Untitled`, `unmapped`, missing primary owners, missing proof text, or inconsistent active/validated counts. Keep the verifier under `.gsd/` so product tests do not read GSD/planning paths.\n\nQ3 Threat surface: the main abuse case is false or overstated validation evidence. Do not mark a requirement validated unless completed slice evidence exists; if evidence is genuinely missing, leave the status active and record the gap. No secrets or user data should be introduced.\nQ4 Requirement impact: touches all R001-R054 traceability records; does not change product requirements or decisions.\nQ5 Failure modes: if GSD requirement-update tooling is unavailable, fall back to direct Markdown remediation and make the fallback explicit; if a source summary is missing, use the artifact inventory and stop rather than invent evidence.\nQ7 Negative checks: the verifier must fail on placeholder titles, `unmapped` proof, missing owners, and duplicate/missing IDs.\n\nDone when: `.gsd/REQUIREMENTS.md` is readable by a fresh reviewer, R001-R054 are present with meaningful titles/proof/owners, no placeholder trace rows remain, and `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements` passes.",
+      "estimate": "2h",
+      "files": [
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "verify": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements",
+      "inputs": [
+        ".planning/REQUIREMENTS.md",
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/STATE.md",
+        ".gsd/state-manifest.json",
+        ".gsd/milestones/M001/M001-ROADMAP.md",
+        ".gsd/milestones/M001/slices/S11/S11-CONTEXT.md",
+        ".gsd/milestones/M001/slices/S11/S11-RESEARCH.md",
+        ".gsd/milestones/M001/slices/S01/S01-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S02/S02-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S03/S03-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S04/S04-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S05/S05-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S06/S06-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S08/S08-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S09/S09-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S10/S10-SUMMARY.md"
+      ],
+      "expected_output": [
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "observability_impact": "Turns requirement state into an inspectable traceability matrix and adds a mechanical verifier that localizes missing owners/proofs/placeholders before milestone validation is rerun.",
+      "full_plan_md": "",
+      "sequence": 0,
+      "blocker_source": "",
+      "escalation_pending": 0,
+      "escalation_awaiting_review": 0,
+      "escalation_artifact_path": null,
+      "escalation_override_applied_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S11",
+      "id": "T02",
+      "title": "Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.",
+      "status": "complete",
+      "one_liner": "Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.",
+      "narrative": "Created the missing S01 assessment and UAT artifacts from the completed S01 summary plus Phase 1 validation and verification records. The assessment summarizes shell-foundation delivery, FOUND-01..05 and SAFE-05 coverage, later-slice integration readiness, completed gates, known caveats, and read-only CMT evidence. The UAT record is explicitly labeled as a backfilled developer/source-contract artifact and states that S11 did not manually run GUI UAT, did not use a real Fallout 4 install, and did not perform fresh desktop interaction testing. Reviewed the existing S10 assessment and UAT artifacts; they are present and were preserved unchanged because S10-UAT reads as a procedure/smoke-test artifact rather than a recorded S11 real-install run. Updated the S11 artifact verifier so --artifacts now checks required artifact presence, non-empty content, the S01 UAT caveat, and guard patterns for unsupported manual real-install/desktop UAT claims.",
+      "verification_result": "Ran the required artifact verifier mode with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts`; it passed and reported all six required artifacts present, non-empty, and caveated. Also ran an inline negative-guard inspection to confirm the verifier source contains empty-artifact and unsupported-manual-claim checks, that a representative bad claim is matched, and that the current S01 UAT text contains the required caveat without matching unsupported claim patterns.",
+      "duration": "",
+      "completed_at": "2026-05-19T04:56:04.162Z",
+      "blocker_discovered": false,
+      "deviations": "None.",
+      "known_issues": "S10-UAT remains a procedure/automated-evidence artifact; no S11 manual desktop, real Fallout 4 install, or destructive archive UAT run was performed.",
+      "key_files": [
+        ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S01/S01-UAT.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "key_decisions": [
+        "Preserved S10 assessment/UAT unchanged because the task only required carrying the procedure-level caveat into closeout unless a concrete inconsistency was found.",
+        "Kept S01 UAT language as source-contract/developer verification and explicitly avoided claiming fresh manual desktop or real-install UAT."
+      ],
+      "full_summary_md": "---\nid: T02\nparent: S11\nmilestone: M001\nkey_files:\n  - .gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md\n  - .gsd/milestones/M001/slices/S01/S01-UAT.md\n  - .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py\nkey_decisions:\n  - Preserved S10 assessment/UAT unchanged because the task only required carrying the procedure-level caveat into closeout unless a concrete inconsistency was found.\n  - Kept S01 UAT language as source-contract/developer verification and explicitly avoided claiming fresh manual desktop or real-install UAT.\nduration: \nverification_result: passed\ncompleted_at: 2026-05-19T04:56:04.161Z\nblocker_discovered: false\n---\n\n# T02: Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.\n\n**Backfilled S01 assessment/UAT artifacts with source-contract caveats and tightened the S11 artifact verifier.**\n\n## What Happened\n\nCreated the missing S01 assessment and UAT artifacts from the completed S01 summary plus Phase 1 validation and verification records. The assessment summarizes shell-foundation delivery, FOUND-01..05 and SAFE-05 coverage, later-slice integration readiness, completed gates, known caveats, and read-only CMT evidence. The UAT record is explicitly labeled as a backfilled developer/source-contract artifact and states that S11 did not manually run GUI UAT, did not use a real Fallout 4 install, and did not perform fresh desktop interaction testing. Reviewed the existing S10 assessment and UAT artifacts; they are present and were preserved unchanged because S10-UAT reads as a procedure/smoke-test artifact rather than a recorded S11 real-install run. Updated the S11 artifact verifier so --artifacts now checks required artifact presence, non-empty content, the S01 UAT caveat, and guard patterns for unsupported manual real-install/desktop UAT claims.\n\n## Verification\n\nRan the required artifact verifier mode with `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts`; it passed and reported all six required artifacts present, non-empty, and caveated. Also ran an inline negative-guard inspection to confirm the verifier source contains empty-artifact and unsupported-manual-claim checks, that a representative bad claim is matched, and that the current S01 UAT text contains the required caveat without matching unsupported claim patterns.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts` | 0 | ✅ pass | 257ms |\n| 2 | `python3 - <<'PY' ... inline negative guard inspection ... PY` | 0 | ✅ pass | 109ms |\n\n## Deviations\n\nNone.\n\n## Known Issues\n\nS10-UAT remains a procedure/automated-evidence artifact; no S11 manual desktop, real Fallout 4 install, or destructive archive UAT run was performed.\n\n## Files Created/Modified\n\n- `.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md`\n- `.gsd/milestones/M001/slices/S01/S01-UAT.md`\n- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`\n",
+      "description": "Expected executor skills: write-docs, verify-before-complete.\n\nWhy: Validation round 0 identified missing S01 UAT and assessment artifacts. S01 is complete, and the old phase validation/verification notes plus S01 summary provide enough source-backed evidence to backfill these artifacts honestly.\n\nDo: Create `.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md` and `.gsd/milestones/M001/slices/S01/S01-UAT.md`. Base them on `S01-SUMMARY.md`, `.planning/phases/01-slint-shell-port-architecture/01-VALIDATION.md`, and `.planning/phases/01-slint-shell-port-architecture/01-VERIFICATION.md`. The assessment should summarize shell-foundation delivery, requirement coverage for FOUND-01..05/SAFE-05, integration readiness for later slices, completed gates, known caveats, and read-only CMT evidence. The UAT artifact should be a developer/source-contract UAT record for shell launch, application identity, tab order, module boundaries, and verification commands; clearly state if S11 did not perform live manual GUI UAT.\n\nCheck that `.gsd/milestones/M001/slices/S10/S10-ASSESSMENT.md` and `S10-UAT.md` still exist and are acceptable as procedure/automated-evidence artifacts. Do not rewrite S10 unless a concrete inconsistency is found; if S10 has only procedure-level UAT, carry that caveat into S11 closeout rather than implying a real Fallout 4 install was used.\n\nQ3 Threat surface: avoid evidence laundering; UAT wording must distinguish source-contract/developer verification from manual desktop/game-install UAT.\nQ4 Requirement impact: supports R001-R005 and R054 traceability and confirms S10 support for R022/R041/R044/R050/R053 as applicable.\nQ5 Failure modes: if historical phase artifacts are inconsistent with S01 summary, prefer S01 summary/current repository facts and document the discrepancy.\nQ7 Negative checks: the verifier should fail if S01 UAT/assessment are missing, empty, or contain wording that claims manual real-install UAT without a recorded run.\n\nDone when: S01 assessment and UAT files exist, contain honest evidence/caveats, S10 artifact presence has been checked, and the artifact verifier mode passes.",
+      "estimate": "1h",
+      "files": [
+        ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S01/S01-UAT.md"
+      ],
+      "verify": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts",
+      "inputs": [
+        ".gsd/milestones/M001/slices/S01/S01-SUMMARY.md",
+        ".planning/phases/01-slint-shell-port-architecture/01-VALIDATION.md",
+        ".planning/phases/01-slint-shell-port-architecture/01-VERIFICATION.md",
+        ".gsd/milestones/M001/slices/S10/S10-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S10/S10-UAT.md",
+        ".gsd/milestones/M001/slices/S11/S11-RESEARCH.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "expected_output": [
+        ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S01/S01-UAT.md"
+      ],
+      "observability_impact": "Adds missing audit artifacts and explicit evidence-class caveats so future validators can see exactly what was proven by source contracts, automated gates, and historical summaries.",
+      "full_plan_md": "",
+      "sequence": 0,
+      "blocker_source": "",
+      "escalation_pending": 0,
+      "escalation_awaiting_review": 0,
+      "escalation_artifact_path": null,
+      "escalation_override_applied_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S11",
+      "id": "T03",
+      "title": "Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.",
+      "status": "complete",
+      "one_liner": "Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.",
+      "narrative": "Inspected S07, S01, and S02 summaries plus S11 research and the existing S11 verifier. S07 frontmatter contained the documented incorrect dependency attribution: S02 was credited with the main shell and tab wiring. I first extended the provenance verifier's existing --provenance mode with the narrow Q7 guard from the task plan, then ran it against the unmodified S07 summary to confirm it failed for the intended reason. After that negative check, I updated S07-SUMMARY.md's requires block to add S01 as the Main shell/reference tab order/MainWindow tab-wiring dependency and narrow S02 to the settings persistence/scanner settings contract. I also audited completed slice summaries for the same S02-only shell provenance attribution class and found no remaining instances.",
+      "verification_result": "Ran the S11 provenance verifier before and after the S07 correction. The guarded verifier failed before the fix with the expected S01-missing/S02-shell-attribution errors, then passed after the S07 frontmatter correction. A separate completed-slice summary audit also passed, confirming no completed slice summary still attributes Main shell/MainWindow/tab wiring provenance to S02.",
+      "duration": "",
+      "completed_at": "2026-05-19T04:58:24.680Z",
+      "blocker_discovered": false,
+      "deviations": "Updated .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py in addition to S07-SUMMARY.md because the task's Q7 negative-check requirement explicitly said the verifier should fail if the incorrect S07 attribution remained.",
+      "known_issues": "None.",
+      "key_files": [
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "key_decisions": [
+        "Enforced the S07 provenance correction mechanically in the existing S11 --provenance verifier rather than relying only on prose review."
+      ],
+      "full_summary_md": "---\nid: T03\nparent: S11\nmilestone: M001\nkey_files:\n  - .gsd/milestones/M001/slices/S07/S07-SUMMARY.md\n  - .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py\nkey_decisions:\n  - Enforced the S07 provenance correction mechanically in the existing S11 --provenance verifier rather than relying only on prose review.\nduration: \nverification_result: passed\ncompleted_at: 2026-05-19T04:58:24.679Z\nblocker_discovered: false\n---\n\n# T03: Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.\n\n**Corrected S07 dependency provenance so shell/tab wiring is credited to S01 and settings/scanner settings to S02, with a verifier guard against regression.**\n\n## What Happened\n\nInspected S07, S01, and S02 summaries plus S11 research and the existing S11 verifier. S07 frontmatter contained the documented incorrect dependency attribution: S02 was credited with the main shell and tab wiring. I first extended the provenance verifier's existing --provenance mode with the narrow Q7 guard from the task plan, then ran it against the unmodified S07 summary to confirm it failed for the intended reason. After that negative check, I updated S07-SUMMARY.md's requires block to add S01 as the Main shell/reference tab order/MainWindow tab-wiring dependency and narrow S02 to the settings persistence/scanner settings contract. I also audited completed slice summaries for the same S02-only shell provenance attribution class and found no remaining instances.\n\n## Verification\n\nRan the S11 provenance verifier before and after the S07 correction. The guarded verifier failed before the fix with the expected S01-missing/S02-shell-attribution errors, then passed after the S07 frontmatter correction. A separate completed-slice summary audit also passed, confirming no completed slice summary still attributes Main shell/MainWindow/tab wiring provenance to S02.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 1 | ✅ expected fail before S07 fix; verifier caught missing S01 and incorrect S02 shell attribution | 260ms |\n| 2 | `python3 - <<'PY'\nfrom pathlib import Path\nimport re\nroot = Path('.gsd/milestones/M001/slices')\nproblems = []\nfor summary in sorted(root.glob('S[0-9][0-9]/S[0-9][0-9]-SUMMARY.md')):\n    text = summary.read_text(encoding='utf-8')\n    for match in re.finditer(r'(?m)^  - slice: S02\\n    provides: (?P<provides>.+)$', text):\n        provides = match.group('provides')\n        if re.search(r'Main shell|MainWindow|tab wiring', provides, re.IGNORECASE):\n            problems.append(f'{summary}: {provides}')\nif problems:\n    print('bad S02 shell provenance remains:')\n    for problem in problems:\n        print(problem)\n    raise SystemExit(1)\nprint('audit ok: no completed slice summary attributes Main shell/MainWindow/tab wiring to S02')\nPY` | 0 | ✅ pass; no completed slice summary attributes shell/tab wiring to S02 | 167ms |\n| 3 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance` | 0 | ✅ pass; provenance verifier confirms traceability IDs and S07 dependency attribution | 256ms |\n\n## Deviations\n\nUpdated .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py in addition to S07-SUMMARY.md because the task's Q7 negative-check requirement explicitly said the verifier should fail if the incorrect S07 attribution remained.\n\n## Known Issues\n\nNone.\n\n## Files Created/Modified\n\n- `.gsd/milestones/M001/slices/S07/S07-SUMMARY.md`\n- `.gsd/milestones/M001/slices/S11/verify_s11_artifacts.py`\n",
+      "description": "Expected executor skills: write-docs, verify-before-complete.\n\nWhy: S07 completion metadata currently over-attributes `Main shell, settings persistence baseline, and tab wiring patterns` to S02. This weakens dependency traceability because S01 provided the shell/tab wiring while S02 provided settings persistence and scanner settings.\n\nDo: Edit `.gsd/milestones/M001/slices/S07/S07-SUMMARY.md` only as needed to repair dependency/provenance metadata and any adjacent prose that repeats the same error. The corrected dependency story should credit S01 for the Main shell/tab wiring and S02 for settings persistence/scanner settings, while preserving all implementation facts, verification evidence, and completed status. Audit nearby completed-slice metadata only for the same concrete class of attribution error; do not rewrite completed history for style.\n\nQ3 Threat surface: provenance errors can cause future agents to consume the wrong integration contract. Fix attribution without changing delivered behavior.\nQ4 Requirement impact: supports scanner requirements R030-R039 and safety requirements R050-R053 by making their upstream dependencies accurate.\nQ5 Failure modes: if S07 contains multiple dependency blocks, update all duplicate references consistently; if no exact old text remains, add a concise corrected note rather than broad rewrites.\nQ7 Negative checks: the verifier should fail if S07 still claims S02 provided the main shell/tab wiring without S01 attribution.\n\nDone when: S07 summary accurately references S01 and S02, no incorrect S02-only shell attribution remains, and the provenance verifier passes.",
+      "estimate": "30m",
+      "files": [
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md"
+      ],
+      "verify": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance",
+      "inputs": [
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S01/S01-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S02/S02-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S11/S11-RESEARCH.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py"
+      ],
+      "expected_output": [
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md"
+      ],
+      "observability_impact": "Corrects dependency metadata so future audits can localize scanner integration prerequisites to the actual producing slices.",
+      "full_plan_md": "",
+      "sequence": 0,
+      "blocker_source": "",
+      "escalation_pending": 0,
+      "escalation_awaiting_review": 0,
+      "escalation_artifact_path": null,
+      "escalation_override_applied_at": null
+    },
+    {
+      "milestone_id": "M001",
+      "slice_id": "S11",
+      "id": "T04",
+      "title": "Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.",
+      "status": "complete",
+      "one_liner": "Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.",
+      "narrative": "Ran the S11 documentation verifier, all required Cargo gates, and the explicit CMT read-only submodule status check from J:/cmt-rs. The verifier confirmed 54 requirement records with 54 validated and 0 active, required S01/S10 artifacts present and caveated, and corrected S07 provenance. Cargo formatting, check, test, and clippy gates all exited 0; cargo test reported 365 passing tests. Clippy still reports non-fatal existing warnings under the current project lint configuration, so the caveat is recorded rather than hidden. Created the final S11 closeout artifacts: S11-UAT.md, S11-ASSESSMENT.md, and S11-SUMMARY.md. The GSD milestone validation tool requested by the task plan was not exposed in this executor's callable tool namespace, so I used the task-authorized manual fallback and wrote .gsd/milestones/M001/M001-VALIDATION.md with validation round 1 verdict, success criteria checklist, slice audit, requirement coverage, verification classes, and honest limitations. No Rust/Slint product behavior was changed and no files under CMT/ were modified.",
+      "verification_result": "Verified with python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all, cargo fmt --check, cargo check, cargo test, cargo clippy --all-targets --all-features, and git status --short CMT. Re-ran the S11 verifier after writing closeout artifacts and added a non-empty final artifact check for S11-UAT.md, S11-ASSESSMENT.md, S11-SUMMARY.md, and M001-VALIDATION.md.",
+      "duration": "",
+      "completed_at": "2026-05-19T05:04:51.471Z",
+      "blocker_discovered": false,
+      "deviations": "Used the task-authorized manual milestone-validation fallback because gsd_validate_milestone/gsd_milestone_validate were not exposed in the available tool namespace. No product-code deviations.",
+      "known_issues": "No validation blockers remain. Non-fatal clippy warnings still appear while the configured clippy gate exits 0. S11 did not perform fresh manual desktop GUI UAT, real Fallout 4 install testing, live network checks, or destructive real-user file operations; these limitations are documented in closeout and validation artifacts.",
+      "key_files": [
+        ".gsd/milestones/M001/slices/S11/S11-UAT.md",
+        ".gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S11/S11-SUMMARY.md",
+        ".gsd/milestones/M001/M001-VALIDATION.md",
+        ".gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md"
+      ],
+      "key_decisions": [
+        "Recorded M001 validation round 1 through the manual fallback path because the DB-backed milestone validation tool was unavailable to this executor.",
+        "Kept S10 UAT accepted only as procedure-level evidence unless a future sandbox/manual run is separately recorded.",
+        "Treated clippy warnings honestly as non-fatal under the current gate rather than hiding or fixing product code during a documentation-only remediation task."
+      ],
+      "full_summary_md": "---\nid: T04\nparent: S11\nmilestone: M001\nkey_files:\n  - .gsd/milestones/M001/slices/S11/S11-UAT.md\n  - .gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md\n  - .gsd/milestones/M001/slices/S11/S11-SUMMARY.md\n  - .gsd/milestones/M001/M001-VALIDATION.md\n  - .gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md\nkey_decisions:\n  - Recorded M001 validation round 1 through the manual fallback path because the DB-backed milestone validation tool was unavailable to this executor.\n  - Kept S10 UAT accepted only as procedure-level evidence unless a future sandbox/manual run is separately recorded.\n  - Treated clippy warnings honestly as non-fatal under the current gate rather than hiding or fixing product code during a documentation-only remediation task.\nduration: \nverification_result: passed\ncompleted_at: 2026-05-19T05:04:51.470Z\nblocker_discovered: false\n---\n\n# T04: Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.\n\n**Recorded S11 closeout artifacts and manual M001 validation round 1 after final documentation, Cargo, and CMT cleanliness gates passed.**\n\n## What Happened\n\nRan the S11 documentation verifier, all required Cargo gates, and the explicit CMT read-only submodule status check from J:/cmt-rs. The verifier confirmed 54 requirement records with 54 validated and 0 active, required S01/S10 artifacts present and caveated, and corrected S07 provenance. Cargo formatting, check, test, and clippy gates all exited 0; cargo test reported 365 passing tests. Clippy still reports non-fatal existing warnings under the current project lint configuration, so the caveat is recorded rather than hidden. Created the final S11 closeout artifacts: S11-UAT.md, S11-ASSESSMENT.md, and S11-SUMMARY.md. The GSD milestone validation tool requested by the task plan was not exposed in this executor's callable tool namespace, so I used the task-authorized manual fallback and wrote .gsd/milestones/M001/M001-VALIDATION.md with validation round 1 verdict, success criteria checklist, slice audit, requirement coverage, verification classes, and honest limitations. No Rust/Slint product behavior was changed and no files under CMT/ were modified.\n\n## Verification\n\nVerified with python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all, cargo fmt --check, cargo check, cargo test, cargo clippy --all-targets --all-features, and git status --short CMT. Re-ran the S11 verifier after writing closeout artifacts and added a non-empty final artifact check for S11-UAT.md, S11-ASSESSMENT.md, S11-SUMMARY.md, and M001-VALIDATION.md.\n\n## Verification Evidence\n\n| # | Command | Exit Code | Verdict | Duration |\n|---|---------|-----------|---------|----------|\n| 1 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all` | 0 | ✅ pass — requirements/artifacts/provenance checks passed | 309ms |\n| 2 | `cargo fmt --check` | 0 | ✅ pass — no output | 761ms |\n| 3 | `cargo check` | 0 | ✅ pass | 8861ms |\n| 4 | `cargo test` | 0 | ✅ pass — 365 passed, 0 failed | 8663ms |\n| 5 | `cargo clippy --all-targets --all-features` | 0 | ✅ pass — non-fatal warnings reported under current gate | 8904ms |\n| 6 | `git status --short CMT` | 0 | ✅ pass — no output | 647ms |\n| 7 | `python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all` | 0 | ✅ pass — rerun after closeout artifact writes | 291ms |\n| 8 | `test -s .gsd/milestones/M001/slices/S11/S11-UAT.md && test -s .gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md && test -s .gsd/milestones/M001/slices/S11/S11-SUMMARY.md && test -s .gsd/milestones/M001/M001-VALIDATION.md` | 0 | ✅ pass — 4 final artifacts non-empty | 111ms |\n\n## Deviations\n\nUsed the task-authorized manual milestone-validation fallback because gsd_validate_milestone/gsd_milestone_validate were not exposed in the available tool namespace. No product-code deviations.\n\n## Known Issues\n\nNo validation blockers remain. Non-fatal clippy warnings still appear while the configured clippy gate exits 0. S11 did not perform fresh manual desktop GUI UAT, real Fallout 4 install testing, live network checks, or destructive real-user file operations; these limitations are documented in closeout and validation artifacts.\n\n## Files Created/Modified\n\n- `.gsd/milestones/M001/slices/S11/S11-UAT.md`\n- `.gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md`\n- `.gsd/milestones/M001/slices/S11/S11-SUMMARY.md`\n- `.gsd/milestones/M001/M001-VALIDATION.md`\n- `.gsd/milestones/M001/slices/S11/tasks/T04-SUMMARY.md`\n",
+      "description": "Expected executor skills: verify-before-complete, review, write-docs.\n\nWhy: S11 is complete only when the repaired traceability and artifacts survive both mechanical documentation checks and the standard Rust quality gates. The final result must be recorded in S11 closeout artifacts and M001 validation evidence, with honest caveats for any UAT that was not actually performed.\n\nDo: Run the slice-local verifier in `--all` mode after T01-T03. Run fresh project gates from `J:/cmt-rs`: `cargo fmt --check`, `cargo check`, `cargo test`, `cargo clippy --all-targets --all-features`, and `git status --short CMT`. The CMT status command must produce no output; if it does, stop and report the read-only submodule violation rather than proceeding. Do not change Rust/Slint product behavior as part of this task; if a Cargo gate fails due to product code, investigate as a blocker and do not hide it in documentation.\n\nCreate final S11 closeout artifacts: `S11-UAT.md` should state exactly which verification was run and which evidence class applies; `S11-ASSESSMENT.md` should assess remediation completeness, requirement coverage, S10 artifact acceptability, S07 attribution repair, and remaining limitations; `S11-SUMMARY.md` should summarize work performed and gate results. Then run milestone validation round 1 through the GSD validation tool if available, writing `.gsd/milestones/M001/M001-VALIDATION.md`; if the tool renders a different validation path, record the actual path in the S11 summary. If validation returns `needs-remediation`, do not mark the milestone complete; preserve the precise blockers and proposed remediation.\n\nQ3 Threat surface: final validation can be abused by overstating proof. Evidence must include fresh command outputs and must not claim manual real-install UAT unless performed.\nQ4 Requirement impact: re-verifies all R001-R054 traceability and milestone success criteria; no product requirements are changed.\nQ5 Failure modes: Cargo gate failure blocks completion; validation-tool absence requires a manually written validation evidence artifact plus explicit note; dirty CMT status blocks completion; missing final artifacts fail the verifier.\nQ6 Load profile: Cargo test/clippy are the only heavy operations and run locally; no network, secrets, or external services are required.\nQ7 Negative checks: `--all` verifier must catch missing artifacts/placeholders/provenance regression, and CMT status must catch accidental submodule modifications.\n\nDone when: all final commands pass, CMT remains clean, S11 UAT/assessment/summary and M001 validation evidence are written with honest caveats, and either validation round 1 passes or remaining blockers are explicit.",
+      "estimate": "1.5h",
+      "files": [
+        ".gsd/milestones/M001/slices/S11/S11-UAT.md",
+        ".gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S11/S11-SUMMARY.md",
+        ".gsd/milestones/M001/M001-VALIDATION.md"
+      ],
+      "verify": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all\ncargo fmt --check\ncargo check\ncargo test\ncargo clippy --all-targets --all-features\ngit status --short CMT",
+      "inputs": [
+        ".gsd/REQUIREMENTS.md",
+        ".gsd/milestones/M001/M001-ROADMAP.md",
+        ".gsd/milestones/M001/slices/S11/S11-CONTEXT.md",
+        ".gsd/milestones/M001/slices/S11/S11-RESEARCH.md",
+        ".gsd/milestones/M001/slices/S11/verify_s11_artifacts.py",
+        ".gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S01/S01-UAT.md",
+        ".gsd/milestones/M001/slices/S07/S07-SUMMARY.md",
+        ".gsd/milestones/M001/slices/S10/S10-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S10/S10-UAT.md",
+        "Cargo.toml",
+        "Cargo.lock",
+        "src",
+        "ui",
+        "CMT"
+      ],
+      "expected_output": [
+        ".gsd/milestones/M001/slices/S11/S11-UAT.md",
+        ".gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md",
+        ".gsd/milestones/M001/slices/S11/S11-SUMMARY.md",
+        ".gsd/milestones/M001/M001-VALIDATION.md"
+      ],
+      "observability_impact": "Produces fresh closeout and validation artifacts plus command-gate evidence, making any remaining milestone blocker inspectable from a single validation trail.",
       "full_plan_md": "",
       "sequence": 0,
       "blocker_source": "",
@@ -5826,6 +6054,182 @@
       "verdict": "✅ pass (non-fatal warnings emitted)",
       "duration_ms": 44838,
       "created_at": "2026-05-19T03:48:01.071Z"
+    },
+    {
+      "id": 269,
+      "task_id": "T01",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --requirements",
+      "exit_code": 0,
+      "verdict": "✅ pass — requirements ok: 54 records, 54 validated, 0 active",
+      "duration_ms": 193,
+      "created_at": "2026-05-19T04:51:49.548Z"
+    },
+    {
+      "id": 270,
+      "task_id": "T01",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance",
+      "exit_code": 0,
+      "verdict": "✅ pass — traceability references existing completed-slice summary IDs",
+      "duration_ms": 255,
+      "created_at": "2026-05-19T04:51:49.548Z"
+    },
+    {
+      "id": 271,
+      "task_id": "T01",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 inline negative-check harness importing verify_s11_artifacts.py and mutating temporary copies for untitled, unmapped, missing_owner, missing_id, duplicate_id",
+      "exit_code": 0,
+      "verdict": "✅ pass — all required negative mutations failed as expected",
+      "duration_ms": 170,
+      "created_at": "2026-05-19T04:51:49.548Z"
+    },
+    {
+      "id": 272,
+      "task_id": "T02",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --artifacts",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 257,
+      "created_at": "2026-05-19T04:56:04.162Z"
+    },
+    {
+      "id": 273,
+      "task_id": "T02",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 - <<'PY' ... inline negative guard inspection ... PY",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 109,
+      "created_at": "2026-05-19T04:56:04.162Z"
+    },
+    {
+      "id": 274,
+      "task_id": "T03",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance",
+      "exit_code": 1,
+      "verdict": "✅ expected fail before S07 fix; verifier caught missing S01 and incorrect S02 shell attribution",
+      "duration_ms": 260,
+      "created_at": "2026-05-19T04:58:24.680Z"
+    },
+    {
+      "id": 275,
+      "task_id": "T03",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 - <<'PY'\nfrom pathlib import Path\nimport re\nroot = Path('.gsd/milestones/M001/slices')\nproblems = []\nfor summary in sorted(root.glob('S[0-9][0-9]/S[0-9][0-9]-SUMMARY.md')):\n    text = summary.read_text(encoding='utf-8')\n    for match in re.finditer(r'(?m)^  - slice: S02\\n    provides: (?P<provides>.+)$', text):\n        provides = match.group('provides')\n        if re.search(r'Main shell|MainWindow|tab wiring', provides, re.IGNORECASE):\n            problems.append(f'{summary}: {provides}')\nif problems:\n    print('bad S02 shell provenance remains:')\n    for problem in problems:\n        print(problem)\n    raise SystemExit(1)\nprint('audit ok: no completed slice summary attributes Main shell/MainWindow/tab wiring to S02')\nPY",
+      "exit_code": 0,
+      "verdict": "✅ pass; no completed slice summary attributes shell/tab wiring to S02",
+      "duration_ms": 167,
+      "created_at": "2026-05-19T04:58:24.680Z"
+    },
+    {
+      "id": 276,
+      "task_id": "T03",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --provenance",
+      "exit_code": 0,
+      "verdict": "✅ pass; provenance verifier confirms traceability IDs and S07 dependency attribution",
+      "duration_ms": 256,
+      "created_at": "2026-05-19T04:58:24.680Z"
+    },
+    {
+      "id": 277,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all",
+      "exit_code": 0,
+      "verdict": "✅ pass — requirements/artifacts/provenance checks passed",
+      "duration_ms": 309,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 278,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "cargo fmt --check",
+      "exit_code": 0,
+      "verdict": "✅ pass — no output",
+      "duration_ms": 761,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 279,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "cargo check",
+      "exit_code": 0,
+      "verdict": "✅ pass",
+      "duration_ms": 8861,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 280,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "cargo test",
+      "exit_code": 0,
+      "verdict": "✅ pass — 365 passed, 0 failed",
+      "duration_ms": 8663,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 281,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "cargo clippy --all-targets --all-features",
+      "exit_code": 0,
+      "verdict": "✅ pass — non-fatal warnings reported under current gate",
+      "duration_ms": 8904,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 282,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "git status --short CMT",
+      "exit_code": 0,
+      "verdict": "✅ pass — no output",
+      "duration_ms": 647,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 283,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "python3 .gsd/milestones/M001/slices/S11/verify_s11_artifacts.py --all",
+      "exit_code": 0,
+      "verdict": "✅ pass — rerun after closeout artifact writes",
+      "duration_ms": 291,
+      "created_at": "2026-05-19T05:04:51.471Z"
+    },
+    {
+      "id": 284,
+      "task_id": "T04",
+      "slice_id": "S11",
+      "milestone_id": "M001",
+      "command": "test -s .gsd/milestones/M001/slices/S11/S11-UAT.md && test -s .gsd/milestones/M001/slices/S11/S11-ASSESSMENT.md && test -s .gsd/milestones/M001/slices/S11/S11-SUMMARY.md && test -s .gsd/milestones/M001/M001-VALIDATION.md",
+      "exit_code": 0,
+      "verdict": "✅ pass — 4 final artifacts non-empty",
+      "duration_ms": 111,
+      "created_at": "2026-05-19T05:04:51.471Z"
     }
   ]
 }

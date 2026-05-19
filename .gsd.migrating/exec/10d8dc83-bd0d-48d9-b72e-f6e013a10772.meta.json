@@ -1,0 +1,18 @@
+{
+  "id": "10d8dc83-bd0d-48d9-b72e-f6e013a10772",
+  "runtime": "bash",
+  "purpose": "S11 closer final verifier and Cargo gates (non-git)",
+  "script_chars": 688,
+  "started_at": "2026-05-19T05:06:30.740Z",
+  "finished_at": "2026-05-19T05:06:31.534Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 794,
+  "stdout_bytes": 120,
+  "stderr_bytes": 245,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\10d8dc83-bd0d-48d9-b72e-f6e013a10772.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\10d8dc83-bd0d-48d9-b72e-f6e013a10772.stderr"
+}

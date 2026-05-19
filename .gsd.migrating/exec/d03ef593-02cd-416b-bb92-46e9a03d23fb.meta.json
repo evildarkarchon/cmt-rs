@@ -1,0 +1,18 @@
+{
+  "id": "d03ef593-02cd-416b-bb92-46e9a03d23fb",
+  "runtime": "bash",
+  "purpose": "debug escaped bash variable expansion",
+  "script_chars": 46,
+  "started_at": "2026-05-19T05:42:47.606Z",
+  "finished_at": "2026-05-19T05:42:47.698Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 92,
+  "stdout_bytes": 18,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\d03ef593-02cd-416b-bb92-46e9a03d23fb.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\d03ef593-02cd-416b-bb92-46e9a03d23fb.stderr"
+}

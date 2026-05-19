@@ -1,0 +1,18 @@
+{
+  "id": "070b834a-d646-45f8-8786-96f09310bce3",
+  "runtime": "bash",
+  "purpose": "S11 planning cargo/source path check",
+  "script_chars": 196,
+  "started_at": "2026-05-19T04:34:02.758Z",
+  "finished_at": "2026-05-19T04:34:02.898Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 140,
+  "stdout_bytes": 60,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\070b834a-d646-45f8-8786-96f09310bce3.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\070b834a-d646-45f8-8786-96f09310bce3.stderr"
+}

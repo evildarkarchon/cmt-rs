@@ -1,0 +1,6 @@
+fatal: Not a valid object name ""
+fatal: ambiguous argument '""..HEAD': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+fatal: bad revision '""'
+fatal: bad revision ''

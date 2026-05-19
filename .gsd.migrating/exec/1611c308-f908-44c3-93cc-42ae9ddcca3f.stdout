@@ -1,0 +1,28 @@
+.gsd/REQUIREMENTS.md: exists
+.planning/REQUIREMENTS.md: exists
+.gsd/STATE.md: exists
+.gsd/state-manifest.json: exists
+.gsd/milestones/M001/M001-ROADMAP.md: exists
+.gsd/milestones/M001/M001-CONTEXT.md: exists
+.gsd/milestones/M001/slices/S11/S11-CONTEXT.md: exists
+.gsd/milestones/M001/slices/S11/S11-RESEARCH.md: exists
+.gsd/activity/023-validate-milestone-M001.jsonl: MISSING
+.gsd/milestones/M001/slices/S01/S01-SUMMARY.md: exists
+.planning/phases/01-slint-shell-port-architecture/01-VALIDATION.md: exists
+.planning/phases/01-slint-shell-port-architecture/01-VERIFICATION.md: exists
+.gsd/milestones/M001/slices/S01/S01-ASSESSMENT.md: MISSING
+.gsd/milestones/M001/slices/S01/S01-UAT.md: MISSING
+.gsd/milestones/M001/slices/S07/S07-SUMMARY.md: exists
+.gsd/milestones/M001/slices/S10/S10-ASSESSMENT.md: exists
+.gsd/milestones/M001/slices/S10/S10-UAT.md: exists
+S01: summary=True uat=False assessment=False task_summaries=3
+S02: summary=True uat=True assessment=True task_summaries=4
+S03: summary=True uat=True assessment=True task_summaries=4
+S04: summary=True uat=True assessment=True task_summaries=6
+S05: summary=True uat=True assessment=True task_summaries=5
+S06: summary=True uat=True assessment=True task_summaries=5
+S07: summary=True uat=True assessment=True task_summaries=5
+S08: summary=True uat=True assessment=True task_summaries=4
+S09: summary=True uat=True assessment=True task_summaries=6
+S10: summary=True uat=True assessment=True task_summaries=6
+CMT paths under git status check deferred to final gate

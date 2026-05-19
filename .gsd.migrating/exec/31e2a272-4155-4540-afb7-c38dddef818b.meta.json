@@ -1,0 +1,18 @@
+{
+  "id": "31e2a272-4155-4540-afb7-c38dddef818b",
+  "runtime": "bash",
+  "purpose": "T04 gate: S11 verifier --all",
+  "script_chars": 69,
+  "started_at": "2026-05-19T04:59:26.412Z",
+  "finished_at": "2026-05-19T04:59:26.721Z",
+  "exit_code": 0,
+  "signal": null,
+  "timed_out": false,
+  "duration_ms": 309,
+  "stdout_bytes": 223,
+  "stderr_bytes": 0,
+  "stdout_truncated": false,
+  "stderr_truncated": false,
+  "stdout_path": "J:\\cmt-rs\\.gsd\\exec\\31e2a272-4155-4540-afb7-c38dddef818b.stdout",
+  "stderr_path": "J:\\cmt-rs\\.gsd\\exec\\31e2a272-4155-4540-afb7-c38dddef818b.stderr"
+}
