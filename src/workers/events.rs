@@ -15,6 +15,10 @@ use std::{
 
 use crate::{
     domain::{
+        archive_patcher::{
+            ArchivePatcherCandidateSnapshot, ArchivePatcherExecutionResult, ArchivePatcherLogRow,
+            ArchivePatcherPreviewPlan, ArchivePatcherProgress,
+        },
         autofix::AutoFixCompletion,
         downgrader::{DowngraderExecutionLogRow, DowngraderProgress},
         f4se::F4seScanSnapshot,
@@ -406,6 +410,8 @@ pub enum WorkerPayload {
     AboutAction(AboutActionWorkerPayload),
     /// Downgrader modal status, plan, progress, log, or run result.
     Downgrader(DowngraderWorkerPayload),
+    /// Archive Patcher modal candidates, plan, progress, logs, patch, or restore result.
+    ArchivePatcher(ArchivePatcherWorkerPayload),
     /// External process, tool, or desktop-action result.
     ExternalAction(ExternalActionPayload),
     /// Cancellation details.
@@ -598,6 +604,199 @@ impl AboutActionWorkerPayload {
     /// Creates an About action-completion payload.
     pub fn action_completed(feedback: AboutActionFeedback) -> Self {
         Self { feedback }
+    }
+}
+
+/// Archive Patcher worker stage used for safe failure routing and stale-event rejection.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum ArchivePatcherWorkerStage {
+    /// The worker was selecting candidate archive rows from Overview records.
+    Candidates,
+    /// The worker was preparing a read-only preview plan.
+    Plan,
+    /// The worker was executing an explicitly confirmed patch run.
+    Patch,
+    /// The worker was restoring the latest manifest-backed patch run.
+    Restore,
+}
+
+impl ArchivePatcherWorkerStage {
+    /// Returns a stable label suitable for structured tracing and tests.
+    pub const fn label(self) -> &'static str {
+        match self {
+            Self::Candidates => "candidates",
+            Self::Plan => "plan",
+            Self::Patch => "patch",
+            Self::Restore => "restore",
+        }
+    }
+
+    /// Returns true when this stage performs file mutation and must block close/Escape.
+    pub const fn is_mutation(self) -> bool {
+        matches!(self, Self::Patch | Self::Restore)
+    }
+}
+
+/// Archive Patcher-specific worker payloads that must cross the UI handoff boundary intact.
+#[derive(Debug, Clone, PartialEq)]
+pub enum ArchivePatcherWorkerPayload {
+    /// A candidate-loading worker produced render-ready candidate rows.
+    CandidatesLoaded {
+        /// Candidate request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned candidate snapshot produced off the UI thread.
+        snapshot: Box<ArchivePatcherCandidateSnapshot>,
+    },
+    /// A read-only planning worker produced an inline confirmation plan.
+    PlanReady {
+        /// Plan request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned preview plan produced off the UI thread.
+        plan: Box<ArchivePatcherPreviewPlan>,
+    },
+    /// A confirmed patch or restore worker produced a user-visible log row.
+    LogRow {
+        /// Patch or restore request id used to reject stale worker results.
+        request_id: u64,
+        /// Mutation stage that emitted this row.
+        stage: ArchivePatcherWorkerStage,
+        /// Reference-style user-visible row.
+        row: ArchivePatcherLogRow,
+    },
+    /// A confirmed patch or restore worker produced bounded progress.
+    Progress {
+        /// Patch or restore request id used to reject stale worker results.
+        request_id: u64,
+        /// Mutation stage that emitted this progress value.
+        stage: ArchivePatcherWorkerStage,
+        /// Clamped progress value.
+        progress: ArchivePatcherProgress,
+    },
+    /// A confirmed patch worker completed and returned final execution facts.
+    PatchCompleted {
+        /// Patch request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned execution result produced off the UI thread.
+        result: Box<ArchivePatcherExecutionResult>,
+    },
+    /// A restore-last-run worker completed and returned final execution facts.
+    RestoreCompleted {
+        /// Restore request id used to reject stale worker results.
+        request_id: u64,
+        /// Owned execution result produced off the UI thread.
+        result: Box<ArchivePatcherExecutionResult>,
+    },
+    /// A worker failed safely before producing its normal payload.
+    SafeFailure {
+        /// Request id used to reject stale worker failures.
+        request_id: u64,
+        /// Worker stage that failed.
+        stage: ArchivePatcherWorkerStage,
+        /// User-safe failure text suitable for modal logs.
+        safe_message: String,
+        /// Optional diagnostic detail for logs/tests, never modal text.
+        diagnostic: Option<String>,
+    },
+}
+
+impl ArchivePatcherWorkerPayload {
+    /// Creates an Archive Patcher candidates-loaded payload.
+    pub fn candidates_loaded(request_id: u64, snapshot: ArchivePatcherCandidateSnapshot) -> Self {
+        Self::CandidatesLoaded {
+            request_id,
+            snapshot: Box::new(snapshot),
+        }
+    }
+
+    /// Creates an Archive Patcher plan-ready payload.
+    pub fn plan_ready(request_id: u64, plan: ArchivePatcherPreviewPlan) -> Self {
+        Self::PlanReady {
+            request_id,
+            plan: Box::new(plan),
+        }
+    }
+
+    /// Creates an Archive Patcher log-row payload.
+    pub fn log_row(
+        request_id: u64,
+        stage: ArchivePatcherWorkerStage,
+        row: ArchivePatcherLogRow,
+    ) -> Self {
+        Self::LogRow {
+            request_id,
+            stage,
+            row,
+        }
+    }
+
+    /// Creates an Archive Patcher progress payload.
+    pub fn progress(
+        request_id: u64,
+        stage: ArchivePatcherWorkerStage,
+        progress: ArchivePatcherProgress,
+    ) -> Self {
+        Self::Progress {
+            request_id,
+            stage,
+            progress,
+        }
+    }
+
+    /// Creates an Archive Patcher patch-completed payload.
+    pub fn patch_completed(request_id: u64, result: ArchivePatcherExecutionResult) -> Self {
+        Self::PatchCompleted {
+            request_id,
+            result: Box::new(result),
+        }
+    }
+
+    /// Creates an Archive Patcher restore-completed payload.
+    pub fn restore_completed(request_id: u64, result: ArchivePatcherExecutionResult) -> Self {
+        Self::RestoreCompleted {
+            request_id,
+            result: Box::new(result),
+        }
+    }
+
+    /// Creates an Archive Patcher safe-failure payload.
+    pub fn safe_failure(
+        request_id: u64,
+        stage: ArchivePatcherWorkerStage,
+        safe_message: impl Into<String>,
+        diagnostic: Option<String>,
+    ) -> Self {
+        Self::SafeFailure {
+            request_id,
+            stage,
+            safe_message: safe_message.into(),
+            diagnostic,
+        }
+    }
+
+    /// Returns the request id attached to this payload.
+    pub const fn request_id(&self) -> u64 {
+        match self {
+            Self::CandidatesLoaded { request_id, .. }
+            | Self::PlanReady { request_id, .. }
+            | Self::LogRow { request_id, .. }
+            | Self::Progress { request_id, .. }
+            | Self::PatchCompleted { request_id, .. }
+            | Self::RestoreCompleted { request_id, .. }
+            | Self::SafeFailure { request_id, .. } => *request_id,
+        }
+    }
+
+    /// Returns the stage associated with this payload.
+    pub const fn stage(&self) -> ArchivePatcherWorkerStage {
+        match self {
+            Self::CandidatesLoaded { .. } => ArchivePatcherWorkerStage::Candidates,
+            Self::PlanReady { .. } => ArchivePatcherWorkerStage::Plan,
+            Self::LogRow { stage, .. }
+            | Self::Progress { stage, .. }
+            | Self::SafeFailure { stage, .. } => *stage,
+            Self::PatchCompleted { .. } => ArchivePatcherWorkerStage::Patch,
+            Self::RestoreCompleted { .. } => ArchivePatcherWorkerStage::Restore,
+        }
     }
 }
 
@@ -1227,6 +1426,234 @@ mod tests {
                 diagnostic: Some(diagnostic),
             }) if safe_message == "Downgrader plan failed safely." && diagnostic == "raw diagnostic"
         ));
+    }
+
+    #[test]
+    fn archive_patcher_worker_payload_round_trips_owned_candidates_plan_log_progress_patch_restore_and_failure()
+     {
+        use std::path::PathBuf;
+
+        use crate::{
+            domain::{
+                archive_patcher::{
+                    ArchivePatcherArchiveFormat, ArchivePatcherCandidateRow,
+                    ArchivePatcherCandidateSnapshot, ArchivePatcherExecutionFileResult,
+                    ArchivePatcherExecutionOutcome, ArchivePatcherExecutionResult,
+                    ArchivePatcherHeader, ArchivePatcherLogLevel, ArchivePatcherLogRow,
+                    ArchivePatcherPreviewPlan, ArchivePatcherPreviewPlanRow,
+                    ArchivePatcherProgress, ArchivePatcherRestoreManifestEntry,
+                    ArchivePatcherSummaryCounts, ArchivePatcherTarget, ba2_header_prefix,
+                    patched_to_target_log_row, restored_to_original_log_row,
+                },
+                discovery::{ArchiveFormat, ArchiveVersion},
+            },
+            workers::{RecordingEventSink, WorkerEventSink},
+        };
+
+        let candidate = ArchivePatcherCandidateRow::new(
+            "Game/Data/A.ba2",
+            "A.ba2",
+            ArchiveFormat::General,
+            ArchiveVersion::NextGen8,
+            ArchivePatcherTarget::OldGen,
+        );
+        let candidates = ArchivePatcherCandidateSnapshot::new(
+            20,
+            ArchivePatcherTarget::OldGen,
+            Some("A".to_owned()),
+            vec![candidate.clone()],
+        );
+        let header = ArchivePatcherHeader::new(8, ArchivePatcherArchiveFormat::General);
+        let manifest_entry = ArchivePatcherRestoreManifestEntry::new(
+            "Game/Data/A.ba2",
+            "A.ba2",
+            "A.ba2",
+            ArchivePatcherArchiveFormat::General,
+            8,
+            1,
+        )
+        .with_header_prefixes(
+            ba2_header_prefix(8, ArchivePatcherArchiveFormat::General),
+            ba2_header_prefix(1, ArchivePatcherArchiveFormat::General),
+        );
+        let plan = ArchivePatcherPreviewPlan::from_rows(
+            21,
+            ArchivePatcherTarget::OldGen,
+            Some("A".to_owned()),
+            Some(PathBuf::from("Game/Data")),
+            ArchivePatcherCandidateSnapshot::new(
+                21,
+                ArchivePatcherTarget::OldGen,
+                Some("A".to_owned()),
+                vec![candidate.clone()],
+            ),
+            vec![ArchivePatcherPreviewPlanRow::patch(
+                candidate.clone(),
+                header,
+                manifest_entry,
+            )],
+        );
+        let patch_log = patched_to_target_log_row(ArchivePatcherTarget::OldGen, "A.ba2");
+        let patch_result = ArchivePatcherExecutionResult {
+            request_id: 22,
+            target: ArchivePatcherTarget::OldGen,
+            manifest_path: PathBuf::from("State/archive-patcher-latest.json"),
+            plan_digest: plan.stable_digest(),
+            rows: vec![ArchivePatcherExecutionFileResult {
+                archive_path: PathBuf::from("Game/Data/A.ba2"),
+                file_name: "A.ba2".to_owned(),
+                outcome: ArchivePatcherExecutionOutcome::Patched,
+                log_row: patch_log.clone(),
+                diagnostics: Vec::new(),
+            }],
+            log_rows: vec![patch_log.clone()],
+            counts: ArchivePatcherSummaryCounts::patch(1, 0),
+            diagnostics: Vec::new(),
+        };
+        let restore_log = restored_to_original_log_row(8, "A.ba2");
+        let restore_result = ArchivePatcherExecutionResult {
+            request_id: 23,
+            target: ArchivePatcherTarget::OldGen,
+            manifest_path: PathBuf::from("State/archive-patcher-latest.json"),
+            plan_digest: "digest".to_owned(),
+            rows: vec![ArchivePatcherExecutionFileResult {
+                archive_path: PathBuf::from("Game/Data/A.ba2"),
+                file_name: "A.ba2".to_owned(),
+                outcome: ArchivePatcherExecutionOutcome::Restored,
+                log_row: restore_log.clone(),
+                diagnostics: Vec::new(),
+            }],
+            log_rows: vec![restore_log],
+            counts: ArchivePatcherSummaryCounts::restore(1, 0, 0),
+            diagnostics: Vec::new(),
+        };
+        let sink = RecordingEventSink::new();
+        let patch_task = WorkerTask::new("s10-archive-patcher-patch:22", WorkerTaskKind::Patch);
+        let restore_task = WorkerTask::new("s10-archive-patcher-restore:23", WorkerTaskKind::Patch);
+
+        for event in [
+            WorkerEvent::completed(
+                WorkerTask::new("s10-archive-patcher-candidates:20", WorkerTaskKind::Patch),
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::candidates_loaded(
+                    20,
+                    candidates.clone(),
+                )),
+            ),
+            WorkerEvent::completed(
+                WorkerTask::new("s10-archive-patcher-plan:21", WorkerTaskKind::Patch),
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::plan_ready(
+                    21,
+                    plan.clone(),
+                )),
+            ),
+            WorkerEvent::new(
+                patch_task.clone(),
+                WorkerTaskStatus::Progress,
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::log_row(
+                    22,
+                    ArchivePatcherWorkerStage::Patch,
+                    ArchivePatcherLogRow::new(ArchivePatcherLogLevel::Info, "Patching A.ba2"),
+                )),
+            ),
+            WorkerEvent::new(
+                patch_task.clone(),
+                WorkerTaskStatus::Progress,
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::progress(
+                    22,
+                    ArchivePatcherWorkerStage::Patch,
+                    ArchivePatcherProgress::new("Half", 50.0),
+                )),
+            ),
+            WorkerEvent::completed(
+                patch_task,
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::patch_completed(
+                    22,
+                    patch_result.clone(),
+                )),
+            ),
+            WorkerEvent::completed(
+                restore_task.clone(),
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::restore_completed(
+                    23,
+                    restore_result.clone(),
+                )),
+            ),
+            WorkerEvent::failed(
+                WorkerTask::new("s10-archive-patcher-restore:24", WorkerTaskKind::Patch),
+                WorkerFailure::new("Archive Patcher failed safely."),
+            ),
+            WorkerEvent::new(
+                WorkerTask::new("s10-archive-patcher-plan:25", WorkerTaskKind::Patch),
+                WorkerTaskStatus::Failed,
+                WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::safe_failure(
+                    25,
+                    ArchivePatcherWorkerStage::Plan,
+                    "Archive Patcher plan failed safely.",
+                    Some("raw diagnostic".to_owned()),
+                )),
+            ),
+        ] {
+            sink.emit(event).expect("recording sink should store event");
+        }
+
+        let events = sink.events().expect("recorded events should be readable");
+        assert_eq!(events.len(), 8);
+        assert!(matches!(
+            &events[0].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::CandidatesLoaded { request_id: 20, snapshot })
+                if snapshot.as_ref() == &candidates
+        ));
+        assert!(matches!(
+            &events[1].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::PlanReady { request_id: 21, plan: actual })
+                if actual.as_ref() == &plan
+        ));
+        assert!(matches!(
+            &events[2].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::LogRow {
+                request_id: 22,
+                stage: ArchivePatcherWorkerStage::Patch,
+                ..
+            })
+        ));
+        assert!(matches!(
+            &events[3].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::Progress {
+                request_id: 22,
+                stage: ArchivePatcherWorkerStage::Patch,
+                progress,
+            }) if progress.percent == 50.0
+        ));
+        assert!(matches!(
+            &events[4].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::PatchCompleted { request_id: 22, result })
+                if result.as_ref() == &patch_result
+        ));
+        assert!(matches!(
+            &events[5].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::RestoreCompleted { request_id: 23, result })
+                if result.as_ref() == &restore_result
+        ));
+        assert!(matches!(&events[6].payload, WorkerPayload::Error(_)));
+        assert!(matches!(
+            &events[7].payload,
+            WorkerPayload::ArchivePatcher(ArchivePatcherWorkerPayload::SafeFailure {
+                request_id: 25,
+                stage: ArchivePatcherWorkerStage::Plan,
+                safe_message,
+                diagnostic: Some(diagnostic),
+            }) if safe_message == "Archive Patcher plan failed safely." && diagnostic == "raw diagnostic"
+        ));
+
+        let payload = ArchivePatcherWorkerPayload::progress(
+            30,
+            ArchivePatcherWorkerStage::Restore,
+            ArchivePatcherProgress::new("Restoring", 25.0),
+        );
+        assert_eq!(payload.request_id(), 30);
+        assert_eq!(payload.stage(), ArchivePatcherWorkerStage::Restore);
+        assert!(ArchivePatcherWorkerStage::Restore.is_mutation());
+        assert!(!ArchivePatcherWorkerStage::Plan.is_mutation());
     }
 
     #[test]

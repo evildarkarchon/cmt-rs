@@ -15,11 +15,12 @@ pub mod events;
 pub mod handoff;
 
 pub use events::{
-    AboutActionWorkerPayload, CancellationToken, DowngraderWorkerPayload, DowngraderWorkerStage,
-    ExternalActionKind, ExternalActionOutcome, ExternalActionPayload, F4seWorkerPayload,
-    OverviewWorkerPayload, ScannerWorkerPayload, ToolsActionWorkerPayload, WorkerCancellation,
-    WorkerEvent, WorkerFailure, WorkerMessage, WorkerPayload, WorkerProgress, WorkerTask,
-    WorkerTaskId, WorkerTaskKind, WorkerTaskStatus,
+    AboutActionWorkerPayload, ArchivePatcherWorkerPayload, ArchivePatcherWorkerStage,
+    CancellationToken, DowngraderWorkerPayload, DowngraderWorkerStage, ExternalActionKind,
+    ExternalActionOutcome, ExternalActionPayload, F4seWorkerPayload, OverviewWorkerPayload,
+    ScannerWorkerPayload, ToolsActionWorkerPayload, WorkerCancellation, WorkerEvent, WorkerFailure,
+    WorkerMessage, WorkerPayload, WorkerProgress, WorkerTask, WorkerTaskId, WorkerTaskKind,
+    WorkerTaskStatus,
 };
 pub use handoff::{
     RecordingEventSink, SlintEventLoopSink, WorkerEventSink, WorkerHandoffError,

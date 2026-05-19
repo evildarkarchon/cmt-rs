@@ -6,6 +6,7 @@
 //! without launching GUI automation or wiring real tab behavior.
 
 pub mod about_controller;
+pub mod archive_patcher_controller;
 pub mod downgrader_controller;
 pub mod f4se_controller;
 pub mod overview_controller;
