@@ -3478,6 +3478,56 @@ mod tests {
             Ok(())
         }
 
+        fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()> {
+            self.maybe_fail(PlatformOperation::WriteFile, path)?;
+            let mut nodes = self.nodes.borrow_mut();
+            let node = nodes.get_mut(path).ok_or_else(|| {
+                PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::NotFound,
+                    "File write target was not found.",
+                )
+            })?;
+            let FakeNode::File(existing) = node else {
+                return Err(PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File write target is invalid.",
+                ));
+            };
+            let start = usize::try_from(offset).map_err(|_| {
+                PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File write target is invalid.",
+                )
+            })?;
+            let end = start.checked_add(bytes.len()).ok_or_else(|| {
+                PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File write target is invalid.",
+                )
+            })?;
+            if end > existing.len() {
+                return Err(PlatformError::new(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    PlatformErrorKind::InvalidInput,
+                    "File write target is invalid.",
+                ));
+            }
+            existing[start..end].copy_from_slice(bytes);
+            self.operations
+                .borrow_mut()
+                .push(RecordedWriteOp::Write(path.to_path_buf()));
+            Ok(())
+        }
+
         fn replace_file_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
             self.maybe_fail(PlatformOperation::WriteFile, path)?;
             if !self.has_file(path) {

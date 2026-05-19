@@ -45,6 +45,10 @@ pub const ABOUT_ARCHIVES_BODY: &str = "There are 2 formats and 3 versions for Fa
 
 /// BA2 header prefix length needed to validate magic, version, and format.
 pub const BA2_HEADER_PREFIX_LEN: usize = 12;
+/// Offset of the little-endian u32 BA2 version field in the header.
+pub const BA2_VERSION_FIELD_OFFSET: u64 = 4;
+/// Length of the BA2 version field written by the safe byte-range executor.
+pub const BA2_VERSION_FIELD_LEN: usize = 4;
 /// Reference BA2 container magic.
 pub const BA2_MAGIC: &[u8; 4] = b"BTDX";
 /// Reference General archive format marker.
@@ -152,6 +156,14 @@ impl ArchivePatcherArchiveFormat {
         match self {
             Self::General => "GNRL",
             Self::DirectX10 => "DX10",
+        }
+    }
+
+    /// Returns the exact four-byte BA2 format marker.
+    pub const fn marker_bytes(self) -> &'static [u8; 4] {
+        match self {
+            Self::General => BA2_FORMAT_GENERAL,
+            Self::DirectX10 => BA2_FORMAT_DIRECTX10,
         }
     }
 
@@ -349,6 +361,12 @@ pub struct ArchivePatcherRestoreManifestEntry {
     pub original_version: u32,
     /// Header version that would be written after confirmation.
     pub patched_version: u32,
+    /// Original 12-byte BA2 header prefix observed before patching.
+    #[serde(default)]
+    pub original_header_prefix: Vec<u8>,
+    /// Expected 12-byte BA2 header prefix after patching only the version field.
+    #[serde(default)]
+    pub patched_header_prefix: Vec<u8>,
 }
 
 impl ArchivePatcherRestoreManifestEntry {
@@ -361,6 +379,8 @@ impl ArchivePatcherRestoreManifestEntry {
         original_version: u32,
         patched_version: u32,
     ) -> Self {
+        let original_header_prefix = ba2_header_prefix(original_version, format);
+        let patched_header_prefix = ba2_header_prefix(patched_version, format);
         Self {
             archive_path: archive_path.into(),
             data_relative_path: data_relative_path.into(),
@@ -368,7 +388,32 @@ impl ArchivePatcherRestoreManifestEntry {
             format,
             original_version,
             patched_version,
+            original_header_prefix,
+            patched_header_prefix,
         }
+    }
+
+    /// Replaces computed header prefixes with exact bytes observed during preview planning.
+    pub fn with_header_prefixes(
+        mut self,
+        original_header_prefix: impl Into<Vec<u8>>,
+        patched_header_prefix: impl Into<Vec<u8>>,
+    ) -> Self {
+        self.original_header_prefix = original_header_prefix.into();
+        self.patched_header_prefix = patched_header_prefix.into();
+        self
+    }
+
+    /// Returns the version bytes that should be written when restoring this entry.
+    pub fn original_version_bytes(&self) -> [u8; BA2_VERSION_FIELD_LEN] {
+        version_bytes_from_prefix(&self.original_header_prefix)
+            .unwrap_or_else(|| self.original_version.to_le_bytes())
+    }
+
+    /// Returns the version bytes that should be written when patching this entry.
+    pub fn patched_version_bytes(&self) -> [u8; BA2_VERSION_FIELD_LEN] {
+        version_bytes_from_prefix(&self.patched_header_prefix)
+            .unwrap_or_else(|| self.patched_version.to_le_bytes())
     }
 }
 
@@ -565,6 +610,8 @@ impl ArchivePatcherPreviewPlan {
                 update_digest_value(&mut digest, entry.format.as_reference_magic());
                 update_digest_value(&mut digest, entry.original_version.to_string());
                 update_digest_value(&mut digest, entry.patched_version.to_string());
+                update_digest_value(&mut digest, bytes_hex(&entry.original_header_prefix));
+                update_digest_value(&mut digest, bytes_hex(&entry.patched_header_prefix));
             } else {
                 update_digest_value(&mut digest, "manifest:none");
             }
@@ -660,6 +707,80 @@ impl ArchivePatcherSummaryCounts {
     pub fn patching_complete_message(self) -> String {
         patching_complete_message(self.patched, self.failed)
     }
+
+    /// Creates restore summary counts.
+    pub const fn restore(restored: usize, skipped: usize, failed: usize) -> Self {
+        Self {
+            patched: 0,
+            restored,
+            skipped,
+            failed,
+        }
+    }
+
+    /// Returns the restore-complete message for the Rust restore-last-run workflow.
+    pub fn restore_complete_message(self) -> String {
+        restore_complete_message(self.restored, self.skipped, self.failed)
+    }
+}
+
+/// Final per-file outcome for confirmed Archive Patcher mutation workflows.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ArchivePatcherExecutionOutcome {
+    /// File was patched to the requested BA2 version.
+    Patched,
+    /// File was restored from the latest manifest.
+    Restored,
+    /// File was safely skipped without mutation.
+    Skipped,
+    /// File failed safely and later files should continue processing.
+    Failed,
+}
+
+/// Per-file Archive Patcher execution result and diagnostics.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ArchivePatcherExecutionFileResult {
+    /// Archive path used for this result.
+    pub archive_path: PathBuf,
+    /// Basename displayed in modal logs.
+    pub file_name: String,
+    /// Final outcome for this file.
+    pub outcome: ArchivePatcherExecutionOutcome,
+    /// User-visible log row emitted for this file.
+    pub log_row: ArchivePatcherLogRow,
+    /// Safe diagnostics for tracing/tests, not modal text.
+    pub diagnostics: Vec<String>,
+}
+
+/// Complete confirmed Archive Patcher patch or restore result.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ArchivePatcherExecutionResult {
+    /// Request id copied from the execution or restore request.
+    pub request_id: u64,
+    /// Target selected for the patch run, or read from the restore manifest.
+    pub target: ArchivePatcherTarget,
+    /// App-owned latest restore manifest path used by this run.
+    pub manifest_path: PathBuf,
+    /// Stable preview-plan digest recorded in the latest manifest.
+    pub plan_digest: String,
+    /// Per-file execution results in deterministic processing order.
+    pub rows: Vec<ArchivePatcherExecutionFileResult>,
+    /// User-visible modal log rows in emission order, including final summary.
+    pub log_rows: Vec<ArchivePatcherLogRow>,
+    /// Aggregate success/skip/failure counts for UI summaries and diagnostics.
+    pub counts: ArchivePatcherSummaryCounts,
+    /// Aggregate safe diagnostics for tracing/tests.
+    pub diagnostics: Vec<String>,
+}
+
+/// Builds a deterministic BA2 header prefix for manifest safety checks.
+pub fn ba2_header_prefix(version: u32, format: ArchivePatcherArchiveFormat) -> Vec<u8> {
+    let mut prefix = Vec::with_capacity(BA2_HEADER_PREFIX_LEN);
+    prefix.extend_from_slice(BA2_MAGIC);
+    prefix.extend_from_slice(&version.to_le_bytes());
+    prefix.extend_from_slice(format.marker_bytes());
+    prefix
 }
 
 /// Builds the reference tree-population log message.
@@ -692,7 +813,49 @@ pub fn patched_to_target_log_row(
     )
 }
 
-/// Builds the reference unrecognized-magic failure message.
+/// Builds the restore-success log row for the Rust restore-last-run workflow.
+pub fn restored_to_original_log_row(
+    original_version: u32,
+    file_name: impl AsRef<str>,
+) -> ArchivePatcherLogRow {
+    ArchivePatcherLogRow::new(
+        ArchivePatcherLogLevel::Good,
+        format!("Restored to v{original_version}: {}", file_name.as_ref()),
+    )
+}
+
+/// Builds a safe stale-file restore skip message.
+pub fn skipping_restore_stale_message(file_name: impl AsRef<str>) -> String {
+    format!("Skipping restore (Archive changed): {}", file_name.as_ref())
+}
+
+/// Builds a safe stale-file patch skip message for post-manifest races.
+pub fn archive_changed_before_patching_message(file_name: impl AsRef<str>) -> String {
+    format!("Archive changed before patching: {}", file_name.as_ref())
+}
+
+/// Builds the restore file-not-found failure message.
+pub fn failed_restoring_file_not_found_message(file_name: impl AsRef<str>) -> String {
+    format!("Failed restoring (File Not Found): {}", file_name.as_ref())
+}
+
+/// Builds the restore permissions/in-use failure message.
+pub fn failed_restoring_permissions_message(file_name: impl AsRef<str>) -> String {
+    format!(
+        "Failed restoring (Permissions/In-Use): {}",
+        file_name.as_ref()
+    )
+}
+
+/// Builds the restore unknown-OS-error failure message.
+pub fn failed_restoring_unknown_os_message(file_name: impl AsRef<str>) -> String {
+    format!(
+        "Failed restoring (Unknown OS Error): {}",
+        file_name.as_ref()
+    )
+}
+
+/// Builds the unrecognized-magic failure message.
 pub fn unrecognized_format_message(file_name: impl AsRef<str>) -> String {
     format!("Unrecognized format: {}", file_name.as_ref())
 }
@@ -755,6 +918,28 @@ pub fn failed_patching_unknown_os_message(file_name: impl AsRef<str>) -> String 
 /// Builds the reference final patching summary message.
 pub fn patching_complete_message(patched: usize, failed: usize) -> String {
     format!("Patching complete. {patched} Successful, {failed} Failed.")
+}
+
+/// Builds the final restore-last-run summary message.
+pub fn restore_complete_message(restored: usize, skipped: usize, failed: usize) -> String {
+    format!("Restore complete. {restored} Successful, {skipped} Skipped, {failed} Failed.")
+}
+
+fn version_bytes_from_prefix(prefix: &[u8]) -> Option<[u8; BA2_VERSION_FIELD_LEN]> {
+    let start = usize::try_from(BA2_VERSION_FIELD_OFFSET).ok()?;
+    let end = start.checked_add(BA2_VERSION_FIELD_LEN)?;
+    let bytes = prefix.get(start..end)?;
+    let mut version = [0_u8; BA2_VERSION_FIELD_LEN];
+    version.copy_from_slice(bytes);
+    Some(version)
+}
+
+fn bytes_hex(bytes: &[u8]) -> String {
+    bytes
+        .iter()
+        .map(|byte| format!("{byte:02x}"))
+        .collect::<Vec<_>>()
+        .join("")
 }
 
 fn bool_digest_value(value: bool) -> &'static str {

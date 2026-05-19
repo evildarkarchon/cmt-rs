@@ -6,7 +6,7 @@
 
 use std::{
     fs,
-    io::{Read, Write},
+    io::{Read, Seek, SeekFrom, Write},
     path::{Path, PathBuf},
     sync::atomic::{AtomicU64, Ordering},
 };
@@ -188,6 +188,12 @@ pub trait WritableFilesystem {
     /// Writes a whole file from bytes.
     fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()>;
 
+    /// Writes `bytes` at `offset` without replacing or reading the whole file.
+    ///
+    /// Confirmed patchers use this for small fixed header fields in very large files. Callers
+    /// remain responsible for validating the target path, file type, and byte range before write.
+    fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()>;
+
     /// Replaces a file with bytes written to a temporary file in the same directory.
     ///
     /// Implementations should keep the active destination intact until the replacement bytes have
@@ -351,6 +357,41 @@ impl Filesystem for RealFilesystem {
 impl WritableFilesystem for RealFilesystem {
     fn write_bytes(&self, path: &Path, bytes: &[u8]) -> PlatformResult<()> {
         fs::write(path, bytes).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::WriteFile,
+                path.display().to_string(),
+                &error,
+            )
+        })
+    }
+
+    fn write_byte_range(&self, path: &Path, offset: u64, bytes: &[u8]) -> PlatformResult<()> {
+        let mut file = fs::OpenOptions::new()
+            .read(true)
+            .write(true)
+            .open(path)
+            .map_err(|error| {
+                PlatformError::from_io(
+                    PlatformOperation::WriteFile,
+                    path.display().to_string(),
+                    &error,
+                )
+            })?;
+        file.seek(SeekFrom::Start(offset)).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::WriteFile,
+                path.display().to_string(),
+                &error,
+            )
+        })?;
+        file.write_all(bytes).map_err(|error| {
+            PlatformError::from_io(
+                PlatformOperation::WriteFile,
+                path.display().to_string(),
+                &error,
+            )
+        })?;
+        file.sync_all().map_err(|error| {
             PlatformError::from_io(
                 PlatformOperation::WriteFile,
                 path.display().to_string(),
@@ -628,6 +669,19 @@ mod tests {
             .collect())
     }
 
+    fn unique_platform_test_file(name: &str) -> PathBuf {
+        let mut path = std::env::temp_dir();
+        path.push(format!(
+            "cmt-rs-{name}-{}-{}.tmp",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("system clock should be after Unix epoch")
+                .as_nanos()
+        ));
+        path
+    }
+
     #[test]
     fn fake_filesystem_drives_scan_style_directory_inputs() {
         let fs = FakeFilesystem::default()
@@ -687,5 +741,25 @@ mod tests {
         assert_eq!(error.kind, PlatformErrorKind::NotFound);
         assert_eq!(error.operation, PlatformOperation::ReadFile);
         assert_eq!(error.user_message(), "File read target was not found.");
+    }
+
+    #[test]
+    fn real_filesystem_write_byte_range_updates_only_requested_bytes() {
+        let fs = RealFilesystem::new();
+        let path = unique_platform_test_file("byte-range");
+        fs.write_bytes(&path, b"BTDX\x08\0\0\0GNRLbody")
+            .expect("test fixture should be written");
+
+        fs.write_byte_range(&path, 4, &1_u32.to_le_bytes())
+            .expect("byte range write should succeed");
+        let bytes = fs
+            .read_bytes(&path)
+            .expect("patched fixture should be readable");
+        let _ = fs.remove_file(&path);
+
+        assert_eq!(&bytes[..4], b"BTDX");
+        assert_eq!(&bytes[4..8], &1_u32.to_le_bytes());
+        assert_eq!(&bytes[8..12], b"GNRL");
+        assert_eq!(&bytes[12..], b"body");
     }
 }
