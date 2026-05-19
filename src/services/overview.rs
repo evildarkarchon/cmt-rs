@@ -135,6 +135,8 @@ impl OverviewDiagnostics {
             top,
             binaries,
             archives,
+            archive_records: input.archives.to_vec(),
+            data_path: installation.and_then(|installation| installation.data_path.clone()),
             modules,
             update_banner,
             problems,

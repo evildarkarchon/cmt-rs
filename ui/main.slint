@@ -31,8 +31,8 @@ export component MainWindow inherits Window {
     in-out property <bool> overview-downgrade-enabled: false;
     in-out property <string> overview-downgrade-status: "Deferred until the Downgrade Manager workflow is ported.";
     in-out property <string> overview-archive-patcher-label: "Archive Patcher...";
-    in-out property <bool> overview-archive-patcher-enabled: false;
-    in-out property <string> overview-archive-patcher-status: "Deferred until the Archive Patcher workflow is ported.";
+    in-out property <bool> overview-archive-patcher-enabled: true;
+    in-out property <string> overview-archive-patcher-status: "Open Archive Patcher.";
     in-out property <string> overview-last-action-error: "";
     in-out property <string> f4se-status-text: "F4SE scan has not run yet.";
     in-out property <bool> f4se-busy: false;
@@ -83,7 +83,7 @@ export component MainWindow inherits Window {
     property <int> active-tab-index: 0;
     property <bool> f4se-tab-activation-observed: false;
     in-out property <string> tools-last-action-error: "";
-    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+    in-out property <string> tools-disabled-utility-status: "";
     in-out property <string> about-last-action-error: "";
     in-out property <string> about-nexus-copy-label: "Copy Link";
     in-out property <bool> about-nexus-copy-enabled: true;

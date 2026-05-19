@@ -66,6 +66,9 @@ pub const ARCHIVE_PATCHER_PLAN_NOT_EXECUTABLE_MESSAGE: &str =
 /// Safe status shown when restore is requested without a latest manifest.
 pub const ARCHIVE_PATCHER_RESTORE_UNAVAILABLE_MESSAGE: &str =
     "No Archive Patcher restore manifest is available.";
+/// Safe status shown when Overview has not supplied archive records for the modal.
+pub const ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE: &str =
+    "Archive Patcher needs a refreshed Overview with discovered BA2 archives. Refresh Overview or fix game discovery, then try again.";
 
 /// Monotonic identity assigned to each Archive Patcher request.
 pub type ArchivePatcherRequestId = u64;
@@ -561,6 +564,49 @@ impl ArchivePatcherController {
         self.about_open = false;
         self.log_rows.clear();
         self.start_candidate_request("opened")
+    }
+
+    /// Opens a fail-closed modal state when Overview lacks archive records or game data.
+    pub fn open_unavailable(
+        &mut self,
+        safe_message: impl Into<String>,
+    ) -> ArchivePatcherTransitionResult {
+        if self.is_mutating() {
+            tracing::warn!(
+                event = "s10-archive-patcher-open-unavailable-blocked",
+                active_request_id = ?self.active_request_id,
+                active_stage = ?self.active_stage,
+                "Archive Patcher unavailable open request ignored because mutation is active"
+            );
+            return ArchivePatcherTransitionResult::CloseBlocked;
+        }
+
+        let safe_message = safe_message.into();
+        self.phase = ArchivePatcherControllerPhase::SafeError;
+        self.active_request_id = None;
+        self.active_stage = None;
+        self.archives.clear();
+        self.data_root = None;
+        self.manifest_path = None;
+        self.target = DEFAULT_ARCHIVE_PATCHER_TARGET;
+        self.name_filter.clear();
+        self.candidate_rows.clear();
+        self.plan = None;
+        self.log_rows.clear();
+        self.log_rows.push(ArchivePatcherLogRow::new(
+            ArchivePatcherLogLevel::Bad,
+            safe_message.clone(),
+        ));
+        self.progress = ArchivePatcherProgress::idle();
+        self.safe_error = Some(safe_message);
+        self.manifest_available = false;
+        self.about_open = false;
+        self.run_log_row_count = 0;
+        tracing::warn!(
+            event = "s10-archive-patcher-open-unavailable",
+            "Archive Patcher opened in fail-closed unavailable state"
+        );
+        ArchivePatcherTransitionResult::Applied
     }
 
     /// Replaces the Overview archive snapshot and refreshes candidate rows.

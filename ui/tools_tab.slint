@@ -54,7 +54,7 @@ component ToolActionRow inherits Rectangle {
 
 export component ToolsTab inherits Rectangle {
     in-out property <string> tools-last-action-error: "";
-    in-out property <string> tools-disabled-utility-status: "Archive Patcher is deferred until S10.";
+    in-out property <string> tools-disabled-utility-status: "";
 
     callback tool-action-requested(string);
     callback open-downgrade-manager-requested();
@@ -80,7 +80,7 @@ export component ToolsTab inherits Rectangle {
                         message: root.tools-last-action-error;
                     }
 
-                    Text {
+                    if root.tools-disabled-utility-status != "": Text {
                         text: root.tools-disabled-utility-status;
                         color: #a8a8a8;
                         font-size: 12px;
@@ -99,8 +99,7 @@ export component ToolsTab inherits Rectangle {
                     ToolActionRow {
                         label: "Archive Patcher";
                         action-id: "tools.archive_patcher";
-                        button-enabled: false;
-                        helper-text: "Deferred until S10 Archive Patcher workflow is ported.";
+                        helper-text: "Open the Archive Patcher workflow.";
                         action-requested(action_id) => {
                             root.tool-action-requested(action_id);
                         }

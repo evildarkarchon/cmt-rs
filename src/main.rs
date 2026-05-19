@@ -6,13 +6,22 @@ pub mod workers;
 
 use std::{
     cell::RefCell,
-    path::PathBuf,
+    path::{Path, PathBuf},
     rc::Rc,
     sync::{Arc, Mutex},
 };
 
 use app::{
     about_controller::{AboutController, AboutState, AboutTransitionResult},
+    archive_patcher_controller::{
+        ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE, ARCHIVE_PATCHER_PLAN_READY_MESSAGE,
+        ArchivePatcherCandidateWorkerRequest, ArchivePatcherController, ArchivePatcherPatchAllRequest, ArchivePatcherPatchWorkerRequest,
+        ArchivePatcherPlanWorkerRequest, ArchivePatcherRestoreWorkerRequest,
+        ArchivePatcherTransitionResult, ArchivePatcherWorkerRequestKind,
+        archive_patcher_candidates_loaded_payload, archive_patcher_log_row_payload,
+        archive_patcher_patch_completed_payload, archive_patcher_plan_ready_payload,
+        archive_patcher_progress_payload, archive_patcher_restore_completed_payload,
+    },
     downgrader_controller::{
         DOWNGRADER_PLAN_READY_MESSAGE, DowngraderController, DowngraderPatchWorkerRequest,
         DowngraderPlanWorkerRequest, DowngraderRunWorkerRequest, DowngraderStatusWorkerRequest,
@@ -39,6 +48,12 @@ use app::{
     },
 };
 use domain::{
+    archive_patcher::{
+        ABOUT_ARCHIVES_BODY, ABOUT_ARCHIVES_TITLE, ArchivePatcherArchiveFormat,
+        ArchivePatcherCandidateRow, ArchivePatcherExecutionResult, ArchivePatcherLogLevel,
+        ArchivePatcherLogRow, ArchivePatcherPlanAction, ArchivePatcherPreviewPlanRow,
+        ArchivePatcherProgress, ArchivePatcherTarget,
+    },
     autofix::{
         AutoFixCompletion, AutoFixRejection, AutoFixRequest, AutoFixResultDetail,
         AutoFixRevalidationPlan, AutoFixStatus, AutoFixStatusKind,
@@ -70,12 +85,17 @@ use domain::{
 use platform::{
     clipboard::{ClipboardActions, RealClipboardActions},
     desktop::{DesktopActions, RealDesktopActions},
-    filesystem::RealFilesystem,
+    filesystem::{Filesystem, RealFilesystem},
     process::RealProcessInspector,
     registry::RealRegistry,
     settings_store::{AssetResolver, FileAssetResolver, SettingsStore},
 };
 use services::{
+    archive_patcher::{
+        ArchivePatcherCandidateRequest, ArchivePatcherExecutionError,
+        ArchivePatcherExecutionRequest, ArchivePatcherPlanRequest, ArchivePatcherRestoreRequest,
+        ArchivePatcherService,
+    },
     autofix::{AutoFixService, AutoFixServiceResult},
     discovery::{DiscoveredModManager, DiscoveryRequest, DiscoveryService},
     downgrader::{
@@ -103,9 +123,10 @@ use services::{
 };
 use slint::{CloseRequestResponse, ComponentHandle, ModelRc, SharedString, VecModel};
 use workers::{
-    AboutActionWorkerPayload, BlockingWorkerResult, SlintEventLoopSink, ToolsActionWorkerPayload,
-    WorkerEvent, WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError,
-    WorkerTask, WorkerTaskKind, WorkerTaskOutcome, WorkerTaskStatus,
+    AboutActionWorkerPayload, ArchivePatcherWorkerPayload, ArchivePatcherWorkerStage,
+    BlockingWorkerResult, SlintEventLoopSink, ToolsActionWorkerPayload, WorkerEvent,
+    WorkerEventSink, WorkerFailure, WorkerPayload, WorkerRuntime, WorkerSpawnError, WorkerTask,
+    WorkerTaskKind, WorkerTaskOutcome, WorkerTaskStatus,
 };
 
 slint::include_modules!();
@@ -245,6 +266,29 @@ struct DowngraderUiProjection {
     close_blocked: bool,
 }
 
+struct ArchivePatcherUiProjection {
+    selected_target: String,
+    name_filter: String,
+    candidate_rows: Vec<ArchivePatcherCandidateUiRow>,
+    candidate_empty_text: String,
+    plan_rows: Vec<ArchivePatcherPlanUiRow>,
+    confirmation_visible: bool,
+    confirmation_text: String,
+    log_rows: Vec<ArchivePatcherLogUiRow>,
+    log_text: String,
+    progress_percent: f32,
+    progress_text: String,
+    status_text: String,
+    patch_enabled: bool,
+    restore_enabled: bool,
+    about_enabled: bool,
+    controls_enabled: bool,
+    close_blocked: bool,
+    about_dialog_visible: bool,
+    about_title: String,
+    about_body: String,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 struct DowngraderAboutProjection {
     title: String,
@@ -258,6 +302,21 @@ enum DowngraderOpenSource {
 }
 
 impl DowngraderOpenSource {
+    const fn label(self) -> &'static str {
+        match self {
+            Self::Overview => "overview",
+            Self::Tools => "tools",
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum ArchivePatcherOpenSource {
+    Overview,
+    Tools,
+}
+
+impl ArchivePatcherOpenSource {
     const fn label(self) -> &'static str {
         match self {
             Self::Overview => "overview",
@@ -290,7 +349,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let tools_controller = Arc::new(Mutex::new(ToolsController::new()));
     let about_controller = Arc::new(Mutex::new(AboutController::new()));
     let downgrader_controller = Arc::new(Mutex::new(DowngraderController::new()));
+    let archive_patcher_controller = Arc::new(Mutex::new(ArchivePatcherController::new()));
     let downgrader_window = DowngraderWindow::new()?;
+    let archive_patcher_window = ArchivePatcherWindow::new()?;
     let worker_runtime = WorkerRuntime::new();
 
     app.set_update_source(settings_controller.borrow().visible_update_source().into());
@@ -301,12 +362,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     apply_current_tools_state(&app, &tools_controller);
     apply_current_about_state(&app, &about_controller);
     apply_current_downgrader_state(&downgrader_window, &downgrader_controller);
+    apply_current_archive_patcher_state(&archive_patcher_window, &archive_patcher_controller);
 
     let overview_sink = bind_overview_worker_sink(&app, Arc::clone(&overview_controller));
     let f4se_sink = bind_f4se_worker_sink(&app, Arc::clone(&f4se_controller));
     let scanner_sink = bind_scanner_worker_sink(&app, Arc::clone(&scanner_controller));
     let tools_sink = bind_tools_worker_sink(&app, Arc::clone(&tools_controller));
     let about_sink = bind_about_worker_sink(&app, Arc::clone(&about_controller));
+    let archive_patcher_sink = bind_archive_patcher_worker_sink(
+        &app,
+        &archive_patcher_window,
+        Arc::clone(&archive_patcher_controller),
+        Arc::clone(&overview_controller),
+        Arc::clone(&shared_settings_snapshot),
+        worker_runtime,
+        overview_sink.clone(),
+        runtime_handle.clone(),
+    );
     let downgrader_sink = bind_downgrader_worker_sink(
         &app,
         &downgrader_window,
@@ -330,15 +402,25 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         worker_runtime,
         downgrader_sink.clone(),
     );
+    bind_archive_patcher_callbacks(
+        &archive_patcher_window,
+        Arc::clone(&archive_patcher_controller),
+        worker_runtime,
+        archive_patcher_sink.clone(),
+    );
     bind_tools_callbacks(
         &app,
         &downgrader_window,
+        &archive_patcher_window,
         Arc::clone(&tools_controller),
         Arc::clone(&downgrader_controller),
+        Arc::clone(&archive_patcher_controller),
+        Arc::clone(&overview_controller),
         Rc::clone(&settings_controller),
         worker_runtime,
         tools_sink.clone(),
         downgrader_sink.clone(),
+        archive_patcher_sink.clone(),
     );
     bind_about_callbacks(
         &app,
@@ -362,12 +444,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     bind_overview_callbacks(
         &app,
         &downgrader_window,
+        &archive_patcher_window,
         Arc::clone(&overview_controller),
         Arc::clone(&downgrader_controller),
+        Arc::clone(&archive_patcher_controller),
         Rc::clone(&settings_controller),
         worker_runtime,
         overview_sink.clone(),
         downgrader_sink,
+        archive_patcher_sink,
         runtime_handle.clone(),
     );
 
@@ -659,6 +744,289 @@ fn bind_downgrader_callbacks(
     });
 }
 
+fn bind_archive_patcher_worker_sink(
+    app: &MainWindow,
+    window: &ArchivePatcherWindow,
+    controller: Arc<Mutex<ArchivePatcherController>>,
+    overview_controller: Arc<Mutex<OverviewController>>,
+    shared_settings_snapshot: Arc<Mutex<AppSettings>>,
+    worker_runtime: WorkerRuntime,
+    overview_sink: SlintEventLoopSink,
+    runtime_handle: tokio::runtime::Handle,
+) -> SlintEventLoopSink {
+    let app = app.as_weak();
+    let window = window.as_weak();
+    SlintEventLoopSink::new(move |event| {
+        let task_id = event.task.id.to_string();
+        let task_kind = event.task.kind.label();
+        let status = event.status.label();
+        let refresh_after_completion = archive_patcher_completion_refresh_needed(&event);
+        let Some(window) = window.upgrade() else {
+            tracing::warn!(
+                event = "s10-archive-patcher-worker-event-dropped",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Archive Patcher worker event arrived after the modal was gone"
+            );
+            return;
+        };
+
+        let Some(result) = with_archive_patcher_controller_mut(&controller, |controller| {
+            handle_archive_patcher_worker_event(controller, event)
+        }) else {
+            return;
+        };
+
+        match result {
+            ArchivePatcherTransitionResult::Applied => {
+                tracing::debug!(
+                    event = "s10-archive-patcher-worker-event-applied",
+                    task_id = %task_id,
+                    task_kind,
+                    status,
+                    refresh_after_completion,
+                    "Archive Patcher worker event applied"
+                );
+                apply_current_archive_patcher_state(&window, &controller);
+                if refresh_after_completion {
+                    let Some(app) = app.upgrade() else {
+                        tracing::warn!(
+                            event = "s10-archive-patcher-overview-refresh-dropped",
+                            task_id = %task_id,
+                            "Archive Patcher completion could not refresh Overview because the main window was gone"
+                        );
+                        return;
+                    };
+                    let settings = overview_settings_for_archive_patcher_completion(
+                        &shared_settings_snapshot,
+                    );
+                    tracing::info!(
+                        event = "s10-archive-patcher-overview-refresh-requested",
+                        task_id = %task_id,
+                        "Requesting Overview refresh after Archive Patcher completion"
+                    );
+                    request_overview_refresh_from_settings(
+                        &app,
+                        &overview_controller,
+                        settings,
+                        worker_runtime,
+                        overview_sink.clone(),
+                        runtime_handle.clone(),
+                    );
+                }
+            }
+            ArchivePatcherTransitionResult::StaleIgnored => tracing::debug!(
+                event = "s10-archive-patcher-worker-event-stale-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Archive Patcher worker event was stale and ignored"
+            ),
+            ArchivePatcherTransitionResult::Ignored => tracing::debug!(
+                event = "s10-archive-patcher-worker-event-ignored",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Ignoring non-Archive-Patcher worker event on Archive Patcher sink"
+            ),
+            ArchivePatcherTransitionResult::Rejected => tracing::debug!(
+                event = "s10-archive-patcher-worker-event-rejected",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Archive Patcher worker event was rejected by current modal state"
+            ),
+            ArchivePatcherTransitionResult::CloseBlocked => tracing::debug!(
+                event = "s10-archive-patcher-worker-event-close-blocked",
+                task_id = %task_id,
+                task_kind,
+                status,
+                "Archive Patcher worker event unexpectedly hit close-blocked transition"
+            ),
+        }
+    })
+}
+
+fn bind_archive_patcher_callbacks(
+    window: &ArchivePatcherWindow,
+    controller: Arc<Mutex<ArchivePatcherController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+) {
+    window.on_target_selected({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+        let archive_patcher_sink = archive_patcher_sink.clone();
+
+        move |target| {
+            let Some(window) = window.upgrade() else {
+                return;
+            };
+            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+                controller.set_target_from_ui_value(target.as_str())
+            })
+            .flatten();
+            apply_current_archive_patcher_state(&window, &controller);
+            if let Some(request) = request {
+                schedule_archive_patcher_candidate_request(
+                    &window,
+                    &controller,
+                    worker_runtime,
+                    archive_patcher_sink.clone(),
+                    request,
+                );
+            }
+        }
+    });
+
+    window.on_name_filter_edited({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+        let archive_patcher_sink = archive_patcher_sink.clone();
+
+        move |filter| {
+            let Some(window) = window.upgrade() else {
+                return;
+            };
+            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+                controller.set_name_filter(filter.to_string())
+            })
+            .flatten();
+            apply_current_archive_patcher_state(&window, &controller);
+            if let Some(request) = request {
+                schedule_archive_patcher_candidate_request(
+                    &window,
+                    &controller,
+                    worker_runtime,
+                    archive_patcher_sink.clone(),
+                    request,
+                );
+            }
+        }
+    });
+
+    window.on_patch_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+        let archive_patcher_sink = archive_patcher_sink.clone();
+
+        move || {
+            let Some(window) = window.upgrade() else {
+                return;
+            };
+            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+                controller.request_patch_all()
+            })
+            .flatten();
+            apply_current_archive_patcher_state(&window, &controller);
+            match request {
+                Some(ArchivePatcherPatchAllRequest::PreviewPlan(request)) => {
+                    schedule_archive_patcher_plan_request(
+                        &window,
+                        &controller,
+                        worker_runtime,
+                        archive_patcher_sink.clone(),
+                        request,
+                    );
+                }
+                Some(ArchivePatcherPatchAllRequest::ConfirmedPatch(request)) => {
+                    schedule_archive_patcher_patch_request(
+                        &window,
+                        &controller,
+                        worker_runtime,
+                        archive_patcher_sink.clone(),
+                        request,
+                    );
+                }
+                None => {}
+            }
+        }
+    });
+
+    window.on_restore_last_run_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+        let archive_patcher_sink = archive_patcher_sink.clone();
+
+        move || {
+            let Some(window) = window.upgrade() else {
+                return;
+            };
+            let request = with_archive_patcher_controller_mut(&controller, |controller| {
+                controller.request_restore_last_run()
+            })
+            .flatten();
+            apply_current_archive_patcher_state(&window, &controller);
+            if let Some(request) = request {
+                schedule_archive_patcher_restore_request(
+                    &window,
+                    &controller,
+                    worker_runtime,
+                    archive_patcher_sink.clone(),
+                    request,
+                );
+            }
+        }
+    });
+
+    window.on_about_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move || {
+            if let Some(window) = window.upgrade() {
+                with_archive_patcher_controller_mut(&controller, |controller| {
+                    controller.open_about()
+                });
+                apply_current_archive_patcher_state(&window, &controller);
+            }
+        }
+    });
+
+    window.on_about_close_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move || {
+            if let Some(window) = window.upgrade() {
+                with_archive_patcher_controller_mut(&controller, |controller| {
+                    controller.close_about()
+                });
+                apply_current_archive_patcher_state(&window, &controller);
+            }
+        }
+    });
+
+    window.on_modal_close_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move || {
+            if let Some(window) = window.upgrade() {
+                close_archive_patcher_modal(&window, &controller);
+            }
+        }
+    });
+
+    window.window().on_close_requested({
+        let window = window.as_weak();
+        let controller = Arc::clone(&controller);
+
+        move || {
+            let Some(window) = window.upgrade() else {
+                return CloseRequestResponse::HideWindow;
+            };
+            match close_archive_patcher_modal(&window, &controller) {
+                ArchivePatcherTransitionResult::CloseBlocked => {
+                    CloseRequestResponse::KeepWindowShown
+                }
+                _ => CloseRequestResponse::HideWindow,
+            }
+        }
+    });
+}
+
 fn bind_tools_worker_sink(
     app: &MainWindow,
     controller: Arc<Mutex<ToolsController>>,
@@ -756,20 +1124,28 @@ fn bind_about_worker_sink(
 fn bind_tools_callbacks(
     app: &MainWindow,
     downgrader_window: &DowngraderWindow,
+    archive_patcher_window: &ArchivePatcherWindow,
     controller: Arc<Mutex<ToolsController>>,
     downgrader_controller: Arc<Mutex<DowngraderController>>,
+    archive_patcher_controller: Arc<Mutex<ArchivePatcherController>>,
+    overview_controller: Arc<Mutex<OverviewController>>,
     settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
     worker_runtime: WorkerRuntime,
     tools_sink: SlintEventLoopSink,
     downgrader_sink: SlintEventLoopSink,
+    archive_patcher_sink: SlintEventLoopSink,
 ) {
     app.on_tool_action_requested({
         let app = app.as_weak();
         let downgrader_window = downgrader_window.as_weak();
+        let archive_patcher_window = archive_patcher_window.as_weak();
         let controller = Arc::clone(&controller);
         let downgrader_controller = Arc::clone(&downgrader_controller);
+        let archive_patcher_controller = Arc::clone(&archive_patcher_controller);
+        let overview_controller = Arc::clone(&overview_controller);
         let settings_controller = Rc::clone(&settings_controller);
         let downgrader_sink = downgrader_sink.clone();
+        let archive_patcher_sink = archive_patcher_sink.clone();
 
         move |action_id| {
             let action_id = action_id.to_string();
@@ -782,6 +1158,20 @@ fn bind_tools_callbacks(
                         worker_runtime,
                         downgrader_sink.clone(),
                         DowngraderOpenSource::Tools,
+                    );
+                }
+                return;
+            }
+
+            if action_id == ToolActionId::ArchivePatcher.as_str() {
+                if let Some(archive_patcher_window) = archive_patcher_window.upgrade() {
+                    request_open_archive_patcher_modal(
+                        &archive_patcher_window,
+                        &archive_patcher_controller,
+                        &overview_controller,
+                        worker_runtime,
+                        archive_patcher_sink.clone(),
+                        ArchivePatcherOpenSource::Tools,
                     );
                 }
                 return;
@@ -1168,12 +1558,15 @@ fn bind_overview_worker_sink(
 fn bind_overview_callbacks(
     app: &MainWindow,
     downgrader_window: &DowngraderWindow,
+    archive_patcher_window: &ArchivePatcherWindow,
     overview_controller: Arc<Mutex<OverviewController>>,
     downgrader_controller: Arc<Mutex<DowngraderController>>,
+    archive_patcher_controller: Arc<Mutex<ArchivePatcherController>>,
     settings_controller: Rc<RefCell<SettingsController<FileAssetResolver>>>,
     worker_runtime: WorkerRuntime,
     overview_sink: SlintEventLoopSink,
     downgrader_sink: SlintEventLoopSink,
+    archive_patcher_sink: SlintEventLoopSink,
     runtime_handle: tokio::runtime::Handle,
 ) {
     app.on_overview_refresh_requested({
@@ -1278,16 +1671,20 @@ fn bind_overview_callbacks(
     });
 
     app.on_overview_open_archive_patcher_requested({
-        let app = app.as_weak();
+        let archive_patcher_window = archive_patcher_window.as_weak();
+        let archive_patcher_controller = Arc::clone(&archive_patcher_controller);
         let overview_controller = Arc::clone(&overview_controller);
+        let archive_patcher_sink = archive_patcher_sink.clone();
 
         move || {
-            if let Some(app) = app.upgrade() {
-                apply_action_error(
-                    &app,
+            if let Some(archive_patcher_window) = archive_patcher_window.upgrade() {
+                request_open_archive_patcher_modal(
+                    &archive_patcher_window,
+                    &archive_patcher_controller,
                     &overview_controller,
-                    OverviewDeferredActionKind::OpenArchivePatcher,
-                    "Archive Patcher is reserved for a later port phase.".to_owned(),
+                    worker_runtime,
+                    archive_patcher_sink.clone(),
+                    ArchivePatcherOpenSource::Overview,
                 );
             }
         }
@@ -2087,6 +2484,490 @@ fn close_downgrader_modal(
     result
 }
 
+fn request_open_archive_patcher_modal(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    overview_controller: &Arc<Mutex<OverviewController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+    source: ArchivePatcherOpenSource,
+) {
+    let snapshot = with_overview_controller_mut(overview_controller, |controller| {
+        controller.snapshot().clone()
+    });
+    let manifest_path = archive_patcher_manifest_path();
+    let manifest_available = archive_patcher_manifest_available(&manifest_path);
+    let request = match snapshot {
+        Some(snapshot) if !snapshot.archive_records.is_empty() => {
+            let archive_count = snapshot.archive_records.len();
+            let data_root_available = snapshot.data_path.is_some();
+            tracing::info!(
+                event = "s10-archive-patcher-open-requested",
+                source = source.label(),
+                archive_count,
+                data_root_available,
+                manifest_available,
+                manifest_path = %manifest_path.display(),
+                "Opening Archive Patcher from current Overview archive records"
+            );
+            with_archive_patcher_controller_mut(controller, |controller| {
+                controller.open(
+                    snapshot.archive_records,
+                    snapshot.data_path,
+                    manifest_path,
+                    manifest_available,
+                )
+            })
+            .flatten()
+        }
+        Some(snapshot) => {
+            tracing::warn!(
+                event = "s10-archive-patcher-open-missing-overview-archives",
+                source = source.label(),
+                refresh_phase = ?snapshot.refresh.phase,
+                "Archive Patcher opened without Overview archive records"
+            );
+            with_archive_patcher_controller_mut(controller, |controller| {
+                controller.open_unavailable(ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE)
+            });
+            None
+        }
+        None => {
+            tracing::error!(
+                event = "s10-archive-patcher-open-overview-unavailable",
+                source = source.label(),
+                "Archive Patcher could not read Overview state"
+            );
+            with_archive_patcher_controller_mut(controller, |controller| {
+                controller.open_unavailable(ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE)
+            });
+            None
+        }
+    };
+
+    apply_current_archive_patcher_state(window, controller);
+    if let Err(error) = window.show() {
+        tracing::warn!(
+            event = "s10-archive-patcher-show-failed",
+            source = source.label(),
+            diagnostic = %error,
+            "Archive Patcher modal show failed"
+        );
+    }
+    if let Some(request) = request {
+        schedule_archive_patcher_candidate_request(
+            window,
+            controller,
+            worker_runtime,
+            archive_patcher_sink,
+            request,
+        );
+    }
+}
+
+fn close_archive_patcher_modal(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+) -> ArchivePatcherTransitionResult {
+    let result = with_archive_patcher_controller_mut(controller, |controller| {
+        controller.request_close()
+    })
+    .unwrap_or(ArchivePatcherTransitionResult::Ignored);
+    apply_current_archive_patcher_state(window, controller);
+    if result.is_applied()
+        && let Err(error) = window.hide()
+    {
+        tracing::warn!(
+            event = "s10-archive-patcher-hide-failed",
+            diagnostic = %error,
+            "Archive Patcher modal hide failed"
+        );
+    }
+    result
+}
+
+fn schedule_archive_patcher_candidate_request(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+    request: ArchivePatcherCandidateWorkerRequest,
+) {
+    tracing::info!(
+        event = "s10-archive-patcher-candidates-schedule",
+        request_id = request.request_id,
+        task_id = %request.task.id,
+        archive_count = request.archives.len(),
+        "Scheduling Archive Patcher candidate worker"
+    );
+    let task = request.task.clone();
+    let request_id = request.request_id;
+    if let Err(error) = worker_runtime.spawn_blocking_task(
+        task,
+        archive_patcher_sink,
+        move |_context| build_archive_patcher_candidates_payload(request),
+    ) {
+        with_archive_patcher_controller_mut(controller, |controller| {
+            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Candidates, request_id, error)
+        });
+        apply_current_archive_patcher_state(window, controller);
+    }
+}
+
+fn schedule_archive_patcher_plan_request(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+    request: ArchivePatcherPlanWorkerRequest,
+) {
+    tracing::info!(
+        event = "s10-archive-patcher-plan-schedule",
+        request_id = request.request_id,
+        task_id = %request.task.id,
+        archive_count = request.archives.len(),
+        "Scheduling Archive Patcher plan worker"
+    );
+    let task = request.task.clone();
+    let request_id = request.request_id;
+    if let Err(error) = worker_runtime.spawn_blocking_task(
+        task,
+        archive_patcher_sink,
+        move |_context| build_archive_patcher_plan_payload(request),
+    ) {
+        with_archive_patcher_controller_mut(controller, |controller| {
+            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Plan, request_id, error)
+        });
+        apply_current_archive_patcher_state(window, controller);
+    }
+}
+
+fn schedule_archive_patcher_patch_request(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+    request: ArchivePatcherPatchWorkerRequest,
+) {
+    tracing::info!(
+        event = "s10-archive-patcher-patch-schedule",
+        request_id = request.request_id,
+        task_id = %request.task.id,
+        archive_count = request.archives.len(),
+        manifest_path = %request.manifest_path.display(),
+        "Scheduling Archive Patcher confirmed patch worker"
+    );
+    let task = request.task.clone();
+    let request_id = request.request_id;
+    if let Err(error) = worker_runtime.spawn_blocking_task(
+        task,
+        archive_patcher_sink,
+        move |context| build_archive_patcher_patch_payload(context, request),
+    ) {
+        with_archive_patcher_controller_mut(controller, |controller| {
+            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Patch, request_id, error)
+        });
+        apply_current_archive_patcher_state(window, controller);
+    }
+}
+
+fn schedule_archive_patcher_restore_request(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    worker_runtime: WorkerRuntime,
+    archive_patcher_sink: SlintEventLoopSink,
+    request: ArchivePatcherRestoreWorkerRequest,
+) {
+    tracing::info!(
+        event = "s10-archive-patcher-restore-schedule",
+        request_id = request.request_id,
+        task_id = %request.task.id,
+        manifest_path = %request.manifest_path.display(),
+        "Scheduling Archive Patcher restore worker"
+    );
+    let task = request.task.clone();
+    let request_id = request.request_id;
+    if let Err(error) = worker_runtime.spawn_blocking_task(
+        task,
+        archive_patcher_sink,
+        move |context| build_archive_patcher_restore_payload(context, request),
+    ) {
+        with_archive_patcher_controller_mut(controller, |controller| {
+            controller.spawn_failed(ArchivePatcherWorkerRequestKind::Restore, request_id, error)
+        });
+        apply_current_archive_patcher_state(window, controller);
+    }
+}
+
+fn build_archive_patcher_candidates_payload(
+    request: ArchivePatcherCandidateWorkerRequest,
+) -> BlockingWorkerResult {
+    let span = tracing::info_span!(
+        "s10_archive_patcher_candidates_worker",
+        request_id = request.request_id,
+        archive_count = request.archives.len(),
+    );
+    let _guard = span.enter();
+    let filesystem = RealFilesystem::new();
+    let service = ArchivePatcherService::new(&filesystem);
+    let snapshot = service.candidate_snapshot(ArchivePatcherCandidateRequest::new(
+        request.request_id,
+        &request.archives,
+        request.target,
+        request.name_filter.as_deref(),
+    ));
+    Ok(WorkerTaskOutcome::Completed(
+        archive_patcher_candidates_loaded_payload(request.request_id, snapshot),
+    ))
+}
+
+fn build_archive_patcher_plan_payload(
+    request: ArchivePatcherPlanWorkerRequest,
+) -> BlockingWorkerResult {
+    let span = tracing::info_span!(
+        "s10_archive_patcher_plan_worker",
+        request_id = request.request_id,
+        archive_count = request.archives.len(),
+        has_data_root = request.data_root.is_some(),
+    );
+    let _guard = span.enter();
+    let filesystem = RealFilesystem::new();
+    let service = ArchivePatcherService::new(&filesystem);
+    let plan = service.preview_plan(ArchivePatcherPlanRequest::new(
+        request.request_id,
+        request.data_root.as_deref(),
+        &request.archives,
+        request.target,
+        request.name_filter.as_deref(),
+    ));
+    Ok(WorkerTaskOutcome::Completed(
+        archive_patcher_plan_ready_payload(request.request_id, plan),
+    ))
+}
+
+fn build_archive_patcher_patch_payload<S>(
+    context: workers::WorkerTaskContext<S>,
+    request: ArchivePatcherPatchWorkerRequest,
+) -> BlockingWorkerResult
+where
+    S: WorkerEventSink,
+{
+    emit_archive_patcher_progress(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Patch,
+        ArchivePatcherProgress::new("Revalidating Archive Patcher plan...", 5.0),
+    );
+    let filesystem = RealFilesystem::new();
+    let service = ArchivePatcherService::new(&filesystem);
+    let result = service
+        .execute_confirmed(
+            ArchivePatcherExecutionRequest::new(
+                request.request_id,
+                request.data_root.as_deref(),
+                &request.archives,
+                request.target,
+                request.name_filter.as_deref(),
+                &request.manifest_path,
+            )
+            .with_confirmed_plan_digest(&request.confirmed_plan_digest),
+        )
+        .map_err(archive_patcher_service_failure)?;
+    emit_archive_patcher_execution_log_rows(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Patch,
+        &result,
+    );
+    emit_archive_patcher_progress(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Patch,
+        ArchivePatcherProgress::complete(
+            result
+                .log_rows
+                .last()
+                .map(|row| row.message.clone())
+                .unwrap_or_else(|| result.counts.patching_complete_message()),
+        ),
+    );
+    Ok(WorkerTaskOutcome::Completed(
+        archive_patcher_patch_completed_payload(request.request_id, result),
+    ))
+}
+
+fn build_archive_patcher_restore_payload<S>(
+    context: workers::WorkerTaskContext<S>,
+    request: ArchivePatcherRestoreWorkerRequest,
+) -> BlockingWorkerResult
+where
+    S: WorkerEventSink,
+{
+    emit_archive_patcher_progress(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Restore,
+        ArchivePatcherProgress::new("Reading Archive Patcher restore manifest...", 5.0),
+    );
+    let filesystem = RealFilesystem::new();
+    let service = ArchivePatcherService::new(&filesystem);
+    let result = service
+        .restore_last_run(ArchivePatcherRestoreRequest::new(
+            request.request_id,
+            request.data_root.as_deref(),
+            &request.manifest_path,
+        ))
+        .map_err(archive_patcher_service_failure)?;
+    emit_archive_patcher_execution_log_rows(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Restore,
+        &result,
+    );
+    emit_archive_patcher_progress(
+        &context,
+        request.request_id,
+        ArchivePatcherWorkerStage::Restore,
+        ArchivePatcherProgress::complete(
+            result
+                .log_rows
+                .last()
+                .map(|row| row.message.clone())
+                .unwrap_or_else(|| result.counts.restore_complete_message()),
+        ),
+    );
+    Ok(WorkerTaskOutcome::Completed(
+        archive_patcher_restore_completed_payload(request.request_id, result),
+    ))
+}
+
+fn emit_archive_patcher_execution_log_rows<S>(
+    context: &workers::WorkerTaskContext<S>,
+    request_id: u64,
+    stage: ArchivePatcherWorkerStage,
+    result: &ArchivePatcherExecutionResult,
+) where
+    S: WorkerEventSink,
+{
+    for row in &result.log_rows {
+        if let Err(error) = context.emit_payload(
+            WorkerTaskStatus::Progress,
+            archive_patcher_log_row_payload(request_id, stage, row.clone()),
+        ) {
+            tracing::warn!(
+                event = "s10-archive-patcher-log-handoff-failed",
+                request_id,
+                stage = stage.label(),
+                diagnostic = %error,
+                "Archive Patcher log row could not be handed to UI"
+            );
+        }
+    }
+}
+
+fn emit_archive_patcher_progress<S>(
+    context: &workers::WorkerTaskContext<S>,
+    request_id: u64,
+    stage: ArchivePatcherWorkerStage,
+    progress: ArchivePatcherProgress,
+) where
+    S: WorkerEventSink,
+{
+    if let Err(error) = context.emit_payload(
+        WorkerTaskStatus::Progress,
+        archive_patcher_progress_payload(request_id, stage, progress),
+    ) {
+        tracing::warn!(
+            event = "s10-archive-patcher-progress-handoff-failed",
+            request_id,
+            stage = stage.label(),
+            diagnostic = %error,
+            "Archive Patcher progress could not be handed to UI"
+        );
+    }
+}
+
+fn archive_patcher_service_failure(error: ArchivePatcherExecutionError) -> WorkerFailure {
+    let failure = WorkerFailure::new(error.user_message().to_owned());
+    if let Some(diagnostic) = error.diagnostic() {
+        failure.with_diagnostic(diagnostic.to_owned())
+    } else {
+        failure
+    }
+}
+
+fn archive_patcher_completion_refresh_needed(event: &WorkerEvent) -> bool {
+    matches!(
+        (&event.status, &event.payload),
+        (
+            WorkerTaskStatus::Completed,
+            WorkerPayload::ArchivePatcher(
+                ArchivePatcherWorkerPayload::PatchCompleted { .. }
+                    | ArchivePatcherWorkerPayload::RestoreCompleted { .. },
+            ),
+        )
+    )
+}
+
+fn overview_settings_for_archive_patcher_completion(
+    shared_settings_snapshot: &Arc<Mutex<AppSettings>>,
+) -> AppSettings {
+    match shared_settings_snapshot.lock() {
+        Ok(settings) => settings.clone(),
+        Err(error) => {
+            tracing::error!(
+                event = "s10-archive-patcher-overview-settings-unavailable",
+                diagnostic = %error,
+                "Current settings snapshot unavailable; using safe defaults for Overview refresh"
+            );
+            AppSettings::default()
+        }
+    }
+}
+
+fn archive_patcher_manifest_path() -> PathBuf {
+    if let Some(project_dirs) = directories::ProjectDirs::from(
+        "community",
+        "Collective Modding",
+        "Collective Modding Toolkit",
+    ) {
+        let config_dir = project_dirs.config_dir();
+        if let Err(error) = std::fs::create_dir_all(config_dir) {
+            tracing::warn!(
+                event = "s10-archive-patcher-manifest-dir-create-failed",
+                manifest_dir = %config_dir.display(),
+                diagnostic = %error,
+                "Archive Patcher manifest directory could not be created; falling back to current directory"
+            );
+        } else {
+            return config_dir.join("archive-patcher-latest.json");
+        }
+    }
+    PathBuf::from("archive-patcher-latest.json")
+}
+
+fn archive_patcher_manifest_available(path: &Path) -> bool {
+    match RealFilesystem::new().exists(path) {
+        Ok(available) => available,
+        Err(error) => {
+            tracing::warn!(
+                event = "s10-archive-patcher-manifest-check-failed",
+                manifest_path = %path.display(),
+                diagnostic = %error,
+                "Archive Patcher latest manifest availability check failed safely"
+            );
+            false
+        }
+    }
+}
+
+fn handle_archive_patcher_worker_event(
+    controller: &mut ArchivePatcherController,
+    event: WorkerEvent,
+) -> ArchivePatcherTransitionResult {
+    controller.handle_worker_event(event)
+}
+
 fn handle_downgrader_worker_event(
     controller: &mut DowngraderController,
     event: WorkerEvent,
@@ -2103,12 +2984,13 @@ fn request_tools_action(
 ) {
     let action = match tools_action_for_id(&action_id) {
         Ok(action @ ToolsActionKind::ExternalLink(_)) => action,
-        Ok(action @ ToolsActionKind::InternalUtility(_)) => {
-            let feedback = ToolsActionFeedback::succeeded(
-                action_id.as_str(),
-                action,
-                "Open the Downgrade Manager workflow.",
-            );
+        Ok(action @ ToolsActionKind::InternalUtility(tool_id)) => {
+            let safe_message = match tool_id {
+                ToolActionId::DowngradeManager => "Open the Downgrade Manager workflow.",
+                ToolActionId::ArchivePatcher => "Open the Archive Patcher workflow.",
+                _ => "Open the selected workflow.",
+            };
+            let feedback = ToolsActionFeedback::succeeded(action_id.as_str(), action, safe_message);
             apply_tools_feedback(app, controller, feedback);
             return;
         }
@@ -3614,6 +4496,23 @@ fn with_downgrader_controller_mut<T>(
     }
 }
 
+fn with_archive_patcher_controller_mut<T>(
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+    action: impl FnOnce(&mut ArchivePatcherController) -> T,
+) -> Option<T> {
+    match controller.lock() {
+        Ok(mut controller) => Some(action(&mut controller)),
+        Err(error) => {
+            tracing::error!(
+                event = "s10-archive-patcher-controller-lock-poisoned",
+                diagnostic = %error,
+                "Archive Patcher controller state is unavailable"
+            );
+            None
+        }
+    }
+}
+
 fn apply_current_downgrader_state(
     window: &DowngraderWindow,
     controller: &Arc<Mutex<DowngraderController>>,
@@ -3698,6 +4597,188 @@ fn apply_downgrader_projection(window: &DowngraderWindow, projection: Downgrader
     window.set_about_enabled(projection.about_enabled);
     window.set_controls_enabled(projection.controls_enabled);
     window.set_close_blocked(projection.close_blocked);
+}
+
+fn apply_current_archive_patcher_state(
+    window: &ArchivePatcherWindow,
+    controller: &Arc<Mutex<ArchivePatcherController>>,
+) {
+    let Some(projection) = with_archive_patcher_controller_mut(controller, |controller| {
+        project_archive_patcher_state(controller)
+    }) else {
+        return;
+    };
+    apply_archive_patcher_projection(window, projection);
+}
+
+fn project_archive_patcher_state(
+    controller: &ArchivePatcherController,
+) -> ArchivePatcherUiProjection {
+    ArchivePatcherUiProjection {
+        selected_target: archive_patcher_target_ui_value(controller.target()).to_owned(),
+        name_filter: controller.name_filter().to_owned(),
+        candidate_rows: controller
+            .candidate_rows()
+            .iter()
+            .map(format_archive_patcher_candidate_row)
+            .collect(),
+        candidate_empty_text: archive_patcher_candidate_empty_text(controller).to_owned(),
+        plan_rows: controller
+            .preview_plan_rows()
+            .iter()
+            .map(format_archive_patcher_plan_row)
+            .collect(),
+        confirmation_visible: controller.plan().is_some(),
+        confirmation_text: ARCHIVE_PATCHER_PLAN_READY_MESSAGE.to_owned(),
+        log_rows: controller
+            .log_rows()
+            .iter()
+            .map(format_archive_patcher_log_row)
+            .collect(),
+        log_text: archive_patcher_log_text(controller),
+        progress_percent: controller.progress().percent,
+        progress_text: archive_patcher_progress_text(controller),
+        status_text: controller.status_text().to_owned(),
+        patch_enabled: controller.patch_button_enabled(),
+        restore_enabled: controller.restore_button_enabled(),
+        about_enabled: !matches!(
+            controller.phase(),
+            app::archive_patcher_controller::ArchivePatcherControllerPhase::PatchRunning
+                | app::archive_patcher_controller::ArchivePatcherControllerPhase::RestoreRunning
+        ),
+        controls_enabled: !matches!(
+            controller.phase(),
+            app::archive_patcher_controller::ArchivePatcherControllerPhase::LoadingCandidates
+                | app::archive_patcher_controller::ArchivePatcherControllerPhase::Planning
+                | app::archive_patcher_controller::ArchivePatcherControllerPhase::PatchRunning
+                | app::archive_patcher_controller::ArchivePatcherControllerPhase::RestoreRunning
+        ),
+        close_blocked: !controller.close_enabled(),
+        about_dialog_visible: controller.about_open(),
+        about_title: ABOUT_ARCHIVES_TITLE.to_owned(),
+        about_body: ABOUT_ARCHIVES_BODY.to_owned(),
+    }
+}
+
+fn apply_archive_patcher_projection(
+    window: &ArchivePatcherWindow,
+    projection: ArchivePatcherUiProjection,
+) {
+    window.set_selected_target(projection.selected_target.as_str().into());
+    window.set_name_filter(projection.name_filter.as_str().into());
+    window.set_candidate_rows(model_from_vec(projection.candidate_rows));
+    window.set_candidate_empty_text(projection.candidate_empty_text.as_str().into());
+    window.set_plan_rows(model_from_vec(projection.plan_rows));
+    window.set_confirmation_visible(projection.confirmation_visible);
+    window.set_confirmation_text(projection.confirmation_text.as_str().into());
+    window.set_log_rows(model_from_vec(projection.log_rows));
+    window.set_log_text(projection.log_text.as_str().into());
+    window.set_progress_percent(projection.progress_percent);
+    window.set_progress_text(projection.progress_text.as_str().into());
+    window.set_status_text(projection.status_text.as_str().into());
+    window.set_patch_enabled(projection.patch_enabled);
+    window.set_restore_enabled(projection.restore_enabled);
+    window.set_about_enabled(projection.about_enabled);
+    window.set_controls_enabled(projection.controls_enabled);
+    window.set_close_blocked(projection.close_blocked);
+    window.set_about_dialog_visible(projection.about_dialog_visible);
+    window.set_about_title(projection.about_title.as_str().into());
+    window.set_about_body(projection.about_body.as_str().into());
+}
+
+fn format_archive_patcher_candidate_row(
+    row: &ArchivePatcherCandidateRow,
+) -> ArchivePatcherCandidateUiRow {
+    ArchivePatcherCandidateUiRow {
+        display_name: row.display_name.as_str().into(),
+        path: row.path.display().to_string().into(),
+        version: archive_version_label(row.overview_version).into(),
+        format: archive_format_label(&row.overview_format).into(),
+        detail: row.path.display().to_string().into(),
+    }
+}
+
+fn format_archive_patcher_plan_row(row: &ArchivePatcherPreviewPlanRow) -> ArchivePatcherPlanUiRow {
+    let action = match row.action {
+        ArchivePatcherPlanAction::PatchVersionByte => {
+            format!("Patch BA2 header version to v{}", row.target_version)
+        }
+        ArchivePatcherPlanAction::PlanFailure => row
+            .failure
+            .clone()
+            .unwrap_or_else(|| "Archive cannot be patched safely.".to_owned()),
+    };
+    let detail = row
+        .header
+        .map(|header| format!("Current v{} {}", header.version, header.format))
+        .unwrap_or_default();
+    ArchivePatcherPlanUiRow {
+        display_name: row.candidate.display_name.as_str().into(),
+        action: action.as_str().into(),
+        detail: detail.as_str().into(),
+        severity: if row.can_write() { "neutral" } else { "error" }.into(),
+    }
+}
+
+fn format_archive_patcher_log_row(row: &ArchivePatcherLogRow) -> ArchivePatcherLogUiRow {
+    ArchivePatcherLogUiRow {
+        level: archive_patcher_log_level_label(row.level).into(),
+        message: row.message.as_str().into(),
+    }
+}
+
+fn archive_patcher_target_ui_value(target: ArchivePatcherTarget) -> &'static str {
+    match target {
+        ArchivePatcherTarget::OldGen => "old_gen",
+        ArchivePatcherTarget::NextGen => "next_gen",
+    }
+}
+
+fn archive_patcher_log_level_label(level: ArchivePatcherLogLevel) -> &'static str {
+    level.as_reference_str()
+}
+
+fn archive_patcher_log_text(controller: &ArchivePatcherController) -> String {
+    let status = controller.status_text();
+    if status.is_empty() {
+        "Archive Patcher has not run yet.".to_owned()
+    } else {
+        status.to_owned()
+    }
+}
+
+fn archive_patcher_progress_text(controller: &ArchivePatcherController) -> String {
+    if !controller.progress().text.is_empty() {
+        controller.progress().text.clone()
+    } else if !controller.status_text().is_empty() {
+        controller.status_text().to_owned()
+    } else {
+        "Ready".to_owned()
+    }
+}
+
+fn archive_patcher_candidate_empty_text(controller: &ArchivePatcherController) -> &'static str {
+    if controller.safe_error().is_some() {
+        ARCHIVE_PATCHER_OVERVIEW_UNAVAILABLE_MESSAGE
+    } else {
+        "No archives match the selected version/filter."
+    }
+}
+
+fn archive_format_label(format: &crate::domain::discovery::ArchiveFormat) -> String {
+    match format.as_reference_magic() {
+        Some(label) => label.to_owned(),
+        None => "Unknown".to_owned(),
+    }
+}
+
+fn archive_version_label(version: crate::domain::discovery::ArchiveVersion) -> String {
+    match version {
+        crate::domain::discovery::ArchiveVersion::OldGen => "v1".to_owned(),
+        crate::domain::discovery::ArchiveVersion::NextGen7 => "v7".to_owned(),
+        crate::domain::discovery::ArchiveVersion::NextGen8 => "v8".to_owned(),
+        crate::domain::discovery::ArchiveVersion::Unknown(value) => format!("v{value}"),
+    }
 }
 
 fn format_downgrader_status_rows(
@@ -4323,14 +5404,16 @@ fn apply_overview_snapshot(app: &MainWindow, snapshot: &OverviewSnapshot) {
         )
         .into(),
     );
-    app.set_overview_archive_patcher_enabled(false);
+    app.set_overview_archive_patcher_enabled(
+        snapshot
+            .archives
+            .actions
+            .iter()
+            .find(|action| action.kind == OverviewDeferredActionKind::OpenArchivePatcher)
+            .is_some_and(|action| action.enabled),
+    );
     app.set_overview_archive_patcher_status(
-        deferred_action_status(
-            &snapshot.archives.actions,
-            OverviewDeferredActionKind::OpenArchivePatcher,
-            "Archive Patcher",
-        )
-        .into(),
+        overview_archive_patcher_action_status(&snapshot.archives.actions).into(),
     );
     app.set_overview_last_action_error(
         snapshot
@@ -4534,6 +5617,21 @@ fn overview_downgrade_action_status(actions: &[OverviewDeferredAction]) -> Strin
 
     if action.enabled {
         "Open Downgrade Manager.".to_owned()
+    } else {
+        "Action is disabled for the current Overview state.".to_owned()
+    }
+}
+
+fn overview_archive_patcher_action_status(actions: &[OverviewDeferredAction]) -> String {
+    let Some(action) = actions
+        .iter()
+        .find(|action| action.kind == OverviewDeferredActionKind::OpenArchivePatcher)
+    else {
+        return "Not available for the current Overview state.".to_owned();
+    };
+
+    if action.enabled {
+        "Open Archive Patcher.".to_owned()
     } else {
         "Action is disabled for the current Overview state.".to_owned()
     }

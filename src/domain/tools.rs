@@ -65,7 +65,7 @@ pub const IMAGE_RESOURCE_PATHS: [&str; 4] = [
 pub enum ToolActionId {
     /// Deferred Downgrade Manager utility entry.
     DowngradeManager,
-    /// Deferred Archive Patcher utility entry.
+    /// Archive Patcher utility entry.
     ArchivePatcher,
     /// Bethini Pie external link.
     BethiniPie,
@@ -314,9 +314,9 @@ const TOOLKIT_UTILITIES: &[ToolEntry] = &[
     ToolEntry {
         id: ToolActionId::ArchivePatcher,
         label: "Archive Patcher",
-        action: ToolEntryAction::DeferredUtility(ToolDeferredUtility {
+        action: ToolEntryAction::InternalUtility(ToolInternalUtility {
             key: "archive_patcher",
-            status_text: "Archive Patcher is not available in this Rust port yet.",
+            status_text: "Open the Archive Patcher workflow.",
         }),
         help_text: None,
     },

@@ -1302,6 +1302,10 @@ pub struct OverviewSnapshot {
     pub binaries: BinaryPanelSummary,
     /// Archive panel state.
     pub archives: ArchivePanelSummary,
+    /// Current discovery/collector BA2 archive records used by Archive Patcher and Scanner handoff.
+    pub archive_records: Vec<ArchiveRecord>,
+    /// Optional confirmed `Data` directory used by fail-closed archive mutation workflows.
+    pub data_path: Option<PathBuf>,
     /// Module panel state.
     pub modules: ModulePanelSummary,
     /// Update banner state.
@@ -1372,6 +1376,8 @@ impl OverviewSnapshot {
         if let Some(installation) = installation {
             snapshot.top.game_path = OverviewGamePathStatus::found(installation.game_path.clone());
             snapshot.top.version = installation.install_type;
+            snapshot.archive_records = installation.archives.clone();
+            snapshot.data_path = installation.data_path.clone();
             snapshot.archives = ArchivePanelSummary::from_records(&installation.archives);
             snapshot.modules = ModulePanelSummary::from_records(&installation.modules);
 
